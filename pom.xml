@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>edu.ntnu.idatt2003.maven</groupId>
-    <artifactId>mappe-2026-gruppe45</artifactId>
+    <groupId>edu.ntnu.idatt2003</groupId>
+    <artifactId>millions</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
