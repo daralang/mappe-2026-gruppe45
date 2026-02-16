@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Represents a stock with its trading symbol, company name, and price history.
+ * Represents a stock that can be traded on an exchange.
+ * A stock has a trading symbol, company name, and price history.
+ * Stocks are traded through purchases and sales, with players acquiring shares in them.
  */
 public class Stock {
     private final String symbol;
