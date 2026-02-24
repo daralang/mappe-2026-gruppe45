@@ -1,9 +1,9 @@
 package edu.ntnu.idatt2003.millions.model;
 
 public abstract class Transaction {
-    private Share share;
-    private int week;
-    private TransactionCalculator calculator;
+    private final Share share;
+    private final int week;
+    private final TransactionCalculator calculator;
     private boolean committed;
 
     protected Transaction(Share share, int week, TransactionCalculator calculator) {
