@@ -3,7 +3,7 @@ package edu.ntnu.idatt2003.millions.model;
 public class Sale extends Transaction {
 
     public Sale(Share share, int week) {
-        super(share, week, new PurchaseCalculator(share));
+        super(share, week, new SalesCalculator(share));
     }
 
     @Override
