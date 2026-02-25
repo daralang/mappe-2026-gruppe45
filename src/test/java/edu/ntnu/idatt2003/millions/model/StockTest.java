@@ -7,7 +7,22 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Unit tests for the {@link Stock} class
+ * <p>
+ *   This test class helps to verify core functionality is correctly constructed and
+ *   that its methods return the expected values.
+ * </p>
+ * <p>
+ *   These tests follow the AAA pattern and use descriptive names
+ *   to document the expected behaviour.
+ * </p>
+ */
 public class StockTest {
+
+  /**
+   * Verifies that the symbols is associated with the stock created.
+   */
   @Test
   void getSymbol_ValidStockCreated_ShouldReturnCorrectSymbol() {
     //Arrange
@@ -21,6 +36,9 @@ public class StockTest {
     assertEquals("BA", symbol);
   }
 
+  /**
+   * Verifies that the correct company is associated with the stock created.
+   */
   @Test
   void getCompany_ValidStockCreated_ShouldReturnCorrectCompany() {
     //Arrange
@@ -34,6 +52,9 @@ public class StockTest {
     assertEquals("The Walt Disney Company", company);
   }
 
+  /**
+   * Verifies that if it exists multiple prices that it returns the latest price created.
+   */
   @Test
   void getPricesPrice_MultiplePricesExist_ShouldReturnLastPrice() {
     //Arrange
@@ -47,6 +68,9 @@ public class StockTest {
     assertEquals(new BigDecimal("150.00"), result);
   }
 
+  /**
+   * Verifies that the new sales price is updated and added in the price history.
+   */
   @Test
   void addNewSalesPrice_NewPriceAdded_ShouldUpdateSalePrice() {
     //Arrange
