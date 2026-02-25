@@ -13,8 +13,10 @@ public class StockTest {
     //Arrange
     Stock stock = new Stock("BA", "The Boeing Company",
         new ArrayList<>(List.of(new BigDecimal("100.00"))));
+
     //Act
     String symbol = stock.getSymbol();
+
     //Assert
     assertEquals("BA", symbol);
   }
@@ -24,8 +26,10 @@ public class StockTest {
     //Arrange
     Stock stock = new Stock("DIS", "The Walt Disney Company",
         new ArrayList<>(List.of(new BigDecimal("100.00"))));
+
     //Act
     String company = stock.getCompany();
+
     //Assert
     assertEquals("The Walt Disney Company", company);
   }
