@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import java.math.BigDecimal;
+
 /**
  * Represents a sale transaction for a given share.
  * A sale records the share being sold and the week it was sold,
@@ -22,6 +24,21 @@ public class Sale extends Transaction {
      */
     @Override
     public void commit(Player player) {
-        // TO BE IMPLEMENTED
+      if (isCommitted()) {
+        throw new IllegalStateException("Sale is already committed");
+      }
+      if (!player.getPortfolio().contains(getShare())) {
+        throw new IllegalStateException("Sale is not in portfolio");
+      }
+
+      BigDecimal totalValue = getCalculator().calculateTotal();
+
+      player.addMoney(totalValue);
+
+      player.getPortfolio().removeShare(getShare());
+
+      player.getTransactionArchive().add(this);
+
+      setCommitted(true);
     }
 }
