@@ -22,6 +22,7 @@ public abstract class Transaction {
         this.share = share;
         this.week = week;
         this.calculator = calculator;
+        this.committed = false;
     }
 
     /**
@@ -58,6 +59,13 @@ public abstract class Transaction {
      */
     public boolean isCommitted() {
         return committed;
+    }
+
+    /**
+   * TO BE DOCUMENTED
+   */
+    public void setCommitted(boolean committed) {
+        this.committed = committed;
     }
 
     /**
