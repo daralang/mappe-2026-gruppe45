@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import java.math.BigDecimal;
+
 /**
  * Represents a purchase transaction for a given share.
  * A purchase records the share bought and the week it was acquired,
@@ -22,6 +24,16 @@ public class Purchase extends Transaction {
      */
     @Override
     public void commit(Player player) {
-        // TO BE IMPLEMENTED
+      if (isCommitted()) {
+        throw new IllegalStateException("Transaction is already committed");
+      }
+
+      BigDecimal totalCost = getCalculator().calculateTotal();
+
+      player.withdrawMoney(totalCost);
+      player.getPortfolio().addShare(getShare());
+      player.getTransactionArchive().add(this);
+
+      setCommitted(true);
     }
 }
