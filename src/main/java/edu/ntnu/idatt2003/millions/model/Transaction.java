@@ -62,14 +62,19 @@ public abstract class Transaction {
     }
 
     /**
-   * TO BE DOCUMENTED
-   */
+     * Sets whether this transaction has been committed.
+     *
+     * @param committed {@code true} to mark the transaction as committed, {@code false} otherwise
+     */
     public void setCommitted(boolean committed) {
         this.committed = committed;
     }
 
     /**
-     * TO BE DOCUMENTED
+     * Commits this transaction for the given player.
+     * Must be implemented by subclasses.
+     *
+     * @param player the player executing the transaction
      */
     public abstract void commit(Player player);
 }
