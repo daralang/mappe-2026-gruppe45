@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -17,155 +21,102 @@ import org.junit.jupiter.api.Test;
  *   All tests follow the AAA pattern.
  * </p>
  */
-public class PortfolioTest {
+class PortfolioTest {
+    private Portfolio portfolio;
+    private Share share;
 
-//HELPER METHODS
-  /**
-   * Creates a Stock instance with the given symbol.
-   * <p>
-   *   The company name is automatically assigned based on the symbol to simplify test setup.
-   * </p>
-   *
-   * @param symbol the stock symbol
-   * @return a new Stock instance
-   */
-  private Stock createStock(String symbol) {
-    return new Stock(symbol, symbol.equals("DIS") ? "The Walt Disney Company" : "NIKE, Inc",
-        new ArrayList<>(List.of(new BigDecimal("100"))));
-  }
+    @BeforeEach
+    void setUp() {
+        // Arrange
+        portfolio = new Portfolio();
+        share = new Share(
+                new Stock("DIS", "The Walt Disney Company", new ArrayList<>(List.of(new BigDecimal("100")))),
+                new BigDecimal("10"), new BigDecimal("50"));
+    }
 
-  /**
-   * Creates a Share instance using the default symbol "DIS"
-   *
-   * @return a share associated with the default stock.
-   */
-  private Share createShare() {
-    return createShare("DIS");
-  }
+    @Nested
+    @DisplayName("addShare()")
+    class AddShare {
 
-  /**
-   * Creates a Share instance with a specific stock symbol.
-   *
-   * @param symbol the stock symbol
-   * @return a Share associated with the given symbol.
-   */
-  private Share createShare(String symbol) {
-    return new Share(createStock(symbol), new BigDecimal("10"), new BigDecimal("50"));
-  }
+        @Test
+        @DisplayName("Should return true when share does not already exist in portfolio")
+        void returnsTrueWhenShareIsNew() {
+            // Act
+            boolean actual = portfolio.addShare(share);
+            // Assert
+            assertTrue(actual);
+            assertTrue(portfolio.contains(share));
+        }
 
+        @Test
+        @DisplayName("Should return false when share already exists in portfolio")
+        void returnsFalseWhenShareAlreadyExists() {
+            // Arrange
+            portfolio.addShare(share);
+            // Act
+            boolean actual = portfolio.addShare(share);
+            // Assert
+            assertFalse(actual);
+        }
+    }
 
-  //ADD SHARES TO PORTFOLIO TEST
-  /**
-   * Verifies if new added share returns true if the share is not added before.
-   */
-  @Test
-    public void shouldReturnTrueWhenNewShareAddedDontExist_addShare() {
-      //Arrange
-      Portfolio portfolio = new Portfolio();
-      Share share = createShare();
-      //Act
-      boolean actual = portfolio.addShare(share);
-      //Assert
-      assertTrue(actual);
-      assertTrue(portfolio.contains(share));
-  }
+    @Nested
+    @DisplayName("removeShare()")
+    class RemoveShare {
 
-  /**
-   * Verifies if the new added share returns false if the share already exists in the portfolio.
-   */
-  @Test
-  public void shouldReturnFalseWhenNewShareAlreadyExists_addShare() {
-    //Arrange
-    Portfolio portfolio = new Portfolio();
-    Share share = createShare();
-    portfolio.addShare(share);    //Adds the same share twice.
+        @Test
+        @DisplayName("Should return true when share exists in portfolio and is successfully removed")
+        void returnsTrueWhenShareIsRemoved() {
+            // Arrange
+            portfolio.addShare(share);
+            // Act
+            boolean actual = portfolio.removeShare(share);
+            // Assert
+            assertTrue(actual);
+            assertFalse(portfolio.contains(share));
+        }
 
-    //Act
-    boolean actual = portfolio.addShare(share);
+        @Test
+        @DisplayName("Should return false when share does not exist in portfolio")
+        void returnsFalseWhenShareDoesNotExist() {
+            // Act
+            boolean actual = portfolio.removeShare(share);
+            // Assert
+            assertFalse(actual);
+        }
+    }
 
-    //Assert
-    assertFalse(actual);
-    assertTrue(portfolio.contains(share));
-  }
+    @Nested
+    @DisplayName("getShares()")
+    class GetShares {
 
-  //REMOVE SHARES FROM PORTFOLIO TEST
-  /**
-   * Verifies if the condition returns true if the share is in the list and
-   * is removed successfully
-   */
-  @Test
-  public void shouldReturnTrueWhenShareExistsRemoved_removeShare() {
-    //Arrange
-    Portfolio portfolio = new Portfolio();
-    Share share = createShare();
-    portfolio.addShare(share);
+        @Test
+        @DisplayName("Should return a copy of the share list")
+        void returnsCopyOfShareList() {
+            // Arrange
+            portfolio.addShare(share);
+            // Act
+            List<Share> shares = portfolio.getShares();
+            shares.clear();
+            // Assert
+            assertEquals(1, portfolio.getShares().size());
+        }
 
-    //Act
-    boolean actual = portfolio.removeShare(share);
-
-    //Assert
-    assertTrue(actual);
-    assertFalse(portfolio.contains(share));
-  }
-
-  /**
-   * Verifies if the method returns false if the share is not in the list and method is used.
-   */
-  @Test
-  public void shouldReturnFalseWhenShareDoesNotExist_removeShare() {
-    //Arrange
-    Portfolio portfolio = new Portfolio();
-    Share share = createShare();
-
-    //Act
-    boolean actual = portfolio.removeShare(share);
-
-    //Assert
-    assertFalse(actual);
-  }
-
-  //RETURN SHARES
-  /**
-   * Verifies that the method returns a copy of the list.
-   */
-  @Test
-  public void shouldReturnCopyListOfShares_getShares() {
-    //Arrange
-    Portfolio portfolio = new Portfolio();
-    Share share = createShare();
-    portfolio.addShare(share);
-
-    //Act
-    List<Share> shares = portfolio.getShares();
-    shares.clear();
-
-    //Assert
-    assertEquals(1,portfolio.getShares().size());
-
-  }
-
-  /**
-   * Verifies that the method returns only shares whose stock symbol matches the given symbol.
-   * The test adds shares with different stock symbols and ensures that only the matching shares
-   * are returned.
-   */
-  @Test
-  public void shouldReturnOnlyMatchingSymbols_getShares() {
-    //Arrange
-    Portfolio portfolio = new Portfolio();
-
-    Share dis = createShare("DIS");
-    Share nike = createShare("NKE");
-
-    portfolio.addShare(dis);
-    portfolio.addShare(nike);
-
-    //Act
-    List<Share> result = portfolio.getShares("DIS");
-
-    //Assert
-    assertEquals(1,result.size());
-    assertTrue(result.contains(dis));
-    assertFalse(result.contains(nike));
-  }
+        @Test
+        @DisplayName("Should only return shares matching the given symbol")
+        void returnsOnlyMatchingSymbols() {
+            // Arrange
+            Share nike = new Share(
+                    new Stock("NKE", "NIKE, Inc", new ArrayList<>(List.of(new BigDecimal("100")))),
+                    new BigDecimal("10"), new BigDecimal("50"));
+            portfolio.addShare(share);
+            portfolio.addShare(nike);
+            // Act
+            List<Share> result = portfolio.getShares("DIS");
+            // Assert
+            assertEquals(1, result.size());
+            assertTrue(result.contains(share));
+            assertFalse(result.contains(nike));
+        }
+    }
 }
