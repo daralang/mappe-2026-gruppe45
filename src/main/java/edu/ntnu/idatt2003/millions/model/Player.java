@@ -88,6 +88,7 @@ public class Player {
      * Adds the specified amount to the player's balance.
      *
      * @param amount the amount to add
+     * @throws IllegalArgumentException if the amount is negative
      */
     public void addMoney(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Amount cannot be negative");

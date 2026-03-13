@@ -67,6 +67,7 @@ public class Stock {
      *
      * @param price the new price to add
      * @throws IllegalArgumentException if the price is null
+     * @throws IllegalArgumentException if the price is negative
      */
     public void addNewSalesPrice(BigDecimal price) {
         if (price == null) throw new IllegalArgumentException("Price cannot be null");

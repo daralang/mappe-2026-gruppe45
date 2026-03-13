@@ -38,6 +38,7 @@ public class Portfolio {
      * Removes a share from the portfolio.
      *
      * @param share the share to remove
+     * @throws IllegalArgumentException if the share is null
      * @return true if the share was removed, false if it wasn't found
      */
     public boolean removeShare(Share share) {
@@ -58,7 +59,7 @@ public class Portfolio {
      * Gets all shares of a specific stock by symbol.
      *
      * @param symbol the stock symbol to filter by
-     * @throws IllegalArgumentException if the share is null
+     * @throws IllegalArgumentException if the symbol is null
      * @return a list of shares matching the symbol
      */
     public List<Share> getShares(String symbol) {
