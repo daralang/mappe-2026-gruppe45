@@ -90,6 +90,7 @@ public class Player {
      * @param amount the amount to add
      */
     public void addMoney(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Amount cannot be negative");
         this.money = this.money.add(amount);
     }
 
@@ -100,6 +101,7 @@ public class Player {
      * @throws IllegalArgumentException if the player does not have sufficient funds
      */
     public void withdrawMoney(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Amount cannot be negative");
         if (this.money.compareTo(amount) < 0) {
             throw new IllegalArgumentException("Cannot withdraw more money than the current balance");
         }
