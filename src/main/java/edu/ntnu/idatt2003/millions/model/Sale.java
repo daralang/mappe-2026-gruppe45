@@ -20,7 +20,13 @@ public class Sale extends Transaction {
     }
 
     /**
-     * TO BE DOCUMENTED
+     * Commits this sale for the given player.
+     * Adds the total payout to the player's balance, removes the share
+     * from the player's portfolio, and records the transaction in the archive.
+     *
+     * @param player the player executing the sale
+     * @throws IllegalStateException if the transaction has already been committed
+     * @throws IllegalStateException if the share is not in the player's portfolio
      */
     @Override
     public void commit(Player player) {
