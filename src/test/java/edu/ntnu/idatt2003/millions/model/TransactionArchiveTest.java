@@ -124,11 +124,27 @@ class TransactionArchiveTest {
         }
 
         @Test
+        @DisplayName("Should throw exception when week is zero")
+        void throwsExceptionWhenWeekIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getTransactions(0));
+        }
+
+        @Test
         @DisplayName("Should throw exception when week is negative")
         void throwsExceptionWhenWeekIsNegative() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     archive.getTransactions(-1));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when week is greater than 52")
+        void throwsExceptionWhenWeekIsGreaterThan52() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getTransactions(53));
         }
     }
 
@@ -167,11 +183,27 @@ class TransactionArchiveTest {
         }
 
         @Test
+        @DisplayName("Should throw exception when week is zero")
+        void throwsExceptionWhenWeekIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getPurchases(0));
+        }
+
+        @Test
         @DisplayName("Should throw exception when week is negative")
         void throwsExceptionWhenWeekIsNegative() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     archive.getPurchases(-1));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when week is greater than 52")
+        void throwsExceptionWhenWeekIsGreaterThan52() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getPurchases(53));
         }
     }
 
@@ -210,11 +242,27 @@ class TransactionArchiveTest {
         }
 
         @Test
+        @DisplayName("Should throw exception when week is zero")
+        void throwsExceptionWhenWeekIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getSales(0));
+        }
+
+        @Test
         @DisplayName("Should throw exception when week is negative")
         void throwsExceptionWhenWeekIsNegative() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     archive.getSales(-1));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when week is greater than 52")
+        void throwsExceptionWhenWeekIsGreaterThan52() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getSales(53));
         }
     }
 
