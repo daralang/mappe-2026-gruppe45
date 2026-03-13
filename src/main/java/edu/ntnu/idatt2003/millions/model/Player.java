@@ -88,8 +88,10 @@ public class Player {
      * Adds the specified amount to the player's balance.
      *
      * @param amount the amount to add
+     * @throws IllegalArgumentException if the amount is negative
      */
     public void addMoney(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Amount cannot be negative");
         this.money = this.money.add(amount);
     }
 
@@ -97,9 +99,11 @@ public class Player {
      * Withdraws the specified amount from the player's balance.
      *
      * @param amount the amount to withdraw
+     * @throws IllegalArgumentException if the amount is negative
      * @throws IllegalArgumentException if the player does not have sufficient funds
      */
     public void withdrawMoney(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Amount cannot be negative");
         if (this.money.compareTo(amount) < 0) {
             throw new IllegalArgumentException("Cannot withdraw more money than the current balance");
         }

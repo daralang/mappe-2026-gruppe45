@@ -25,26 +25,24 @@ public class Sale extends Transaction {
      * from the player's portfolio, and records the transaction in the archive.
      *
      * @param player the player executing the sale
+     * @throws IllegalArgumentException if the player is null
      * @throws IllegalStateException if the transaction has already been committed
      * @throws IllegalStateException if the share is not in the player's portfolio
      */
     @Override
     public void commit(Player player) {
-      if (isCommitted()) {
-        throw new IllegalStateException("Sale is already committed");
-      }
-      if (!player.getPortfolio().contains(getShare())) {
-        throw new IllegalStateException("Sale is not in portfolio");
-      }
+        if (player == null) throw new IllegalArgumentException("Player cannot be null");
+        if (isCommitted()) throw new IllegalStateException("Sale is already committed");
+        if (!player.getPortfolio().contains(getShare())) throw new IllegalStateException("Sale is not in portfolio");
 
-      BigDecimal totalValue = getCalculator().calculateTotal();
+        BigDecimal totalValue = getCalculator().calculateTotal();
 
-      player.addMoney(totalValue);
+        player.addMoney(totalValue);
 
-      player.getPortfolio().removeShare(getShare());
+        player.getPortfolio().removeShare(getShare());
 
-      player.getTransactionArchive().add(this);
+        player.getTransactionArchive().add(this);
 
-      setCommitted(true);
+        setCommitted(true);
     }
 }

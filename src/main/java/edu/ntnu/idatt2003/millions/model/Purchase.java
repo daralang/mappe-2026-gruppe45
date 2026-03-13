@@ -25,20 +25,22 @@ public class Purchase extends Transaction {
      * to the player's portfolio, and records the transaction in the archive.
      *
      * @param player the player executing the purchase
+     * @throws IllegalArgumentException if the player is null
      * @throws IllegalStateException if the transaction has already been committed
      */
     @Override
     public void commit(Player player) {
-      if (isCommitted()) {
-        throw new IllegalStateException("Transaction is already committed");
-      }
+        if (player == null) throw new IllegalArgumentException("Player cannot be null");
+        if (isCommitted()) {
+            throw new IllegalStateException("Transaction is already committed");
+        }
 
-      BigDecimal totalCost = getCalculator().calculateTotal();
+        BigDecimal totalCost = getCalculator().calculateTotal();
 
-      player.withdrawMoney(totalCost);
-      player.getPortfolio().addShare(getShare());
-      player.getTransactionArchive().add(this);
+        player.withdrawMoney(totalCost);
+        player.getPortfolio().addShare(getShare());
+        player.getTransactionArchive().add(this);
 
-      setCommitted(true);
+        setCommitted(true);
     }
 }
