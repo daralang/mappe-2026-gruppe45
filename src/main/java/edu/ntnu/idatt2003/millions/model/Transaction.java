@@ -17,8 +17,13 @@ public abstract class Transaction {
      * @param share      the share involved in the transaction
      * @param week       the week in which the transaction takes place
      * @param calculator the calculator used to process the transaction
+     * @throws IllegalArgumentException if the week is not between 1 and 52
+     * @throws IllegalArgumentException if the share is null
      */
     protected Transaction(Share share, int week, TransactionCalculator calculator) {
+        if (share == null) throw new IllegalArgumentException("Share cannot be null");
+        if (week < 1 || week > 52) throw new IllegalArgumentException("Week must be between 1 and 52");
+
         this.share = share;
         this.week = week;
         this.calculator = calculator;
