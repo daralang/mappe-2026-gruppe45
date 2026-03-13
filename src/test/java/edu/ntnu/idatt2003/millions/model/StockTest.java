@@ -34,7 +34,7 @@ class StockTest {
     @DisplayName("Stock()")
     class Constructor {
 
-        private List<BigDecimal> prices = new ArrayList<>(List.of(new BigDecimal("100.00")));
+        private final List<BigDecimal> prices = new ArrayList<>(List.of(new BigDecimal("100.00")));
 
         @Test
         @DisplayName("Should throw exception when symbol is null")
@@ -76,6 +76,14 @@ class StockTest {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     new Stock("NKE", "Nike, Inc", emptyList));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when price list is null")
+        void throwsExceptionWhenPriceListIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Stock("NKE", "Nike, Inc", null));
         }
     }
 
