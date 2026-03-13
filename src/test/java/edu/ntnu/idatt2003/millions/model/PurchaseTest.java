@@ -179,6 +179,22 @@ class PurchaseTest {
         }
 
         @Test
+        @DisplayName("Should not change player balance when player has insufficient funds")
+        void doesNotChangeBalanceWhenInsufficientFunds() {
+            // Arrange
+            Player poorPlayer = new Player("Bob", new BigDecimal("1.00"));
+            BigDecimal balanceBefore = poorPlayer.getMoney();
+            // Act
+            try {
+                purchase.commit(poorPlayer);
+            } catch (IllegalArgumentException _) {
+                // for test purposes
+            }
+            // Assert
+            assertEquals(0, balanceBefore.compareTo(poorPlayer.getMoney()));
+        }
+
+        @Test
         @DisplayName("Should not add transaction to archive when player has insufficient funds")
         void doesNotAddTransactionToArchiveWhenInsufficientFunds() {
             // Arrange
