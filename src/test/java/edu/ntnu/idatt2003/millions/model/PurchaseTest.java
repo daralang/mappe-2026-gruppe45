@@ -65,17 +65,47 @@ class PurchaseTest {
             // Act & Assert
             assertFalse(purchase.isCommitted());
         }
+
+        @Test
+        @DisplayName("Should throw exception when share is null")
+        void throwsExceptionWhenShareIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Purchase(null, 1));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when week is negative")
+        void throwsExceptionWhenWeekIsNegative() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Purchase(share, -1));
+        }
     }
 
     @Nested
     @DisplayName("commit()")
     class Commit {
 
+        private Purchase purchase;
+
+        @BeforeEach
+        void setUp() {
+            // Arrange
+            purchase = new Purchase(share, 1);
+        }
+
+        @Test
+        @DisplayName("Should throw exception when player is null")
+        void throwsExceptionWhenPlayerIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    purchase.commit(null));
+        }
+
         @Test
         @DisplayName("Should mark transaction as committed after commit")
         void marksTransactionAsCommitted() {
-            // Arrange
-            Purchase purchase = new Purchase(share, 1);
             // Act
             purchase.commit(player);
             // Assert
@@ -85,8 +115,6 @@ class PurchaseTest {
         @Test
         @DisplayName("Should add share to player portfolio after commit")
         void addsShareToPortfolio() {
-            // Arrange
-            Purchase purchase = new Purchase(share, 1);
             // Act
             purchase.commit(player);
             // Assert
@@ -97,7 +125,6 @@ class PurchaseTest {
         @DisplayName("Should deduct total cost from player balance after commit")
         void deductsTotalCostFromBalance() {
             // Arrange
-            Purchase purchase = new Purchase(share, 1);
             BigDecimal expectedBalance = new BigDecimal("10000.00")
                     .subtract(purchase.getCalculator().calculateTotal());
             // Act
@@ -109,8 +136,6 @@ class PurchaseTest {
         @Test
         @DisplayName("Should add transaction to archive after commit")
         void addsTransactionToArchive() {
-            // Arrange
-            Purchase purchase = new Purchase(share, 1);
             // Act
             purchase.commit(player);
             // Assert
@@ -121,7 +146,6 @@ class PurchaseTest {
         @DisplayName("Should throw exception when transaction is already committed")
         void throwsExceptionWhenAlreadyCommitted() {
             // Arrange
-            Purchase purchase = new Purchase(share, 1);
             purchase.commit(player);
             // Act & Assert
             assertThrows(IllegalStateException.class, () ->
@@ -133,10 +157,40 @@ class PurchaseTest {
         void throwsExceptionWhenInsufficientFunds() {
             // Arrange
             Player poorPlayer = new Player("Bob", new BigDecimal("1.00"));
-            Purchase purchase = new Purchase(share, 1);
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     purchase.commit(poorPlayer));
+        }
+
+        @Test
+        @DisplayName("Should not add share to portfolio when player has insufficient funds")
+        void doesNotAddShareToPortfolioWhenInsufficientFunds() {
+            // Arrange
+            Player poorPlayer = new Player("Bob", new BigDecimal("1.00"));
+            // Act
+            try {
+                purchase.commit(poorPlayer);
+            }
+            catch (IllegalArgumentException _) {
+                // for test purposes
+            }
+            // Assert
+            assertFalse(poorPlayer.getPortfolio().contains(share));
+        }
+
+        @Test
+        @DisplayName("Should not add transaction to archive when player has insufficient funds")
+        void doesNotAddTransactionToArchiveWhenInsufficientFunds() {
+            // Arrange
+            Player poorPlayer = new Player("Bob", new BigDecimal("1.00"));
+            // Act
+            try {
+                purchase.commit(poorPlayer);
+            } catch (IllegalArgumentException _) {
+                // for test purposes
+            }
+            // Assert
+            assertTrue(poorPlayer.getTransactionArchive().isEmpty());
         }
     }
 }
