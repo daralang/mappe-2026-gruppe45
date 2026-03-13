@@ -31,6 +31,55 @@ class StockTest {
     }
 
     @Nested
+    @DisplayName("Stock()")
+    class Constructor {
+
+        private List<BigDecimal> prices = new ArrayList<>(List.of(new BigDecimal("100.00")));
+
+        @Test
+        @DisplayName("Should throw exception when symbol is null")
+        void throwsExceptionWhenSymbolIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Stock(null, "Nike, Inc", prices));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when symbol is blank")
+        void throwsExceptionWhenSymbolIsBlank() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Stock("", "Nike, Inc", prices));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when company is null")
+        void throwsExceptionWhenCompanyIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Stock("NKE", null, prices));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when company is blank")
+        void throwsExceptionWhenCompanyIsBlank() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Stock("NKE", "", prices));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when price list is empty")
+        void throwsExceptionWhenPriceListIsEmpty() {
+            // Arrange
+            List<BigDecimal> emptyList = new ArrayList<>();
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Stock("NKE", "Nike, Inc", emptyList));
+        }
+    }
+
+    @Nested
     @DisplayName("getSymbol()")
     class GetSymbol {
 
@@ -86,6 +135,24 @@ class StockTest {
             stock.addNewSalesPrice(new BigDecimal("110.00"));
             // Assert
             assertEquals(new BigDecimal("110.00"), stock.getSalesPrice());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when price is null")
+        void throwsExceptionWhenPriceIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    stock.addNewSalesPrice(null));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when price is negative")
+        void throwsExceptionWhenPriceIsNegative() {
+            // Arrange
+            BigDecimal negativePrice = new BigDecimal("-10.00");
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    stock.addNewSalesPrice(negativePrice));
         }
     }
 }
