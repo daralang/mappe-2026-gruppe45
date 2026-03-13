@@ -10,14 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PurchaseCalculatorTest {
-    private Share share;
     private PurchaseCalculator calculator;
 
     @BeforeEach
     void setUp() {
-        share = new Share(
+        Share share = new Share(
                 new Stock("DCL", "Dara Inc", new ArrayList<>(List.of(new BigDecimal("70")))),
                 new BigDecimal("10"), new BigDecimal("30"));
         calculator = new PurchaseCalculator(share);
@@ -26,6 +26,20 @@ class PurchaseCalculatorTest {
     private static void assertBigDecimalEquals(BigDecimal expected, BigDecimal calculated) {
         assertEquals(0, expected.compareTo(calculated),
                 "Expected " + expected.toPlainString() + " to be equal to " + calculated.toPlainString());
+    }
+
+    @Nested
+    @DisplayName("PurchaseCalculator()")
+    class Constructor {
+
+        @Test
+        @DisplayName("Should throw exception when share is null")
+        void throwsExceptionWhenShareIsNull() {
+            // Act & Assert
+            //noinspection DataFlowIssue
+            assertThrows(IllegalArgumentException.class, () ->
+                    new PurchaseCalculator(null));
+        }
     }
 
     @Nested
@@ -41,6 +55,18 @@ class PurchaseCalculatorTest {
             BigDecimal calculated = calculator.calculateGross();
             // Assert
             assertBigDecimalEquals(expected, calculated);
+        }
+
+        @Test
+        @DisplayName("Should return zero when quantity is zero")
+        void returnsZeroWhenQuantityIsZero() {
+            // Arrange
+            Share zeroShare = new Share(
+                    new Stock("DCL", "Dara Inc", new ArrayList<>(List.of(new BigDecimal("70")))),
+                    new BigDecimal("0"), new BigDecimal("30"));
+            PurchaseCalculator zeroCalculator = new PurchaseCalculator(zeroShare);
+            // Act & Assert
+            assertBigDecimalEquals(BigDecimal.ZERO, zeroCalculator.calculateGross());
         }
     }
 
@@ -88,6 +114,18 @@ class PurchaseCalculatorTest {
             BigDecimal calculated = calculator.calculateTotal();
             // Assert
             assertBigDecimalEquals(expected, calculated);
+        }
+
+        @Test
+        @DisplayName("Should return zero when quantity is zero")
+        void returnsZeroWhenQuantityIsZero() {
+            // Arrange
+            Share zeroShare = new Share(
+                    new Stock("DCL", "Dara Inc", new ArrayList<>(List.of(new BigDecimal("70")))),
+                    new BigDecimal("0"), new BigDecimal("30"));
+            PurchaseCalculator zeroCalculator = new PurchaseCalculator(zeroShare);
+            // Act & Assert
+            assertBigDecimalEquals(BigDecimal.ZERO, zeroCalculator.calculateTotal());
         }
     }
 }
