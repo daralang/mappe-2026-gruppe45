@@ -33,6 +33,64 @@ class ShareTest {
     }
 
     @Nested
+    @DisplayName("Share()")
+    class Constructor {
+
+        @Test
+        @DisplayName("Should throw exception when stock is null")
+        void throwsExceptionWhenStockIsNull() {
+            // Arrange
+            BigDecimal quantity = new BigDecimal("10");
+            BigDecimal purchasePrice = new BigDecimal("90.00");
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Share(null, quantity, purchasePrice));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when quantity is null")
+        void throwsExceptionWhenQuantityIsNull() {
+            // Arrange
+            BigDecimal purchasePrice = new BigDecimal("90.00");
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Share(stock, null, purchasePrice));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when quantity is negative")
+        void throwsExceptionWhenQuantityIsNegative() {
+            // Arrange
+            BigDecimal quantity = new BigDecimal("-1");
+            BigDecimal purchasePrice = new BigDecimal("90.00");
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Share(stock, quantity, purchasePrice));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when purchase price is null")
+        void throwsExceptionWhenPurchasePriceIsNull() {
+            // Arrange
+            BigDecimal quantity = new BigDecimal("10");
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Share(stock, quantity, null));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when purchase price is negative")
+        void throwsExceptionWhenPurchasePriceIsNegative() {
+            // Arrange
+            BigDecimal quantity = new BigDecimal("10");
+            BigDecimal purchasePrice = new BigDecimal("-1");
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Share(stock, quantity, purchasePrice));
+        }
+    }
+
+    @Nested
     @DisplayName("getStock()")
     class GetStock {
 
