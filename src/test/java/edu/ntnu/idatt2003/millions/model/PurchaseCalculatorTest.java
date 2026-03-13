@@ -12,6 +12,17 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+
+/**
+ * Unit tests for the {@link PurchaseCalculator} class.
+ * <p>
+ *   This test class verifies the financial calculations performed during a purchase transaction,
+ *   including gross value, commission, tax, and total cost.
+ * </p>
+ * <p>
+ *   All tests follow the AAA pattern.
+ * </p>
+ */
 class PurchaseCalculatorTest {
     private PurchaseCalculator calculator;
 
