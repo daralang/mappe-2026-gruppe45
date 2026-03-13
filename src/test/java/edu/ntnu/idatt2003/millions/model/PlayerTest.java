@@ -38,7 +38,7 @@ class PlayerTest {
             // Act
             String name = player.getName();
             // Assert
-            assertEquals("Alice", name);
+            assertEquals("Alva", name);
         }
 
         @Test
@@ -84,7 +84,7 @@ class PlayerTest {
         void throwsExceptionWhenStartingMoneyIsNull() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    new Player("Alice", null));
+                    new Player("Alva", null));
         }
 
         @Test
@@ -94,7 +94,7 @@ class PlayerTest {
             BigDecimal negativeMoney = new BigDecimal("-1");
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    new Player("Alice", negativeMoney));
+                    new Player("Alva", negativeMoney));
         }
 
         @Test
