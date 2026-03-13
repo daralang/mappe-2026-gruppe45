@@ -20,7 +20,12 @@ public class Purchase extends Transaction {
     }
 
     /**
-     * TO BE DOCUMENTED
+     * Commits this purchase for the given player.
+     * Withdraws the total cost from the player's balance, adds the share
+     * to the player's portfolio, and records the transaction in the archive.
+     *
+     * @param player the player executing the purchase
+     * @throws IllegalStateException if the transaction has already been committed
      */
     @Override
     public void commit(Player player) {
