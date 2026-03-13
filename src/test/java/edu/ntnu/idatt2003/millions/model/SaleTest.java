@@ -76,11 +76,27 @@ class SaleTest {
         }
 
         @Test
+        @DisplayName("Should throw exception when week is zero")
+        void throwsExceptionWhenWeekIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Sale(share, 0));
+        }
+
+        @Test
         @DisplayName("Should throw exception when week is negative")
         void throwsExceptionWhenWeekIsNegative() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     new Sale(share, -1));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when week is greater than 52")
+        void throwsExceptionWhenWeekIsGreaterThan52() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Sale(share, 53));
         }
     }
 
@@ -89,6 +105,13 @@ class SaleTest {
     class Commit {
 
         private Sale sale;
+
+        // Arrange-helpers for WhenShareNotInPortfolio-tests
+        private final Share otherShare = new Share(
+                new Stock("NKE", "Nike, Inc",
+                        new ArrayList<>(List.of(new BigDecimal("100.00")))),
+                new BigDecimal("10"), new BigDecimal("50.00"));
+        private final Sale otherSale = new Sale(otherShare, 1);
 
         @BeforeEach
         void setUp() {
@@ -155,12 +178,6 @@ class SaleTest {
         @Test
         @DisplayName("Should throw exception when share is not in player portfolio")
         void throwsExceptionWhenShareNotInPortfolio() {
-            // Arrange
-            Share otherShare = new Share(
-                    new Stock("NKE", "Nike, Inc",
-                            new ArrayList<>(List.of(new BigDecimal("100.00")))),
-                    new BigDecimal("10"), new BigDecimal("50.00"));
-            Sale otherSale = new Sale(otherShare, 1);
             // Act & Assert
             assertThrows(IllegalStateException.class, () ->
                     otherSale.commit(player));
@@ -170,11 +187,6 @@ class SaleTest {
         @DisplayName("Should not change portfolio when share is not in portfolio")
         void doesNotChangePortfolioWhenShareNotInPortfolio() {
             // Arrange
-            Share otherShare = new Share(
-                    new Stock("NKE", "Nike, Inc",
-                            new ArrayList<>(List.of(new BigDecimal("100.00")))),
-                    new BigDecimal("10"), new BigDecimal("50.00"));
-            Sale otherSale = new Sale(otherShare, 1);
             int portfolioSizeBefore = player.getPortfolio().getShares().size();
             // Act
             try {
@@ -190,11 +202,6 @@ class SaleTest {
         @DisplayName("Should not change player balance when share is not in portfolio")
         void doesNotChangeBalanceWhenShareNotInPortfolio() {
             // Arrange
-            Share otherShare = new Share(
-                    new Stock("NKE", "Nike, Inc",
-                            new ArrayList<>(List.of(new BigDecimal("100.00")))),
-                    new BigDecimal("10"), new BigDecimal("50.00"));
-            Sale otherSale = new Sale(otherShare, 1);
             BigDecimal balanceBefore = player.getMoney();
             // Act
             try {
@@ -209,12 +216,6 @@ class SaleTest {
         @Test
         @DisplayName("Should not add transaction to archive when share is not in portfolio")
         void doesNotAddTransactionToArchiveWhenShareNotInPortfolio() {
-            // Arrange
-            Share otherShare = new Share(
-                    new Stock("NKE", "Nike, Inc",
-                            new ArrayList<>(List.of(new BigDecimal("100.00")))),
-                    new BigDecimal("10"), new BigDecimal("50.00"));
-            Sale otherSale = new Sale(otherShare, 1);
             // Act
             try {
                 otherSale.commit(player);

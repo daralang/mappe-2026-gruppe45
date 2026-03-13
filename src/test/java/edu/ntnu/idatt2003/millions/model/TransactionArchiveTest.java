@@ -124,11 +124,27 @@ class TransactionArchiveTest {
         }
 
         @Test
+        @DisplayName("Should throw exception when week is zero")
+        void throwsExceptionWhenWeekIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getTransactions(0));
+        }
+
+        @Test
         @DisplayName("Should throw exception when week is negative")
         void throwsExceptionWhenWeekIsNegative() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     archive.getTransactions(-1));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when week is greater than 52")
+        void throwsExceptionWhenWeekIsGreaterThan52() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getTransactions(53));
         }
     }
 
@@ -167,11 +183,27 @@ class TransactionArchiveTest {
         }
 
         @Test
+        @DisplayName("Should throw exception when week is zero")
+        void throwsExceptionWhenWeekIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getPurchases(0));
+        }
+
+        @Test
         @DisplayName("Should throw exception when week is negative")
         void throwsExceptionWhenWeekIsNegative() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     archive.getPurchases(-1));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when week is greater than 52")
+        void throwsExceptionWhenWeekIsGreaterThan52() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getPurchases(53));
         }
     }
 
@@ -210,11 +242,27 @@ class TransactionArchiveTest {
         }
 
         @Test
+        @DisplayName("Should throw exception when week is zero")
+        void throwsExceptionWhenWeekIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getSales(0));
+        }
+
+        @Test
         @DisplayName("Should throw exception when week is negative")
         void throwsExceptionWhenWeekIsNegative() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     archive.getSales(-1));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when week is greater than 52")
+        void throwsExceptionWhenWeekIsGreaterThan52() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getSales(53));
         }
     }
 
@@ -233,12 +281,8 @@ class TransactionArchiveTest {
         @DisplayName("Should return correct count when transactions span multiple weeks")
         void returnsCorrectCountForMultipleWeeks() {
             // Arrange
-            Share share2 = new Share(
-                    new Stock("NKE", "Nike, Inc",
-                            new ArrayList<>(List.of(new BigDecimal("100.00")))),
-                    new BigDecimal("10"), new BigDecimal("50.00"));
             archive.add(new Purchase(share, 1));
-            archive.add(new Purchase(share2, 2));
+            archive.add(new Purchase(share, 2));
             // Act & Assert
             assertEquals(2, archive.countDistinctWeeks());
         }
@@ -247,12 +291,8 @@ class TransactionArchiveTest {
         @DisplayName("Should count week only once when multiple transactions exist in same week")
         void countsWeekOnlyOnceForMultipleTransactions() {
             // Arrange
-            Share share2 = new Share(
-                    new Stock("NKE", "Nike, Inc",
-                            new ArrayList<>(List.of(new BigDecimal("100.00")))),
-                    new BigDecimal("10"), new BigDecimal("50.00"));
             archive.add(new Purchase(share, 1));
-            archive.add(new Purchase(share2, 1));
+            archive.add(new Purchase(share, 1));
             // Act & Assert
             assertEquals(1, archive.countDistinctWeeks());
         }

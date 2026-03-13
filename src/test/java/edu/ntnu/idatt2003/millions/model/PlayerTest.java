@@ -159,7 +159,7 @@ class PlayerTest {
             // Act
             player.withdrawMoney(new BigDecimal("1000.00"));
             // Assert
-            assertEquals(BigDecimal.ZERO, player.getMoney());
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getMoney()));
         }
 
         @Test
