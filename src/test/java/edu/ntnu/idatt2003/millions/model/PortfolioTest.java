@@ -58,6 +58,14 @@ class PortfolioTest {
             // Assert
             assertFalse(actual);
         }
+
+        @Test
+        @DisplayName("Should throw exception when share is null")
+        void throwsExceptionWhenShareIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    portfolio.addShare(null));
+        }
     }
 
     @Nested
@@ -83,6 +91,14 @@ class PortfolioTest {
             boolean actual = portfolio.removeShare(share);
             // Assert
             assertFalse(actual);
+        }
+
+        @Test
+        @DisplayName("Should throw exception when share is null")
+        void throwsExceptionWhenShareIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    portfolio.removeShare(null));
         }
     }
 
@@ -117,6 +133,61 @@ class PortfolioTest {
             assertEquals(1, result.size());
             assertTrue(result.contains(share));
             assertFalse(result.contains(nike));
+        }
+
+        @Test
+        @DisplayName("Should return empty list when portfolio is empty")
+        void returnsEmptyListWhenPortfolioIsEmpty() {
+            // Act & Assert
+            assertTrue(portfolio.getShares().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should return empty list when no shares match the given symbol")
+        void returnsEmptyListWhenNoSymbolMatches() {
+            // Arrange
+            portfolio.addShare(share);
+            // Act
+            List<Share> result = portfolio.getShares("NKE");
+            // Assert
+            assertTrue(result.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when null is passed as symbol")
+        void throwsExceptionWhenSymbolIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    portfolio.getShares(null));
+        }
+    }
+
+    @Nested
+    @DisplayName("contains()")
+    class Contains {
+
+        @Test
+        @DisplayName("Should return true when share exists in portfolio")
+        void returnsTrueWhenShareExists() {
+            // Arrange
+            portfolio.addShare(share);
+            // Act & Assert
+            assertTrue(portfolio.contains(share));
+        }
+
+        @Test
+        @DisplayName("Should return false when share does not exist in portfolio")
+        void returnsFalseWhenShareDoesNotExist() {
+            // Act & Assert
+            assertFalse(portfolio.contains(share));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when share is null")
+        void throwsExceptionWhenShareIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    portfolio.contains(null));
         }
     }
 }
