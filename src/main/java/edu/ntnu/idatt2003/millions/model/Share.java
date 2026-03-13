@@ -18,6 +18,11 @@ public class Share {
      * @param stock the stock that was purchased
      * @param quantity the number of shares purchased
      * @param purchasePrice the price per share at time of purchase
+     * @throws IllegalArgumentException if the stock is null
+     * @throws IllegalArgumentException if the quantity is null
+     * @throws IllegalArgumentException if the quantity is negative
+     * @throws IllegalArgumentException if the purchase price is null
+     * @throws IllegalArgumentException if the purchase price is negative
      */
     public Share(Stock stock, BigDecimal quantity, BigDecimal purchasePrice) {
         if (stock == null) throw new IllegalArgumentException("Stock cannot be null");
