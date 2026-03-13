@@ -20,6 +20,12 @@ public class Share {
      * @param purchasePrice the price per share at time of purchase
      */
     public Share(Stock stock, BigDecimal quantity, BigDecimal purchasePrice) {
+        if (stock == null) throw new IllegalArgumentException("Stock cannot be null");
+        if (quantity == null) throw new IllegalArgumentException("Quantity cannot be null");
+        if (quantity.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Quantity cannot be negative");
+        if (purchasePrice == null) throw new IllegalArgumentException("Purchase Price cannot be null");
+        if (purchasePrice.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Purchase price cannot be negative");
+
         this.stock = stock;
         this.quantity = quantity;
         this.purchasePrice = purchasePrice;
