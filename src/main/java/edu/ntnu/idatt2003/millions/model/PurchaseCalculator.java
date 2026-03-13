@@ -19,6 +19,7 @@ public class PurchaseCalculator implements TransactionCalculator {
      * Constructs a PurchaseCalculator for the given share.
      *
      * @param share the share being purchased, used to retrieve purchase price and quantity
+     * @throws IllegalArgumentException if the share is null
      */
     public PurchaseCalculator(Share share) {
         if (share == null) throw new IllegalArgumentException("Share cannot be null");
