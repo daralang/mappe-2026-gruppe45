@@ -281,12 +281,8 @@ class TransactionArchiveTest {
         @DisplayName("Should return correct count when transactions span multiple weeks")
         void returnsCorrectCountForMultipleWeeks() {
             // Arrange
-            Share share2 = new Share(
-                    new Stock("NKE", "Nike, Inc",
-                            new ArrayList<>(List.of(new BigDecimal("100.00")))),
-                    new BigDecimal("10"), new BigDecimal("50.00"));
             archive.add(new Purchase(share, 1));
-            archive.add(new Purchase(share2, 2));
+            archive.add(new Purchase(share, 2));
             // Act & Assert
             assertEquals(2, archive.countDistinctWeeks());
         }
@@ -295,12 +291,8 @@ class TransactionArchiveTest {
         @DisplayName("Should count week only once when multiple transactions exist in same week")
         void countsWeekOnlyOnceForMultipleTransactions() {
             // Arrange
-            Share share2 = new Share(
-                    new Stock("NKE", "Nike, Inc",
-                            new ArrayList<>(List.of(new BigDecimal("100.00")))),
-                    new BigDecimal("10"), new BigDecimal("50.00"));
             archive.add(new Purchase(share, 1));
-            archive.add(new Purchase(share2, 1));
+            archive.add(new Purchase(share, 1));
             // Act & Assert
             assertEquals(1, archive.countDistinctWeeks());
         }
