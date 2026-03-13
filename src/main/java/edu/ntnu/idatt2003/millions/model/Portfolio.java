@@ -22,6 +22,7 @@ public class Portfolio {
      * Adds a share to the portfolio.
      *
      * @param share the share to add
+     * @throws IllegalArgumentException if the share is null
      * @return true if the share was added, false if it already exists
      */
     public boolean addShare(Share share) {
@@ -57,6 +58,7 @@ public class Portfolio {
      * Gets all shares of a specific stock by symbol.
      *
      * @param symbol the stock symbol to filter by
+     * @throws IllegalArgumentException if the share is null
      * @return a list of shares matching the symbol
      */
     public List<Share> getShares(String symbol) {
@@ -70,6 +72,7 @@ public class Portfolio {
      * Checks if the portfolio contains a specific share.
      *
      * @param share the share to check for
+     * @throws IllegalArgumentException if the share is null
      * @return true if the share exists in the portfolio
      */
     public boolean contains(Share share) {
