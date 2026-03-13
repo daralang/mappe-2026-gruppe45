@@ -98,6 +98,7 @@ public class Player {
      * Withdraws the specified amount from the player's balance.
      *
      * @param amount the amount to withdraw
+     * @throws IllegalArgumentException if the amount is negative
      * @throws IllegalArgumentException if the player does not have sufficient funds
      */
     public void withdrawMoney(BigDecimal amount) {
