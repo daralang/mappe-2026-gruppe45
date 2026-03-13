@@ -75,11 +75,27 @@ class PurchaseTest {
         }
 
         @Test
+        @DisplayName("Should throw exception when week is zero")
+        void throwsExceptionWhenWeekIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Purchase(share, 0));
+        }
+
+        @Test
         @DisplayName("Should throw exception when week is negative")
         void throwsExceptionWhenWeekIsNegative() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     new Purchase(share, -1));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when week is greater than 52")
+        void throwsExceptionWhenWeekIsGreaterThan52() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Purchase(share, 53));
         }
     }
 
