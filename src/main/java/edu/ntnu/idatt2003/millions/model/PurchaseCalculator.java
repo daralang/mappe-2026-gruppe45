@@ -21,6 +21,7 @@ public class PurchaseCalculator implements TransactionCalculator {
      * @param share the share being purchased, used to retrieve purchase price and quantity
      */
     public PurchaseCalculator(Share share) {
+        if (share == null) throw new IllegalArgumentException("Share cannot be null");
         this.purchasePrice = share.getPurchasePrice();
         this.quantity = share.getQuantity();
     }

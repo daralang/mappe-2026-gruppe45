@@ -21,7 +21,12 @@ public class Stock {
      * @param prices the list of historical prices
      */
     public Stock(String symbol, String company, List<BigDecimal> prices) {
-        this.symbol = symbol;       // NOTAT: skal være unikt, dette må sørges for et sted (kom tilbake til)
+        if (symbol == null || symbol.isBlank()) throw new IllegalArgumentException("Symbol cannot be null or blank");
+        if (company == null || company.isBlank()) throw new IllegalArgumentException("Company cannot be null or blank");
+        if (prices == null) throw new IllegalArgumentException("Prices cannot be null");
+        if (prices.isEmpty()) throw new IllegalArgumentException("Prices cannot be empty");
+
+        this.symbol = symbol;
         this.company = company;
         this.prices = prices;
     }
@@ -59,6 +64,8 @@ public class Stock {
      * @param price the new price to add
      */
     public void addNewSalesPrice(BigDecimal price) {
+        if (price == null) throw new IllegalArgumentException("Price cannot be null");
+        if (price.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Price cannot be negative");
         this.prices.add(price);
     }
 }
