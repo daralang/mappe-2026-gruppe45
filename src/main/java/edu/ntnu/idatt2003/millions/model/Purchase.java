@@ -26,7 +26,7 @@ public class Purchase extends Transaction {
      *
      * @param player the player executing the purchase
      * @throws IllegalArgumentException if the player is null
-     * @throws IllegalStateException if the transaction has already been committed
+     * @throws IllegalStateException    if the transaction has already been committed
      */
     @Override
     public void commit(Player player) {

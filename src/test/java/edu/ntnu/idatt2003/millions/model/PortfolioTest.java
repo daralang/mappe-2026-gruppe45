@@ -1,24 +1,24 @@
 package edu.ntnu.idatt2003.millions.model;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * Unit tests for the {@link Portfolio} class.
  * <p>
- *   This test class verifies the behaviour of the Portfolio model, including adding, removing,
- *   retrieving and filtering shares.
+ * This test class verifies the behaviour of the Portfolio model, including adding, removing,
+ * retrieving and filtering shares.
  * </p>
  * <p>
- *   All tests follow the AAA pattern.
+ * All tests follow the AAA pattern.
  * </p>
  */
 class PortfolioTest {

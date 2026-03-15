@@ -15,8 +15,8 @@ public class Share {
     /**
      * Constructs a new Share with the specified stock, quantity, and purchase price.
      *
-     * @param stock the stock that was purchased
-     * @param quantity the number of shares purchased
+     * @param stock         the stock that was purchased
+     * @param quantity      the number of shares purchased
      * @param purchasePrice the price per share at time of purchase
      * @throws IllegalArgumentException if the stock is null
      * @throws IllegalArgumentException if the quantity is null
@@ -29,7 +29,8 @@ public class Share {
         if (quantity == null) throw new IllegalArgumentException("Quantity cannot be null");
         if (quantity.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Quantity cannot be negative");
         if (purchasePrice == null) throw new IllegalArgumentException("Purchase Price cannot be null");
-        if (purchasePrice.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Purchase price cannot be negative");
+        if (purchasePrice.compareTo(BigDecimal.ZERO) < 0)
+            throw new IllegalArgumentException("Purchase price cannot be negative");
 
         this.stock = stock;
         this.quantity = quantity;
