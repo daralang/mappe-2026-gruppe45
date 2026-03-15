@@ -1,9 +1,9 @@
 package edu.ntnu.idatt2003.millions.model;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -16,11 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * Unit tests for the {@link PurchaseCalculator} class.
  * <p>
- *   This test class verifies the financial calculations performed during a purchase transaction,
- *   including gross value, commission, tax, and total cost.
+ * This test class verifies the financial calculations performed during a purchase transaction,
+ * including gross value, commission, tax, and total cost.
  * </p>
  * <p>
- *   All tests follow the AAA pattern.
+ * All tests follow the AAA pattern.
  * </p>
  */
 class PurchaseCalculatorTest {
@@ -47,7 +47,7 @@ class PurchaseCalculatorTest {
         @DisplayName("Should throw exception when share is null")
         void throwsExceptionWhenShareIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new PurchaseCalculator(null));
         }
     }

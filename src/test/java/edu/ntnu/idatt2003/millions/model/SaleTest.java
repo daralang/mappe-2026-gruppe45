@@ -1,24 +1,24 @@
 package edu.ntnu.idatt2003.millions.model;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * Unit tests for the {@link Sale} class.
  * <p>
- *   This test class verifies the behaviour of the Sale model,
- *   including construction and committing a sale transaction.
+ * This test class verifies the behaviour of the Sale model,
+ * including construction and committing a sale transaction.
  * </p>
  * <p>
- *   All tests follow the AAA pattern.
+ * All tests follow the AAA pattern.
  * </p>
  */
 class SaleTest {
@@ -71,7 +71,7 @@ class SaleTest {
         @DisplayName("Should throw exception when share is null")
         void throwsExceptionWhenShareIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Sale(null, 1));
         }
 
@@ -122,7 +122,7 @@ class SaleTest {
         @DisplayName("Should throw exception when player is null")
         void throwsExceptionWhenPlayerIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     sale.commit(null));
         }
 
