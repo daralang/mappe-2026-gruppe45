@@ -47,8 +47,7 @@ class SalesCalculatorTest {
         @DisplayName("Should throw exception when share is null")
         void throwsExceptionWhenShareIsNull() {
             // Act & Assert
-            //noinspection DataFlowIssue
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new SalesCalculator(null));
         }
     }

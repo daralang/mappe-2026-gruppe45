@@ -70,7 +70,7 @@ class PurchaseTest {
         @DisplayName("Should throw exception when share is null")
         void throwsExceptionWhenShareIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Purchase(null, 1));
         }
 
@@ -115,7 +115,7 @@ class PurchaseTest {
         @DisplayName("Should throw exception when player is null")
         void throwsExceptionWhenPlayerIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     purchase.commit(null));
         }
 
