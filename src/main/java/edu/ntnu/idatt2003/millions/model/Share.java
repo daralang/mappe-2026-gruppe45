@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * Represents a player's ownership of a specific quantity of a stock.
@@ -15,20 +16,18 @@ public class Share {
     /**
      * Constructs a new Share with the specified stock, quantity, and purchase price.
      *
-     * @param stock the stock that was purchased
-     * @param quantity the number of shares purchased
+     * @param stock         the stock that was purchased
+     * @param quantity      the number of shares purchased
      * @param purchasePrice the price per share at time of purchase
-     * @throws IllegalArgumentException if the stock is null
-     * @throws IllegalArgumentException if the quantity is null
+     * @throws NullPointerException     if the stock, quantity, or purchase price is null
      * @throws IllegalArgumentException if the quantity is negative
-     * @throws IllegalArgumentException if the purchase price is null
      * @throws IllegalArgumentException if the purchase price is negative
      */
     public Share(Stock stock, BigDecimal quantity, BigDecimal purchasePrice) {
-        if (stock == null) throw new IllegalArgumentException("Stock cannot be null");
-        if (quantity == null) throw new IllegalArgumentException("Quantity cannot be null");
+        Objects.requireNonNull(stock, "Stock cannot be null");
+        Objects.requireNonNull(quantity, "Quantity cannot be null");
+        Objects.requireNonNull(purchasePrice, "Purchase price cannot be null");
         if (quantity.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Quantity cannot be negative");
-        if (purchasePrice == null) throw new IllegalArgumentException("Purchase Price cannot be null");
         if (purchasePrice.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Purchase price cannot be negative");
 
         this.stock = stock;

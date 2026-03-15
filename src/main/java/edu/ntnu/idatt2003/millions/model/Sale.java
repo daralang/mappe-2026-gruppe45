@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * Represents a sale transaction for a given share.
@@ -25,24 +26,20 @@ public class Sale extends Transaction {
      * from the player's portfolio, and records the transaction in the archive.
      *
      * @param player the player executing the sale
-     * @throws IllegalArgumentException if the player is null
+     * @throws NullPointerException  if the player is null
      * @throws IllegalStateException if the transaction has already been committed
      * @throws IllegalStateException if the share is not in the player's portfolio
      */
     @Override
     public void commit(Player player) {
-        if (player == null) throw new IllegalArgumentException("Player cannot be null");
+        Objects.requireNonNull(player, "Player cannot be null");
         if (isCommitted()) throw new IllegalStateException("Sale is already committed");
         if (!player.getPortfolio().contains(getShare())) throw new IllegalStateException("Sale is not in portfolio");
 
         BigDecimal totalValue = getCalculator().calculateTotal();
-
         player.addMoney(totalValue);
-
         player.getPortfolio().removeShare(getShare());
-
         player.getTransactionArchive().add(this);
-
         setCommitted(true);
     }
 }

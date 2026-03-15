@@ -1,23 +1,25 @@
 package edu.ntnu.idatt2003.millions.model;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 /**
  * Unit tests for the {@link Stock} class.
  * <p>
- *   This test class verifies that a stock is correctly constructed
- *   and that its methods return the expected values.
+ * This test class verifies that a stock is correctly constructed
+ * and that its methods return the expected values.
  * </p>
  * <p>
- *   All tests follow the AAA pattern.
+ * All tests follow the AAA pattern.
  * </p>
  */
 class StockTest {
@@ -40,7 +42,7 @@ class StockTest {
         @DisplayName("Should throw exception when symbol is null")
         void throwsExceptionWhenSymbolIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Stock(null, "Nike, Inc", prices));
         }
 
@@ -56,7 +58,7 @@ class StockTest {
         @DisplayName("Should throw exception when company is null")
         void throwsExceptionWhenCompanyIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Stock("NKE", null, prices));
         }
 
@@ -82,7 +84,7 @@ class StockTest {
         @DisplayName("Should throw exception when price list is null")
         void throwsExceptionWhenPriceListIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Stock("NKE", "Nike, Inc", null));
         }
     }
@@ -149,7 +151,7 @@ class StockTest {
         @DisplayName("Should throw exception when price is null")
         void throwsExceptionWhenPriceIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     stock.addNewSalesPrice(null));
         }
 

@@ -1,22 +1,22 @@
 package edu.ntnu.idatt2003.millions.model;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.math.BigDecimal;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * Unit tests for the {@link Player} class.
  * <p>
- *   This test class verifies the behaviour of the Player model, including
- *   construction, money management, and associated portfolio and archive.
+ * This test class verifies the behaviour of the Player model, including
+ * construction, money management, and associated portfolio and archive.
  * </p>
  * <p>
- *   All tests follow the AAA pattern.
+ * All tests follow the AAA pattern.
  * </p>
  */
 class PlayerTest {
@@ -65,7 +65,7 @@ class PlayerTest {
             // Arrange
             BigDecimal startingMoney = new BigDecimal("1000.00");
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Player(null, startingMoney));
         }
 
@@ -83,7 +83,7 @@ class PlayerTest {
         @DisplayName("Should throw exception when starting money is null")
         void throwsExceptionWhenStartingMoneyIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Player("Alva", null));
         }
 

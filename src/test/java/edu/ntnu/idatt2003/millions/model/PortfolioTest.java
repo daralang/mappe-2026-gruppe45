@@ -1,24 +1,24 @@
 package edu.ntnu.idatt2003.millions.model;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * Unit tests for the {@link Portfolio} class.
  * <p>
- *   This test class verifies the behaviour of the Portfolio model, including adding, removing,
- *   retrieving and filtering shares.
+ * This test class verifies the behaviour of the Portfolio model, including adding, removing,
+ * retrieving and filtering shares.
  * </p>
  * <p>
- *   All tests follow the AAA pattern.
+ * All tests follow the AAA pattern.
  * </p>
  */
 class PortfolioTest {
@@ -63,7 +63,7 @@ class PortfolioTest {
         @DisplayName("Should throw exception when share is null")
         void throwsExceptionWhenShareIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     portfolio.addShare(null));
         }
     }
@@ -97,7 +97,7 @@ class PortfolioTest {
         @DisplayName("Should throw exception when share is null")
         void throwsExceptionWhenShareIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     portfolio.removeShare(null));
         }
     }
@@ -157,7 +157,7 @@ class PortfolioTest {
         @DisplayName("Should throw exception when null is passed as symbol")
         void throwsExceptionWhenSymbolIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     portfolio.getShares(null));
         }
     }
@@ -186,7 +186,7 @@ class PortfolioTest {
         @DisplayName("Should throw exception when share is null")
         void throwsExceptionWhenShareIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     portfolio.contains(null));
         }
     }

@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * Represents a player in the game.
@@ -18,18 +19,16 @@ public class Player {
     /**
      * Constructs a new Player with the specified name and starting balance.
      *
-     * @param name the player's name
+     * @param name          the player's name
      * @param startingMoney the amount of money the player starts with
-     * @throws IllegalArgumentException if the name is null or blank
-     * @throws IllegalArgumentException if the starting balance is null or negative
+     * @throws NullPointerException     if the name or starting balance is null
+     * @throws IllegalArgumentException if the name is blank or the starting balance is negative
      */
     public Player(String name, BigDecimal startingMoney) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Player name cannot be null or blank");
-        }
-        if (startingMoney == null || startingMoney.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Start money cannot be negative");
-        }
+        Objects.requireNonNull(name, "Player name cannot be null");
+        Objects.requireNonNull(startingMoney, "Starting money cannot be null");
+        if (name.isBlank()) throw new IllegalArgumentException("Player name cannot be blank");
+        if (startingMoney.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Starting money cannot be negative");
 
         this.name = name;
         this.startingMoney = startingMoney;
@@ -99,8 +98,7 @@ public class Player {
      * Withdraws the specified amount from the player's balance.
      *
      * @param amount the amount to withdraw
-     * @throws IllegalArgumentException if the amount is negative
-     * @throws IllegalArgumentException if the player does not have sufficient funds
+     * @throws IllegalArgumentException if the amount is negative or the player does not have sufficient funds
      */
     public void withdrawMoney(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Amount cannot be negative");

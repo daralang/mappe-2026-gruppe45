@@ -1,23 +1,25 @@
 package edu.ntnu.idatt2003.millions.model;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 /**
  * Unit tests for the {@link Share} class.
  * <p>
- *   This test class verifies that a share is correctly constructed
- *   and that its methods return the expected values.
+ * This test class verifies that a share is correctly constructed
+ * and that its methods return the expected values.
  * </p>
  * <p>
- *   All tests follow the AAA pattern.
+ * All tests follow the AAA pattern.
  * </p>
  */
 class ShareTest {
@@ -43,7 +45,7 @@ class ShareTest {
             BigDecimal quantity = new BigDecimal("10");
             BigDecimal purchasePrice = new BigDecimal("90.00");
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Share(null, quantity, purchasePrice));
         }
 
@@ -53,7 +55,7 @@ class ShareTest {
             // Arrange
             BigDecimal purchasePrice = new BigDecimal("90.00");
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Share(stock, null, purchasePrice));
         }
 
@@ -74,7 +76,7 @@ class ShareTest {
             // Arrange
             BigDecimal quantity = new BigDecimal("10");
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Share(stock, quantity, null));
         }
 

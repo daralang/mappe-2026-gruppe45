@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents an archive of transactions.
@@ -22,11 +23,11 @@ public class TransactionArchive {
      * Adds a transaction to the archive if it is not already present.
      *
      * @param transaction the transaction to add
-     * @throws IllegalArgumentException if the transaction is null
      * @return {@code true} if the transaction was added, {@code false} if it already existed
+     * @throws NullPointerException if the transaction is null
      */
     public boolean add(Transaction transaction) {
-        if (transaction == null) throw new IllegalArgumentException("Transaction cannot be null");
+        Objects.requireNonNull(transaction, "Transaction cannot be null");
         if (!transactions.contains(transaction)) {
             transactions.add(transaction);
             return true;
@@ -47,8 +48,8 @@ public class TransactionArchive {
      * Returns all transactions that took place in the specified week.
      *
      * @param week the week number to filter by
-     * @throws IllegalArgumentException if the week is not between 1 and 52
      * @return a list of transactions from the given week
+     * @throws IllegalArgumentException if the week is not between 1 and 52
      */
     public List<Transaction> getTransactions(int week) {
         if (week < 1 || week > 52) throw new IllegalArgumentException("Week must be between 1 and 52");
@@ -61,8 +62,8 @@ public class TransactionArchive {
      * Returns all purchase transactions that took place in the specified week.
      *
      * @param week the week number to filter by
-     * @throws IllegalArgumentException if the week is not between 1 and 52
      * @return a list of purchases from the given week
+     * @throws IllegalArgumentException if the week is not between 1 and 52
      */
     public List<Purchase> getPurchases(int week) {
         if (week < 1 || week > 52) throw new IllegalArgumentException("Week must be between 1 and 52");
@@ -76,8 +77,8 @@ public class TransactionArchive {
      * Returns all sale transactions that took place in the specified week.
      *
      * @param week the week number to filter by
-     * @throws IllegalArgumentException if the week is not between 1 and 52
      * @return a list of sales from the given week
+     * @throws IllegalArgumentException if the week is not between 1 and 52
      */
     public List<Sale> getSales(int week) {
         if (week < 1 || week > 52) throw new IllegalArgumentException("Week must be between 1 and 52");
