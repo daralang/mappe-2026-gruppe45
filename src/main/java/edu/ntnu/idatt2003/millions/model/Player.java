@@ -28,8 +28,7 @@ public class Player {
         Objects.requireNonNull(name, "Player name cannot be null");
         Objects.requireNonNull(startingMoney, "Starting money cannot be null");
         if (name.isBlank()) throw new IllegalArgumentException("Player name cannot be blank");
-        if (startingMoney.compareTo(BigDecimal.ZERO) < 0)
-            throw new IllegalArgumentException("Starting money cannot be negative");
+        if (startingMoney.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Starting money cannot be negative");
 
         this.name = name;
         this.startingMoney = startingMoney;

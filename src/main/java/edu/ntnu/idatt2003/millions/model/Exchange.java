@@ -2,7 +2,11 @@ package edu.ntnu.idatt2003.millions.model;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
 
 /**
  * Represents a stock exchange where players can buy and sell shares.
@@ -15,14 +19,10 @@ public class Exchange {
     private final Map<String, Stock> stockMap;
     private final Random random;
 
-    /**
-     * The lowest price a stock can have after a weekly update.
-     */
+    /** The lowest price a stock can have after a weekly update. */
     private static final BigDecimal MIN_PRICE = new BigDecimal("0.01");
 
-    /**
-     * The maximum amount a stock price can change per week (10%).
-     */
+    /** The maximum amount a stock price can change per week (10%). */
     private static final BigDecimal MAX_WEEKLY_CHANGE = new BigDecimal("0.10");
 
     /**
@@ -30,9 +30,9 @@ public class Exchange {
      * The stocks are stored in a map using their symbol as the key.
      * Week starts at 1.
      *
-     * @param name   the name of the exchange
+     * @param name the name of the exchange
      * @param stocks the stocks that can be traded on this exchange
-     * @throws NullPointerException     if name or stocks is null
+     * @throws NullPointerException if name, stocks, or any stock in the list is null
      * @throws IllegalArgumentException if name is blank, stocks is empty,
      *                                  contains null, or contains duplicate symbols
      */
@@ -51,7 +51,7 @@ public class Exchange {
         for (Stock stock : stocks) {
             Objects.requireNonNull(stock, "Stock list cannot contain null");
             if (stockMap.containsKey(stock.getSymbol())) {
-                throw new IllegalArgumentException("Stock already exists: " + stock.getSymbol());
+                throw new IllegalArgumentException("Stock already exists in exchange: " + stock.getSymbol());
             }
             stockMap.put(stock.getSymbol(), stock);
         }
@@ -80,15 +80,13 @@ public class Exchange {
      *
      * @param symbol the stock symbol to look up
      * @return the stock matching the symbol
-     * @throws NullPointerException     if the symbol is null
+     * @throws NullPointerException if the symbol is null
      * @throws IllegalArgumentException if the symbol is blank or not found
      */
     public Stock getStock(String symbol) {
         validateSymbol(symbol);
         Stock stock = stockMap.get(symbol);
-        if (stock == null) {
-            throw new IllegalArgumentException("Exchange does not contain stock: " + symbol);
-        }
+        if (stock == null) throw new IllegalArgumentException("Exchange does not contain stock: " + symbol);
         return stock;
     }
 
@@ -101,9 +99,8 @@ public class Exchange {
      * @return true if the stock is listed, false otherwise
      */
     public boolean hasStock(String symbol) {
-        if (symbol == null || symbol.isBlank()) {
-            return false;
-        }
+        if (symbol == null || symbol.isBlank()) return false;
+
         return stockMap.containsKey(symbol);
     }
 
@@ -113,14 +110,13 @@ public class Exchange {
      *
      * @param searchTerm the word or phrase to search for
      * @return a list of stocks that match the search term
-     * @throws NullPointerException     if the search term is null
+     * @throws NullPointerException if the search term is null
      * @throws IllegalArgumentException if the search term is blank
      */
     public List<Stock> findStocks(String searchTerm) {
         Objects.requireNonNull(searchTerm, "Search term cannot be null");
-        if (searchTerm.isBlank()) {
-            throw new IllegalArgumentException("Search term cannot be blank");
-        }
+        if (searchTerm.isBlank()) throw new IllegalArgumentException("Search term cannot be blank");
+
         String normalized = searchTerm.toLowerCase();
         return stockMap.values().stream()
                 .filter(stock ->
@@ -134,19 +130,22 @@ public class Exchange {
      * A new share is created at the current sales price, and the transaction
      * is committed right away. The transaction is then returned.
      *
-     * @param symbol   the symbol of the stock to buy
+     * @param symbol the symbol of the stock to buy
      * @param quantity how many shares to buy
-     * @param player   the player making the purchase
+     * @param player the player making the purchase
      * @return the completed purchase transaction
-     * @throws NullPointerException     if symbol, quantity, or player is null
+     * @throws NullPointerException if symbol, quantity, or player is null
      * @throws IllegalArgumentException if the symbol is blank, not found,
      *                                  or quantity is not greater than zero
-     * @throws IllegalStateException    if the player does not have enough money
+     * @throws IllegalStateException if the player does not have enough money
      */
     public Transaction buy(String symbol, BigDecimal quantity, Player player) {
         validateSymbol(symbol);
-        validateQuantity(quantity);
         validatePlayer(player);
+        Objects.requireNonNull(quantity, "Quantity cannot be null");
+        if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than zero");
+        }
 
         Stock stock = getStock(symbol);
         Share share = new Share(stock, quantity, stock.getSalesPrice());
@@ -159,10 +158,10 @@ public class Exchange {
      * Sells a share for a player.
      * A sale transaction is created and committed, then returned.
      *
-     * @param share  the share to sell
+     * @param share the share to sell
      * @param player the player selling the share
      * @return the completed sale transaction
-     * @throws NullPointerException  if share or player is null
+     * @throws NullPointerException if share or player is null
      * @throws IllegalStateException if the share is not in the player's portfolio
      */
     public Transaction sell(Share share, Player player) {
@@ -205,27 +204,13 @@ public class Exchange {
      * Checks that the given symbol is not null or blank.
      *
      * @param symbol the symbol to validate
-     * @throws NullPointerException     if the symbol is null
+     * @throws NullPointerException if the symbol is null
      * @throws IllegalArgumentException if the symbol is blank
      */
     private void validateSymbol(String symbol) {
         Objects.requireNonNull(symbol, "Symbol cannot be null");
         if (symbol.isBlank()) {
             throw new IllegalArgumentException("Symbol cannot be blank");
-        }
-    }
-
-    /**
-     * Checks that the given quantity is not null and is greater than zero.
-     *
-     * @param quantity the quantity to validate
-     * @throws NullPointerException     if quantity is null
-     * @throws IllegalArgumentException if quantity is not greater than zero
-     */
-    private void validateQuantity(BigDecimal quantity) {
-        Objects.requireNonNull(quantity, "Quantity cannot be null");
-        if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Quantity must be greater than zero");
         }
     }
 
