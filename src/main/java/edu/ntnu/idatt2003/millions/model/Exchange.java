@@ -32,7 +32,7 @@ public class Exchange {
    *
    * @param name the name of the exchange
    * @param stocks the stocks that can be traded on this exchange
-   * @throws NullPointerException if name or stocks is null
+   * @throws NullPointerException if name, stocks, or any stock in the list is null
    * @throws IllegalArgumentException if name is blank, stocks is empty,
    *                                  contains null, or contains duplicate symbols
    */
@@ -40,12 +40,8 @@ public class Exchange {
     Objects.requireNonNull(name, "Exchange name cannot be null");
     Objects.requireNonNull(stocks, "Exchange stocks cannot be null");
 
-    if (name.isBlank()) {
-      throw new IllegalArgumentException("Exchange name cannot be blank");
-    }
-    if (stocks.isEmpty()) {
-      throw new IllegalArgumentException("Exchange stocks cannot be empty");
-    }
+    if (name.isBlank()) throw new IllegalArgumentException("Exchange name cannot be blank");
+    if (stocks.isEmpty()) throw new IllegalArgumentException("Exchange stocks cannot be empty");
 
     this.name = name;
     this.week = 1;
@@ -55,7 +51,7 @@ public class Exchange {
     for (Stock stock : stocks) {
       Objects.requireNonNull(stock, "Stock list cannot contain null");
       if (stockMap.containsKey(stock.getSymbol())) {
-        throw new IllegalArgumentException("Stock already exists: " + stock.getSymbol());
+        throw new IllegalArgumentException("Stock already exists in exchange: " + stock.getSymbol());
       }
       stockMap.put(stock.getSymbol(), stock);
     }
@@ -90,9 +86,7 @@ public class Exchange {
   public Stock getStock(String symbol) {
     validateSymbol(symbol);
     Stock stock = stockMap.get(symbol);
-    if (stock == null) {
-      throw new IllegalArgumentException("Exchange does not contain stock: " + symbol);
-    }
+    if (stock == null) throw new IllegalArgumentException("Exchange does not contain stock: " + symbol);
     return stock;
   }
 
@@ -105,9 +99,8 @@ public class Exchange {
    * @return true if the stock is listed, false otherwise
    */
   public boolean hasStock(String symbol) {
-    if (symbol == null || symbol.isBlank()) {
-      return false;
-    }
+    if (symbol == null || symbol.isBlank()) return false;
+
     return stockMap.containsKey(symbol);
   }
 
@@ -122,9 +115,8 @@ public class Exchange {
    */
   public List<Stock> findStocks(String searchTerm) {
     Objects.requireNonNull(searchTerm, "Search term cannot be null");
-    if (searchTerm.isBlank()) {
-      throw new IllegalArgumentException("Search term cannot be blank");
-    }
+    if (searchTerm.isBlank()) throw new IllegalArgumentException("Search term cannot be blank");
+
     String normalized = searchTerm.toLowerCase();
     return stockMap.values().stream()
         .filter(stock ->
@@ -149,8 +141,11 @@ public class Exchange {
    */
   public Transaction buy(String symbol, BigDecimal quantity, Player player) {
     validateSymbol(symbol);
-    validateQuantity(quantity);
     validatePlayer(player);
+    Objects.requireNonNull(quantity, "Quantity cannot be null");
+    if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
+        throw new IllegalArgumentException("Quantity must be greater than zero");
+    }
 
     Stock stock = getStock(symbol);
     Share share = new Share(stock, quantity, stock.getSalesPrice());
@@ -216,20 +211,6 @@ public class Exchange {
     Objects.requireNonNull(symbol, "Symbol cannot be null");
     if (symbol.isBlank()) {
       throw new IllegalArgumentException("Symbol cannot be blank");
-    }
-  }
-
-  /**
-   * Checks that the given quantity is not null and is greater than zero.
-   *
-   * @param quantity the quantity to validate
-   * @throws NullPointerException if quantity is null
-   * @throws IllegalArgumentException if quantity is not greater than zero
-   */
-  private void validateQuantity(BigDecimal quantity) {
-    Objects.requireNonNull(quantity, "Quantity cannot be null");
-    if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("Quantity must be greater than zero");
     }
   }
 
