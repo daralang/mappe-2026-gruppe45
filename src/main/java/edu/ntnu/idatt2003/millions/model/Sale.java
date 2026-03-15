@@ -26,8 +26,8 @@ public class Sale extends Transaction {
      *
      * @param player the player executing the sale
      * @throws IllegalArgumentException if the player is null
-     * @throws IllegalStateException if the transaction has already been committed
-     * @throws IllegalStateException if the share is not in the player's portfolio
+     * @throws IllegalStateException    if the transaction has already been committed
+     * @throws IllegalStateException    if the share is not in the player's portfolio
      */
     @Override
     public void commit(Player player) {

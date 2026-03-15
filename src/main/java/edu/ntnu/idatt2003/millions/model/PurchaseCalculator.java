@@ -12,7 +12,9 @@ public class PurchaseCalculator implements TransactionCalculator {
     private final BigDecimal purchasePrice;
     private final BigDecimal quantity;
 
-    /** Commission rate applied to the gross value of the purchase (0.5%). */
+    /**
+     * Commission rate applied to the gross value of the purchase (0.5%).
+     */
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.005");
 
     /**

@@ -13,10 +13,14 @@ public class SalesCalculator implements TransactionCalculator {
     private final BigDecimal quantity;
     private final BigDecimal purchaseCosts;
 
-    /** Commission rate applied to the gross value of the sale (1%). */
+    /**
+     * Commission rate applied to the gross value of the sale (1%).
+     */
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.01");
 
-    /** Tax rate applied to the profit of the sale (30%). */
+    /**
+     * Tax rate applied to the profit of the sale (30%).
+     */
     private static final BigDecimal TAX_RATE = new BigDecimal("0.3");
 
     /**
@@ -26,7 +30,7 @@ public class SalesCalculator implements TransactionCalculator {
      * @throws IllegalArgumentException if the share is null
      */
     public SalesCalculator(Share share) {
-        if  (share == null) throw new IllegalArgumentException("Share cannot be null");
+        if (share == null) throw new IllegalArgumentException("Share cannot be null");
 
         this.salesPrice = share.getStock().getSalesPrice();
         this.quantity = share.getQuantity();

@@ -16,9 +16,9 @@ public class Stock {
     /**
      * Constructs a new Stock with the specified symbol, company name, and price history.
      *
-     * @param symbol the stock's trading symbol (e.g., "AAPL")
+     * @param symbol  the stock's trading symbol (e.g., "AAPL")
      * @param company the company name (e.g., "Apple Inc.")
-     * @param prices the list of historical prices
+     * @param prices  the list of historical prices
      * @throws IllegalArgumentException if the symbol is null or blank
      * @throws IllegalArgumentException if the company is null or blank
      * @throws IllegalArgumentException if the list of prices is null

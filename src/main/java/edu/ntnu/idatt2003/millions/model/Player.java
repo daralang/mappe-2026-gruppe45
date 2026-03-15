@@ -18,7 +18,7 @@ public class Player {
     /**
      * Constructs a new Player with the specified name and starting balance.
      *
-     * @param name the player's name
+     * @param name          the player's name
      * @param startingMoney the amount of money the player starts with
      * @throws IllegalArgumentException if the name is null or blank
      * @throws IllegalArgumentException if the starting balance is null or negative

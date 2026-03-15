@@ -1,9 +1,9 @@
 package edu.ntnu.idatt2003.millions.model;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -15,11 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * Unit tests for the {@link SalesCalculator} class.
  * <p>
- *   This test class verifies the financial calculations performed during a sale transaction,
- *   including gross value, commission, tax, and total payout.
+ * This test class verifies the financial calculations performed during a sale transaction,
+ * including gross value, commission, tax, and total payout.
  * </p>
  * <p>
- *   All tests follow the AAA pattern.
+ * All tests follow the AAA pattern.
  * </p>
  */
 class SalesCalculatorTest {
