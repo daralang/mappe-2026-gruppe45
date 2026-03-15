@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * Calculator for the financial components of a stock sale transaction.
@@ -13,24 +14,26 @@ public class SalesCalculator implements TransactionCalculator {
     private final BigDecimal quantity;
     private final BigDecimal purchaseCosts;
 
-    /** Commission rate applied to the gross value of the sale (1%). */
+    /**
+     * Commission rate applied to the gross value of the sale (1%).
+     */
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.01");
 
-    /** Tax rate applied to the profit of the sale (30%). */
+    /**
+     * Tax rate applied to the profit of the sale (30%).
+     */
     private static final BigDecimal TAX_RATE = new BigDecimal("0.3");
 
     /**
      * Constructs a SalesCalculator for the given share.
      *
      * @param share the share being sold, used to retrieve sales price, quantity, and purchase costs
-     * @throws IllegalArgumentException if the share is null
+     * @throws NullPointerException if the share is null
      */
     public SalesCalculator(Share share) {
-        if  (share == null) throw new IllegalArgumentException("Share cannot be null");
-
+        Objects.requireNonNull(share, "Share cannot be null");
         this.salesPrice = share.getStock().getSalesPrice();
         this.quantity = share.getQuantity();
-
         PurchaseCalculator purchaseCalculator = new PurchaseCalculator(share);
         this.purchaseCosts = purchaseCalculator.calculateTotal();
     }
