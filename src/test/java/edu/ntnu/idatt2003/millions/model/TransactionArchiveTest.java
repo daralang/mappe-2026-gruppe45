@@ -66,7 +66,7 @@ class TransactionArchiveTest {
         @DisplayName("Should throw exception when transaction is null")
         void throwsExceptionWhenTransactionIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     archive.add(null));
         }
     }

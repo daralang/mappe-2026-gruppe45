@@ -63,7 +63,7 @@ class PortfolioTest {
         @DisplayName("Should throw exception when share is null")
         void throwsExceptionWhenShareIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     portfolio.addShare(null));
         }
     }
@@ -97,7 +97,7 @@ class PortfolioTest {
         @DisplayName("Should throw exception when share is null")
         void throwsExceptionWhenShareIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     portfolio.removeShare(null));
         }
     }
@@ -157,7 +157,7 @@ class PortfolioTest {
         @DisplayName("Should throw exception when null is passed as symbol")
         void throwsExceptionWhenSymbolIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     portfolio.getShares(null));
         }
     }
@@ -186,7 +186,7 @@ class PortfolioTest {
         @DisplayName("Should throw exception when share is null")
         void throwsExceptionWhenShareIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     portfolio.contains(null));
         }
     }

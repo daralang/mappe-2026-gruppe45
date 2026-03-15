@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents an archive of transactions.
@@ -23,10 +24,10 @@ public class TransactionArchive {
      *
      * @param transaction the transaction to add
      * @return {@code true} if the transaction was added, {@code false} if it already existed
-     * @throws IllegalArgumentException if the transaction is null
+     * @throws NullPointerException if the transaction is null
      */
     public boolean add(Transaction transaction) {
-        if (transaction == null) throw new IllegalArgumentException("Transaction cannot be null");
+        Objects.requireNonNull(transaction, "Transaction cannot be null");
         if (!transactions.contains(transaction)) {
             transactions.add(transaction);
             return true;

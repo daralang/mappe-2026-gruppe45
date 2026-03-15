@@ -40,12 +40,8 @@ public class Exchange {
         Objects.requireNonNull(name, "Exchange name cannot be null");
         Objects.requireNonNull(stocks, "Exchange stocks cannot be null");
 
-        if (name.isBlank()) {
-            throw new IllegalArgumentException("Exchange name cannot be blank");
-        }
-        if (stocks.isEmpty()) {
-            throw new IllegalArgumentException("Exchange stocks cannot be empty");
-        }
+        if (name.isBlank()) throw new IllegalArgumentException("Exchange name cannot be blank");
+        if (stocks.isEmpty()) throw new IllegalArgumentException("Exchange stocks cannot be empty");
 
         this.name = name;
         this.week = 1;

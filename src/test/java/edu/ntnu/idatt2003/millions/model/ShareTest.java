@@ -45,7 +45,7 @@ class ShareTest {
             BigDecimal quantity = new BigDecimal("10");
             BigDecimal purchasePrice = new BigDecimal("90.00");
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Share(null, quantity, purchasePrice));
         }
 
@@ -55,7 +55,7 @@ class ShareTest {
             // Arrange
             BigDecimal purchasePrice = new BigDecimal("90.00");
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Share(stock, null, purchasePrice));
         }
 
@@ -76,7 +76,7 @@ class ShareTest {
             // Arrange
             BigDecimal quantity = new BigDecimal("10");
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Share(stock, quantity, null));
         }
 

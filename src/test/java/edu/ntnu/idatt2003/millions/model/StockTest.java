@@ -42,7 +42,7 @@ class StockTest {
         @DisplayName("Should throw exception when symbol is null")
         void throwsExceptionWhenSymbolIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Stock(null, "Nike, Inc", prices));
         }
 
@@ -58,7 +58,7 @@ class StockTest {
         @DisplayName("Should throw exception when company is null")
         void throwsExceptionWhenCompanyIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Stock("NKE", null, prices));
         }
 
@@ -84,7 +84,7 @@ class StockTest {
         @DisplayName("Should throw exception when price list is null")
         void throwsExceptionWhenPriceListIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new Stock("NKE", "Nike, Inc", null));
         }
     }
@@ -151,7 +151,7 @@ class StockTest {
         @DisplayName("Should throw exception when price is null")
         void throwsExceptionWhenPriceIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     stock.addNewSalesPrice(null));
         }
 

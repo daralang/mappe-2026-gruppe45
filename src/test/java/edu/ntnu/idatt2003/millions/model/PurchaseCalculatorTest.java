@@ -47,7 +47,7 @@ class PurchaseCalculatorTest {
         @DisplayName("Should throw exception when share is null")
         void throwsExceptionWhenShareIsNull() {
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(NullPointerException.class, () ->
                     new PurchaseCalculator(null));
         }
     }

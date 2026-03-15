@@ -23,10 +23,10 @@ public class Portfolio {
      *
      * @param share the share to add
      * @return true if the share was added, false if it already exists
-     * @throws IllegalArgumentException if the share is null
+     * @throws NullPointerException if the share is null
      */
     public boolean addShare(Share share) {
-        if (share == null) throw new IllegalArgumentException("Share cannot be null");
+        Objects.requireNonNull(share, "Share cannot be null");
         if (!shares.contains(share)) {
             shares.add(share);
             return true;
@@ -39,10 +39,10 @@ public class Portfolio {
      *
      * @param share the share to remove
      * @return true if the share was removed, false if it wasn't found
-     * @throws IllegalArgumentException if the share is null
+     * @throws NullPointerException if the share is null
      */
     public boolean removeShare(Share share) {
-        if (share == null) throw new IllegalArgumentException("Share cannot be null");
+        Objects.requireNonNull(share, "Share cannot be null");
         return shares.remove(share);
     }
 
@@ -60,10 +60,10 @@ public class Portfolio {
      *
      * @param symbol the stock symbol to filter by
      * @return a list of shares matching the symbol
-     * @throws IllegalArgumentException if the symbol is null
+     * @throws NullPointerException if the symbol is null
      */
     public List<Share> getShares(String symbol) {
-        if (symbol == null) throw new IllegalArgumentException("Share cannot be null");
+        Objects.requireNonNull(symbol, "Symbol cannot be null");
         return shares.stream()
                 .filter(share -> Objects.equals(share.getStock().getSymbol(), symbol))
                 .toList();
@@ -74,10 +74,10 @@ public class Portfolio {
      *
      * @param share the share to check for
      * @return true if the share exists in the portfolio
-     * @throws IllegalArgumentException if the share is null
+     * @throws NullPointerException if the share is null
      */
     public boolean contains(Share share) {
-        if (share == null) throw new IllegalArgumentException("Share cannot be null");
+        Objects.requireNonNull(share, "Share cannot be null");
         return shares.contains(share);
     }
 }
