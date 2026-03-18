@@ -196,4 +196,34 @@ class StockTest {
             assertEquals(1, stock.getHistoricalPrices().size());
         }
     }
+
+    @Nested
+    @DisplayName("getHighestPrice()")
+    class GetHighestPrice {
+
+        @Test
+        @DisplayName("Should return the highest price when multiple prices exist")
+        void returnsHighestPrice() {
+            //Arrange
+            Stock multiPriceStock = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("100.00"),
+                            new BigDecimal("140.00"),
+                            new BigDecimal("120.00"))));
+            //Act
+            BigDecimal result = multiPriceStock.getHighestPrice();
+            //Assert
+            assertEquals(0, new BigDecimal("140.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should return the only price when one price exists")
+        void returnsOnlyPrice() {
+            //Act
+            BigDecimal result = stock.getHighestPrice();
+            //Assert
+            assertEquals(0, new BigDecimal("100.00").compareTo(result));
+        }
+    }
+
 }
