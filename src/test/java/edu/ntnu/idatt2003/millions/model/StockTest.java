@@ -218,12 +218,40 @@ class StockTest {
 
         @Test
         @DisplayName("Should return the only price when one price exists")
-        void returnsOnlyPrice() {
+        void returnsOnlyPriceInHighest() {
             //Act
             BigDecimal result = stock.getHighestPrice();
             //Assert
             assertEquals(0, new BigDecimal("100.00").compareTo(result));
         }
     }
+    @Nested
+    @DisplayName("getLowestPrice()")
+    class GetLowestPrice {
 
+        @Test
+        @DisplayName("Should return the lowest price when multiple prices exists")
+        void returnsLowestPrice() {
+            //Arrange
+            Stock multiPriceStock = new Stock("AKL", "Alva Company",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("120.00"),
+                            new BigDecimal("150.00"),
+                            new BigDecimal("160.00"))));
+            //Act
+            BigDecimal result = multiPriceStock.getLowestPrice();
+            //Assert
+            assertEquals(0, new BigDecimal("120.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should return the only price when one price exists")
+        void returnsOnlyPriceInLowest() {
+            //Act
+            BigDecimal result = stock.getLowestPrice();
+            // Assert
+            assertEquals(0, new BigDecimal("100.00").compareTo(result));
+        }
+
+    }
 }
