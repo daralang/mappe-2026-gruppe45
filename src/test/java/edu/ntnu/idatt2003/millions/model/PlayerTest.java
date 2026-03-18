@@ -210,4 +210,49 @@ class PlayerTest {
             assertEquals(0, expected.compareTo(player.getNetWorth()));
         }
     }
+
+    @Nested
+    @DisplayName("getStatus()")
+    class GetStatus {
+
+        @Test
+        @DisplayName("Should return NOVICE when player has just started")
+        void returnsNoviceStatusWhenPlayerHasJustStarted() {
+            //Act & Assert
+            assertEquals(PlayerStatusLevel.NOVICE, player.getStatus());
+        }
+
+        @Test
+        @DisplayName("Should return NOVICE when player has traded less than 10 weeks")
+        void returnsNoviceStatusWhenLessThan10Weeks() {
+            //Arrange
+            Stock stock = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(new BigDecimal("1000.00"))));
+            Share share = new Share(stock, new BigDecimal("8"), new BigDecimal("100.00"));
+            Purchase purchase = new Purchase(share, 1);
+            purchase.commit(player);
+            assertEquals(PlayerStatusLevel.NOVICE, player.getStatus());
+            // Act & Assert
+            assertEquals(PlayerStatusLevel.NOVICE, player.getStatus());
+        }
+
+        @Test
+        @DisplayName("Should return Novice when player has traded 10 weeks but not increased net worth by 20%")
+        void returnNoviceStatusWhenEnoughWeeksNotEnoughGrowth() {
+            // Arrange
+            player = new Player("AKL", new BigDecimal("800.00"));
+            for (int week = 1; week <= 10; week++) {
+                Stock stock = new Stock ("MR" + week, "Majid Company" + week,
+                        new ArrayList<>(List.of((new BigDecimal("10.00")))));
+                Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
+                Purchase purchase = new Purchase(share, week);
+                purchase.commit(player);
+            }
+            //Not enough net worth growth
+            player.addMoney(new BigDecimal("50.00"));
+            //Act & Assert
+            assertEquals(PlayerStatusLevel.NOVICE, player.getStatus());
+        }
+    }
+
 }
