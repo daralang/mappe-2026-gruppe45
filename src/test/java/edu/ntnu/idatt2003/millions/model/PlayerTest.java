@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -180,6 +182,32 @@ class PlayerTest {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     player.withdrawMoney(negativeAmount));
+        }
+    }
+
+    @Nested
+    @DisplayName("getMoney()")
+    class GetNetWorth {
+
+        @Test
+        @DisplayName("Should return balance only when portfolio is empty")
+        void returnsMoneyWhenPortfolioIsEmpty() {
+            // Act & Assert
+            assertEquals(0, player.getMoney().compareTo(player.getNetWorth()));
+        }
+
+        @Test
+        @DisplayName("Should return balance plus portfolio value when portfolio has shares")
+        void returnsMoneyAndPortfolioValue() {
+            //Arrange
+            Stock stock = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(new BigDecimal("1000.00"))));
+            Share share = new Share(stock, new BigDecimal("10"), new BigDecimal("700.00"));
+            player.getPortfolio().addShare(share);
+            BigDecimal expected = player.getMoney()
+                    .add(player.getPortfolio().getNetWorth());
+            //Act & Assert
+            assertEquals(0, expected.compareTo(player.getNetWorth()));
         }
     }
 }
