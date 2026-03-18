@@ -107,4 +107,13 @@ public class Player {
         }
         this.money = this.money.subtract(amount);
     }
+
+    /**
+     * Returns the players total net worth calculated as the current balance plus the total value of the portfolio.
+     *
+     * @return the sum of the players money and portfolio net worth
+     */
+    public BigDecimal getNetWorth() {
+        return money.add(portfolio.getNetWorth());
+    }
 }
