@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -79,5 +80,17 @@ public class Portfolio {
     public boolean contains(Share share) {
         Objects.requireNonNull(share, "Share cannot be null");
         return shares.contains(share);
+    }
+
+    /**
+     * Returns the net worth total of the portfolio calculated as the sum of the sale value of all
+     * shares using {@link SalesCalculator}
+     *
+     * @return the total sale value of all shares in the portfolio
+     */
+    public BigDecimal getNetWorth() {
+        return shares.stream()
+                .map(share -> new SalesCalculator(share).calculateTotal())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
