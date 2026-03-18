@@ -224,6 +224,21 @@ class StockTest {
             //Assert
             assertEquals(0, new BigDecimal("100.00").compareTo(result));
         }
+
+        @Test
+        @DisplayName("Should not return the lowest price as highest")
+        void returnNotLowestPriceAsHighest() {
+            //Arrange
+            Stock multiPriceStock = new Stock("AKL", "Alva Company",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("100.00"),
+                            new BigDecimal("160.00"),
+                            new BigDecimal("130.00"))));
+            //Act
+            BigDecimal result = multiPriceStock.getHighestPrice();
+            //Assert
+            assertNotEquals(0,new BigDecimal("100.00").compareTo(result));
+        }
     }
     @Nested
     @DisplayName("getLowestPrice()")
