@@ -252,6 +252,51 @@ class StockTest {
             // Assert
             assertEquals(0, new BigDecimal("100.00").compareTo(result));
         }
+    }
+    @Nested
+    @DisplayName("getLatestPriceChange()")
+    class GetLatestPriceChange {
 
+        @Test
+        @DisplayName("Should return positive change when the latest price is higher")
+        void returnsPositiveChangeWhenPriceIsHigher() {
+            //Arrange
+            stock.addNewSalesPrice(new BigDecimal("130.00"));
+            // Act
+            BigDecimal result = stock.getLatestPriceChange();
+            //Assert
+            assertEquals(new BigDecimal("30.00"), result);
+        }
+
+        @Test
+        @DisplayName("Should return negative change when the latest price is lower")
+        void returnsNegativeChangeWhenPriceIsLower() {
+            //Arrange
+            stock.addNewSalesPrice(new BigDecimal("90.00"));
+            //Act
+            BigDecimal result = stock.getLatestPriceChange();
+            //Assert
+            assertEquals(0, new BigDecimal("-10.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should return zero when only one price exists")
+        void returnsZeroWhenOnlyOnePriceExists() {
+            // Act
+            BigDecimal result = stock.getLatestPriceChange();
+            //Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should return zero when latest and previous price are equal")
+        void returnsZeroWhenPriceAreEqual() {
+            // Arrange
+            stock.addNewSalesPrice(new BigDecimal("100.00"));
+            //Act
+            BigDecimal result = stock.getLatestPriceChange();
+            //Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(result));
+        }
     }
 }
