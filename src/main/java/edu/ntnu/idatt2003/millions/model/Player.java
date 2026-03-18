@@ -116,4 +116,32 @@ public class Player {
     public BigDecimal getNetWorth() {
         return money.add(portfolio.getNetWorth());
     }
+
+    /***
+     * Returns the players current status based on net worth growth and number of weeks with active
+     * trading.
+     * <ul>
+     *     <li>{@link PlayerStatusLevel#NOVICE}: basic start level, all other cases</li>
+     *     <li>{@link PlayerStatusLevel#INVESTOR}: players who have been trading for minimum 10 weeks and increased their
+     *          net worth with at least 20%.</li>
+     *     <li> {@link PlayerStatusLevel#SPECULATOR}: players who have been trading for minimum 20 weeks and have
+     *          minimum doubled their net worth.</li>
+     * </ul>
+     *
+     * @return the players status level {@link PlayerStatusLevel}
+     */
+    public PlayerStatusLevel getStatus() {
+        int weeksTraded = transactionArchive.countDistinctWeeks();
+        BigDecimal netWorth = getNetWorth();
+        BigDecimal twentyPercentGrowth = startingMoney.multiply(new BigDecimal("1.20"));
+        BigDecimal doubleGrowth = startingMoney.multiply(new BigDecimal("2.00"));
+
+        if (weeksTraded >= 20 && netWorth.compareTo(doubleGrowth) >= 0) {
+            return PlayerStatusLevel.SPECULATOR;
+        } else if (weeksTraded >= 10 && netWorth.compareTo(twentyPercentGrowth) >= 0) {
+            return PlayerStatusLevel.INVESTOR;
+        } else {
+            return PlayerStatusLevel.NOVICE;
+        }
+    }
 }
