@@ -9,8 +9,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for the {@link Stock} class.
@@ -163,6 +162,38 @@ class StockTest {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     stock.addNewSalesPrice(negativePrice));
+        }
+    }
+
+    @Nested
+    @DisplayName("getHistoricalPrices()")
+    class GetHistoricalPrices {
+
+        @Test
+        @DisplayName("Should return all registered prices")
+        void returnsAllRegisteredPrices() {
+            //Arrange
+            Stock multiPriceStock = new Stock("AKL", "Alva Company",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("100.00"),
+                            new BigDecimal("130.00"),
+                            new BigDecimal("160.00"))));
+            // Act
+            List<BigDecimal> result = multiPriceStock.getHistoricalPrices();
+            //Assert
+            assertEquals(3, result.size());
+            assertTrue(result.contains(new BigDecimal("100.00")));
+            assertTrue(result.contains(new BigDecimal("130.00")));
+        }
+
+        @Test
+        @DisplayName("Should return a copy and not the original list")
+        void returnsCopyOfOriginalList() {
+            //Act
+            List<BigDecimal> result = stock.getHistoricalPrices();
+            result.clear();
+            //Assert
+            assertEquals(1, stock.getHistoricalPrices().size());
         }
     }
 }
