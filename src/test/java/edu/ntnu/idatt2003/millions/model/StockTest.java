@@ -195,6 +195,15 @@ class StockTest {
             //Assert
             assertEquals(1, stock.getHistoricalPrices().size());
         }
+
+        @Test
+        @DisplayName("Should not return prices that were never recorded")
+        void returnsNotPricesThatWereNeverRecorded() {
+            //Act
+            List<BigDecimal> result = stock.getHistoricalPrices();
+            //Assert
+            assertFalse(result.contains(new BigDecimal("99.00")));
+        }
     }
 
     @Nested
