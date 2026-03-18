@@ -9,8 +9,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for the {@link Stock} class.
@@ -163,6 +162,141 @@ class StockTest {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     stock.addNewSalesPrice(negativePrice));
+        }
+    }
+
+    @Nested
+    @DisplayName("getHistoricalPrices()")
+    class GetHistoricalPrices {
+
+        @Test
+        @DisplayName("Should return all registered prices")
+        void returnsAllRegisteredPrices() {
+            //Arrange
+            Stock multiPriceStock = new Stock("AKL", "Alva Company",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("100.00"),
+                            new BigDecimal("130.00"),
+                            new BigDecimal("160.00"))));
+            // Act
+            List<BigDecimal> result = multiPriceStock.getHistoricalPrices();
+            //Assert
+            assertEquals(3, result.size());
+            assertTrue(result.contains(new BigDecimal("100.00")));
+            assertTrue(result.contains(new BigDecimal("130.00")));
+        }
+
+        @Test
+        @DisplayName("Should return a copy and not the original list")
+        void returnsCopyOfOriginalList() {
+            //Act
+            List<BigDecimal> result = stock.getHistoricalPrices();
+            result.clear();
+            //Assert
+            assertEquals(1, stock.getHistoricalPrices().size());
+        }
+    }
+
+    @Nested
+    @DisplayName("getHighestPrice()")
+    class GetHighestPrice {
+
+        @Test
+        @DisplayName("Should return the highest price when multiple prices exist")
+        void returnsHighestPrice() {
+            //Arrange
+            Stock multiPriceStock = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("100.00"),
+                            new BigDecimal("140.00"),
+                            new BigDecimal("120.00"))));
+            //Act
+            BigDecimal result = multiPriceStock.getHighestPrice();
+            //Assert
+            assertEquals(0, new BigDecimal("140.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should return the only price when one price exists")
+        void returnsOnlyPriceInHighest() {
+            //Act
+            BigDecimal result = stock.getHighestPrice();
+            //Assert
+            assertEquals(0, new BigDecimal("100.00").compareTo(result));
+        }
+    }
+    @Nested
+    @DisplayName("getLowestPrice()")
+    class GetLowestPrice {
+
+        @Test
+        @DisplayName("Should return the lowest price when multiple prices exists")
+        void returnsLowestPrice() {
+            //Arrange
+            Stock multiPriceStock = new Stock("AKL", "Alva Company",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("120.00"),
+                            new BigDecimal("150.00"),
+                            new BigDecimal("160.00"))));
+            //Act
+            BigDecimal result = multiPriceStock.getLowestPrice();
+            //Assert
+            assertEquals(0, new BigDecimal("120.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should return the only price when one price exists")
+        void returnsOnlyPriceInLowest() {
+            //Act
+            BigDecimal result = stock.getLowestPrice();
+            // Assert
+            assertEquals(0, new BigDecimal("100.00").compareTo(result));
+        }
+    }
+    @Nested
+    @DisplayName("getLatestPriceChange()")
+    class GetLatestPriceChange {
+
+        @Test
+        @DisplayName("Should return positive change when the latest price is higher")
+        void returnsPositiveChangeWhenPriceIsHigher() {
+            //Arrange
+            stock.addNewSalesPrice(new BigDecimal("130.00"));
+            // Act
+            BigDecimal result = stock.getLatestPriceChange();
+            //Assert
+            assertEquals(new BigDecimal("30.00"), result);
+        }
+
+        @Test
+        @DisplayName("Should return negative change when the latest price is lower")
+        void returnsNegativeChangeWhenPriceIsLower() {
+            //Arrange
+            stock.addNewSalesPrice(new BigDecimal("90.00"));
+            //Act
+            BigDecimal result = stock.getLatestPriceChange();
+            //Assert
+            assertEquals(0, new BigDecimal("-10.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should return zero when only one price exists")
+        void returnsZeroWhenOnlyOnePriceExists() {
+            // Act
+            BigDecimal result = stock.getLatestPriceChange();
+            //Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should return zero when latest and previous price are equal")
+        void returnsZeroWhenPriceAreEqual() {
+            // Arrange
+            stock.addNewSalesPrice(new BigDecimal("100.00"));
+            //Act
+            BigDecimal result = stock.getLatestPriceChange();
+            //Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(result));
         }
     }
 }
