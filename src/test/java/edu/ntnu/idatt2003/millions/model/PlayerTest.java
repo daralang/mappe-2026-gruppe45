@@ -237,7 +237,7 @@ class PlayerTest {
         }
 
         @Test
-        @DisplayName("Should return Novice when player has traded 10 weeks but not increased net worth by 20%")
+        @DisplayName("Should return NOVICE when player has traded 10 weeks but not increased net worth by 20%")
         void returnNoviceStatusWhenEnoughWeeksNotEnoughGrowth() {
             // Arrange
             player = new Player("AKL", new BigDecimal("800.00"));
@@ -252,6 +252,42 @@ class PlayerTest {
             player.addMoney(new BigDecimal("50.00"));
             //Act & Assert
             assertEquals(PlayerStatusLevel.NOVICE, player.getStatus());
+        }
+
+        @Test
+        @DisplayName("Should return INVESTOR when player has traded 10 weeks " +
+                "and increased their net worth by 20%")
+        void returnsInvestorWhenConditionsMet() {
+            //Arrange
+            player = new Player("AKL", new BigDecimal("1000.00"));
+            for (int week = 1; week <= 10; week++) {
+                Stock stock = new Stock("MR" + week, "Majid Company" + week,
+                        new ArrayList<>(List.of((new BigDecimal("10.00")))));
+                Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
+                Purchase purchase = new Purchase(share, week);
+                purchase.commit(player);
+            }
+            player.addMoney(new BigDecimal("500.00"));
+            // Act & Assert
+            assertEquals(PlayerStatusLevel.INVESTOR, player.getStatus());
+        }
+
+        @Test
+        @DisplayName("Should not return INVESTOR when player has traded 10 weeks but not " +
+                "increased their net worth by 20%")
+        void returnsNotInvestorWhenNotEnoughGrowth() {
+            //Arrange
+            player = new Player("AKL", new BigDecimal("1000.00"));
+            for (int week = 1; week <= 10; week++) {
+                Stock stock = new Stock ("DCL", "Dara, Inc",
+                        new ArrayList<>(List.of((new BigDecimal("10.00")))));
+                Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
+                Purchase purchase = new Purchase(share, week);
+                purchase.commit(player);
+            }
+            player.addMoney(new BigDecimal("50.00"));
+            //Act & Assert
+            assertNotEquals(PlayerStatusLevel.INVESTOR, player.getStatus());
         }
     }
 
