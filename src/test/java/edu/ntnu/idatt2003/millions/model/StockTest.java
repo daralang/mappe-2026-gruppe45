@@ -195,6 +195,15 @@ class StockTest {
             //Assert
             assertEquals(1, stock.getHistoricalPrices().size());
         }
+
+        @Test
+        @DisplayName("Should not return prices that were never recorded")
+        void returnsNotPricesThatWereNeverRecorded() {
+            //Act
+            List<BigDecimal> result = stock.getHistoricalPrices();
+            //Assert
+            assertFalse(result.contains(new BigDecimal("99.00")));
+        }
     }
 
     @Nested
@@ -224,7 +233,23 @@ class StockTest {
             //Assert
             assertEquals(0, new BigDecimal("100.00").compareTo(result));
         }
+
+        @Test
+        @DisplayName("Should not return the lowest price as highest")
+        void returnNotLowestPriceAsHighest() {
+            //Arrange
+            Stock multiPriceStock = new Stock("AKL", "Alva Company",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("100.00"),
+                            new BigDecimal("160.00"),
+                            new BigDecimal("130.00"))));
+            //Act
+            BigDecimal result = multiPriceStock.getHighestPrice();
+            //Assert
+            assertNotEquals(0,new BigDecimal("100.00").compareTo(result));
+        }
     }
+
     @Nested
     @DisplayName("getLowestPrice()")
     class GetLowestPrice {
@@ -252,7 +277,23 @@ class StockTest {
             // Assert
             assertEquals(0, new BigDecimal("100.00").compareTo(result));
         }
+
+        @Test
+        @DisplayName("Should not return the highest price as the lowest")
+        void returnNotHighestPriceAsLowest() {
+            //Arrange
+            Stock multiPriceStock = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("120"),
+                            new BigDecimal("150.00"),
+                            new BigDecimal("160.00"))));
+            //Act
+            BigDecimal result = multiPriceStock.getLowestPrice();
+            //Assert
+            assertNotEquals(0,new BigDecimal("160.00").compareTo(result));
+        }
     }
+
     @Nested
     @DisplayName("getLatestPriceChange()")
     class GetLatestPriceChange {
