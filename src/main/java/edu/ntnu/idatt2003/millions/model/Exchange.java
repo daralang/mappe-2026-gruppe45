@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.model;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Comparator;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
@@ -223,4 +224,43 @@ public class Exchange {
     private void validatePlayer(Player player) {
         Objects.requireNonNull(player, "Player cannot be null");
     }
+
+    /**
+     * Returns the top ranking stocks since last week, sorted by the highest positive
+     * price change first.
+     *
+     * @param limit the maximum number of stocks to return
+     * @return a list of top ranked stocks
+     * @throws IllegalArgumentException if limit is not greater than zero.
+     */
+    public List<Stock> getGainers(int limit) {
+        if (limit <= 0) {
+            throw new IllegalArgumentException("Limit must be greater than 0");
+        }
+        return stockMap.values().stream()
+                .filter(stock -> stock.getLatestPriceChange().compareTo(BigDecimal.ZERO) > 0)
+                .sorted((a, b)-> b.getLatestPriceChange().compareTo(a.getLatestPriceChange()))
+                .limit(limit)
+                .toList();
+    }
+
+    /**
+     * Returns the worst performing stocks since last week, sorted by the most negative
+     * price change first.
+     *
+     * @param limit the maximum number of stocks to return
+     * @return a list of the worst performing stocks, capped at limit
+     * @throws IllegalArgumentException if limit is not greater than zero
+     */
+    public List<Stock> getLosers(int limit) {
+        if (limit <= 0) {
+            throw new IllegalArgumentException("Limit must be greater than 0");
+        }
+        return stockMap.values().stream()
+                .filter(stock -> stock.getLatestPriceChange().compareTo(BigDecimal.ZERO) < 0)
+                .sorted(Comparator.comparing(Stock::getLatestPriceChange))
+                .limit(limit)
+                .toList();
+    }
+
 }
