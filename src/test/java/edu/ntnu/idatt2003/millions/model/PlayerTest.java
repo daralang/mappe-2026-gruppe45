@@ -330,6 +330,7 @@ class PlayerTest {
         @DisplayName("Should not return SPECULATOR when player has doubled net worth " +
                 "but traded less than 20 weeks")
         void returnsNotSpeculatorWhenNotEnoughWeeks(){
+            //Arrange
             player = new Player("AKL", new BigDecimal("1000.00"));
             for (int week = 1; week <= 10; week++) {
                 Stock stock = new Stock("DCL" + week, "Dara, Inc" + week,
