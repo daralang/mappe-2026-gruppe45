@@ -439,4 +439,126 @@ class ExchangeTest {
             assertEquals(4, exchange.getWeek());
         }
     }
+
+    @Nested
+    @DisplayName("getLosers()")
+    class GetLosers {
+
+        private Stock gainer;
+        private Stock loser;
+
+        @BeforeEach
+        void setUp() {
+            gainer = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("120.00"))));
+            loser = new Stock("AKL", "Alva Company",
+                    new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("80.00"))));
+            exchange = new Exchange("Oslo Børs", new ArrayList<>(List.of(gainer, loser)));
+        }
+
+        @Test
+        @DisplayName("Should return stocks with negative price change")
+        void returnsStocksWithNegativePriceChange() {
+            //Act
+            List<Stock> result = exchange.getLosers(10);
+            //Assert
+            assertTrue(result.contains(loser));
+            assertFalse(result.contains(gainer));
+        }
+
+        @Test
+        @DisplayName("Should return list with restrict at limit")
+        void returnsListWithRestrictAtLimit() {
+            //Act
+            List<Stock> result = exchange.getLosers(1);
+            //Assert
+            assertEquals(1, result.size());
+        }
+
+        @Test
+        @DisplayName("Should return empty list when no stocks have lost")
+        void returnsEmptyListWhenNoLoserStocks() {
+            // Arrange
+            Stock flat = new  Stock("MR", "Majid, Inc",
+                    new ArrayList<>(List.of(new BigDecimal("100.00"),
+                            new BigDecimal("120.00"))));
+            exchange = new Exchange("Stockholm Börs", new ArrayList<>(List.of(flat)));
+            // Act & Assert
+            assertTrue(exchange.getLosers(20).isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should throw exceptions when limit is zero")
+        void throwsExceptionWhenLimitIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () -> exchange.getLosers(0));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when limit is negative")
+        void throwsExceptionWhenLimitIsNegative() {
+            //Act & Assert
+            assertThrows(IllegalArgumentException.class, () -> exchange.getLosers(-1));
+        }
+    }
+
+    @Nested
+    @DisplayName("getGainers()")
+    class GetGainers {
+
+        private Stock gainer;
+        private Stock loser;
+
+        @BeforeEach
+        void setUp() {
+            gainer = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("120.00"))));
+            loser = new Stock("AKL", "Alva Company",
+                    new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("80.00"))));
+            exchange = new Exchange("Oslo Børs", new ArrayList<>(List.of(gainer, loser)));
+        }
+
+        @Test
+        @DisplayName("Should return stocks with positive price change")
+        void returnsStocksWithPositivePriceChange() {
+            //Act
+            List<Stock> result = exchange.getGainers(10);
+            //Assert
+            assertTrue(result.contains(gainer));
+            assertFalse(result.contains(loser));
+        }
+
+        @Test
+        @DisplayName("Should return list restrict at limit")
+        void  returnsListWithRestrictAtLimit() {
+            //Act
+            List<Stock> result = exchange.getGainers(1);
+            //Assert
+            assertEquals(1, result.size());
+        }
+        @Test
+        @DisplayName("Should return empty list when no stocks have gained")
+        void returnsEmptyListWhenNoGainers() {
+            //Arrange
+            Stock flat = new Stock("MR", "Majid, Inc",
+                    new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("50.00"))));
+            exchange = new Exchange("Stockholm Börs", new ArrayList<>(List.of(flat)));
+            //Act & Assert
+            assertTrue(exchange.getGainers(10).isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when limit is zero")
+        void throwsExceptionWhenLimitIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () -> exchange.getGainers(0));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when limit is negative")
+        void throwsExceptionWhenLimitIsNegative() {
+            //Act & Assert
+            assertThrows(IllegalArgumentException.class, () -> exchange.getGainers(-1));
+        }
+    }
 }
