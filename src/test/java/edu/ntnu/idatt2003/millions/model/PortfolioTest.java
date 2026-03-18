@@ -190,4 +190,41 @@ class PortfolioTest {
                     portfolio.contains(null));
         }
     }
+
+    @Nested
+    @DisplayName("getNetWorth()")
+    class GetNetWorth {
+
+        @Test
+        @DisplayName("Should return zero when portfolio is empty")
+        void returnsZeroWhenPortfolioIsEmpty() {
+            // Act & Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(portfolio.getNetWorth()));
+        }
+
+        @Test
+        @DisplayName("Should return total sale value of all shares in portfolio")
+        void returnsTotalSalesValueOfAllShares() {
+            //Arrange
+            portfolio.addShare(share);
+            BigDecimal expected = new SalesCalculator(share).calculateTotal();
+            // Act @ Assert
+            assertEquals(0, expected.compareTo(portfolio.getNetWorth()));
+        }
+
+        @Test
+        @DisplayName("Should sum sale value of multiple shares in portfolio")
+        void sumsValueOfMultipleShares() {
+            //Arrange
+            Share share2 = new Share(
+                    new Stock("DCL", "Dara, Inc", new ArrayList<>(List.of(new BigDecimal("50.00")))),
+                    new BigDecimal("10"), new BigDecimal("50.00"));
+            portfolio.addShare(share);
+            portfolio.addShare(share2);
+            BigDecimal expected = new SalesCalculator(share).calculateTotal()
+                    .add(new SalesCalculator(share2).calculateTotal());
+            // Act & Assert
+            assertEquals(0, expected.compareTo(portfolio.getNetWorth()));
+        }
+    }
 }
