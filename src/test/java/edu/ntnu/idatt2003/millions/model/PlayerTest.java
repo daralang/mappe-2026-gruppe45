@@ -292,6 +292,24 @@ class PlayerTest {
         }
 
         @Test
+        @DisplayName("Should not return INVESTOR when player has increased net worth by 20% " +
+                "but traded less than 10 weeks")
+        void returnsNotInvestorWhenEnoughGrowthNotWeeks() {
+            //Arrange
+            player = new Player("AKL", new BigDecimal("1000.00"));
+            for (int week = 1; week <= 5; week++) {
+                Stock stock = new Stock("MR" + week, "Majid Company" + week,
+                        new ArrayList<>(List.of((new BigDecimal("10.00")))));
+                Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
+                Purchase purchase = new Purchase(share, week);
+                purchase.commit(player);
+            }
+            player.addMoney(new BigDecimal("500.00"));
+            // Act & Assert
+            assertNotEquals(PlayerStatusLevel.INVESTOR, player.getStatus());
+        }
+
+        @Test
         @DisplayName("Should return SPECULATOR when player has traded 20 weeks and doubled" +
                 " net worth")
         void returnsSpeculatorWhenConditionsMet() {
