@@ -203,12 +203,12 @@ class PortfolioTest {
         }
 
         @Test
-        @DisplayName("Should return total sale value of all shares in portfolio")
+        @DisplayName("Should return total sale value of a single share in portfolio")
         void returnsTotalSalesValueOfAllShares() {
             //Arrange
             portfolio.addShare(share);
             BigDecimal expected = new SalesCalculator(share).calculateTotal();
-            // Act @ Assert
+            // Act & Assert
             assertEquals(0, expected.compareTo(portfolio.getNetWorth()));
         }
 
@@ -226,7 +226,6 @@ class PortfolioTest {
             // Act & Assert
             assertEquals(0, expected.compareTo(portfolio.getNetWorth()));
         }
-
 
         @Test
         @DisplayName("Should return zero when share has zero quantity")
@@ -248,6 +247,18 @@ class PortfolioTest {
             portfolio.removeShare(share);
             //Act & Assert
             assertEquals(0, BigDecimal.ZERO.compareTo(portfolio.getNetWorth()));
+        }
+
+        @Test
+        @DisplayName("Should not return a value higher than total gross value")
+        void returnsNotValueHigherThanGrossValue() {
+            //Arrange
+            portfolio.addShare(share);
+            BigDecimal gross = new SalesCalculator(share).calculateGross();
+            //Act
+            BigDecimal result = portfolio.getNetWorth();
+            //Assert
+            assertTrue(result.compareTo(gross) <= 0);
         }
     }
 }
