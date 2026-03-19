@@ -186,7 +186,7 @@ class PlayerTest {
     }
 
     @Nested
-    @DisplayName("getMoney()")
+    @DisplayName("getNetWorth()")
     class GetNetWorth {
 
         @Test
@@ -208,6 +208,43 @@ class PlayerTest {
                     .add(player.getPortfolio().getNetWorth());
             //Act & Assert
             assertEquals(0, expected.compareTo(player.getNetWorth()));
+        }
+
+        @Test
+        @DisplayName("Should return correct net worth after money is withdrawn")
+        void returnsCorrectNetWorthAfterMoneyIsWithdrawn() {
+            //Arrange
+            player.withdrawMoney(new BigDecimal("500.00"));
+            BigDecimal expected = player.getMoney().add(player.getPortfolio().getNetWorth());
+            // Act & Assert
+            assertEquals(0, expected.compareTo(player.getNetWorth()));
+        }
+
+        @Test
+        @DisplayName("Should return correct net worth after share is removed from portfolio")
+        void returnsCorrectNetWorthAfterShareRemoved() {
+            //Arrange
+            Stock stock = new Stock ("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(new BigDecimal("1000.00"))));
+            Share share = new Share(stock, new BigDecimal("10"), new BigDecimal("700.00"));
+            player.getPortfolio().addShare(share);
+            player.getPortfolio().removeShare(share);
+            // Act & Assert
+            assertEquals(0, player.getMoney().compareTo(player.getNetWorth()));
+        }
+
+        @Test
+        @DisplayName("Should not retunr a value less than current money balance")
+        void returnsNotValueLessBalance() {
+            //Arrange
+            Stock stock = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(new BigDecimal("1000.00"))));
+            Share share = new Share(stock, new BigDecimal("10"), new BigDecimal("700.00"));
+            player.getPortfolio().addShare(share);
+            //Act
+            BigDecimal result = player.getNetWorth();
+            //Assert
+            assertTrue(result.compareTo(player.getMoney()) >= 0);
         }
     }
 
