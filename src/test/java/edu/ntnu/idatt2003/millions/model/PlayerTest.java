@@ -232,6 +232,20 @@ class PlayerTest {
             // Act & Assert
             assertEquals(0, player.getMoney().compareTo(player.getNetWorth()));
         }
+
+        @Test
+        @DisplayName("Should not retunr a value less than current money balance")
+        void returnsNotValueLessBalance() {
+            //Arrange
+            Stock stock = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(new BigDecimal("1000.00"))));
+            Share share = new Share(stock, new BigDecimal("10"), new BigDecimal("700.00"));
+            player.getPortfolio().addShare(share);
+            //Act
+            BigDecimal result = player.getNetWorth();
+            //Assert
+            assertTrue(result.compareTo(player.getMoney()) >= 0);
+        }
     }
 
     @Nested
