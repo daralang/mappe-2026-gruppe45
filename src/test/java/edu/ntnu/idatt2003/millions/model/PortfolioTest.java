@@ -203,12 +203,12 @@ class PortfolioTest {
         }
 
         @Test
-        @DisplayName("Should return total sale value of all shares in portfolio")
+        @DisplayName("Should return total sale value of a single share in portfolio")
         void returnsTotalSalesValueOfAllShares() {
             //Arrange
             portfolio.addShare(share);
             BigDecimal expected = new SalesCalculator(share).calculateTotal();
-            // Act @ Assert
+            // Act & Assert
             assertEquals(0, expected.compareTo(portfolio.getNetWorth()));
         }
 
@@ -225,6 +225,40 @@ class PortfolioTest {
                     .add(new SalesCalculator(share2).calculateTotal());
             // Act & Assert
             assertEquals(0, expected.compareTo(portfolio.getNetWorth()));
+        }
+
+        @Test
+        @DisplayName("Should return zero when share has zero quantity")
+        void returnsZeroWhenShareHasZeroQuantity() {
+            //Arrange
+            Share zeroShare = new Share(
+                    new Stock("DCL", "Dara, Inc", new ArrayList<>(List.of(new BigDecimal("100.00")))),
+                    new BigDecimal("0"), new BigDecimal("50.00"));
+            portfolio.addShare(zeroShare);
+            //Act & Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(portfolio.getNetWorth()));
+        }
+
+        @Test
+        @DisplayName("Should return correct net worth after share is removed")
+        void returnsCorrectNetWorthAfterShareIsRemoved() {
+            //Arrange
+            portfolio.addShare(share);
+            portfolio.removeShare(share);
+            //Act & Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(portfolio.getNetWorth()));
+        }
+
+        @Test
+        @DisplayName("Should not return a value higher than total gross value")
+        void returnsNotValueHigherThanGrossValue() {
+            //Arrange
+            portfolio.addShare(share);
+            BigDecimal gross = new SalesCalculator(share).calculateGross();
+            //Act
+            BigDecimal result = portfolio.getNetWorth();
+            //Assert
+            assertTrue(result.compareTo(gross) <= 0);
         }
     }
 }
