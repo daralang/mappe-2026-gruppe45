@@ -500,6 +500,16 @@ class ExchangeTest {
             //Act & Assert
             assertThrows(IllegalArgumentException.class, () -> exchange.getLosers(-1));
         }
+
+        @Test
+        @DisplayName("Should return all losers when limit exceeds number of losing stocks")
+        void returnsAllLosersWhenLimitExceedsNumberLoserCount() {
+            //Act
+            List<Stock> result = exchange.getLosers(100);
+            //Assert
+            assertEquals(1, result.size());
+            assertTrue(result.contains(loser));
+        }
     }
 
     @Nested
