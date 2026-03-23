@@ -23,22 +23,34 @@ import java.util.Objects;
  */
 public class CsvStockFileHandler implements StockFileHandler {
 
-    /** Delimiter used to separate fields in the CSV file. */
+    /**
+     * Delimiter used to separate fields in the CSV file.
+     */
     private static final String DELIMITER = ",";
 
-    /** Prefix used to identify comment lines in the CSV file. */
+    /**
+     * Prefix used to identify comment lines in the CSV file.
+     */
     private static final String COMMENT_PREFIX = "#";
 
-    /** Expected number of fields per stock entry in the CSV file. */
+    /**
+     * Expected number of fields per stock entry in the CSV file.
+     */
     private static final int EXPECTED_FIELDS = 3;
 
-    /** Index of the stock symbol field in a CSV line. */
+    /**
+     * Index of the stock symbol field in a CSV line.
+     */
     private static final int SYMBOL_INDEX = 0;
 
-    /** Index of the stock name field in a CSV line. */
+    /**
+     * Index of the stock name field in a CSV line.
+     */
     private static final int NAME_INDEX = 1;
 
-    /** Index of the stock price field in a CSV line. */
+    /**
+     * Index of the stock price field in a CSV line.
+     */
     private static final int PRICE_INDEX = 2;
 
     /**
