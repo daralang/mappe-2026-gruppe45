@@ -246,7 +246,7 @@ class StockTest {
             //Act
             BigDecimal result = multiPriceStock.getHighestPrice();
             //Assert
-            assertNotEquals(0,new BigDecimal("100.00").compareTo(result));
+            assertNotEquals(0, new BigDecimal("100.00").compareTo(result));
         }
     }
 
@@ -290,7 +290,7 @@ class StockTest {
             //Act
             BigDecimal result = multiPriceStock.getLowestPrice();
             //Assert
-            assertNotEquals(0,new BigDecimal("160.00").compareTo(result));
+            assertNotEquals(0, new BigDecimal("160.00").compareTo(result));
         }
     }
 

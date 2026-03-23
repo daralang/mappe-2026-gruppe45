@@ -1,13 +1,13 @@
 package edu.ntnu.idatt2003.millions.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -224,7 +224,7 @@ class PlayerTest {
         @DisplayName("Should return correct net worth after share is removed from portfolio")
         void returnsCorrectNetWorthAfterShareRemoved() {
             //Arrange
-            Stock stock = new Stock ("DCL", "Dara, Inc",
+            Stock stock = new Stock("DCL", "Dara, Inc",
                     new ArrayList<>(List.of(new BigDecimal("1000.00"))));
             Share share = new Share(stock, new BigDecimal("10"), new BigDecimal("700.00"));
             player.getPortfolio().addShare(share);
@@ -280,7 +280,7 @@ class PlayerTest {
             // Arrange
             player = new Player("AKL", new BigDecimal("800.00"));
             for (int week = 1; week <= 10; week++) {
-                Stock stock = new Stock ("MR" + week, "Majid Company" + week,
+                Stock stock = new Stock("MR" + week, "Majid Company" + week,
                         new ArrayList<>(List.of((new BigDecimal("10.00")))));
                 Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
                 Purchase purchase = new Purchase(share, week);
@@ -317,7 +317,7 @@ class PlayerTest {
             //Arrange
             player = new Player("AKL", new BigDecimal("1000.00"));
             for (int week = 1; week <= 10; week++) {
-                Stock stock = new Stock ("DCL", "Dara, Inc",
+                Stock stock = new Stock("DCL", "Dara, Inc",
                         new ArrayList<>(List.of((new BigDecimal("10.00")))));
                 Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
                 Purchase purchase = new Purchase(share, week);
@@ -353,7 +353,7 @@ class PlayerTest {
             //Arrange
             player = new Player("DCL", new BigDecimal("1000.00"));
             for (int week = 1; week <= 20; week++) {
-                Stock stock = new Stock("MR" + week,"Majid Company" + week,
+                Stock stock = new Stock("MR" + week, "Majid Company" + week,
                         new ArrayList<>(List.of((new BigDecimal("10.00")))));
                 Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
                 Purchase purchase = new Purchase(share, week);
@@ -363,6 +363,7 @@ class PlayerTest {
             //Act & Arrange
             assertEquals(PlayerStatusLevel.SPECULATOR, player.getStatus());
         }
+
         @Test
         @DisplayName("Should not return SPECULATOR when player has traded 20 weeks " +
                 "but not doubled their net worth")
@@ -384,7 +385,7 @@ class PlayerTest {
         @Test
         @DisplayName("Should not return SPECULATOR when player has doubled net worth " +
                 "but traded less than 20 weeks")
-        void returnsNotSpeculatorWhenNotEnoughWeeks(){
+        void returnsNotSpeculatorWhenNotEnoughWeeks() {
             //Arrange
             player = new Player("AKL", new BigDecimal("1000.00"));
             for (int week = 1; week <= 10; week++) {
