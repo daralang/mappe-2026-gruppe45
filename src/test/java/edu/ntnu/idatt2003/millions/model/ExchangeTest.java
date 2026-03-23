@@ -479,7 +479,7 @@ class ExchangeTest {
         @DisplayName("Should return empty list when no stocks have lost")
         void returnsEmptyListWhenNoLoserStocks() {
             // Arrange
-            Stock flat = new  Stock("MR", "Majid, Inc",
+            Stock flat = new Stock("MR", "Majid, Inc",
                     new ArrayList<>(List.of(new BigDecimal("100.00"),
                             new BigDecimal("120.00"))));
             exchange = new Exchange("Stockholm Börs", new ArrayList<>(List.of(flat)));
@@ -540,12 +540,13 @@ class ExchangeTest {
 
         @Test
         @DisplayName("Should return list restrict at limit")
-        void  returnsListWithRestrictAtLimit() {
+        void returnsListWithRestrictAtLimit() {
             //Act
             List<Stock> result = exchange.getGainers(1);
             //Assert
             assertEquals(1, result.size());
         }
+
         @Test
         @DisplayName("Should return empty list when no stocks have gained")
         void returnsEmptyListWhenNoGainers() {
