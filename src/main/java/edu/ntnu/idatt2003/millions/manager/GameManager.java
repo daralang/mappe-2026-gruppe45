@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.file.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.model.Exchange;
 import edu.ntnu.idatt2003.millions.model.Player;
 import java.io.File;
+import java.util.Objects;
 
 /**
  * Manages the overall game lifecycle.
@@ -23,6 +24,12 @@ public class GameManager {
     }
 
     public void saveGame(File file) {
+        Objects.requireNonNull(file, "File cannot be null");
+
+        // IllegalStateException - for internal state
+        if (player == null || exchange == null) {
+            throw new IllegalStateException("No active game to save");
+        }
         gameFileHandler.saveGame(player, exchange, file);
     }
 
