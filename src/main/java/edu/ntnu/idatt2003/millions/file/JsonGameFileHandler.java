@@ -18,11 +18,19 @@ import java.lang.reflect.Type;
 
 /**
  * Handles reading and writing of game state to and from JSON files.
+ * Uses Gson for serialization and deserialization.
+ * Transactions are serialized with a type field to distinguish
+ * between purchases and sales when loading the game back.
  */
 public class JsonGameFileHandler implements GameFileHandler {
 
     private final Gson gson;
 
+    /**
+     * Constructs a new JsonGameFileHandler.
+     * Configures Gson with a custom serializer for transactions
+     * and pretty printing for human-readable output.
+     */
     public JsonGameFileHandler() {
         this.gson = new GsonBuilder()
                 .registerTypeHierarchyAdapter(Transaction.class, new TransactionSerializer())
@@ -30,6 +38,16 @@ public class JsonGameFileHandler implements GameFileHandler {
                 .create();
     }
 
+    /**
+     * Saves the current game state to a JSON file.
+     * The file will contain the player state (money, portfolio,
+     * transaction archive) and the exchange state (stocks, prices, week).
+     *
+     * @param player   the player whose state should be saved
+     * @param exchange the exchange whose state should be saved
+     * @param file     the file to save the game state to
+     * @throws UncheckedIOException if the file cannot be written to
+     */
     @Override
     public void saveGame(Player player, Exchange exchange, File file) {
         JsonObject gameState = new JsonObject();
@@ -49,10 +67,22 @@ public class JsonGameFileHandler implements GameFileHandler {
     }
 
     /**
-     * Custom serializer for Transaction so that the type (PURCHASE or SALE)
-     * is included in the JSON, making it possible to deserialize correctly later.
+     * Custom serializer for Transaction that adds a type field
+     * to the JSON output to distinguish between purchases and sales.
+     * This is necessary because Transaction is abstract, and Gson
+     * needs to know which subclass to instantiate when deserializing.
      */
     private static class TransactionSerializer implements JsonSerializer<Transaction> {
+
+        /**
+         * Serializes a transaction to a JSON object, adding a type field
+         * with the value "PURCHASE" or "SALE".
+         *
+         * @param transaction the transaction to serialize
+         * @param type        the type of the transaction
+         * @param context     the serialization context
+         * @return the serialized JSON element
+         */
         @Override
         public JsonElement serialize(Transaction transaction, Type type,
                                      JsonSerializationContext context) {
