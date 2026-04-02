@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.manager;
 
 import edu.ntnu.idatt2003.millions.file.GameFileHandler;
+import edu.ntnu.idatt2003.millions.file.GameState;
 import edu.ntnu.idatt2003.millions.file.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.model.Exchange;
 import edu.ntnu.idatt2003.millions.model.Player;
@@ -66,6 +67,8 @@ public class GameManager {
      */
     public void loadGame(File file) {
         Objects.requireNonNull(file, "File cannot be null");
-        gameFileHandler.loadGame(file);
+        GameState state = gameFileHandler.loadGame(file);
+        this.player = state.player();
+        this.exchange = state.exchange();
     }
 }
