@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.file;
+package edu.ntnu.idatt2003.millions.file.game;
 
 import edu.ntnu.idatt2003.millions.model.Exchange;
 import edu.ntnu.idatt2003.millions.model.Player;

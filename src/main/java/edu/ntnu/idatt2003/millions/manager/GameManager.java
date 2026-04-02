@@ -1,8 +1,8 @@
 package edu.ntnu.idatt2003.millions.manager;
 
-import edu.ntnu.idatt2003.millions.file.GameFileHandler;
-import edu.ntnu.idatt2003.millions.file.GameState;
-import edu.ntnu.idatt2003.millions.file.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
+import edu.ntnu.idatt2003.millions.file.game.GameState;
+import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.model.Exchange;
 import edu.ntnu.idatt2003.millions.model.Player;
 import java.io.File;
