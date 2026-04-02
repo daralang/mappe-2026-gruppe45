@@ -6,15 +6,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import edu.ntnu.idatt2003.millions.model.Exchange;
-import edu.ntnu.idatt2003.millions.model.Player;
-import edu.ntnu.idatt2003.millions.model.Purchase;
-import edu.ntnu.idatt2003.millions.model.Transaction;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import edu.ntnu.idatt2003.millions.model.*;
+
+import java.io.*;
 import java.lang.reflect.Type;
+import java.util.List;
 
 /**
  * Handles reading and writing of game state to and from JSON files.
@@ -61,9 +57,32 @@ public class JsonGameFileHandler implements GameFileHandler {
         }
     }
 
+    /**
+     * Loads a saved game state from a JSON file.
+     * Deserializes the player and exchange from the file, then relinks
+     * each share in the player's portfolio to the correct stock reference
+     * from the exchange.
+     *
+     * @param file the file to load the game state from
+     * @return a {@link GameState} containing the deserialized player and exchange
+     * @throws NullPointerException if the file is null
+     * @throws UncheckedIOException if the file cannot be read
+     */
     @Override
-    public void loadGame(File file) {
-        // TODO: implementeres senere
+    public GameState loadGame(File file) {
+        try (FileReader reader = new FileReader(file)) {
+            JsonObject gameState = gson.fromJson(reader, JsonObject.class);
+
+            Exchange exchange = gson.fromJson(gameState.get("exchange"), Exchange.class);
+            Player player = gson.fromJson(gameState.get("player"), Player.class);
+
+            relinkShares(player, exchange);
+
+            return new GameState(player, exchange);
+
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to load game from file: " + file.getName(), e);
+        }
     }
 
     /**
@@ -92,5 +111,27 @@ public class JsonGameFileHandler implements GameFileHandler {
                     transaction instanceof Purchase ? "PURCHASE" : "SALE");
             return obj;
         }
+    }
+
+
+    /**
+     * Relinks each share in the player's portfolio to the correct
+     * Stock object from the exchange after deserialization.
+     * This is necessary because Gson creates new Stock objects
+     * instead of reusing the ones in the exchange.
+     *
+     * @param player   the player whose portfolio should be relinked
+     * @param exchange the exchange containing the correct stock references
+     */
+    private void relinkShares(Player player, Exchange exchange) {
+        List<Share> relinked = player.getPortfolio().getShares().stream()
+                .map(share -> new Share(
+                        exchange.getStock(share.getStock().getSymbol()),
+                        share.getQuantity(),
+                        share.getPurchasePrice()
+                ))
+                .toList();
+
+        player.getPortfolio().setShares(relinked);
     }
 }
