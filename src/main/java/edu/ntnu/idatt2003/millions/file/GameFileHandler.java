@@ -12,5 +12,5 @@ public interface GameFileHandler {
 
     void saveGame(Player player, Exchange exchange, File file);
 
-    void loadGame(File file);
+    GameState loadGame(File file);
 }
