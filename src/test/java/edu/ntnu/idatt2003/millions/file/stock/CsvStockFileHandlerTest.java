@@ -1,6 +1,5 @@
-package edu.ntnu.idatt2003.millions.file;
+package edu.ntnu.idatt2003.millions.file.stock;
 
-import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.model.Stock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
