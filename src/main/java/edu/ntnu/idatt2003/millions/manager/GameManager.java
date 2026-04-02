@@ -6,6 +6,7 @@ import edu.ntnu.idatt2003.millions.file.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.model.Exchange;
 import edu.ntnu.idatt2003.millions.model.Player;
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -39,7 +40,6 @@ public class GameManager {
     public void saveGame(File file) {
         Objects.requireNonNull(file, "File cannot be null");
 
-        // IllegalStateException - for internal state
         if (player == null || exchange == null) {
             throw new IllegalStateException("No active game to save");
         }
@@ -54,7 +54,7 @@ public class GameManager {
      * @param capital    the starting capital for the player
      * @param stockFile  the file containing stock data to load
      */
-    public void createNewGame(String name, String capital, File stockFile) {
+    public void createNewGame(String name, BigDecimal capital, File stockFile) {
         // TODO: implementeres senere
     }
 
@@ -70,5 +70,23 @@ public class GameManager {
         GameState state = gameFileHandler.loadGame(file);
         this.player = state.player();
         this.exchange = state.exchange();
+    }
+
+    /**
+     * Returns the current player.
+     *
+     * @return the player
+     */
+    public Player getPlayer() {
+        return player;
+    }
+
+    /**
+     * Returns the current exchange.
+     *
+     * @return the exchange
+     */
+    public Exchange getExchange() {
+        return exchange;
     }
 }
