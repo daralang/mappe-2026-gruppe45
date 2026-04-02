@@ -19,10 +19,22 @@ public class GameManager {
     private Exchange exchange;
     private final GameFileHandler gameFileHandler;
 
+    /**
+     * Constructs a new GameManager.
+     * Initializes the file handler for JSON serialization.
+     */
     public GameManager() {
         this.gameFileHandler = new JsonGameFileHandler();
     }
 
+    /**
+     * Saves the current game state to a JSON file.
+     * Delegates the file operation to the game file handler.
+     *
+     * @param file the file to save the game state to
+     * @throws NullPointerException  if the file is null
+     * @throws IllegalStateException if no active game exists
+     */
     public void saveGame(File file) {
         Objects.requireNonNull(file, "File cannot be null");
 
@@ -33,11 +45,27 @@ public class GameManager {
         gameFileHandler.saveGame(player, exchange, file);
     }
 
+    /**
+     * Creates a new game with the given player name, starting capital
+     * and stock data file.
+     *
+     * @param name       the name of the player
+     * @param capital    the starting capital for the player
+     * @param stockFile  the file containing stock data to load
+     */
     public void createNewGame(String name, String capital, File stockFile) {
         // TODO: implementeres senere
     }
 
+    /**
+     * Loads a saved game state from a JSON file.
+     * Delegates the file operation to the game file handler.
+     *
+     * @param file the file to load the game state from
+     * @throws NullPointerException if the file is null
+     */
     public void loadGame(File file) {
+        Objects.requireNonNull(file, "File cannot be null");
         gameFileHandler.loadGame(file);
     }
 }
