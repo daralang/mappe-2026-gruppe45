@@ -11,6 +11,7 @@ import edu.ntnu.idatt2003.millions.model.*;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Handles reading and writing of game state to and from JSON files.
@@ -42,10 +43,15 @@ public class JsonGameFileHandler implements GameFileHandler {
      * @param player   the player whose state should be saved
      * @param exchange the exchange whose state should be saved
      * @param file     the file to save the game state to
+     * @throws NullPointerException  if player, exchange or file is null
      * @throws UncheckedIOException if the file cannot be written to
      */
     @Override
     public void saveGame(Player player, Exchange exchange, File file) {
+        Objects.requireNonNull(player, "Player cannot be null");
+        Objects.requireNonNull(exchange, "Exchange cannot be null");
+        Objects.requireNonNull(file, "File cannot be null");
+
         JsonObject gameState = new JsonObject();
         gameState.add("player", gson.toJsonTree(player));
         gameState.add("exchange", gson.toJsonTree(exchange));
@@ -70,6 +76,8 @@ public class JsonGameFileHandler implements GameFileHandler {
      */
     @Override
     public GameState loadGame(File file) {
+        Objects.requireNonNull(file, "File cannot be null");
+
         try (FileReader reader = new FileReader(file)) {
             JsonObject gameState = gson.fromJson(reader, JsonObject.class);
 
