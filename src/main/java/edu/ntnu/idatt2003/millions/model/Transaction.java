@@ -10,8 +10,10 @@ import java.util.Objects;
 public abstract class Transaction {
     private final Share share;
     private final int week;
-    private final TransactionCalculator calculator;
     private boolean committed;
+
+    @SuppressWarnings("java:S2065") // transient is needed to prevent Gson from attempting to instantiate the TransactionCalculator interface
+    private final transient TransactionCalculator calculator;
 
     /**
      * Constructs a new Transaction with the specified share, week, and calculator.

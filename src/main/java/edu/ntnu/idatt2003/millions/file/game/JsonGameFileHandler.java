@@ -1,11 +1,9 @@
 package edu.ntnu.idatt2003.millions.file.game;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import edu.ntnu.idatt2003.millions.model.*;
 
 import java.io.*;
@@ -30,7 +28,7 @@ public class JsonGameFileHandler implements GameFileHandler {
      */
     public JsonGameFileHandler() {
         this.gson = new GsonBuilder()
-                .registerTypeHierarchyAdapter(Transaction.class, new TransactionSerializer())
+                .registerTypeAdapterFactory(new TransactionAdapterFactory())
                 .setPrettyPrinting()
                 .create();
     }
@@ -94,30 +92,50 @@ public class JsonGameFileHandler implements GameFileHandler {
     }
 
     /**
-     * Custom serializer for Transaction that adds a type field
+     * Custom TypeAdapterFactory for Transaction that adds a type field
      * to the JSON output to distinguish between purchases and sales.
-     * This is necessary because Transaction is abstract, and Gson
-     * needs to know which subclass to instantiate when deserializing.
+     * Uses getDelegateAdapter to avoid infinite recursion that occurs
+     * with JsonSerializer when calling context.serialize().
      */
-    private static class TransactionSerializer implements JsonSerializer<Transaction> {
+    private static class TransactionAdapterFactory implements TypeAdapterFactory {
 
-        /**
-         * Serializes a transaction to a JSON object, adding a type field
-         * with the value "PURCHASE" or "SALE".
-         *
-         * @param transaction the transaction to serialize
-         * @param type        the type of the transaction
-         * @param context     the serialization context
-         * @return the serialized JSON element
-         */
         @Override
-        public JsonElement serialize(Transaction transaction, Type type,
-                                     JsonSerializationContext context) {
-            JsonObject obj = context.serialize(transaction,
-                    transaction.getClass()).getAsJsonObject();
-            obj.addProperty("type",
-                    transaction instanceof Purchase ? "PURCHASE" : "SALE");
-            return obj;
+        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+            if (!Transaction.class.isAssignableFrom(type.getRawType())) {
+                return null;
+            }
+
+            TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);
+            TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
+
+            return new TypeAdapter<T>() {
+                @Override
+                public void write(JsonWriter out, T value) throws IOException {
+                    JsonObject obj = delegate.toJsonTree(value).getAsJsonObject();
+                    obj.addProperty("type",
+                            value instanceof Purchase ? "PURCHASE" : "SALE");
+                    elementAdapter.write(out, obj);
+                }
+
+                @SuppressWarnings("unchecked")
+                @Override
+                public T read(JsonReader in) throws IOException {
+                    JsonObject obj = elementAdapter.read(in).getAsJsonObject();
+                    String type = obj.get("type").getAsString();
+
+                    if ("PURCHASE".equals(type)) {
+                        return (T) gson.getDelegateAdapter(
+                                TransactionAdapterFactory.this,
+                                TypeToken.get(Purchase.class)
+                        ).fromJsonTree(obj);
+                    } else {
+                        return (T) gson.getDelegateAdapter(
+                                TransactionAdapterFactory.this,
+                                TypeToken.get(Sale.class)
+                        ).fromJsonTree(obj);
+                    }
+                }
+            };
         }
     }
 
