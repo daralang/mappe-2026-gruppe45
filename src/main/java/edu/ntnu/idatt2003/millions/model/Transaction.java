@@ -10,8 +10,10 @@ import java.util.Objects;
 public abstract class Transaction {
     private final Share share;
     private final int week;
-    private final TransactionCalculator calculator;
     private boolean committed;
+
+    @SuppressWarnings("java:S2065") // transient is needed to prevent Gson from attempting to instantiate the TransactionCalculator interface
+    private final transient TransactionCalculator calculator;
 
     /**
      * Constructs a new Transaction with the specified share, week, and calculator.
@@ -52,8 +54,17 @@ public abstract class Transaction {
 
     /**
      * Gets the calculator used to process this transaction.
+     * <p>
+     * Note: returns null for transactions loaded from a saved game,
+     * as the calculator field is transient and not persisted to JSON.
+     * This is not a problem in practice because all transactions in the
+     * archive are already committed before saving. Since commit() throws
+     * an IllegalStateException if called on an already committed transaction,
+     * the calculator will never be needed again after a game is resumed.
+     * Any new transactions created after resuming will create their own
+     * fresh calculators.
      *
-     * @return the transaction calculator
+     * @return the transaction calculator, or null if loaded from file
      */
     public TransactionCalculator getCalculator() {
         return calculator;
