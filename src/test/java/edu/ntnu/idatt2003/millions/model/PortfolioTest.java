@@ -158,11 +158,12 @@ class PortfolioTest {
         }
 
         @Test
-        @DisplayName("Should throw exception when null is passed as symbol")
-        void throwsExceptionWhenSymbolIsNull() {
-            // Act & Assert
-            assertThrows(NullPointerException.class, () ->
-                    portfolio.getShares(null));
+        @DisplayName("Should return empty list when symbol is null")
+        void returnsEmptyListWhenSymbolIsNull() {
+            // Act
+            List<Share> result = portfolio.getShares(null);
+            // Assert
+            assertTrue(result.isEmpty());
         }
     }
 

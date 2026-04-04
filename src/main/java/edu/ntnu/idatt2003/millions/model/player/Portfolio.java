@@ -60,14 +60,16 @@ public class Portfolio {
     }
 
     /**
-     * Gets all shares of a specific stock by symbol.
+     * Gets all shares of a specific stock by symbol. The method will return
+     * an empty list if the symbol is null.
      *
      * @param symbol the stock symbol to filter by
      * @return a list of shares matching the symbol
      * @throws NullPointerException if the symbol is null
      */
     public List<Share> getShares(String symbol) {
-        Objects.requireNonNull(symbol, "Symbol cannot be null");
+        if (symbol == null) return List.of();
+
         return shares.stream()
                 .filter(share -> Objects.equals(share.getStock().getSymbol(), symbol))
                 .toList();
