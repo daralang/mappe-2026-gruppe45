@@ -84,12 +84,10 @@ public abstract class Transaction {
     }
 
     /**
-     * Sets whether this transaction has been committed.
-     *
-     * @param committed {@code true} to mark the transaction as committed, {@code false} otherwise
+     * Marks this transactionn as committed.
      */
-    public void setCommitted(boolean committed) {
-        this.committed = committed;
+    protected void markAsCommitted() {
+        this.committed = true;
     }
 
     /**
