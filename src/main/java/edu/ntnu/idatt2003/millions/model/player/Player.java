@@ -1,4 +1,6 @@
-package edu.ntnu.idatt2003.millions.model;
+package edu.ntnu.idatt2003.millions.model.player;
+
+import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 
 import java.math.BigDecimal;
 import java.util.Objects;

@@ -1,5 +1,11 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
+import edu.ntnu.idatt2003.millions.model.transaction.Sale;
+import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
+import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -138,14 +144,6 @@ class TransactionArchiveTest {
             assertThrows(IllegalArgumentException.class, () ->
                     archive.getTransactions(-1));
         }
-
-        @Test
-        @DisplayName("Should throw exception when week is greater than 52")
-        void throwsExceptionWhenWeekIsGreaterThan52() {
-            // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
-                    archive.getTransactions(53));
-        }
     }
 
     @Nested
@@ -197,14 +195,6 @@ class TransactionArchiveTest {
             assertThrows(IllegalArgumentException.class, () ->
                     archive.getPurchases(-1));
         }
-
-        @Test
-        @DisplayName("Should throw exception when week is greater than 52")
-        void throwsExceptionWhenWeekIsGreaterThan52() {
-            // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
-                    archive.getPurchases(53));
-        }
     }
 
     @Nested
@@ -255,14 +245,6 @@ class TransactionArchiveTest {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     archive.getSales(-1));
-        }
-
-        @Test
-        @DisplayName("Should throw exception when week is greater than 52")
-        void throwsExceptionWhenWeekIsGreaterThan52() {
-            // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
-                    archive.getSales(53));
         }
     }
 

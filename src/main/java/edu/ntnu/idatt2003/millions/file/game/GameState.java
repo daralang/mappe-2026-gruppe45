@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.file.game;
 
-import edu.ntnu.idatt2003.millions.model.Exchange;
-import edu.ntnu.idatt2003.millions.model.Player;
+import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.player.Player;
 
 /**
  * Represents the full game state returned after loading a saved game.
