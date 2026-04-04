@@ -44,6 +44,6 @@ public class Sale extends Transaction {
         player.addMoney(totalValue);
         player.getPortfolio().removeShare(getShare());
         player.getTransactionArchive().add(this);
-        setCommitted(true);
+        markAsCommitted();
     }
 }
