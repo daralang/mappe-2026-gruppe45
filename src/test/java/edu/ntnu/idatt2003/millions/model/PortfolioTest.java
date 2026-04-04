@@ -168,6 +168,58 @@ class PortfolioTest {
     }
 
     @Nested
+    @DisplayName("setShares()")
+    class SetShares {
+
+        @Test
+        @DisplayName("Should replace all shares when valid list is provided")
+        void replacesAllSharesWhenValidListIsProvided() {
+            // Arrange
+            Share share2 = new Share(share.getStock(), new BigDecimal("3"), new BigDecimal("200"));
+            portfolio.addShare(share);
+
+            // Act
+            portfolio.setShares(List.of(share2));
+
+            // Assert
+            assertEquals(List.of(share2), portfolio.getShares());
+        }
+
+        @Test
+        @DisplayName("Should clear portfolio when empty list is provided")
+        void clearsPortfolioWhenEmptyListIsProvided() {
+            // Arrange
+            portfolio.addShare(share);
+
+            // Act
+            portfolio.setShares(List.of());
+
+            // Assert
+            assertTrue(portfolio.getShares().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when list is null")
+        void throwsExceptionWhenListIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    portfolio.setShares(null));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when list contains null share")
+        void throwsExceptionWhenListContainsNull() {
+            // Arrange
+            List<Share> sharesWithNull = new ArrayList<>();
+            sharesWithNull.add(null);
+
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    portfolio.setShares(sharesWithNull));
+        }
+    }
+
+    @Nested
     @DisplayName("contains()")
     class Contains {
 
