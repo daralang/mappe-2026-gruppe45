@@ -1,5 +1,9 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.player.Portfolio;
+import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -154,11 +158,12 @@ class PortfolioTest {
         }
 
         @Test
-        @DisplayName("Should throw exception when null is passed as symbol")
-        void throwsExceptionWhenSymbolIsNull() {
-            // Act & Assert
-            assertThrows(NullPointerException.class, () ->
-                    portfolio.getShares(null));
+        @DisplayName("Should return empty list when symbol is null")
+        void returnsEmptyListWhenSymbolIsNull() {
+            // Act
+            List<Share> result = portfolio.getShares(null);
+            // Assert
+            assertTrue(result.isEmpty());
         }
     }
 

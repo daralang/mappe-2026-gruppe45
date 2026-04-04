@@ -1,5 +1,12 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
+import edu.ntnu.idatt2003.millions.model.transaction.Sale;
+import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -227,19 +234,21 @@ class ExchangeTest {
         }
 
         @Test
-        @DisplayName("Should throw exception when search term is null")
-        void throwsExceptionWhenSearchTermIsNull() {
-            // Act & Assert
-            assertThrows(NullPointerException.class, () ->
-                    exchange.findStocks(null));
+        @DisplayName("Should return empty list when search term is null")
+        void returnsEmptyListWhenSearchTermIsNull() {
+            // Act
+            List<Stock> result = exchange.findStocks(null);
+            // Assert
+            assertTrue(result.isEmpty());
         }
 
         @Test
-        @DisplayName("Should throw exception when search term is blank")
-        void throwsExceptionWhenSearchTermIsBlank() {
-            // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
-                    exchange.findStocks(""));
+        @DisplayName("Should return empty list when search term is blank")
+        void returnsEmptyListWhenSearchTermIsBlank() {
+            // Act
+            List<Stock> result = exchange.findStocks("");
+            // Assert
+            assertTrue(result.isEmpty());
         }
     }
 

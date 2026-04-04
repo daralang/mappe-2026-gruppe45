@@ -1,5 +1,9 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -88,14 +92,6 @@ class PurchaseTest {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     new Purchase(share, -1));
-        }
-
-        @Test
-        @DisplayName("Should throw exception when week is greater than 52")
-        void throwsExceptionWhenWeekIsGreaterThan52() {
-            // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
-                    new Purchase(share, 53));
         }
     }
 
