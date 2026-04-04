@@ -8,16 +8,16 @@ import java.util.Locale;
  * used to load the correct resource bundle.
  */
 public enum Language {
-    NORWEGIAN("Norsk", "🇳🇴", Locale.of("no")),
-    ENGLISH("English", "🇬🇧", Locale.of("en"));
+    NORWEGIAN("Norsk", "/flags/no.png", Locale.of("no")),
+    ENGLISH("English", "/flags/en.png", Locale.of("en"));
 
     public final String displayName;
-    public final String flag;
+    public final String flagPath;
     public final Locale locale;
 
-    Language(String displayName, String flag, Locale locale) {
+    Language(String displayName, String flagPath, Locale locale) {
         this.displayName = displayName;
-        this.flag = flag;
+        this.flagPath = flagPath;
         this.locale = locale;
     }
 }
