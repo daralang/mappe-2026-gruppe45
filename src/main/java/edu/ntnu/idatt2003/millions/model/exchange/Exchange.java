@@ -115,7 +115,8 @@ public class Exchange {
 
     /**
      * Searches for stocks where the symbol or company name contains the search term.
-     * The search is not case-sensitive.
+     * The search is not case-sensitive. If the search term is null or blank, the method
+     * will return an empty list.
      *
      * @param searchTerm the word or phrase to search for
      * @return a list of stocks that match the search term
@@ -123,8 +124,7 @@ public class Exchange {
      * @throws IllegalArgumentException if the search term is blank
      */
     public List<Stock> findStocks(String searchTerm) {
-        Objects.requireNonNull(searchTerm, "Search term cannot be null");
-        if (searchTerm.isBlank()) throw new IllegalArgumentException("Search term cannot be blank");
+        if (searchTerm == null || searchTerm.isBlank()) return List.of();
 
         String normalized = searchTerm.toLowerCase();
         return stockMap.values().stream()
