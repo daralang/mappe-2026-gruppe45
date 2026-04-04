@@ -1,9 +1,9 @@
 package edu.ntnu.idatt2003.millions.factory;
 
-import edu.ntnu.idatt2003.millions.model.Purchase;
-import edu.ntnu.idatt2003.millions.model.Sale;
-import edu.ntnu.idatt2003.millions.model.Share;
-import edu.ntnu.idatt2003.millions.model.Transaction;
+import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
+import edu.ntnu.idatt2003.millions.model.transaction.Sale;
+import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 
 /**
  * Factory for creating financial transactions.

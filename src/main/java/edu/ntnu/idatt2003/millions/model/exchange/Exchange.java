@@ -1,4 +1,11 @@
-package edu.ntnu.idatt2003.millions.model;
+package edu.ntnu.idatt2003.millions.model.exchange;
+
+import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
+import edu.ntnu.idatt2003.millions.model.transaction.Sale;
+import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
+import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

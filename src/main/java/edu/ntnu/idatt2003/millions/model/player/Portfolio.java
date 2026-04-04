@@ -1,4 +1,7 @@
-package edu.ntnu.idatt2003.millions.model;
+package edu.ntnu.idatt2003.millions.model.player;
+
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.stock.Share;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

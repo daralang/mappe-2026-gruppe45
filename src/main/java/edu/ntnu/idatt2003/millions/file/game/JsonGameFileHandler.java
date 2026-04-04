@@ -4,10 +4,14 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import edu.ntnu.idatt2003.millions.model.*;
+import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
+import edu.ntnu.idatt2003.millions.model.transaction.Sale;
+import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
 

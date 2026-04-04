@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.file.stock;
 
-import edu.ntnu.idatt2003.millions.model.Stock;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
 
 import java.nio.file.Path;
 import java.util.List;

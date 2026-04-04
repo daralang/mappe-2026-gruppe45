@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.model;
+package edu.ntnu.idatt2003.millions.model.player;
 
 /**
  * Represents the progression level of a player in the game.
