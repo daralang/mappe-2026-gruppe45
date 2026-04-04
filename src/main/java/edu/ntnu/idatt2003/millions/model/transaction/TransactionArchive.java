@@ -49,10 +49,10 @@ public class TransactionArchive {
      *
      * @param week the week number to filter by
      * @return a list of transactions from the given week
-     * @throws IllegalArgumentException if the week is not between 1 and 52
+     * @throws IllegalArgumentException if the week is less than 1
      */
     public List<Transaction> getTransactions(int week) {
-        if (week < 1 || week > 52) throw new IllegalArgumentException("Week must be between 1 and 52");
+        if (week < 1) throw new IllegalArgumentException("Week must be at least 1");
         return transactions.stream()
                 .filter(transaction -> transaction.getWeek() == week)
                 .toList();
@@ -63,10 +63,10 @@ public class TransactionArchive {
      *
      * @param week the week number to filter by
      * @return a list of purchases from the given week
-     * @throws IllegalArgumentException if the week is not between 1 and 52
+     * @throws IllegalArgumentException if the week is less than 1
      */
     public List<Purchase> getPurchases(int week) {
-        if (week < 1 || week > 52) throw new IllegalArgumentException("Week must be between 1 and 52");
+        if (week < 1) throw new IllegalArgumentException("Week must be at least 1");
         return this.getTransactions(week).stream()
                 .filter(Purchase.class::isInstance)
                 .map(Purchase.class::cast)
@@ -78,10 +78,10 @@ public class TransactionArchive {
      *
      * @param week the week number to filter by
      * @return a list of sales from the given week
-     * @throws IllegalArgumentException if the week is not between 1 and 52
+     * @throws IllegalArgumentException if the week is less than 1
      */
     public List<Sale> getSales(int week) {
-        if (week < 1 || week > 52) throw new IllegalArgumentException("Week must be between 1 and 52");
+        if (week < 1) throw new IllegalArgumentException("Week must be at least 1");
         return this.getTransactions(week).stream()
                 .filter(Sale.class::isInstance)
                 .map(Sale.class::cast)

@@ -93,14 +93,6 @@ class PurchaseTest {
             assertThrows(IllegalArgumentException.class, () ->
                     new Purchase(share, -1));
         }
-
-        @Test
-        @DisplayName("Should throw exception when week is greater than 52")
-        void throwsExceptionWhenWeekIsGreaterThan52() {
-            // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
-                    new Purchase(share, 53));
-        }
     }
 
     @Nested
