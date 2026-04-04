@@ -71,6 +71,21 @@ public class Portfolio {
     }
 
     /**
+     * Replaces all shares in the portfolio with the given list of shares.
+     * Used after deserialization in JsonGameFileHandler to relink shares to the correct
+     * stock references from the exchange.
+     *
+     * @param shares the new list of shares to set
+     * @throws NullPointerException if the list or any share in the list is null
+     */
+    public void setShares(List<Share> shares) {
+        Objects.requireNonNull(shares, "Shares cannot be null");
+        shares.forEach(share -> Objects.requireNonNull(share, "Share cannot be null"));
+        this.shares.clear();
+        this.shares.addAll(shares);
+    }
+
+    /**
      * Checks if the portfolio contains a specific share.
      *
      * @param share the share to check for

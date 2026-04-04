@@ -18,7 +18,9 @@ public class Exchange {
     private final String name;
     private int week;
     private final Map<String, Stock> stockMap;
-    private final Random random;
+
+    @SuppressWarnings("java:S2065") // transient is needed to prevent Gson from serializing Random
+    private final transient Random random = new Random();
 
     /** The lowest price a stock can have after a weekly update. */
     private static final BigDecimal MIN_PRICE = new BigDecimal("0.01");
@@ -33,7 +35,7 @@ public class Exchange {
      *
      * @param name the name of the exchange
      * @param stocks the stocks that can be traded on this exchange
-     * @throws NullPointerException if name, stocks, or any stock in the list is null
+     * @throws NullPointerException if the name, stocks, or any stock in the list is null
      * @throws IllegalArgumentException if name is blank, stocks is empty,
      *                                  contains null, or contains duplicate symbols
      */
@@ -46,7 +48,6 @@ public class Exchange {
 
         this.name = name;
         this.week = 1;
-        this.random = new Random();
         this.stockMap = new HashMap<>();
 
         for (Stock stock : stocks) {
