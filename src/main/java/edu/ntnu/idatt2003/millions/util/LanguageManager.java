@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
@@ -18,6 +20,9 @@ public class LanguageManager {
     private static ResourceBundle bundle =
             ResourceBundle.getBundle("i18n/messages", currentLanguage.locale);
 
+    /** List of observers notified when the language changes. */
+    private static final List<Runnable> observers = new ArrayList<>();
+
     private LanguageManager() {
         // Utility class - should not be instantiated
     }
@@ -35,7 +40,30 @@ public class LanguageManager {
     }
 
     /**
-     * Sets the active language and reloads the resource bundle.
+     * Returns the currently active language.
+     *
+     * @return the current language
+     */
+    public static Language getCurrentLanguage() {
+        return currentLanguage;
+    }
+
+    /**
+     * Registers an observer to be notified when the language changes.
+     * The observer's {@link Runnable#run()} method will be called
+     * each time the language is updated.
+     *
+     * @param observer the observer to register
+     * @throws NullPointerException if observer is null
+     */
+    public static void addObserver(Runnable observer) {
+        Objects.requireNonNull(observer, "Observer cannot be null");
+        observers.add(observer);
+    }
+
+    /**
+     * Sets the active language, reloads the resource bundle,
+     * and notifies all registered observers.
      *
      * @param language the language to switch to
      * @throws NullPointerException if language is null
@@ -44,14 +72,6 @@ public class LanguageManager {
         Objects.requireNonNull(language, "Language cannot be null");
         currentLanguage = language;
         bundle = ResourceBundle.getBundle("i18n/messages", language.locale);
-    }
-
-    /**
-     * Returns the currently active language.
-     *
-     * @return the current language
-     */
-    public static Language getCurrentLanguage() {
-        return currentLanguage;
+        observers.forEach(Runnable::run);
     }
 }
