@@ -41,7 +41,6 @@ public class MainController {
 
     private void handleAdvanceWeek() {
         gameManager.advanceWeek();
-        view.getWeekBar().setWeek(gameManager.getExchange().getWeek());
     }
 
     private void handleSaveGame() {

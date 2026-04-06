@@ -5,21 +5,26 @@ import edu.ntnu.idatt2003.millions.file.game.GameState;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
  * Manages the overall game lifecycle.
  * Responsible for creating new games, loading saved games,
- * saving the current game state ... TO BE CONTINUED
- * Delegates file operations to GameFileHandler.
+ * saving the current game state, and advancing the game week.
+ * Notifies registered {@link GameObserver}s when the game state changes.
+ * Delegates file operations to {@link GameFileHandler}.
  */
 public class GameManager {
 
     private Player player;
     private Exchange exchange;
     private final GameFileHandler gameFileHandler;
+    private final List<GameObserver> observers = new ArrayList<>();
 
     /**
      * Constructs a new GameManager.
@@ -27,6 +32,17 @@ public class GameManager {
      */
     public GameManager() {
         this.gameFileHandler = new JsonGameFileHandler();
+    }
+
+    /**
+     * Registers an observer to be notified when the game state changes.
+     *
+     * @param observer the observer to register
+     * @throws NullPointerException if observer is null
+     */
+    public void addObserver(GameObserver observer) {
+        Objects.requireNonNull(observer, "Observer cannot be null");
+        observers.add(observer);
     }
 
     /**
@@ -39,7 +55,6 @@ public class GameManager {
      */
     public void saveGame(File file) {
         Objects.requireNonNull(file, "File cannot be null");
-
         if (player == null || exchange == null) {
             throw new IllegalStateException("No active game to save");
         }
@@ -50,9 +65,9 @@ public class GameManager {
      * Creates a new game with the given player name, starting capital
      * and stock data file.
      *
-     * @param name       the name of the player
-     * @param capital    the starting capital for the player
-     * @param stockFile  the file containing stock data to load
+     * @param name      the name of the player
+     * @param capital   the starting capital for the player
+     * @param stockFile the file containing stock data to load
      */
     public void createNewGame(String name, BigDecimal capital, File stockFile) {
         // TODO: implementeres senere
@@ -73,6 +88,14 @@ public class GameManager {
     }
 
     /**
+     * Advances the game by one week and notifies all registered observers.
+     */
+    public void advanceWeek() {
+        exchange.advance();
+        notifyObservers();
+    }
+
+    /**
      * Returns the current player.
      *
      * @return the player
@@ -90,7 +113,10 @@ public class GameManager {
         return exchange;
     }
 
-    public void advanceWeek() {
-        exchange.advance();
+    /**
+     * Notifies all registered observers that the game state has changed.
+     */
+    private void notifyObservers() {
+        observers.forEach(GameObserver::onGameUpdated);
     }
 }

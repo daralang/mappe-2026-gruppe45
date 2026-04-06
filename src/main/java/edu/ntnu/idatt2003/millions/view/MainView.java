@@ -17,13 +17,14 @@ public class MainView {
     private final GameManager gameManager;
     private final BorderPane root;
     private final Header header;
-    private final WeekBar weekBar = new WeekBar();
+    private final WeekBar weekBar;
 
     /**
      * Constructs a new MainView with a header and dashboard as the default content.
      */
     public MainView(GameManager gameManager) {
         this.gameManager = gameManager;
+        this.weekBar = new WeekBar(gameManager);
         header = new Header();
         root = new BorderPane();
         root.setTop(header);
