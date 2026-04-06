@@ -13,21 +13,21 @@ import java.util.List;
  */
 public class DashboardView extends VBox {
 
-    private final ViewHeader viewHeader;
-
     /**
      * Constructs a new DashboardView with a tab bar.
      */
     public DashboardView() {
         getStyleClass().add("content-area");
 
-        viewHeader = new ViewHeader(List.of(
-                LanguageManager.get("dashboard.tab.portfolio"),
-                LanguageManager.get("dashboard.tab.transactions"),
-                LanguageManager.get("dashboard.tab.watchlist"),
-                LanguageManager.get("dashboard.tab.loans")
-        ));
-
+        ViewHeader viewHeader = new ViewHeader(
+                LanguageManager.get("dashboard.title"),
+                List.of(
+                        LanguageManager.get("dashboard.tab.portfolio"),
+                        LanguageManager.get("dashboard.tab.transactions"),
+                        LanguageManager.get("dashboard.tab.watchlist"),
+                        LanguageManager.get("dashboard.tab.loans")
+                )
+        );
         getChildren().add(viewHeader);
     }
 }
