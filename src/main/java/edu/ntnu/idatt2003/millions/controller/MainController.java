@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.controller;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.MainView;
+import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -36,6 +37,9 @@ public class MainController {
         bindEvents();
     }
 
+    /**
+     * Binds UI events to their corresponding handler methods.
+     */
     private void bindEvents() {
         view.getHeader().getDashboardButton().setOnAction(e -> view.showDashboard());
         view.getHeader().getExchangeButton().setOnAction(e -> view.showExchange());
@@ -45,10 +49,19 @@ public class MainController {
         view.getWeekBar().getAdvanceButton().setOnAction(e -> handleAdvanceWeek());
     }
 
+    /**
+     * Advances the game by one week.
+     * Registered {@link GameObserver}s are notified automatically by {@link GameManager}.
+     */
     private void handleAdvanceWeek() {
         gameManager.advanceWeek();
     }
 
+    /**
+     * Opens a file chooser dialog and saves the current game state to a JSON file.
+     *
+     * @return true if the game was saved, false if the user cancelled the dialog
+     */
     private boolean handleSaveGame() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(LanguageManager.get("nav.saveGame"));
@@ -66,6 +79,11 @@ public class MainController {
         return false;
     }
 
+    /**
+     * Shows a confirmation dialog when the user wants to exit the game.
+     * The user can choose to save before exiting, exit without saving,
+     * or cancel by closing the dialog with the X button.
+     */
     private void handleExitGame() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(LanguageManager.get("nav.exitGame"));
