@@ -1,52 +1,41 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
 
 /**
- * A reusable view header component containing a title, week indicator,
- * advance week button, and a tab bar for navigation.
+ * A reusable view header component containing a title, a WeekBar,
+ * and a tab bar for navigation.
  */
 public class ViewHeader extends VBox {
 
     private Button activeButton;
-    private final Label weekLabel;
 
     /**
-     * Constructs a ViewHeader with the given title and tab labels.
+     * Constructs a ViewHeader with the given title, tab labels and WeekBar.
      * The first tab is active by default.
      *
-     * @param title  the title of the view
-     * @param labels the tab labels in order
+     * @param title   the title of the view
+     * @param labels  the tab labels in order
+     * @param weekBar the shared week bar component
      */
-    public ViewHeader(String title, List<String> labels) {
+    public ViewHeader(String title, List<String> labels, WeekBar weekBar) {
         setSpacing(8);
 
-        // Title + week + advance button
+        // Tittelrad
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("view-header-title");
 
-        weekLabel = new Label(LanguageManager.get("app.week") + " 1");
-        weekLabel.getStyleClass().add("week-label");
-
-        Button advanceButton = new Button(LanguageManager.get("app.advanceWeek"));
-        advanceButton.getStyleClass().add("advance-button");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox titleRow = new HBox(12, titleLabel, spacer, weekLabel, advanceButton);
+        HBox titleRow = new HBox(12, titleLabel, weekBar);
+        HBox.setHgrow(weekBar, javafx.scene.layout.Priority.ALWAYS);
         titleRow.setAlignment(Pos.CENTER_LEFT);
 
-        // Tab bar
+        // Tabbar
         HBox tabBar = new HBox(54);
         for (String label : labels) {
             Button button = new Button(label);
@@ -75,15 +64,6 @@ public class ViewHeader extends VBox {
         }
         activeButton = button;
         activeButton.getStyleClass().add("tab-button-active");
-    }
-
-    /**
-     * Updates the week number displayed in the header.
-     *
-     * @param week the current week number
-     */
-    public void setWeek(int week) {
-        weekLabel.setText(LanguageManager.get("app.week") + " " + week);
     }
 
     /**

@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
+import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class DashboardView extends VBox {
     /**
      * Constructs a new DashboardView with a tab bar.
      */
-    public DashboardView(GameManager gameManager) {
+    public DashboardView(GameManager gameManager, WeekBar weekBar) {
         this.gameManager = gameManager;
         getStyleClass().add("content-area");
 
@@ -30,7 +31,8 @@ public class DashboardView extends VBox {
                         LanguageManager.get("dashboard.tab.transactions"),
                         LanguageManager.get("dashboard.tab.watchlist"),
                         LanguageManager.get("dashboard.tab.loans")
-                )
+                ),
+                weekBar
         );
         getChildren().add(viewHeader);
     }

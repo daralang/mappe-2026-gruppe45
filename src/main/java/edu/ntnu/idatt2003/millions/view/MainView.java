@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.component.Header;
+import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.DashboardView;
 import edu.ntnu.idatt2003.millions.view.exchange.ExchangeView;
 import javafx.scene.layout.BorderPane;
@@ -16,6 +17,7 @@ public class MainView {
     private final GameManager gameManager;
     private final BorderPane root;
     private final Header header;
+    private final WeekBar weekBar = new WeekBar();
 
     /**
      * Constructs a new MainView with a header and dashboard as the default content.
@@ -47,16 +49,25 @@ public class MainView {
     }
 
     /**
+     * Returns the weekbar component
+     *
+     * @return the weekbar
+     */
+    public WeekBar getWeekBar() {
+        return weekBar;
+    }
+
+    /**
      * Switches the content area to the dashboard view.
      */
     public void showDashboard() {
-        root.setCenter(new DashboardView(gameManager));
+        root.setCenter(new DashboardView(gameManager, weekBar));
     }
 
     /**
      * Switches the content area to the exchange view.
      */
     public void showExchange() {
-        root.setCenter(new ExchangeView(gameManager));
+        root.setCenter(new ExchangeView(gameManager, weekBar));
     }
 }
