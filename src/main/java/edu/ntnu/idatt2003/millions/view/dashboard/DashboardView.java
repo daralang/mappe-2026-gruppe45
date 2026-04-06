@@ -25,12 +25,12 @@ public class DashboardView extends VBox {
         getStyleClass().add("content-area");
 
         ViewHeader viewHeader = new ViewHeader(
-                LanguageManager.get("dashboard.title"),
+                "dashboard.title",
                 List.of(
-                        LanguageManager.get("dashboard.tab.portfolio"),
-                        LanguageManager.get("dashboard.tab.transactions"),
-                        LanguageManager.get("dashboard.tab.watchlist"),
-                        LanguageManager.get("dashboard.tab.loans")
+                        "dashboard.tab.portfolio",
+                        "dashboard.tab.transactions",
+                        "dashboard.tab.watchlist",
+                        "dashboard.tab.loans"
                 ),
                 weekBar
         );
