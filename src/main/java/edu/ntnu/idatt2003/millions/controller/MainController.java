@@ -3,7 +3,13 @@ package edu.ntnu.idatt2003.millions.controller;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.MainView;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.io.File;
 
 /**
  * Controller for the main view of the application.
@@ -43,13 +49,54 @@ public class MainController {
         gameManager.advanceWeek();
     }
 
-    private void handleSaveGame() {
-        // TODO: åpne filvelger og lagre spill
+    private boolean handleSaveGame() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(LanguageManager.get("nav.saveGame"));
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("JSON", "*.json")
+        );
+        fileChooser.setInitialFileName("savegame.json");
+
+        File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            gameManager.saveGame(file);
+            return true;
+        }
+        return false;
     }
 
     private void handleExitGame() {
-        // TODO: avslutt (trengs bekreftelse og evt. en mulighet til å lagre herfra også)
-        stage.close();
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(LanguageManager.get("nav.exitGame"));
+        alert.setHeaderText(LanguageManager.get("exit.confirmHeader"));
+        alert.setContentText(LanguageManager.get("exit.confirmContent"));
+
+        ButtonType saveAndExit = new ButtonType(
+                LanguageManager.get("exit.saveAndExit")
+        );
+        ButtonType exitWithoutSaving = new ButtonType(
+                LanguageManager.get("exit.exitWithoutSaving")
+        );
+        ButtonType cancel = new ButtonType("", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(saveAndExit, exitWithoutSaving, cancel);
+
+        alert.getDialogPane().lookup(".button-bar")
+                .setStyle("-fx-alignment: center;");
+        alert.getDialogPane().lookupButton(cancel).setVisible(false);
+        alert.getDialogPane().lookupButton(cancel).setManaged(false);
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == saveAndExit) {
+                boolean saved = handleSaveGame();
+                if (saved) {
+                    stage.close();
+                }
+            } else if (response == exitWithoutSaving) {
+                stage.close();
+            }
+        });
     }
 
     /**
