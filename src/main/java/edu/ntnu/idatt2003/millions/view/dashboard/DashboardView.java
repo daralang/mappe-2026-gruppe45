@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard;
 
+import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import javafx.scene.layout.VBox;
@@ -13,10 +14,13 @@ import java.util.List;
  */
 public class DashboardView extends VBox {
 
+    private final GameManager gameManager;
+
     /**
      * Constructs a new DashboardView with a tab bar.
      */
-    public DashboardView() {
+    public DashboardView(GameManager gameManager) {
+        this.gameManager = gameManager;
         getStyleClass().add("content-area");
 
         ViewHeader viewHeader = new ViewHeader(

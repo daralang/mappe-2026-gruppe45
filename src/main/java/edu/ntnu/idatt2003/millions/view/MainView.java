@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view;
 
+import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.component.Header;
 import edu.ntnu.idatt2003.millions.view.dashboard.DashboardView;
 import edu.ntnu.idatt2003.millions.view.exchange.ExchangeView;
@@ -12,13 +13,15 @@ import javafx.scene.layout.BorderPane;
  */
 public class MainView {
 
+    private final GameManager gameManager;
     private final BorderPane root;
     private final Header header;
 
     /**
      * Constructs a new MainView with a header and dashboard as the default content.
      */
-    public MainView() {
+    public MainView(GameManager gameManager) {
+        this.gameManager = gameManager;
         header = new Header();
         root = new BorderPane();
         root.setTop(header);
@@ -47,13 +50,13 @@ public class MainView {
      * Switches the content area to the dashboard view.
      */
     public void showDashboard() {
-        root.setCenter(new DashboardView());
+        root.setCenter(new DashboardView(gameManager));
     }
 
     /**
      * Switches the content area to the exchange view.
      */
     public void showExchange() {
-        root.setCenter(new ExchangeView());
+        root.setCenter(new ExchangeView(gameManager));
     }
 }
