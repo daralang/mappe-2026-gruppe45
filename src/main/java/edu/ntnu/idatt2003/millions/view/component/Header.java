@@ -30,11 +30,9 @@ public class Header extends HBox {
     public Header() {
         getStyleClass().add("navbar");
 
-        // Title
         Label title = new Label(LanguageManager.get("app.title"));
         title.getStyleClass().add("navbar-title");
 
-        // Nav-buttons
         dashboardButton = new Button(LanguageManager.get("nav.mySides"));
         exchangeButton = new Button(LanguageManager.get("nav.exchange"));
         leaderboardButton = new Button(LanguageManager.get("nav.leaderboard"));
@@ -48,7 +46,6 @@ public class Header extends HBox {
         HBox navLinks = new HBox(60, dashboardButton, exchangeButton, leaderboardButton, helpButton);
         navLinks.setAlignment(Pos.TOP_CENTER);
 
-        // Save/exit
         saveButton = new Button(LanguageManager.get("nav.saveGame"));
         exitButton = new Button(LanguageManager.get("nav.exitGame"));
         saveButton.getStyleClass().add("navbar-action");
@@ -57,7 +54,6 @@ public class Header extends HBox {
         HBox actions = new HBox(16, saveButton, exitButton);
         actions.setAlignment(Pos.CENTER_RIGHT);
 
-        // Languagepicker + bell
         bellButton = new Button("🔔");
         bellButton.getStyleClass().add("navbar-icon");
 
@@ -67,13 +63,11 @@ public class Header extends HBox {
         bottomRight.setAlignment(Pos.CENTER_RIGHT);
         bottomRight.setPadding(new Insets(0, 0, 4, 0));
 
-        // VBox right side
         VBox rightSide = new VBox();
         rightSide.setAlignment(Pos.TOP_RIGHT);
         rightSide.getChildren().addAll(actions, bottomRight);
         VBox.setVgrow(bottomRight, Priority.ALWAYS);
 
-        // Spacers
         Region leftSpacer = new Region();
         Region rightSpacer = new Region();
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);
@@ -85,6 +79,10 @@ public class Header extends HBox {
         LanguageManager.addObserver(this::updateTexts);
     }
 
+    /**
+     * Updates all text elements to the current language.
+     * Called automatically when the language changes.
+     */
     private void updateTexts() {
         dashboardButton.setText(LanguageManager.get("nav.mySides"));
         exchangeButton.setText(LanguageManager.get("nav.exchange"));
@@ -94,30 +92,65 @@ public class Header extends HBox {
         exitButton.setText(LanguageManager.get("nav.exitGame"));
     }
 
+    /**
+     * Returns the dashboard navigation button.
+     *
+     * @return the dashboard button
+     */
     public Button getDashboardButton() {
         return dashboardButton;
     }
 
+    /**
+     * Returns the exchange navigation button.
+     *
+     * @return the exchange button
+     */
     public Button getExchangeButton() {
         return exchangeButton;
     }
 
+    /**
+     * Returns the leaderboard navigation button.
+     *
+     * @return the leaderboard button
+     */
     public Button getLeaderboardButton() {
         return leaderboardButton;
     }
 
+    /**
+     * Returns the help navigation button.
+     *
+     * @return the help button
+     */
     public Button getHelpButton() {
         return helpButton;
     }
 
+    /**
+     * Returns the notification bell button.
+     *
+     * @return the bell button
+     */
     public Button getBellButton() {
         return bellButton;
     }
 
+    /**
+     * Returns the save game button.
+     *
+     * @return the save button
+     */
     public Button getSaveButton() {
         return saveButton;
     }
 
+    /**
+     * Returns the exit game button.
+     *
+     * @return the exit button
+     */
     public Button getExitButton() {
         return exitButton;
     }
