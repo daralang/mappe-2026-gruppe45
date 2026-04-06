@@ -44,6 +44,7 @@
     -fx-border-color: transparent;
     -fx-border-width: 0 0 2 0;
     -fx-text-fill: #555555;
+    -fx-padding: 8 0 10 0;
 }
 
 .tab-button-active {
@@ -52,7 +53,37 @@
     -fx-font-weight: bold;
 }
 
+.tab-bar {
+    -fx-border-color: #999999;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 0 0 0;
+}
+
 .content-area {
     -fx-padding: 24 32 24 32;
     -fx-spacing: 16;
+}
+
+.view-header-title {
+    -fx-font-size: 24;
+    -fx-font-weight: bold;
+}
+
+.week-label {
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+}
+
+.advance-button {
+    -fx-background-color: transparent;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+    -fx-font-size: 14;
+    -fx-padding: 4 12 4 12;
+}
+
+.advance-button:hover {
+    -fx-background-color: #f5f5f5;
 }
