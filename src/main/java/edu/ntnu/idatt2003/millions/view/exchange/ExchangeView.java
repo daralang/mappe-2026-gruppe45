@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.exchange;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
+import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class ExchangeView extends VBox {
     /**
      * Constructs a new DashboardView with a tab bar.
      */
-    public ExchangeView(GameManager gameManager) {
+    public ExchangeView(GameManager gameManager, WeekBar weekBar) {
         this.gameManager = gameManager;
 
         getStyleClass().add("content-area");
@@ -30,7 +31,8 @@ public class ExchangeView extends VBox {
                         LanguageManager.get("exchange.tab.overview"),
                         LanguageManager.get("exchange.tab.stocks"),
                         LanguageManager.get("exchange.tab.analysis")
-                )
+                ),
+                weekBar
         );
         getChildren().add(viewHeader);
     }
