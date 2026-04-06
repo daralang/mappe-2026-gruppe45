@@ -1,8 +1,8 @@
 package edu.ntnu.idatt2003.millions.factory;
 
+import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
 import edu.ntnu.idatt2003.millions.model.transaction.Sale;
-import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 
 /**

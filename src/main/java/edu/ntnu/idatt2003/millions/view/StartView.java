@@ -51,8 +51,19 @@ public class StartView {
         startButton.setText(LanguageManager.get("start.startButton"));
     }
 
-    public Scene getScene() { return scene; }
-    public String getName() { return nameField.getText().trim(); }
-    public String getCapital() { return capitalField.getText().trim(); }
-    public Button getStartButton() { return startButton; }
+    public Scene getScene() {
+        return scene;
+    }
+
+    public String getName() {
+        return nameField.getText().trim();
+    }
+
+    public String getCapital() {
+        return capitalField.getText().trim();
+    }
+
+    public Button getStartButton() {
+        return startButton;
+    }
 }

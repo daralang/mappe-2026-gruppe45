@@ -1,7 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import javafx.scene.layout.VBox;
