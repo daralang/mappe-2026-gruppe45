@@ -89,4 +89,8 @@ public class GameManager {
     public Exchange getExchange() {
         return exchange;
     }
+
+    public void advanceWeek() {
+        exchange.advance();
+    }
 }

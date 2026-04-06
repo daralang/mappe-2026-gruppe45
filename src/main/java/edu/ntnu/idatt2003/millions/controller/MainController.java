@@ -35,6 +35,13 @@ public class MainController {
         view.getHeader().getExchangeButton().setOnAction(e -> view.showExchange());
         view.getHeader().getSaveButton().setOnAction(e -> handleSaveGame());
         view.getHeader().getExitButton().setOnAction(e -> handleExitGame());
+
+        view.getWeekBar().getAdvanceButton().setOnAction(e -> handleAdvanceWeek());
+    }
+
+    private void handleAdvanceWeek() {
+        gameManager.advanceWeek();
+        view.getWeekBar().setWeek(gameManager.getExchange().getWeek());
     }
 
     private void handleSaveGame() {
@@ -42,7 +49,7 @@ public class MainController {
     }
 
     private void handleExitGame() {
-        // TODO: selg alt og avslutt
+        // TODO: avslutt (trengs bekreftelse og evt. en mulighet til å lagre herfra også)
         stage.close();
     }
 
