@@ -1,12 +1,12 @@
 .navbar {
     -fx-background-color: #000000;
     -fx-padding: 0 24 0 24;
-    -fx-min-height: 90;
+    -fx-min-height: 92;
 }
 
 .navbar-title {
     -fx-text-fill: white;
-    -fx-font-size: 28;
+    -fx-font-size: 30;
     -fx-font-weight: bold;
     -fx-font-family: "Sans-Serif";
     -fx-padding: 38 0 8 0;
@@ -14,8 +14,7 @@
 
 .navbar-link {
     -fx-text-fill: white;
-    -fx-font-size: 15;
-    -fx-font-weight: bold;
+    -fx-font-size: 17;
     -fx-background-color: transparent;
     -fx-font-family: "Sans-Serif";
     -fx-cursor: hand;
@@ -36,4 +35,24 @@
     -fx-font-size: 18;
     -fx-background-color: transparent;
     -fx-cursor: hand;
+}
+
+.tab-button {
+    -fx-background-color: transparent;
+    -fx-font-size: 17;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
+    -fx-text-fill: #555555;
+}
+
+.tab-button-active {
+    -fx-border-color: black;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+}
+
+.content-area {
+    -fx-padding: 24 32 24 32;
+    -fx-spacing: 16;
 }
