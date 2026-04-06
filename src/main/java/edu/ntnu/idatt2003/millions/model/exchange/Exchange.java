@@ -27,7 +27,7 @@ public class Exchange {
     private final Map<String, Stock> stockMap;
 
     @SuppressWarnings("java:S2065") // transient is needed to prevent Gson from serializing Random
-    private final transient Random random = new Random();
+    private transient Random random = new Random();
 
     /** The lowest price a stock can have after a weekly update. */
     private static final BigDecimal MIN_PRICE = new BigDecimal("0.01");
@@ -269,6 +269,15 @@ public class Exchange {
                 .sorted(Comparator.comparing(Stock::getLatestPriceChange))
                 .limit(limit)
                 .toList();
+    }
+
+    /**
+     * Reinitializes transient fields after deserialization.
+     * Must be called by {@link edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler}
+     * after loading a game from file, since Gson does not invoke constructors.
+     */
+    public void reinitialize() {
+        this.random = new Random();
     }
 
 }

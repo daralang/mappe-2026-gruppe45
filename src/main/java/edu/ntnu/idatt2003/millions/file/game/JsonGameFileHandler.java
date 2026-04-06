@@ -84,6 +84,8 @@ public class JsonGameFileHandler implements GameFileHandler {
             JsonObject gameState = gson.fromJson(reader, JsonObject.class);
 
             Exchange exchange = gson.fromJson(gameState.get("exchange"), Exchange.class);
+            exchange.reinitialize();
+
             Player player = gson.fromJson(gameState.get("player"), Player.class);
 
             relinkShares(player, exchange);
