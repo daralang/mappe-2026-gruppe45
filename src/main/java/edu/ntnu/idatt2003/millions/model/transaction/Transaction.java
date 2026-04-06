@@ -16,7 +16,8 @@ public abstract class Transaction {
     private final int week;
     private boolean committed;
 
-    @SuppressWarnings("java:S2065") // transient is needed to prevent Gson from attempting to instantiate the TransactionCalculator interface
+    @SuppressWarnings("java:S2065")
+    // transient is needed to prevent Gson from attempting to instantiate the TransactionCalculator interface
     private final transient TransactionCalculator calculator;
 
     /**

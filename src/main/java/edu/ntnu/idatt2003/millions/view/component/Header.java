@@ -94,11 +94,31 @@ public class Header extends HBox {
         exitButton.setText(LanguageManager.get("nav.exitGame"));
     }
 
-    public Button getDashboardButton() { return dashboardButton; }
-    public Button getExchangeButton() { return exchangeButton; }
-    public Button getLeaderboardButton() { return leaderboardButton; }
-    public Button getHelpButton() { return helpButton; }
-    public Button getBellButton() { return bellButton; }
-    public Button getSaveButton() { return saveButton; }
-    public Button getExitButton() { return exitButton; }
+    public Button getDashboardButton() {
+        return dashboardButton;
+    }
+
+    public Button getExchangeButton() {
+        return exchangeButton;
+    }
+
+    public Button getLeaderboardButton() {
+        return leaderboardButton;
+    }
+
+    public Button getHelpButton() {
+        return helpButton;
+    }
+
+    public Button getBellButton() {
+        return bellButton;
+    }
+
+    public Button getSaveButton() {
+        return saveButton;
+    }
+
+    public Button getExitButton() {
+        return exitButton;
+    }
 }
