@@ -26,11 +26,11 @@ public class ExchangeView extends VBox {
         getStyleClass().add("content-area");
 
         ViewHeader viewHeader = new ViewHeader(
-                LanguageManager.get("exchange.title"),
+                "exchange.title",
                 List.of(
-                        LanguageManager.get("exchange.tab.overview"),
-                        LanguageManager.get("exchange.tab.stocks"),
-                        LanguageManager.get("exchange.tab.analysis")
+                        "exchange.tab.overview",
+                        "exchange.tab.stocks",
+                        "exchange.tab.analysis"
                 ),
                 weekBar
         );
