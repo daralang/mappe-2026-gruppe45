@@ -1,0 +1,79 @@
+package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
+
+import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.Card;
+import javafx.scene.control.Label;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+/**
+ * Card displaying the player's net worth change for the current week.
+ * Shows percentage change and absolute change in NOK since last week.
+ * Displays a dash if no week has been advanced yet.
+ */
+public class WeeklyChangeCard extends Card {
+
+    private final GameManager gameManager;
+    private final Label changeLabel;
+
+    /**
+     * Constructs a new WeeklyChangeCard.
+     *
+     * @param gameManager the game manager containing player and exchange
+     */
+    public WeeklyChangeCard(GameManager gameManager) {
+        super(gameManager);
+        this.gameManager = gameManager;
+        setSpacing(4);
+
+        Label titleLabel = new Label(LanguageManager.get("dashboard.weeklyChange"));
+        titleLabel.getStyleClass().add("card-label");
+
+        changeLabel = new Label();
+        changeLabel.getStyleClass().add("card-value");
+
+        getChildren().addAll(titleLabel, changeLabel);
+
+        updateDisplay();
+    }
+
+    /**
+     * Updates the displayed week change based on the current and previous net worth.
+     * Shows a dash if no week has been advanced yet.
+     */
+    private void updateDisplay() {
+        BigDecimal previousNetWorth = gameManager.getPreviousNetWorth();
+        if (previousNetWorth == null) {
+            changeLabel.setText("–");
+            return;
+        }
+
+        BigDecimal currentNetWorth = gameManager.getPlayer().getNetWorth();
+        BigDecimal change = currentNetWorth.subtract(previousNetWorth);
+        BigDecimal percentChange = change
+                .divide(previousNetWorth, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(1, RoundingMode.HALF_UP);
+
+        String arrow = change.compareTo(BigDecimal.ZERO) >= 0 ? "↗" : "↘";
+        String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
+
+        changeLabel.setText(arrow + " " + sign + percentChange + "%  "
+                + sign + change.setScale(2, RoundingMode.HALF_UP) + " NOK");
+        changeLabel.getStyleClass().removeAll("card-value-positive", "card-value-negative");
+        changeLabel.getStyleClass().add(
+                change.compareTo(BigDecimal.ZERO) >= 0 ? "card-value-positive" : "card-value-negative"
+        );
+    }
+
+    /**
+     * Called when the game state has changed.
+     * Refreshes the displayed week change.
+     */
+    @Override
+    public void onGameUpdated() {
+        updateDisplay();
+    }
+}
