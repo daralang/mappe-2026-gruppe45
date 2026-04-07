@@ -18,6 +18,8 @@ public class Player {
     private final Portfolio portfolio;
     private final TransactionArchive transactionArchive;
 
+    private BigDecimal previousNetWorth;
+
     /**
      * Constructs a new Player with the specified name and starting balance.
      *
@@ -146,5 +148,13 @@ public class Player {
         } else {
             return PlayerStatusLevel.NOVICE;
         }
+    }
+
+    public BigDecimal getPreviousNetWorth() {
+        return previousNetWorth;
+    }
+
+    public void setPreviousNetWorth(BigDecimal previousNetWorth) {
+        this.previousNetWorth = previousNetWorth;
     }
 }

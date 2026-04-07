@@ -95,7 +95,7 @@ public class GameManager {
      * weekly change can be calculated after the week has passed.
      */
     public void advanceWeek() {
-        previousNetWorth = player.getNetWorth();
+        player.setPreviousNetWorth(player.getNetWorth());
         exchange.advance();
         notifyObservers();
     }
@@ -125,7 +125,7 @@ public class GameManager {
      * @return the previous net worth, or null if not yet available
      */
     public BigDecimal getPreviousNetWorth() {
-        return previousNetWorth;
+        return player.getPreviousNetWorth();
     }
 
     /**
