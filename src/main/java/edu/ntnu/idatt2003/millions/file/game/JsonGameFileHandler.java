@@ -45,7 +45,7 @@ public class JsonGameFileHandler implements GameFileHandler {
      * @param player   the player whose state should be saved
      * @param exchange the exchange whose state should be saved
      * @param file     the file to save the game state to
-     * @throws NullPointerException  if player, exchange or file is null
+     * @throws NullPointerException if player, exchange or file is null
      * @throws UncheckedIOException if the file cannot be written to
      */
     @Override
@@ -84,6 +84,8 @@ public class JsonGameFileHandler implements GameFileHandler {
             JsonObject gameState = gson.fromJson(reader, JsonObject.class);
 
             Exchange exchange = gson.fromJson(gameState.get("exchange"), Exchange.class);
+            exchange.reinitialize();
+
             Player player = gson.fromJson(gameState.get("player"), Player.class);
 
             relinkShares(player, exchange);

@@ -291,5 +291,32 @@ class JsonGameFileHandlerTest {
             assertThrows(NullPointerException.class, () ->
                     handler.loadGame(null));
         }
+
+        @Test
+        @DisplayName("Should be able to advance week after loading game from file")
+        void canAdvanceWeekAfterLoadingGame() {
+            // Arrange
+            Path file = tempDir.resolve("save.json");
+            handler.saveGame(player, exchange, file.toFile());
+            GameState state = handler.loadGame(file.toFile());
+
+            // Act & Assert
+            assertDoesNotThrow(() -> state.exchange().advance());
+        }
+    }
+
+    @Nested
+    @DisplayName("reinitialize()")
+    class Reinitialize {
+
+        @Test
+        @DisplayName("Should allow advance() to be called after reinitialize")
+        void allowsAdvanceAfterReinitialize() {
+            // Arrange
+            exchange.reinitialize();
+
+            // Act & Assert
+            assertDoesNotThrow(() -> exchange.advance());
+        }
     }
 }
