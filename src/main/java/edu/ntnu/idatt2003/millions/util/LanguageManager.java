@@ -13,14 +13,20 @@ import java.util.ResourceBundle;
  */
 public class LanguageManager {
 
-    /** The currently active language. Defaults to Norwegian. */
+    /**
+     * The currently active language. Defaults to Norwegian.
+     */
     private static Language currentLanguage = Language.NORWEGIAN;
 
-    /** The resource bundle loaded for the current language. Reloaded when language changes. */
+    /**
+     * The resource bundle loaded for the current language. Reloaded when language changes.
+     */
     private static ResourceBundle bundle =
             ResourceBundle.getBundle("i18n/messages", currentLanguage.locale);
 
-    /** List of observers notified when the language changes. */
+    /**
+     * List of observers notified when the language changes.
+     */
     private static final List<Runnable> observers = new ArrayList<>();
 
     private LanguageManager() {
@@ -32,7 +38,7 @@ public class LanguageManager {
      *
      * @param key the property key to look up
      * @return the localized string
-     * @throws NullPointerException if key is null
+     * @throws NullPointerException               if key is null
      * @throws java.util.MissingResourceException if the key is not found
      */
     public static String get(String key) {

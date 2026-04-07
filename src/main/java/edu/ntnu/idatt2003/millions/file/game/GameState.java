@@ -12,4 +12,5 @@ import edu.ntnu.idatt2003.millions.model.player.Player;
  * @param player   the player state loaded from file
  * @param exchange the exchange state loaded from file
  */
-public record GameState(Player player, Exchange exchange) {}
+public record GameState(Player player, Exchange exchange) {
+}
