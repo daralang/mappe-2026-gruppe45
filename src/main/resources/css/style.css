@@ -101,16 +101,16 @@
 }
 
 .card-value {
-    -fx-font-size: 22;
+    -fx-font-size: 20;
     -fx-font-weight: bold;
 }
 
 .card-value-positive {
     -fx-text-fill: #27ae60;
-    -fx-font-size: 13;
+    -fx-font-size: 16;
 }
 
 .card-value-negative {
     -fx-text-fill: #e74c3c;
-    -fx-font-size: 13;
+    -fx-font-size: 16;
 }
