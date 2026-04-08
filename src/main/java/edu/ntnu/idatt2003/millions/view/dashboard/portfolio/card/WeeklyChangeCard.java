@@ -1,12 +1,14 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Card;
 import javafx.scene.control.Label;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Locale;
 
 /**
  * Card displaying the player's net worth change for the current week.
@@ -60,8 +62,9 @@ public class WeeklyChangeCard extends Card {
         String arrow = change.compareTo(BigDecimal.ZERO) >= 0 ? "↗" : "↘";
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
 
-        changeLabel.setText(arrow + " " + sign + percentChange + "%  "
-                + sign + change.setScale(2, RoundingMode.HALF_UP) + " NOK");
+        String formattedPercent = String.format(Locale.of("no"), "%.1f", percentChange);
+        changeLabel.setText(arrow + " " + sign + formattedPercent + "%  "
+                + sign + CurrencyFormatter.format(change.abs()));
         changeLabel.getStyleClass().removeAll("card-value-positive", "card-value-negative");
         changeLabel.getStyleClass().add(
                 change.compareTo(BigDecimal.ZERO) >= 0 ? "card-value-positive" : "card-value-negative"
