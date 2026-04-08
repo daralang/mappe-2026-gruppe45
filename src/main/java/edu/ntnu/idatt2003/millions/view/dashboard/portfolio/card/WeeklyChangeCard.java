@@ -19,6 +19,7 @@ public class WeeklyChangeCard extends Card {
 
     private final GameManager gameManager;
     private final Label changeLabel;
+    private final Label titleLabel;
 
     /**
      * Constructs a new WeeklyChangeCard.
@@ -30,7 +31,7 @@ public class WeeklyChangeCard extends Card {
         this.gameManager = gameManager;
         setSpacing(4);
 
-        Label titleLabel = new Label(LanguageManager.get("dashboard.weeklyChange"));
+        titleLabel = new Label(LanguageManager.get("dashboard.weeklyChange"));
         titleLabel.getStyleClass().add("card-label");
 
         changeLabel = new Label();
@@ -69,6 +70,16 @@ public class WeeklyChangeCard extends Card {
         changeLabel.getStyleClass().add(
                 change.compareTo(BigDecimal.ZERO) >= 0 ? "card-value-positive" : "card-value-negative"
         );
+    }
+
+    /**
+     * Updates the title label to the current language.
+     * Also refreshes the display in case number formatting changes.
+     */
+    @Override
+    protected void onLanguageChanged() {
+        titleLabel.setText(LanguageManager.get("dashboard.weeklyChange"));
+        updateDisplay();
     }
 
     /**
