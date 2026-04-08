@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.AvailableFundsCard;
+import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.PortfolioValueCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.WeeklyChangeCard;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -27,11 +28,13 @@ public class PortfolioView extends HBox {
 
         WeeklyChangeCard weeklyChangeCard = new WeeklyChangeCard(gameManager);
         AvailableFundsCard availableFundsCard = new AvailableFundsCard(gameManager);
+        PortfolioValueCard portfolioValueCard = new PortfolioValueCard(gameManager);
 
 
         VBox rightCards = new VBox(12,
                 weeklyChangeCard,
-                availableFundsCard
+                availableFundsCard,
+                portfolioValueCard
         );
         rightCards.setMinWidth(220);
         rightCards.setMaxWidth(260);
