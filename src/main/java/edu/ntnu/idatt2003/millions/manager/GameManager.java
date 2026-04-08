@@ -91,12 +91,14 @@ public class GameManager {
 
     /**
      * Advances the game by one week and notifies all registered observers.
-     * Stores the player's current net worth before advancing so that
-     * weekly change can be calculated after the week has passed.
+     * Records the player's current net worth before advancing so that
+     * weekly change and historical net worth data are available after
+     * the week has passed.
      */
     public void advanceWeek() {
         player.setPreviousNetWorth(player.getNetWorth());
         exchange.advance();
+        player.recordNetWorth();
         notifyObservers();
     }
 
