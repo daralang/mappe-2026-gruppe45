@@ -13,6 +13,7 @@ public class AvailableFundsCard extends Card {
 
     private final GameManager gameManager;
     private final Label valueLabel;
+    private final Label titleLabel;
 
     /**
      * Constructs a new AvailableFundsCard and initializes the display.
@@ -24,7 +25,7 @@ public class AvailableFundsCard extends Card {
         this.gameManager = gameManager;
         setSpacing(4);
 
-        Label titleLabel = new Label(LanguageManager.get("dashboard.availableFunds"));
+        titleLabel = new Label(LanguageManager.get("dashboard.availableFunds"));
         titleLabel.getStyleClass().add("card-label");
 
         valueLabel = new Label();
@@ -33,6 +34,14 @@ public class AvailableFundsCard extends Card {
         getChildren().addAll(titleLabel, valueLabel);
 
         valueLabel.setText(CurrencyFormatter.format(gameManager.getPlayer().getMoney()));
+    }
+
+    /**
+     * Updates the title label to the current language.
+     */
+    @Override
+    protected void onLanguageChanged() {
+        titleLabel.setText(LanguageManager.get("dashboard.availableFunds"));
     }
 
     /**

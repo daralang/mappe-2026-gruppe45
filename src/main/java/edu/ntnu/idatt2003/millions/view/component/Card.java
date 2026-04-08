@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.component;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.scene.layout.VBox;
 
 /**
@@ -19,7 +20,14 @@ public abstract class Card extends VBox implements GameObserver {
     protected Card(GameManager gameManager) {
         getStyleClass().add("card");
         gameManager.addObserver(this);
+        LanguageManager.addObserver(this::onLanguageChanged);
     }
+
+    /**
+     * Called when the language changes.
+     * Subclasses must implement this to update their displayed text.
+     */
+    protected abstract void onLanguageChanged();
 
     /**
      * Called when the game state has changed.

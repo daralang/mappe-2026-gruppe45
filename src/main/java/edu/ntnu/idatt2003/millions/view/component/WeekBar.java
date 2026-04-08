@@ -39,6 +39,18 @@ public class WeekBar extends HBox implements GameObserver {
         advanceButton.getStyleClass().add("advance-button");
 
         getChildren().addAll(weekLabel, advanceButton);
+
+        LanguageManager.addObserver(this::onLanguageChanged);
+    }
+
+    /**
+     * Updates text elements to the current language.
+     * Called automatically when the language changes.
+     */
+    private void onLanguageChanged() {
+        advanceButton.setText(LanguageManager.get("app.advanceWeek"));
+        weekLabel.setText(LanguageManager.get("app.week") + " "
+                + gameManager.getExchange().getWeek());
     }
 
     /**
