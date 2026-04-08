@@ -150,10 +150,23 @@ public class Player {
         }
     }
 
+    /**
+     * Returns the player's net worth from before the last week advance.
+     * Returns null if no week has been advanced yet.
+     *
+     * @return the previous net worth, or null if not yet available
+     */
     public BigDecimal getPreviousNetWorth() {
         return previousNetWorth;
     }
 
+    /**
+     * Sets the player's previous net worth.
+     * Called by {@link edu.ntnu.idatt2003.millions.manager.GameManager}
+     * before advancing the week.
+     *
+     * @param previousNetWorth the net worth to store
+     */
     public void setPreviousNetWorth(BigDecimal previousNetWorth) {
         this.previousNetWorth = previousNetWorth;
     }
