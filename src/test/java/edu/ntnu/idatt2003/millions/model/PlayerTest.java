@@ -405,4 +405,41 @@ class PlayerTest {
             assertNotEquals(PlayerStatusLevel.SPECULATOR, player.getStatus());
         }
     }
+
+    @Nested
+    @DisplayName("previousNetWorth")
+    class PreviousNetWorth {
+
+        @Test
+        @DisplayName("Should return null when previousNetWorth has not been set")
+        void returnsNullWhenNotSet() {
+            assertNull(player.getPreviousNetWorth());
+        }
+
+        @Test
+        @DisplayName("Should return the value that was set")
+        void returnsValueWhenSet() {
+            // Arrange
+            BigDecimal expected = new BigDecimal("5000.00");
+
+            // Act
+            player.setPreviousNetWorth(expected);
+
+            // Assert
+            assertEquals(expected, player.getPreviousNetWorth());
+        }
+
+        @Test
+        @DisplayName("Should update when set multiple times")
+        void updatesWhenSetMultipleTimes() {
+            // Arrange
+            player.setPreviousNetWorth(new BigDecimal("5000.00"));
+
+            // Act
+            player.setPreviousNetWorth(new BigDecimal("7500.00"));
+
+            // Assert
+            assertEquals(new BigDecimal("7500.00"), player.getPreviousNetWorth());
+        }
+    }
 }
