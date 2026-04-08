@@ -1,11 +1,9 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
-import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.AvailableFundsCard;
-import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.PortfolioValueCard;
-import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.StatusCard;
-import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.WeeklyChangeCard;
+import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 /**
@@ -24,24 +22,23 @@ public class PortfolioView extends HBox {
      */
     public PortfolioView(GameManager gameManager) {
         this.gameManager = gameManager;
-
         setSpacing(16);
 
-        WeeklyChangeCard weeklyChangeCard = new WeeklyChangeCard(gameManager);
-        AvailableFundsCard availableFundsCard = new AvailableFundsCard(gameManager);
-        PortfolioValueCard portfolioValueCard = new PortfolioValueCard(gameManager);
-        StatusCard statusCard = new StatusCard(gameManager);
-
+        NetWorthCard netWorthCard = new NetWorthCard(gameManager);
+        HBox.setHgrow(netWorthCard, Priority.ALWAYS);
 
         VBox rightCards = new VBox(12,
-                weeklyChangeCard,
-                availableFundsCard,
-                portfolioValueCard,
-                statusCard
+                new WeeklyChangeCard(gameManager),
+                new AvailableFundsCard(gameManager),
+                new PortfolioValueCard(gameManager),
+                new StatusCard(gameManager)
         );
         rightCards.setMinWidth(220);
         rightCards.setMaxWidth(260);
 
-        getChildren().addAll(rightCards);
+        netWorthCard.prefHeightProperty().bind(rightCards.heightProperty());
+        netWorthCard.maxHeightProperty().bind(rightCards.heightProperty());
+
+        getChildren().addAll(netWorthCard, rightCards);
     }
 }

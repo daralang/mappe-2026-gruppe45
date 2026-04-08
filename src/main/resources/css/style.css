@@ -114,3 +114,39 @@
     -fx-text-fill: #e74c3c;
     -fx-font-size: 16;
 }
+
+.area-chart {
+    -fx-background-color: transparent;
+}
+
+.area-chart .chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.area-chart .chart-vertical-grid-lines {
+    -fx-stroke: transparent;
+}
+
+.area-chart .chart-horizontal-grid-lines {
+    -fx-stroke: transparent;
+}
+
+.area-chart .chart-alternative-row-fill {
+    -fx-background-color: transparent;
+}
+
+.area-chart .chart-series-area-fill {
+    -fx-fill: rgba(41, 128, 185, 0.2);
+    -fx-stroke: transparent;
+}
+
+.area-chart .chart-series-area-line {
+    -fx-stroke: #2980b9;
+    -fx-stroke-width: 2;
+}
+
+.area-chart .chart-symbol {
+    -fx-background-color: transparent, transparent;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
