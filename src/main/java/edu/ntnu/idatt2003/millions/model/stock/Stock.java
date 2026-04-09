@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.model.stock;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,21 +16,26 @@ public class Stock {
     private final String company;
     private final List<BigDecimal> prices;
 
+    private final Currency currency;
+
     /**
      * Constructs a new Stock with the specified symbol, company name, and price history.
      *
      * @param symbol  the stock's trading symbol (e.g., "AAPL")
      * @param company the company name (e.g., "Apple Inc.")
      * @param prices  the list of historical prices
-     * @throws NullPointerException     if the symbol, company, or prices is null
+     * @param currency the currency the stock is traded in (e.g., USD)
+     * @throws NullPointerException     if the symbol, company, prices or currency is null
      * @throws IllegalArgumentException if the symbol is blank
      * @throws IllegalArgumentException if the company is blank
      * @throws IllegalArgumentException if the list of prices is empty
      */
-    public Stock(String symbol, String company, List<BigDecimal> prices) {
+    public Stock(String symbol, String company, List<BigDecimal> prices, Currency currency) {
         Objects.requireNonNull(symbol, "Symbol cannot be null");
         Objects.requireNonNull(company, "Company cannot be null");
         Objects.requireNonNull(prices, "Prices cannot be null");
+        Objects.requireNonNull(currency, "Currency cannot be null");
+
         if (symbol.isBlank()) {
             throw new IllegalArgumentException("Symbol cannot be blank");
         }
@@ -43,6 +49,24 @@ public class Stock {
         this.symbol = symbol;
         this.company = company;
         this.prices = prices;
+        this.currency = currency;
+    }
+
+
+    /**
+     * Constructs a new Stock with the specified symbol, company name, and price history.
+     * Defaults to USD as the currency.
+     *
+     * @param symbol  the stock's trading symbol (e.g., "AAPL")
+     * @param company the company name (e.g., "Apple Inc.")
+     * @param prices  the list of historical prices
+     * @throws NullPointerException     if the symbol, company, or prices is null
+     * @throws IllegalArgumentException if the symbol is blank
+     * @throws IllegalArgumentException if the company is blank
+     * @throws IllegalArgumentException if the list of prices is empty
+     */
+    public Stock(String symbol, String company, List<BigDecimal> prices) {
+        this(symbol, company, prices, Currency.getInstance("USD"));
     }
 
     /**
@@ -71,6 +95,15 @@ public class Stock {
 
     public BigDecimal getSalesPrice() {
         return prices.getLast();
+    }
+
+    /**
+     * Returns the currency the stock is traded in.
+     *
+     * @return the currency
+     */
+    public Currency getCurrency() {
+        return currency;
     }
 
     /**

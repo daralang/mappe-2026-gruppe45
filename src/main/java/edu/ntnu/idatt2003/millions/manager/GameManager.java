@@ -26,6 +26,7 @@ public class GameManager {
     private Exchange exchange;
     private final GameFileHandler gameFileHandler;
     private final List<GameObserver> observers = new ArrayList<>();
+    private BigDecimal previousNetWorth;
 
     /**
      * Constructs a new GameManager.
@@ -90,9 +91,14 @@ public class GameManager {
 
     /**
      * Advances the game by one week and notifies all registered observers.
+     * Records the player's current net worth before advancing so that
+     * weekly change and historical net worth data are available after
+     * the week has passed.
      */
     public void advanceWeek() {
+        player.setPreviousNetWorth(player.getNetWorth());
         exchange.advance();
+        player.recordNetWorth();
         notifyObservers();
     }
 
@@ -112,6 +118,16 @@ public class GameManager {
      */
     public Exchange getExchange() {
         return exchange;
+    }
+
+    /**
+     * Returns the player's net worth from before the last week advance.
+     * Returns null if the week has not been advanced yet.
+     *
+     * @return the previous net worth, or null if not yet available
+     */
+    public BigDecimal getPreviousNetWorth() {
+        return player.getPreviousNetWorth();
     }
 
     /**

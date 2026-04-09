@@ -3,6 +3,8 @@ package edu.ntnu.idatt2003.millions.model.player;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -17,6 +19,9 @@ public class Player {
 
     private final Portfolio portfolio;
     private final TransactionArchive transactionArchive;
+
+    private BigDecimal previousNetWorth;
+    private List<BigDecimal> netWorthHistory;
 
     /**
      * Constructs a new Player with the specified name and starting balance.
@@ -39,6 +44,9 @@ public class Player {
 
         this.portfolio = new Portfolio();
         this.transactionArchive = new TransactionArchive();
+
+        this.netWorthHistory = new ArrayList<>();
+        netWorthHistory.add(startingMoney);
     }
 
     /**
@@ -118,6 +126,49 @@ public class Player {
      */
     public BigDecimal getNetWorth() {
         return money.add(portfolio.getNetWorth());
+    }
+
+    /**
+     * Records the player's current net worth in the history.
+     * Called by {@link edu.ntnu.idatt2003.millions.manager.GameManager}
+     * before advancing the week.
+     */
+    public void recordNetWorth() {
+        if (netWorthHistory == null) netWorthHistory = new ArrayList<>();
+        netWorthHistory.add(getNetWorth());
+    }
+
+    /**
+     * Returns a list of all recorded net worth values over time.
+     * Each entry corresponds to the net worth at the end of a week.
+     * Returns an empty list if no history has been recorded yet.
+     *
+     * @return a copy of the net worth history
+     */
+    public List<BigDecimal> getNetWorthHistory() {
+        if (netWorthHistory == null) return List.of();
+        return new ArrayList<>(netWorthHistory);
+    }
+
+    /**
+     * Returns the player's net worth from before the last week advance.
+     * Returns null if no week has been advanced yet.
+     *
+     * @return the previous net worth, or null if not yet available
+     */
+    public BigDecimal getPreviousNetWorth() {
+        return previousNetWorth;
+    }
+
+    /**
+     * Sets the player's previous net worth.
+     * Called by {@link edu.ntnu.idatt2003.millions.manager.GameManager}
+     * before advancing the week.
+     *
+     * @param previousNetWorth the net worth to store
+     */
+    public void setPreviousNetWorth(BigDecimal previousNetWorth) {
+        this.previousNetWorth = previousNetWorth;
     }
 
     /***
