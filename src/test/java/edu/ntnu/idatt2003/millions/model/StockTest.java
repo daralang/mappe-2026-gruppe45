@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -87,6 +88,14 @@ class StockTest {
             assertThrows(NullPointerException.class, () ->
                     new Stock("NKE", "Nike, Inc", null));
         }
+
+        @Test
+        @DisplayName("Should throw exception when currency is null")
+        void throwsExceptionWhenCurrencyIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    new Stock("NKE", "Nike, Inc", prices, null));
+        }
     }
 
     @Nested
@@ -131,6 +140,33 @@ class StockTest {
             BigDecimal result = multiPriceStock.getSalesPrice();
             // Assert
             assertEquals(new BigDecimal("150.00"), result);
+        }
+    }
+
+    @Nested
+    @DisplayName("getCurrency()")
+    class GetCurrency {
+
+        @Test
+        @DisplayName("Should return USD when no currency is specified")
+        void returnsUsdWhenNoCurrencySpecified() {
+            // Act
+            Currency result = stock.getCurrency();
+            // Assert
+            assertEquals(Currency.getInstance("USD"), result);
+        }
+
+        @Test
+        @DisplayName("Should return the specified currency")
+        void returnsSpecifiedCurrency() {
+            // Arrange
+            Stock nokStock = new Stock("EQR", "Equinor",
+                    new ArrayList<>(List.of(new BigDecimal("100.00"))),
+                    Currency.getInstance("NOK"));
+            // Act
+            Currency result = nokStock.getCurrency();
+            // Assert
+            assertEquals(Currency.getInstance("NOK"), result);
         }
     }
 

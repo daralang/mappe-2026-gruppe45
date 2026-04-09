@@ -15,5 +15,15 @@ package edu.ntnu.idatt2003.millions.model.player;
 public enum PlayerStatusLevel {
     NOVICE,
     INVESTOR,
-    SPECULATOR
+    SPECULATOR;
+
+    /**
+     * Returns the i18n key for this status level.
+     * Used to retrieve the localized display name from the resource bundle.
+     *
+     * @return the i18n key, e.g. "status.novice"
+     */
+    public String getI18nKey() {
+        return "status." + name().toLowerCase();
+    }
 }

@@ -99,4 +99,14 @@ public class ViewHeader extends VBox {
             ((Button) buttons.get(i)).setText(LanguageManager.get(labelKeys.get(i)));
         }
     }
+
+    /**
+     * Returns the tab button at the given index.
+     *
+     * @param index the zero-based index of the tab button
+     * @return the tab button at the given index
+     */
+    public Button getTabButton(int index) {
+        return (Button) tabBar.getChildren().get(index);
+    }
 }
