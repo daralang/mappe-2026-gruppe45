@@ -41,7 +41,7 @@ class SaleTest {
     }
 
     @Nested
-    @DisplayName("Sale()")
+    @DisplayName("Sale(Share, int)")
     class Constructor {
 
         @Test
@@ -97,12 +97,84 @@ class SaleTest {
     }
 
     @Nested
+    @DisplayName("Sale(Share, int, BigDecimal)")
+    class ConstructorWithSalesPrice {
+
+        @Test
+        @DisplayName("Should return correct share when created with sales price in NOK")
+        void returnsCorrectShare() {
+            // Arrange
+            Sale sale = new Sale(share, 1, new BigDecimal("1050.00"));
+            // Act & Assert
+            assertEquals(share, sale.getShare());
+        }
+
+        @Test
+        @DisplayName("Should return correct week when created with sales price in NOK")
+        void returnsCorrectWeek() {
+            // Arrange
+            Sale sale = new Sale(share, 1, new BigDecimal("1050.00"));
+            // Act & Assert
+            assertEquals(1, sale.getWeek());
+        }
+
+        @Test
+        @DisplayName("Should not be committed when created with sales price in NOK")
+        void isNotCommittedWhenCreated() {
+            // Arrange
+            Sale sale = new Sale(share, 1, new BigDecimal("1050.00"));
+            // Act & Assert
+            assertFalse(sale.isCommitted());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when share is null")
+        void throwsExceptionWhenShareIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    new Sale(null, 1, new BigDecimal("1050.00")));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when sales price is null")
+        void throwsExceptionWhenSalesPriceIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    new Sale(share, 1, null));
+        }
+
+        @Test
+        @DisplayName("Should use provided sales price in NOK for payout calculation")
+        void usesProvidedSalesPriceForPayout() {
+            // Arrange - 100 USD * 10.50 = 1050 NOK per aksje
+            BigDecimal salesPriceInNok = new BigDecimal("1050.00");
+            Sale sale = new Sale(share, 1, salesPriceInNok);
+            BigDecimal expectedBalance = new BigDecimal("10000.00")
+                    .add(sale.getCalculator().calculateTotal());
+            // Act
+            sale.commit(player);
+            // Assert
+            assertEquals(0, expectedBalance.compareTo(player.getMoney()));
+        }
+
+        @Test
+        @DisplayName("Should add higher payout when sales price in NOK is higher than native price")
+        void addsHigherPayoutWhenNokPriceIsHigher() {
+            // Arrange
+            Sale nativeSale = new Sale(share, 1); // bruker stock.getSalesPrice() = 100
+            Sale nokSale = new Sale(share, 1, new BigDecimal("1050.00")); // konvertert NOK-pris
+            // Assert
+            assertTrue(nokSale.getCalculator().calculateTotal()
+                    .compareTo(nativeSale.getCalculator().calculateTotal()) > 0);
+        }
+    }
+
+    @Nested
     @DisplayName("commit()")
     class Commit {
 
         private Sale sale;
 
-        // Arrange-helpers for WhenShareNotInPortfolio-tests
         private final Share otherShare = new Share(
                 new Stock("NKE", "Nike, Inc",
                         new ArrayList<>(List.of(new BigDecimal("100.00")))),

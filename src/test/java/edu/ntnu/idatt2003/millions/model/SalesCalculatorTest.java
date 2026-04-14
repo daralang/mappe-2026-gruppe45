@@ -28,10 +28,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class SalesCalculatorTest {
 
     private SalesCalculator calculator;
+    private Share share;
 
     @BeforeEach
     void setUp() {
-        Share share = new Share(
+        share = new Share(
                 new Stock("DCL", "Dara Inc", new ArrayList<>(List.of(new BigDecimal("100")))),
                 new BigDecimal("10"), new BigDecimal("30"));
         calculator = new SalesCalculator(share);
@@ -43,7 +44,7 @@ class SalesCalculatorTest {
     }
 
     @Nested
-    @DisplayName("SalesCalculator()")
+    @DisplayName("SalesCalculator(Share)")
     class Constructor {
 
         @Test
@@ -52,6 +53,86 @@ class SalesCalculatorTest {
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
                     new SalesCalculator(null));
+        }
+
+        @Test
+        @DisplayName("Should use stock sales price in native currency when no price provided")
+        void usesNativeCurrencyPriceWhenNoOverride() {
+            // Arrange - stock price is 100 (native currency, e.g. USD)
+            BigDecimal expected = new BigDecimal("100").multiply(new BigDecimal("10"));
+            // Act & Assert
+            assertBigDecimalEquals(expected, calculator.calculateGross());
+        }
+    }
+
+    @Nested
+    @DisplayName("SalesCalculator(Share, BigDecimal)")
+    class ConstructorWithSalesPrice {
+
+        @Test
+        @DisplayName("Should throw exception when share is null")
+        void throwsExceptionWhenShareIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    new SalesCalculator(null, new BigDecimal("1050.00")));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when sales price is null")
+        void throwsExceptionWhenSalesPriceIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    new SalesCalculator(share, null));
+        }
+
+        @Test
+        @DisplayName("Should use provided sales price for gross calculation")
+        void usesProvidedSalesPriceForGross() {
+            // Arrange - 100 USD * 10.50 = 1050 NOK
+            BigDecimal salesPriceInNok = new BigDecimal("1050.00");
+            SalesCalculator calc = new SalesCalculator(share, salesPriceInNok);
+            BigDecimal expected = salesPriceInNok.multiply(new BigDecimal("10"));
+            // Act & Assert
+            assertBigDecimalEquals(expected, calc.calculateGross());
+        }
+
+        @Test
+        @DisplayName("Should calculate commission based on provided sales price")
+        void calculatesCommissionBasedOnProvidedSalesPrice() {
+            // Arrange
+            BigDecimal salesPriceInNok = new BigDecimal("1050.00");
+            SalesCalculator calc = new SalesCalculator(share, salesPriceInNok);
+            BigDecimal gross = salesPriceInNok.multiply(new BigDecimal("10"));
+            BigDecimal expected = gross.multiply(new BigDecimal("0.01"));
+            // Act & Assert
+            assertBigDecimalEquals(expected, calc.calculateCommission());
+        }
+
+        @Test
+        @DisplayName("Should return zero tax when sale is at a loss with provided price")
+        void returnsZeroTaxWhenAtLossWithProvidedPrice() {
+            // Arrange - salgspris lavere enn kjøpspris
+            BigDecimal salesPriceInNok = new BigDecimal("10.00");
+            SalesCalculator calc = new SalesCalculator(share, salesPriceInNok);
+            // Act & Assert
+            assertBigDecimalEquals(BigDecimal.ZERO, calc.calculateTax());
+        }
+
+        @Test
+        @DisplayName("Should calculate total based on provided sales price")
+        void calculatesTotalBasedOnProvidedSalesPrice() {
+            // Arrange
+            BigDecimal salesPriceInNok = new BigDecimal("1050.00");
+            SalesCalculator calc = new SalesCalculator(share, salesPriceInNok);
+            BigDecimal gross = salesPriceInNok.multiply(new BigDecimal("10"));
+            BigDecimal commission = gross.multiply(new BigDecimal("0.01"));
+            BigDecimal purchaseCosts = new BigDecimal("30").multiply(new BigDecimal("10"))
+                    .multiply(new BigDecimal("1.005"));
+            BigDecimal profit = gross.subtract(commission).subtract(purchaseCosts);
+            BigDecimal tax = profit.multiply(new BigDecimal("0.3"));
+            BigDecimal expected = gross.subtract(commission).subtract(tax);
+            // Act & Assert
+            assertBigDecimalEquals(expected, calc.calculateTotal());
         }
     }
 

@@ -53,7 +53,7 @@ public class WeeklyChangeCard extends Card {
             return;
         }
 
-        BigDecimal currentNetWorth = gameManager.getPlayer().getNetWorth();
+        BigDecimal currentNetWorth = gameManager.getNetWorthNok();
         BigDecimal change = currentNetWorth.subtract(previousNetWorth);
         BigDecimal percentChange = change
                 .divide(previousNetWorth, 4, RoundingMode.HALF_UP)

@@ -3,8 +3,13 @@ package edu.ntnu.idatt2003.millions.manager;
 import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
 import edu.ntnu.idatt2003.millions.file.game.GameState;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 
 import java.io.File;
@@ -19,21 +24,39 @@ import java.util.Objects;
  * saving the current game state, and advancing the game week.
  * Notifies registered {@link GameObserver}s when the game state changes.
  * Delegates file operations to {@link GameFileHandler}.
+ * All monetary values exposed through this class are in NOK.
  */
 public class GameManager {
 
     private Player player;
     private Exchange exchange;
     private final GameFileHandler gameFileHandler;
+    private final CurrencyConverter currencyConverter;
     private final List<GameObserver> observers = new ArrayList<>();
-    private BigDecimal previousNetWorth;
 
     /**
-     * Constructs a new GameManager.
-     * Initializes the file handler for JSON serialization.
+     * Constructs a new GameManager with the specified file handler and currency converter.
+     * Use this constructor when you need control over which implementations are used,
+     * for example in tests where mock implementations are needed.
+     *
+     * @param gameFileHandler   the file handler to use for saving and loading games
+     * @param currencyConverter the currency converter to use for price conversions
+     * @throws NullPointerException if gameFileHandler or currencyConverter is null
+     */
+    public GameManager(GameFileHandler gameFileHandler, CurrencyConverter currencyConverter) {
+        Objects.requireNonNull(gameFileHandler, "GameFileHandler cannot be null");
+        Objects.requireNonNull(currencyConverter, "CurrencyConverter cannot be null");
+        this.gameFileHandler = gameFileHandler;
+        this.currencyConverter = currencyConverter;
+    }
+
+    /**
+     * Constructs a new GameManager with default implementations.
+     * Uses {@link JsonGameFileHandler} for file handling and
+     * {@link FixedRateCurrencyConverter} for currency conversion.
      */
     public GameManager() {
-        this.gameFileHandler = new JsonGameFileHandler();
+        this(new JsonGameFileHandler(), new FixedRateCurrencyConverter());
     }
 
     /**
@@ -49,7 +72,6 @@ public class GameManager {
 
     /**
      * Saves the current game state to a JSON file.
-     * Delegates the file operation to the game file handler.
      *
      * @param file the file to save the game state to
      * @throws NullPointerException  if the file is null
@@ -77,7 +99,6 @@ public class GameManager {
 
     /**
      * Loads a saved game state from a JSON file.
-     * Delegates the file operation to the game file handler.
      *
      * @param file the file to load the game state from
      * @throws NullPointerException if the file is null
@@ -91,14 +112,14 @@ public class GameManager {
 
     /**
      * Advances the game by one week and notifies all registered observers.
-     * Records the player's current net worth before advancing so that
+     * Records the player's current net worth in NOK before advancing so that
      * weekly change and historical net worth data are available after
      * the week has passed.
      */
     public void advanceWeek() {
-        player.setPreviousNetWorth(player.getNetWorth());
+        player.setPreviousNetWorth(getNetWorthNok());
         exchange.advance();
-        player.recordNetWorth();
+        player.addToNetWorthHistory(getNetWorthNok());
         notifyObservers();
     }
 
@@ -124,10 +145,74 @@ public class GameManager {
      * Returns the player's net worth from before the last week advance.
      * Returns null if the week has not been advanced yet.
      *
-     * @return the previous net worth, or null if not yet available
+     * @return the previous net worth in NOK, or null if not yet available
      */
     public BigDecimal getPreviousNetWorth() {
         return player.getPreviousNetWorth();
+    }
+
+    /**
+     * Returns the total value of the player's portfolio converted to NOK.
+     * Stock prices are converted from their native currency using the
+     * current exchange rate.
+     *
+     * @return the portfolio net worth in NOK
+     */
+    public BigDecimal getPortfolioNetWorthNok() {
+        return getPlayer().getPortfolio().getShares().stream()
+                .map(share -> {
+                    BigDecimal salesPriceInNok = currencyConverter.toNok(
+                            share.getStock().getSalesPrice(),
+                            share.getStock().getCurrency());
+                    return new SalesCalculator(share, salesPriceInNok).calculateTotal();
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Returns the player's total net worth in NOK,
+     * calculated as available funds plus portfolio value.
+     *
+     * @return the total net worth in NOK
+     */
+    public BigDecimal getNetWorthNok() {
+        return getPlayer().getMoney().add(getPortfolioNetWorthNok());
+    }
+
+    /**
+     * Returns the current sales price of the given stock converted to NOK.
+     *
+     * @param stock the stock to get the price for
+     * @return the current sales price in NOK
+     * @throws NullPointerException if stock is null
+     */
+    public BigDecimal getSalesPriceNok(Stock stock) {
+        Objects.requireNonNull(stock, "Stock cannot be null");
+        return currencyConverter.toNok(stock.getSalesPrice(), stock.getCurrency());
+    }
+
+    /**
+     * Returns the latest price change of the given stock converted to NOK.
+     *
+     * @param stock the stock to get the price change for
+     * @return the latest price change in NOK
+     * @throws NullPointerException if stock is null
+     */
+    public BigDecimal getPriceChangeNok(Stock stock) {
+        Objects.requireNonNull(stock, "Stock cannot be null");
+        return currencyConverter.toNok(stock.getLatestPriceChange(), stock.getCurrency());
+    }
+
+    /**
+     * Returns the player's current status based on NOK net worth and
+     * number of weeks with active trading.
+     * Delegates to {@link Player#getStatus(BigDecimal)} with the
+     * NOK-converted net worth, keeping status logic in one place.
+     *
+     * @return the player's status level
+     */
+    public PlayerStatusLevel getPlayerStatus() {
+        return player.getStatus(getNetWorthNok());
     }
 
     /**

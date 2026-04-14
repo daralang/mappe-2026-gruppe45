@@ -12,6 +12,7 @@ import edu.ntnu.idatt2003.millions.model.transaction.Sale;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 
 import java.io.*;
+import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,6 +34,7 @@ public class JsonGameFileHandler implements GameFileHandler {
     public JsonGameFileHandler() {
         this.gson = new GsonBuilder()
                 .registerTypeAdapterFactory(new TransactionAdapterFactory())
+                .registerTypeHierarchyAdapter(Currency.class, new CurrencyTypeAdapter())
                 .setPrettyPrinting()
                 .create();
     }
@@ -142,6 +144,42 @@ public class JsonGameFileHandler implements GameFileHandler {
                     }
                 }
             };
+        }
+    }
+
+    /**
+     * Custom TypeAdapter for {@link Currency} that serializes and deserializes
+     * using the ISO 4217 currency code string (e.g. "USD", "NOK").
+     */
+    private static class CurrencyTypeAdapter extends TypeAdapter<Currency> {
+
+        /**
+         * Serializes a Currency to its ISO 4217 currency code string.
+         *
+         * @param out   the JSON writer
+         * @param value the currency to serialize
+         * @throws IOException if an I/O error occurs
+         */
+        @Override
+        public void write(JsonWriter out, Currency value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(value.getCurrencyCode());
+            }
+        }
+
+        /**
+         * Deserializes a Currency from its ISO 4217 currency code string.
+         *
+         * @param in the JSON reader
+         * @return the deserialized Currency
+         * @throws IOException if an I/O error occurs
+         */
+        @Override
+        public Currency read(JsonReader in) throws IOException {
+            String code = in.nextString();
+            return Currency.getInstance(code);
         }
     }
 

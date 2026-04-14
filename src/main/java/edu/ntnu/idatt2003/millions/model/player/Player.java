@@ -129,13 +129,15 @@ public class Player {
     }
 
     /**
-     * Records the player's current net worth in the history.
-     * Called by {@link edu.ntnu.idatt2003.millions.manager.GameManager}
-     * before advancing the week.
+     * Adds the given value to the net worth history.
+     *
+     * @param netWorth the net worth value to record
+     * @throws NullPointerException if net worth value is null
      */
-    public void recordNetWorth() {
+    public void addToNetWorthHistory(BigDecimal netWorth) {
+        Objects.requireNonNull(netWorth, "Net worth cannot be null");
         if (netWorthHistory == null) netWorthHistory = new ArrayList<>();
-        netWorthHistory.add(getNetWorth());
+        netWorthHistory.add(netWorth);
     }
 
     /**
@@ -171,22 +173,48 @@ public class Player {
         this.previousNetWorth = previousNetWorth;
     }
 
-    /***
-     * Returns the players current status based on net worth growth and number of weeks with active
-     * trading.
+    /**
+     * Returns the player's current status based on net worth growth and number of weeks
+     * with active trading. Uses the player's own net worth calculated from the portfolio,
+     * which may be in the portfolio's native currency.
+     *
+     * <p>If stock prices need to be evaluated in NOK, use {@link #getStatus(BigDecimal)}
+     * and pass in a converted net worth value instead.</p>
+     *
      * <ul>
      *     <li>{@link PlayerStatusLevel#NOVICE}: basic start level, all other cases</li>
-     *     <li>{@link PlayerStatusLevel#INVESTOR}: players who have been trading for minimum 10 weeks and increased their
-     *          net worth with at least 20%.</li>
-     *     <li> {@link PlayerStatusLevel#SPECULATOR}: players who have been trading for minimum 20 weeks and have
-     *          minimum doubled their net worth.</li>
+     *     <li>{@link PlayerStatusLevel#INVESTOR}: players who have been trading for minimum 10 weeks
+     *          and increased their net worth with at least 20%.</li>
+     *     <li>{@link PlayerStatusLevel#SPECULATOR}: players who have been trading for minimum 20 weeks
+     *          and have minimum doubled their net worth.</li>
      * </ul>
      *
-     * @return the players status level {@link PlayerStatusLevel}
+     * @return the player's status level {@link PlayerStatusLevel}
      */
     public PlayerStatusLevel getStatus() {
+        return getStatus(getNetWorth());
+    }
+
+    /**
+     * Returns the player's current status based on the provided net worth and number of weeks
+     * with active trading. Use this variant when the net worth has been converted to a common
+     * currency (e.g. NOK) before evaluation.
+     *
+     * <ul>
+     *     <li>{@link PlayerStatusLevel#NOVICE}: basic start level, all other cases</li>
+     *     <li>{@link PlayerStatusLevel#INVESTOR}: players who have been trading for minimum 10 weeks
+     *          and increased their net worth with at least 20%.</li>
+     *     <li>{@link PlayerStatusLevel#SPECULATOR}: players who have been trading for minimum 20 weeks
+     *          and have minimum doubled their net worth.</li>
+     * </ul>
+     *
+     * @param netWorth the net worth to evaluate status against
+     * @return the player's status level {@link PlayerStatusLevel}
+     * @throws NullPointerException if netWorth is null
+     */
+    public PlayerStatusLevel getStatus(BigDecimal netWorth) {
+        Objects.requireNonNull(netWorth, "Net worth cannot be null");
         int weeksTraded = transactionArchive.countDistinctWeeks();
-        BigDecimal netWorth = getNetWorth();
         BigDecimal twentyPercentGrowth = startingMoney.multiply(new BigDecimal("1.20"));
         BigDecimal doubleGrowth = startingMoney.multiply(new BigDecimal("2.00"));
 

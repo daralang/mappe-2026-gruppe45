@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -38,8 +39,9 @@ class ExchangeTest {
     void setUp() {
         stock = new Stock("DIS", "The Walt Disney Company",
                 new ArrayList<>(List.of(new BigDecimal("100.00"))));
-        exchange = new Exchange("NYSE", new ArrayList<>(List.of(stock)));
-        player = new Player("Alva", new BigDecimal("10000.00"));
+        exchange = new Exchange("NYSE", new ArrayList<>(List.of(stock)),
+                new FixedRateCurrencyConverter());
+        player = new Player("Alva", new BigDecimal("100000.00"));
     }
 
     @Nested
@@ -67,7 +69,7 @@ class ExchangeTest {
             List<Stock> stocks = new ArrayList<>(List.of(stock));
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    new Exchange(null, stocks));
+                    new Exchange(null, stocks, new FixedRateCurrencyConverter()));
         }
 
         @Test
@@ -77,7 +79,7 @@ class ExchangeTest {
             List<Stock> stocks = new ArrayList<>(List.of(stock));
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    new Exchange("", stocks));
+                    new Exchange("", stocks, new FixedRateCurrencyConverter()));
         }
 
         @Test
@@ -85,7 +87,7 @@ class ExchangeTest {
         void throwsExceptionWhenStockListIsNull() {
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    new Exchange("NYSE", null));
+                    new Exchange("NYSE", null, new FixedRateCurrencyConverter()));
         }
 
         @Test
@@ -95,7 +97,7 @@ class ExchangeTest {
             List<Stock> emptyList = new ArrayList<>();
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    new Exchange("NYSE", emptyList));
+                    new Exchange("NYSE", emptyList, new FixedRateCurrencyConverter()));
         }
 
         @Test
@@ -106,7 +108,7 @@ class ExchangeTest {
             stocks.add(null);
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    new Exchange("NYSE", stocks));
+                    new Exchange("NYSE", stocks, new FixedRateCurrencyConverter()));
         }
 
         @Test
@@ -118,7 +120,17 @@ class ExchangeTest {
             List<Stock> stocks = new ArrayList<>(List.of(stock, duplicate));
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    new Exchange("NYSE", stocks));
+                    new Exchange("NYSE", stocks, new FixedRateCurrencyConverter()));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when currency converter is null")
+        void throwsExceptionWhenCurrencyConverterIsNull() {
+            // Arrange
+            List<Stock> stocks = new ArrayList<>(List.of(stock));
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    new Exchange("NYSE", stocks, null));
         }
     }
 
@@ -276,7 +288,7 @@ class ExchangeTest {
         }
 
         @Test
-        @DisplayName("Should deduct cost from player balance after buy")
+        @DisplayName("Should deduct cost in NOK from player balance after buy")
         void deductsCostFromBalance() {
             // Arrange
             BigDecimal balanceBefore = player.getMoney();
@@ -284,6 +296,17 @@ class ExchangeTest {
             exchange.buy("DIS", new BigDecimal("5"), player);
             // Assert
             assertTrue(player.getMoney().compareTo(balanceBefore) < 0);
+        }
+
+        @Test
+        @DisplayName("Should store purchase price in NOK after buy")
+        void storesPurchasePriceInNok() {
+            // Act
+            exchange.buy("DIS", new BigDecimal("1"), player);
+            Share share = player.getPortfolio().getShares().getFirst();
+            // Assert - 100 USD * 10.50 = 1050 NOK
+            assertEquals(0, new BigDecimal("1050.00")
+                    .compareTo(share.getPurchasePrice()));
         }
 
         @Test
@@ -352,7 +375,8 @@ class ExchangeTest {
 
         @BeforeEach
         void setUp() {
-            share = new Share(stock, new BigDecimal("5"), new BigDecimal("100.00"));
+            // purchasePrice i NOK
+            share = new Share(stock, new BigDecimal("5"), new BigDecimal("1050.00"));
             player.getPortfolio().addShare(share);
         }
 
@@ -376,7 +400,7 @@ class ExchangeTest {
         }
 
         @Test
-        @DisplayName("Should add payout to player balance after sell")
+        @DisplayName("Should add payout in NOK to player balance after sell")
         void addsPayoutToBalance() {
             // Arrange
             BigDecimal balanceBefore = player.getMoney();
@@ -406,7 +430,8 @@ class ExchangeTest {
         @DisplayName("Should throw exception when share is not in player portfolio")
         void throwsExceptionWhenShareNotInPortfolio() {
             // Arrange
-            Share otherShare = new Share(stock, new BigDecimal("5"), new BigDecimal("100.00"));
+            Share otherShare = new Share(stock, new BigDecimal("5"),
+                    new BigDecimal("1050.00"));
             // Act & Assert
             assertThrows(IllegalStateException.class, () ->
                     exchange.sell(otherShare, player));
@@ -427,13 +452,13 @@ class ExchangeTest {
         }
 
         @Test
-        @DisplayName("Should update stock price when advance is called")
-        void updatesStockPrice() {
+        @DisplayName("Should update stock price in native currency when advance is called")
+        void updatesStockPriceInNativeCurrency() {
             // Arrange
             BigDecimal priceBefore = stock.getSalesPrice();
             // Act
             exchange.advance();
-            // Assert
+            // Assert - ny pris skal være i USD, ikke konvertert
             assertNotEquals(priceBefore, stock.getSalesPrice());
         }
 
@@ -462,15 +487,14 @@ class ExchangeTest {
                     new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("120.00"))));
             loser = new Stock("AKL", "Alva Company",
                     new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("80.00"))));
-            exchange = new Exchange("Oslo Børs", new ArrayList<>(List.of(gainer, loser)));
+            exchange = new Exchange("Oslo Børs", new ArrayList<>(List.of(gainer, loser)),
+                    new FixedRateCurrencyConverter());
         }
 
         @Test
         @DisplayName("Should return stocks with negative price change")
         void returnsStocksWithNegativePriceChange() {
-            //Act
             List<Stock> result = exchange.getLosers(10);
-            //Assert
             assertTrue(result.contains(loser));
             assertFalse(result.contains(gainer));
         }
@@ -478,44 +502,36 @@ class ExchangeTest {
         @Test
         @DisplayName("Should return list with restrict at limit")
         void returnsListWithRestrictAtLimit() {
-            //Act
             List<Stock> result = exchange.getLosers(1);
-            //Assert
             assertEquals(1, result.size());
         }
 
         @Test
         @DisplayName("Should return empty list when no stocks have lost")
         void returnsEmptyListWhenNoLoserStocks() {
-            // Arrange
             Stock flat = new Stock("MR", "Majid, Inc",
-                    new ArrayList<>(List.of(new BigDecimal("100.00"),
-                            new BigDecimal("120.00"))));
-            exchange = new Exchange("Stockholm Börs", new ArrayList<>(List.of(flat)));
-            // Act & Assert
+                    new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("120.00"))));
+            exchange = new Exchange("Stockholm Börs", new ArrayList<>(List.of(flat)),
+                    new FixedRateCurrencyConverter());
             assertTrue(exchange.getLosers(20).isEmpty());
         }
 
         @Test
         @DisplayName("Should throw exceptions when limit is zero")
         void throwsExceptionWhenLimitIsZero() {
-            // Act & Assert
             assertThrows(IllegalArgumentException.class, () -> exchange.getLosers(0));
         }
 
         @Test
         @DisplayName("Should throw exception when limit is negative")
         void throwsExceptionWhenLimitIsNegative() {
-            //Act & Assert
             assertThrows(IllegalArgumentException.class, () -> exchange.getLosers(-1));
         }
 
         @Test
         @DisplayName("Should return all losers when limit exceeds number of losing stocks")
         void returnsAllLosersWhenLimitExceedsNumberLoserCount() {
-            //Act
             List<Stock> result = exchange.getLosers(100);
-            //Assert
             assertEquals(1, result.size());
             assertTrue(result.contains(loser));
         }
@@ -534,15 +550,14 @@ class ExchangeTest {
                     new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("120.00"))));
             loser = new Stock("AKL", "Alva Company",
                     new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("80.00"))));
-            exchange = new Exchange("Oslo Børs", new ArrayList<>(List.of(gainer, loser)));
+            exchange = new Exchange("Oslo Børs", new ArrayList<>(List.of(gainer, loser)),
+                    new FixedRateCurrencyConverter());
         }
 
         @Test
         @DisplayName("Should return stocks with positive price change")
         void returnsStocksWithPositivePriceChange() {
-            //Act
             List<Stock> result = exchange.getGainers(10);
-            //Assert
             assertTrue(result.contains(gainer));
             assertFalse(result.contains(loser));
         }
@@ -550,43 +565,36 @@ class ExchangeTest {
         @Test
         @DisplayName("Should return list restrict at limit")
         void returnsListWithRestrictAtLimit() {
-            //Act
             List<Stock> result = exchange.getGainers(1);
-            //Assert
             assertEquals(1, result.size());
         }
 
         @Test
         @DisplayName("Should return empty list when no stocks have gained")
         void returnsEmptyListWhenNoGainers() {
-            //Arrange
             Stock flat = new Stock("MR", "Majid, Inc",
                     new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("50.00"))));
-            exchange = new Exchange("Stockholm Börs", new ArrayList<>(List.of(flat)));
-            //Act & Assert
+            exchange = new Exchange("Stockholm Börs", new ArrayList<>(List.of(flat)),
+                    new FixedRateCurrencyConverter());
             assertTrue(exchange.getGainers(10).isEmpty());
         }
 
         @Test
         @DisplayName("Should throw exception when limit is zero")
         void throwsExceptionWhenLimitIsZero() {
-            // Act & Assert
             assertThrows(IllegalArgumentException.class, () -> exchange.getGainers(0));
         }
 
         @Test
         @DisplayName("Should throw exception when limit is negative")
         void throwsExceptionWhenLimitIsNegative() {
-            //Act & Assert
             assertThrows(IllegalArgumentException.class, () -> exchange.getGainers(-1));
         }
 
         @Test
         @DisplayName("Should return all gainers when limit exceeds number of gaining stocks")
         void returnsAllGainersWhenLimitExceedsGainerCount() {
-            //Act
             List<Stock> result = exchange.getGainers(100);
-            //Assert
             assertEquals(1, result.size());
             assertTrue(result.contains(gainer));
         }

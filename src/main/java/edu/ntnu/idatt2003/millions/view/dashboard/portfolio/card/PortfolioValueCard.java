@@ -34,7 +34,7 @@ public class PortfolioValueCard extends Card {
         getChildren().addAll(titleLabel, valueLabel);
 
         valueLabel.setText(CurrencyFormatter.format(
-                gameManager.getPlayer().getPortfolio().getNetWorth()));
+                gameManager.getPortfolioNetWorthNok()));
     }
 
     /**
@@ -51,6 +51,7 @@ public class PortfolioValueCard extends Card {
      */
     @Override
     public void onGameUpdated() {
-        valueLabel.setText(CurrencyFormatter.format(gameManager.getPlayer().getPortfolio().getNetWorth()));
+        valueLabel.setText(CurrencyFormatter.format(
+                gameManager.getPortfolioNetWorthNok()));
     }
 }

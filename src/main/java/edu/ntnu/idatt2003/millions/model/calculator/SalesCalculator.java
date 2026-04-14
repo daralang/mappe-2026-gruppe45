@@ -16,28 +16,41 @@ public class SalesCalculator implements TransactionCalculator {
     private final BigDecimal quantity;
     private final BigDecimal purchaseCosts;
 
-    /**
-     * Commission rate applied to the gross value of the sale (1%).
-     */
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.01");
-
-    /**
-     * Tax rate applied to the profit of the sale (30%).
-     */
     private static final BigDecimal TAX_RATE = new BigDecimal("0.3");
 
     /**
      * Constructs a SalesCalculator for the given share.
+     * The sales price is fetched directly from the stock and may be in a foreign currency.
+     * Use {@link #SalesCalculator(Share, BigDecimal)} when the price has already been
+     * converted to NOK.
      *
-     * @param share the share being sold, used to retrieve sales price, quantity, and purchase costs
+     * @param share the share being sold
      * @throws NullPointerException if the share is null
      */
     public SalesCalculator(Share share) {
         Objects.requireNonNull(share, "Share cannot be null");
         this.salesPrice = share.getStock().getSalesPrice();
         this.quantity = share.getQuantity();
-        PurchaseCalculator purchaseCalculator = new PurchaseCalculator(share);
-        this.purchaseCosts = purchaseCalculator.calculateTotal();
+        this.purchaseCosts = new PurchaseCalculator(share).calculateTotal();
+    }
+
+    /**
+     * Constructs a SalesCalculator for the given share with a pre-converted sales price.
+     * Use this constructor when selling via
+     * {@link edu.ntnu.idatt2003.millions.model.exchange.Exchange},
+     * which converts the stock price to NOK before creating the transaction.
+     *
+     * @param share        the share being sold
+     * @param salesPrice   the current sales price already converted to NOK
+     * @throws NullPointerException if the share or salesPrice is null
+     */
+    public SalesCalculator(Share share, BigDecimal salesPrice) {
+        Objects.requireNonNull(share, "Share cannot be null");
+        Objects.requireNonNull(salesPrice, "Sales price cannot be null");
+        this.salesPrice = salesPrice;
+        this.quantity = share.getQuantity();
+        this.purchaseCosts = new PurchaseCalculator(share).calculateTotal();
     }
 
     /**

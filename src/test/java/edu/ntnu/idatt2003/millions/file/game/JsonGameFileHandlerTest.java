@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.file.game;
 
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,8 +47,9 @@ class JsonGameFileHandlerTest {
         stock = new Stock("AAPL", "Apple Inc.",
                 new ArrayList<>(List.of(new BigDecimal("276.43"))));
         exchange = new Exchange("Oslo Børs",
-                new ArrayList<>(List.of(stock)));
-        player = new Player("Alva", new BigDecimal("10000.00"));
+                new ArrayList<>(List.of(stock)),
+                new FixedRateCurrencyConverter());
+        player = new Player("Alva", new BigDecimal("100000.00"));
     }
 
     @Nested
@@ -83,7 +86,7 @@ class JsonGameFileHandlerTest {
             // Arrange
             Path file = tempDir.resolve("save.json");
             Share share = new Share(stock, new BigDecimal("5"),
-                    new BigDecimal("276.43"));
+                    new BigDecimal("2902.52")); // 276.43 USD * 10.50
             player.getPortfolio().addShare(share);
             // Act & Assert
             assertDoesNotThrow(() ->
@@ -165,7 +168,7 @@ class JsonGameFileHandlerTest {
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
-            assertEquals(0, new BigDecimal("10000.00")
+            assertEquals(0, new BigDecimal("100000.00")
                     .compareTo(state.player().getMoney()));
         }
 
@@ -260,8 +263,8 @@ class JsonGameFileHandlerTest {
         }
 
         @Test
-        @DisplayName("Should preserve price history after load")
-        void preservesPriceHistoryAfterLoad() {
+        @DisplayName("Should preserve price history in native currency after load")
+        void preservesPriceHistoryInNativeCurrencyAfterLoad() {
             // Arrange
             Path file = tempDir.resolve("save.json");
             exchange.advance();
@@ -269,9 +272,35 @@ class JsonGameFileHandlerTest {
             handler.saveGame(player, exchange, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
-            // Assert
+            // Assert - 3 priser i USD, ikke konvertert
             assertEquals(3, state.exchange().getStock("AAPL")
                     .getHistoricalPrices().size());
+        }
+
+        @Test
+        @DisplayName("Should preserve currency after load")
+        void preservesCurrencyAfterLoad() {
+            // Arrange
+            Path file = tempDir.resolve("save.json");
+            handler.saveGame(player, exchange, file.toFile());
+            // Act
+            GameState state = handler.loadGame(file.toFile());
+            // Assert
+            assertEquals(Currency.getInstance("USD"),
+                    state.exchange().getStock("AAPL").getCurrency());
+        }
+
+        @Test
+        @DisplayName("Should preserve stock prices in native currency after load")
+        void preservesStockPricesInNativeCurrencyAfterLoad() {
+            // Arrange
+            Path file = tempDir.resolve("save.json");
+            handler.saveGame(player, exchange, file.toFile());
+            // Act
+            GameState state = handler.loadGame(file.toFile());
+            // Assert - pris skal være i USD, ikke konvertert til NOK
+            assertEquals(0, new BigDecimal("276.43").compareTo(
+                    state.exchange().getStock("AAPL").getSalesPrice()));
         }
 
         @Test
@@ -299,7 +328,6 @@ class JsonGameFileHandlerTest {
             Path file = tempDir.resolve("save.json");
             handler.saveGame(player, exchange, file.toFile());
             GameState state = handler.loadGame(file.toFile());
-
             // Act & Assert
             assertDoesNotThrow(() -> state.exchange().advance());
         }
@@ -314,7 +342,6 @@ class JsonGameFileHandlerTest {
         void allowsAdvanceAfterReinitialize() {
             // Arrange
             exchange.reinitialize();
-
             // Act & Assert
             assertDoesNotThrow(() -> exchange.advance());
         }

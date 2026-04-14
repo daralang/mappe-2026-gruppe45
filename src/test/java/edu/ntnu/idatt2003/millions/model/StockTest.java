@@ -241,6 +241,19 @@ class StockTest {
             //Assert
             assertFalse(result.contains(new BigDecimal("99.00")));
         }
+
+        @Test
+        @DisplayName("Should store prices in native currency without conversion")
+        void storesPricesInNativeCurrency() {
+            // Arrange
+            BigDecimal usdPrice = new BigDecimal("276.43");
+            Stock usdStock = new Stock("AAPL", "Apple Inc.",
+                    new ArrayList<>(List.of(usdPrice)));
+            // Act
+            List<BigDecimal> prices = usdStock.getHistoricalPrices();
+            // Assert
+            assertEquals(0, usdPrice.compareTo(prices.getFirst()));
+        }
     }
 
     @Nested

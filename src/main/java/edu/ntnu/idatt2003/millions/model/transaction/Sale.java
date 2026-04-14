@@ -16,12 +16,27 @@ public class Sale extends Transaction {
 
     /**
      * Constructs a new Sale for the specified share and week.
+     * The sales price is fetched directly from the stock and may be in a foreign currency.
+     * Use {@link #Sale(Share, int, BigDecimal)} when the price has already been converted to NOK.
      *
      * @param share the share being sold
      * @param week  the week in which the sale takes place
      */
     public Sale(Share share, int week) {
         super(share, week, new SalesCalculator(share));
+    }
+
+    /**
+     * Constructs a new Sale for the specified share, week and sales price in NOK.
+     * Use this constructor when selling via {@link edu.ntnu.idatt2003.millions.model.exchange.Exchange},
+     * which converts the stock price to NOK before creating the transaction.
+     *
+     * @param share          the share being sold
+     * @param week           the week in which the sale takes place
+     * @param salesPriceInNok the current sales price converted to NOK
+     */
+    public Sale(Share share, int week, BigDecimal salesPriceInNok) {
+        super(share, week, new SalesCalculator(share, salesPriceInNok));
     }
 
     /**

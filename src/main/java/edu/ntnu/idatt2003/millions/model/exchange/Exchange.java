@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.model.exchange;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
 import edu.ntnu.idatt2003.millions.model.transaction.Sale;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
@@ -20,41 +22,46 @@ import java.util.Random;
  * Represents a stock exchange where players can buy and sell shares.
  * The exchange keeps track of all listed stocks and the current week.
  * Prices are updated each week using the advance() method.
+ * Stock prices are stored in their native currency and converted to NOK
+ * when transactions are made, using a {@link CurrencyConverter}.
  */
 public class Exchange {
     private final String name;
     private int week;
     private final Map<String, Stock> stockMap;
 
-    @SuppressWarnings("java:S2065") // transient is needed to prevent Gson from serializing Random
+    @SuppressWarnings("java:S2065")
     private transient Random random = new Random();
 
-    /** The lowest price a stock can have after a weekly update. */
-    private static final BigDecimal MIN_PRICE = new BigDecimal("0.01");
+    @SuppressWarnings("java:S2065")
+    private transient CurrencyConverter currencyConverter;
 
-    /** The maximum amount a stock price can change per week (10%). */
+    private static final BigDecimal MIN_PRICE = new BigDecimal("0.01");
     private static final BigDecimal MAX_WEEKLY_CHANGE = new BigDecimal("0.10");
 
     /**
-     * Creates a new exchange with the given name and a list of stocks.
+     * Creates a new exchange with the given name, list of stocks and currency converter.
      * The stocks are stored in a map using their symbol as the key.
      * Week starts at 1.
      *
-     * @param name the name of the exchange
-     * @param stocks the stocks that can be traded on this exchange
-     * @throws NullPointerException if the name, stocks, or any stock in the list is null
+     * @param name              the name of the exchange
+     * @param stocks            the stocks that can be traded on this exchange
+     * @param currencyConverter the converter used to convert stock prices to NOK
+     * @throws NullPointerException     if the name, stocks, or currencyConverter is null
      * @throws IllegalArgumentException if name is blank, stocks is empty,
      *                                  contains null, or contains duplicate symbols
      */
-    public Exchange(String name, List<Stock> stocks) {
+    public Exchange(String name, List<Stock> stocks, CurrencyConverter currencyConverter) {
         Objects.requireNonNull(name, "Exchange name cannot be null");
         Objects.requireNonNull(stocks, "Exchange stocks cannot be null");
+        Objects.requireNonNull(currencyConverter, "CurrencyConverter cannot be null");
 
         if (name.isBlank()) throw new IllegalArgumentException("Exchange name cannot be blank");
         if (stocks.isEmpty()) throw new IllegalArgumentException("Exchange stocks cannot be empty");
 
         this.name = name;
         this.week = 1;
+        this.currencyConverter = currencyConverter;
         this.stockMap = new HashMap<>();
 
         for (Stock stock : stocks) {
@@ -101,27 +108,22 @@ public class Exchange {
 
     /**
      * Checks if a stock with the given symbol is listed on the exchange.
-     * Returns false instead of throwing an exception if the symbol is null or blank,
-     * since this method is meant to be used as a safe check before calling getStock().
      *
      * @param symbol the stock symbol to check
      * @return true if the stock is listed, false otherwise
      */
     public boolean hasStock(String symbol) {
         if (symbol == null || symbol.isBlank()) return false;
-
         return stockMap.containsKey(symbol);
     }
 
     /**
      * Searches for stocks where the symbol or company name contains the search term.
-     * The search is not case-sensitive. If the search term is null or blank, the method
-     * will return an empty list.
+     * The search is not case-sensitive. Returns an empty list if the search term
+     * is null or blank.
      *
      * @param searchTerm the word or phrase to search for
      * @return a list of stocks that match the search term
-     * @throws NullPointerException if the search term is null
-     * @throws IllegalArgumentException if the search term is blank
      */
     public List<Stock> findStocks(String searchTerm) {
         if (searchTerm == null || searchTerm.isBlank()) return List.of();
@@ -157,7 +159,9 @@ public class Exchange {
         }
 
         Stock stock = getStock(symbol);
-        Share share = new Share(stock, quantity, stock.getSalesPrice());
+        BigDecimal priceInNok = currencyConverter.toNok(
+                stock.getSalesPrice(), stock.getCurrency());
+        Share share = new Share(stock, quantity, priceInNok);
         Purchase purchase = new Purchase(share, week);
         purchase.commit(player);
         return purchase;
@@ -165,19 +169,22 @@ public class Exchange {
 
     /**
      * Sells a share for a player.
-     * A sale transaction is created and committed, then returned.
+     * The stock's current sales price is converted to NOK before the sale is processed,
+     * ensuring all transactions operate in NOK.
      *
-     * @param share the share to sell
+     * @param share  the share to sell
      * @param player the player selling the share
      * @return the completed sale transaction
-     * @throws NullPointerException if share or player is null
+     * @throws NullPointerException  if share or player is null
      * @throws IllegalStateException if the share is not in the player's portfolio
      */
     public Transaction sell(Share share, Player player) {
         Objects.requireNonNull(share, "Share cannot be null");
         validatePlayer(player);
 
-        Sale sale = new Sale(share, week);
+        BigDecimal salesPriceInNok = currencyConverter.toNok(
+                share.getStock().getSalesPrice(), share.getStock().getCurrency());
+        Sale sale = new Sale(share, week, salesPriceInNok);
         sale.commit(player);
         return sale;
     }
@@ -207,47 +214,19 @@ public class Exchange {
         }
     }
 
-    //--- Private validation helpers ---
-
-    /**
-     * Checks that the given symbol is not null or blank.
-     *
-     * @param symbol the symbol to validate
-     * @throws NullPointerException if the symbol is null
-     * @throws IllegalArgumentException if the symbol is blank
-     */
-    private void validateSymbol(String symbol) {
-        Objects.requireNonNull(symbol, "Symbol cannot be null");
-        if (symbol.isBlank()) {
-            throw new IllegalArgumentException("Symbol cannot be blank");
-        }
-    }
-
-    /**
-     * Checks that the given player is not null.
-     *
-     * @param player the player to validate
-     * @throws NullPointerException if the player is null
-     */
-    private void validatePlayer(Player player) {
-        Objects.requireNonNull(player, "Player cannot be null");
-    }
-
     /**
      * Returns the top ranking stocks since last week, sorted by the highest positive
      * price change first.
      *
      * @param limit the maximum number of stocks to return
      * @return a list of top ranked stocks
-     * @throws IllegalArgumentException if limit is not greater than zero.
+     * @throws IllegalArgumentException if limit is not greater than zero
      */
     public List<Stock> getGainers(int limit) {
-        if (limit <= 0) {
-            throw new IllegalArgumentException("Limit must be greater than 0");
-        }
+        if (limit <= 0) throw new IllegalArgumentException("Limit must be greater than 0");
         return stockMap.values().stream()
                 .filter(stock -> stock.getLatestPriceChange().compareTo(BigDecimal.ZERO) > 0)
-                .sorted((a, b)-> b.getLatestPriceChange().compareTo(a.getLatestPriceChange()))
+                .sorted((a, b) -> b.getLatestPriceChange().compareTo(a.getLatestPriceChange()))
                 .limit(limit)
                 .toList();
     }
@@ -261,9 +240,7 @@ public class Exchange {
      * @throws IllegalArgumentException if limit is not greater than zero
      */
     public List<Stock> getLosers(int limit) {
-        if (limit <= 0) {
-            throw new IllegalArgumentException("Limit must be greater than 0");
-        }
+        if (limit <= 0) throw new IllegalArgumentException("Limit must be greater than 0");
         return stockMap.values().stream()
                 .filter(stock -> stock.getLatestPriceChange().compareTo(BigDecimal.ZERO) < 0)
                 .sorted(Comparator.comparing(Stock::getLatestPriceChange))
@@ -278,6 +255,15 @@ public class Exchange {
      */
     public void reinitialize() {
         this.random = new Random();
+        this.currencyConverter = new FixedRateCurrencyConverter();
     }
 
+    private void validateSymbol(String symbol) {
+        Objects.requireNonNull(symbol, "Symbol cannot be null");
+        if (symbol.isBlank()) throw new IllegalArgumentException("Symbol cannot be blank");
+    }
+
+    private void validatePlayer(Player player) {
+        Objects.requireNonNull(player, "Player cannot be null");
+    }
 }
