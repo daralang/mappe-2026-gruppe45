@@ -6,7 +6,6 @@ import edu.ntnu.idatt2003.millions.view.component.AppTabPane;
 import edu.ntnu.idatt2003.millions.view.component.CurrencySelector;
 import edu.ntnu.idatt2003.millions.view.component.LanguagePicker;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import java.util.Objects;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -20,7 +19,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 
 /**
  * Start view for the application.
@@ -106,12 +104,10 @@ public class StartView {
         tabPane.getTabs().addAll(newGameTab, loadGameTab);
         tabPane.setMaxWidth(540);
 
-        // Language picker øverst til høyre
         HBox topBar = new HBox(languagePicker);
         topBar.setAlignment(Pos.CENTER_RIGHT);
         topBar.setPadding(new Insets(16, 24, 0, 24));
 
-        // Sentralt innhold
         VBox center = new VBox(ROOT_SPACING, title, tabPane);
         center.setAlignment(Pos.CENTER);
         center.setPadding(new Insets(0, 24, 24, 24));
