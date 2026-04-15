@@ -16,6 +16,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -40,7 +41,7 @@ public class StartView {
     private static final double DROP_ZONE_HEIGHT = 160;
 
     private final Scene scene;
-    private final Text title;
+    private final StyledText title;
 
     private final TabPane tabPane;
     private final Tab newGameTab;
@@ -71,7 +72,7 @@ public class StartView {
      */
     public StartView() {
         LanguagePicker languagePicker = new LanguagePicker();
-        title = new Text(LanguageManager.get("app.title"));
+        title = StyledText.HEADING_ONE(LanguageManager.get("app.title"));
 
         nameLabel = StyledText.PARAGRAPH_ONE();
         capitalLabel = StyledText.PARAGRAPH_ONE();
@@ -105,9 +106,19 @@ public class StartView {
         tabPane.getTabs().addAll(newGameTab, loadGameTab);
         tabPane.setMaxWidth(540);
 
-        VBox root = new VBox(ROOT_SPACING, languagePicker, title, tabPane);
-        root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(24));
+        // Language picker øverst til høyre
+        HBox topBar = new HBox(languagePicker);
+        topBar.setAlignment(Pos.CENTER_RIGHT);
+        topBar.setPadding(new Insets(16, 24, 0, 24));
+
+        // Sentralt innhold
+        VBox center = new VBox(ROOT_SPACING, title, tabPane);
+        center.setAlignment(Pos.CENTER);
+        center.setPadding(new Insets(0, 24, 24, 24));
+
+        BorderPane root = new BorderPane();
+        root.setTop(topBar);
+        root.setCenter(center);
 
         scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
         StylesheetLoader.load(scene,
