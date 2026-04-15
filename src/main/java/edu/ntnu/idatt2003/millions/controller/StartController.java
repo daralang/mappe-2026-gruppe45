@@ -52,10 +52,7 @@ public class StartController {
         chooser.setTitle("Select stock file");
         chooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("Data files", "*.csv", "*.json"));
-        File file = chooser.showOpenDialog(stage);
-        if (file != null) {
-            view.setStockFilePath(file.getAbsolutePath());
-        }
+        //TODO: if statements when user choose to upload stock file
     }
 
     /**
@@ -66,10 +63,7 @@ public class StartController {
         chooser.setTitle("Select save file");
         chooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("Save files", "*.json"));
-        File file = chooser.showOpenDialog(stage);
-        if (file != null) {
-            view.setSaveFilePath(file.getAbsolutePath());
-        }
+        //TODO: Handle save file
     }
 
     /**

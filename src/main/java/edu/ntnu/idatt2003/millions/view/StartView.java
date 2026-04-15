@@ -16,8 +16,10 @@ import javafx.scene.text.Text;
 
 /**
  * Start view for the application.
- * Contains a tab-based layout for creating a new game
- * or loading an existing saved game.
+ *
+ * <p>Contains a tab-based layout for either creating a new game
+ * or loading an existing saved game. The new game tab includes a currency
+ * selector that defaults to USD and becomes active once a stock file is chosen.
  */
 public class StartView {
 
@@ -28,7 +30,6 @@ public class StartView {
     private static final double FORM_MAX_WIDTH = 360;
 
     private final Scene scene;
-
     private final Text title;
 
     private final TabPane tabPane;
@@ -54,6 +55,9 @@ public class StartView {
     /**
      * Creates the start view with two tabs:
      * one for creating a new game and one for loading a saved game.
+     *
+     * <p>The currency selector in the new game tab defaults to USD and is
+     * disabled until a stock file has been selected.
      */
     public StartView() {
         LanguagePicker languagePicker = new LanguagePicker();
@@ -80,11 +84,9 @@ public class StartView {
         VBox loadGameContent = createLoadGameContent();
 
         newGameTab = AppTabPane.createTab(
-                LanguageManager.get("start.tab.newGame"),
-                newGameContent);
+                LanguageManager.get("start.tab.newGame"), newGameContent);
         loadGameTab = AppTabPane.createTab(
-                LanguageManager.get("start.tab.loadGame"),
-                loadGameContent);
+                LanguageManager.get("start.tab.loadGame"), loadGameContent);
 
         tabPane = new AppTabPane();
         tabPane.getTabs().addAll(newGameTab, loadGameTab);
@@ -101,7 +103,8 @@ public class StartView {
     }
 
     /**
-     * Configures shared text field behavior.
+     * Configures shared text field constraints.
+     * Stock and save file fields are read-only — the user must use the browse button.
      */
     private void configureTextFields() {
         stockFileField.setEditable(false);
@@ -114,9 +117,12 @@ public class StartView {
     }
 
     /**
-     * Builds the content for the "new game" tab.
+     * Builds the layout for the "new game" tab.
      *
-     * @return the layout node for the tab
+     * <p>Includes name, capital, stock file input, a currency selector,
+     * and a start button.
+     *
+     * @return the assembled layout node
      */
     private VBox createNewGameContent() {
         VBox content = new VBox(
@@ -133,9 +139,11 @@ public class StartView {
     }
 
     /**
-     * Builds the content for the "load game" tab.
+     * Builds the layout for the "load game" tab.
      *
-     * @return the layout node for the tab
+     * <p>Includes a save file input and a load button.
+     *
+     * @return the assembled layout node
      */
     private VBox createLoadGameContent() {
         VBox content = new VBox(
@@ -150,7 +158,8 @@ public class StartView {
     }
 
     /**
-     * Updates all visible texts from the current resource bundle.
+     * Refreshes all visible UI texts from the current {@link LanguageManager} bundle.
+     * Called on construction and whenever the language changes.
      */
     private void updateTexts() {
         title.setText(LanguageManager.get("app.title"));
@@ -166,7 +175,7 @@ public class StartView {
 
         saveFileLabel.setText(LanguageManager.get("start.resume.fileLabel"));
         browseSaveFileButton.setText(LanguageManager.get("start.file.browse"));
-        loadButton.setText(LanguageManager.get("start.tab.loadGame"));
+        loadButton.setText(LanguageManager.get("start.loadButton"));
 
         nameField.setPromptText("");
         capitalField.setPromptText("");
@@ -174,50 +183,92 @@ public class StartView {
         saveFileField.setPromptText("");
     }
 
+    /**
+     * Returns the JavaFX scene for this view.
+     *
+     * @return the scene
+     */
     public Scene getScene() {
         return scene;
     }
 
+    /**
+     * Returns the trimmed player name entered by the user.
+     *
+     * @return the player name
+     */
     public String getName() {
         return nameField.getText().trim();
     }
 
+    /**
+     * Returns the trimmed starting capital entered by the user.
+     *
+     * @return the capital as a string
+     */
     public String getCapital() {
         return capitalField.getText().trim();
     }
 
+    /**
+     * Returns the path to the stock data file selected by the user.
+     *
+     * @return the stock file path, or an empty string if none selected
+     */
     public String getStockFilePath() {
         return stockFileField.getText().trim();
     }
 
+    /**
+     * Returns the path to the save file selected by the user.
+     *
+     * @return the save file path, or an empty string if none selected
+     */
     public String getSaveFilePath() {
         return saveFileField.getText().trim();
     }
 
-    public void setStockFilePath(String path) {
-        stockFileField.setText(path == null ? "" : path);
-    }
-
-    public void setSaveFilePath(String path) {
-        saveFileField.setText(path == null ? "" : path);
-    }
-
+    /**
+     * Returns the button that opens the stock file browser.
+     *
+     * @return the browse button for stock files
+     */
     public Button getBrowseStockFileButton() {
         return browseStockFileButton;
     }
 
+    /**
+     * Returns the button that starts a new game.
+     *
+     * @return the start button
+     */
     public Button getStartButton() {
         return startButton;
     }
 
+    /**
+     * Returns the button that opens the save file browser.
+     *
+     * @return the browse button for save files
+     */
     public Button getBrowseSaveFileButton() {
         return browseSaveFileButton;
     }
 
+    /**
+     * Returns the button that loads a saved game.
+     *
+     * @return the load button
+     */
     public Button getLoadButton() {
         return loadButton;
     }
 
+    /**
+     * Returns the tab pane containing the new and load game tabs.
+     *
+     * @return the tab pane
+     */
     public TabPane getTabPane() {
         return tabPane;
     }
