@@ -1,0 +1,23 @@
+/* Heading 1 */
+.heading-1 {
+    -fx-font-family: "Sans-Serif";
+    -fx-font-size: 42;
+}
+
+/* Heading 2 */
+.heading-2 {
+    -fx-font-family: "Sans-Serif";
+    -fx-font-size: 38;
+}
+
+/* Heading 3 */
+.heading-3 {
+    -fx-font-family: "Sans-Serif";
+    -fx-font-size: 24;
+}
+
+/* Paragraph 1 */
+.paragraph-1 {
+    -fx-font-family: "Sans-Serif";
+    -fx-font-size: 18;
+}
