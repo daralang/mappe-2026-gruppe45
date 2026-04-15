@@ -78,7 +78,7 @@ public class StartView {
         nameField = new TextField();
         capitalField = new TextField();
         currencySelector = new CurrencySelector();
-        currencySelector.setDisable(false);
+        currencySelector.setDisable(true);
 
         dropZoneHint = new Label();
         dropZoneOr = new Label();
