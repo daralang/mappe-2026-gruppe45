@@ -7,11 +7,24 @@ import javafx.stage.Stage;
 
 import java.io.File;
 
+/**
+ * Controller for the {@link StartView}.
+ *
+ * <p>Handles user interactions on the start screen, including
+ * file selection for stock data and saved games, as well as
+ * starting or loading a game session.
+ */
 public class StartController {
 
     private final Stage stage;
     private final StartView view;
 
+    /**
+     * Constructs a new StartController and binds all UI events.
+     *
+     * @param stage the primary application stage
+     * @throws NullPointerException if stage is null
+     */
     public StartController(Stage stage) {
         Objects.requireNonNull(stage, "Stage cannot be null");
         this.stage = stage;
@@ -19,6 +32,9 @@ public class StartController {
         bindEvents();
     }
 
+    /**
+     * Registers event handlers for all interactive controls in the view.
+     */
     private void bindEvents() {
         view.getBrowseStockFileButton().setOnAction(e -> handleBrowseStockFile());
         view.getBrowseSaveFileButton().setOnAction(e -> handleBrowseSaveFile());
@@ -26,6 +42,11 @@ public class StartController {
         view.getLoadButton().setOnAction(e -> handleLoadGame());
     }
 
+    /**
+     * Opens a file chooser for selecting a stock data file (CSV or JSON).
+     * If a file is chosen, the path is set in the view and the currency
+     * selector becomes enabled.
+     */
     private void handleBrowseStockFile() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Select stock file");
@@ -37,6 +58,9 @@ public class StartController {
         }
     }
 
+    /**
+     * Opens a file chooser for selecting a previously saved game file (JSON).
+     */
     private void handleBrowseSaveFile() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Select save file");
@@ -48,6 +72,11 @@ public class StartController {
         }
     }
 
+    /**
+     * Validates input and starts a new game session.
+     *
+     * @throws IllegalArgumentException if name, capital, or stock file path is blank
+     */
     private void handleStartGame() {
         String name = view.getName();
         String capital = view.getCapital();
@@ -66,6 +95,11 @@ public class StartController {
         // TODO: parse capital, load exchange from file, create Player, start MainController
     }
 
+    /**
+     * Validates input and loads an existing saved game.
+     *
+     * @throws IllegalArgumentException if no save file has been selected
+     */
     private void handleLoadGame() {
         String saveFilePath = view.getSaveFilePath();
 
@@ -76,6 +110,9 @@ public class StartController {
         // TODO: load GameState, create MainController from state
     }
 
+    /**
+     * Displays the start screen on the primary stage.
+     */
     public void show() {
         stage.setTitle("Millions");
         stage.setScene(view.getScene());
