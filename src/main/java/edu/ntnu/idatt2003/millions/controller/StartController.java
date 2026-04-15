@@ -39,6 +39,14 @@ public class StartController {
         view.getBrowseSaveFileButton().setOnAction(e -> handleBrowseSaveFile());
         view.getStartButton().setOnAction(e -> handleStartGame());
         view.getLoadButton().setOnAction(e -> handleLoadGame());
+        view.getDropZone().setOnDragDropped(e -> {
+            var db = e.getDragboard();
+            if (db.hasFiles()) {
+                view.setStockFilePath(db.getFiles().getFirst().getAbsolutePath());
+                e.setDropCompleted(true);
+            }
+            e.consume();
+        });
     }
 
     /**
