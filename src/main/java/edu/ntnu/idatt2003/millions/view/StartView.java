@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view;
 
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.StylesheetLoader;
 import edu.ntnu.idatt2003.millions.view.component.AppTabPane;
 import edu.ntnu.idatt2003.millions.view.component.CurrencySelector;
 import edu.ntnu.idatt2003.millions.view.component.LanguagePicker;
@@ -109,8 +110,10 @@ public class StartView {
         root.setPadding(new Insets(24));
 
         scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
-        addStylesheet(scene, "/css/dropfile.css");
-        addStylesheet(scene, "/css/title.css");
+        StylesheetLoader.load(scene,
+                StylesheetLoader.Stylesheet.TITLE,
+                StylesheetLoader.Stylesheet.DROP_ZONE,
+                StylesheetLoader.Stylesheet.OTHER);
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
@@ -362,20 +365,5 @@ public class StartView {
      */
     public TabPane getTabPane() {
         return tabPane;
-    }
-
-    /**
-     * Loads a CSS stylesheet from the given classpath path and adds it to the scene.
-     *
-     * @param scene the scene to apply the stylesheet to
-     * @param path  the classpath path to the CSS file (e.g. "/css/title.css")
-     * @throws IllegalStateException if the file is not found on the classpath
-     */
-    private void addStylesheet(Scene scene, String path) {
-        var url = getClass().getResource(path);
-        if (url == null) {
-            throw new IllegalStateException("Stylesheet not found: " + path);
-        }
-        scene.getStylesheets().add(url.toExternalForm());
     }
 }
