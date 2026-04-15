@@ -265,6 +265,24 @@ public class StartView {
     }
 
     /**
+     * Sets the stock file path in the read-only field.
+     *
+     * @param path the file path to display; if {@code null} the field is cleared
+     */
+    public void setStockFilePath(String path) {
+        stockFileField.setText(path == null ? "" : path);
+    }
+
+    /**
+     * Sets the save file path in the read-only field.
+     *
+     * @param path the file path to display; if {@code null} the field is cleared
+     */
+    public void setSaveFilePath(String path) {
+        saveFileField.setText(path == null ? "" : path);
+    }
+
+    /**
      * Returns the tab pane containing the new and load game tabs.
      *
      * @return the tab pane

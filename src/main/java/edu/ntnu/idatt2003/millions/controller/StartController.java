@@ -1,11 +1,10 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.view.StartView;
+import java.io.File;
 import java.util.Objects;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
-import java.io.File;
 
 /**
  * Controller for the {@link StartView}.
@@ -44,26 +43,32 @@ public class StartController {
 
     /**
      * Opens a file chooser for selecting a stock data file (CSV or JSON).
-     * If a file is chosen, the path is set in the view and the currency
-     * selector becomes enabled.
+     * If a file is chosen, the path is shown in the view.
      */
     private void handleBrowseStockFile() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Select stock file");
         chooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("Data files", "*.csv", "*.json"));
-        //TODO: if statements when user choose to upload stock file
+        File file = chooser.showOpenDialog(stage);
+        if (file != null) {
+            view.setStockFilePath(file.getAbsolutePath());
+        }
     }
 
     /**
      * Opens a file chooser for selecting a previously saved game file (JSON).
+     * If a file is chosen, the path is shown in the view.
      */
     private void handleBrowseSaveFile() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Select save file");
         chooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("Save files", "*.json"));
-        //TODO: Handle save file
+        File file = chooser.showOpenDialog(stage);
+        if (file != null) {
+            view.setSaveFilePath(file.getAbsolutePath());
+        }
     }
 
     /**
@@ -112,6 +117,4 @@ public class StartController {
         stage.setScene(view.getScene());
         stage.show();
     }
-
-
 }
