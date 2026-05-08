@@ -5,6 +5,10 @@ import java.util.Currency;
 
 /**
  * Converts monetary amounts between currencies.
+ *
+ * <p>Implementations are expected to be stateless and thread-safe.
+ * The {@link FixedRateCurrencyConverter} provides hardcoded rates;
+ * other implementations may use live exchange rates in the future.
  */
 public interface CurrencyConverter {
 
