@@ -3,6 +3,8 @@ package edu.ntnu.idatt2003.millions.manager;
 import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
 import edu.ntnu.idatt2003.millions.file.game.GameState;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
@@ -64,20 +66,30 @@ public class GameManager {
     }
 
     /**
-     * Creates a new game with the given player name, starting capital
+     * Creates a new game with the given player name, starting capital,
      * and stock data file.
      *
+     * <p>Once implemented, this method will load stocks from {@code stockFile},
+     * create a new {@link Player} with the given name and capital, and instantiate
+     * an {@link Exchange} with a {@link FixedRateCurrencyConverter} so that
+     * subsequent transactions are converted to NOK against the player's balance.
+     *
      * @param name      the name of the player
-     * @param capital   the starting capital for the player
+     * @param capital   the starting capital for the player, in NOK
      * @param stockFile the file containing stock data to load
      */
     public void createNewGame(String name, BigDecimal capital, File stockFile) {
-        // TODO: implementeres senere
+        // TODO: load stocks from stockFile and create Player.
+        // When implemented, instantiate the Exchange with a CurrencyConverter:
+        //   CurrencyConverter converter = new FixedRateCurrencyConverter();
+        //   this.exchange = new Exchange("MainExchange", stocks, converter);
     }
 
     /**
      * Loads a saved game state from a JSON file.
-     * Delegates the file operation to the game file handler.
+     * Delegates the file operation to the game file handler and reinitializes
+     * the exchange with a {@link FixedRateCurrencyConverter}, since the
+     * converter is transient and not restored by Gson.
      *
      * @param file the file to load the game state from
      * @throws NullPointerException if the file is null
@@ -87,6 +99,7 @@ public class GameManager {
         GameState state = gameFileHandler.loadGame(file);
         this.player = state.player();
         this.exchange = state.exchange();
+        this.exchange.reinitialize(new FixedRateCurrencyConverter());
     }
 
     /**
