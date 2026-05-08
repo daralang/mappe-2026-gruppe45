@@ -152,9 +152,8 @@
 }
 
 .holdings-title {
-    -fx-font-size: 24;
+    -fx-font-size: 20;
     -fx-font-weight: bold;
-    -fx-text-fill: #000000;
     -fx-padding: 0 0 16 0;
 }
 
