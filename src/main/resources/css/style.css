@@ -184,15 +184,12 @@
     -fx-text-fill: #1f6391;
 }
 
-.holdings-action-sell:hover {
-    -fx-text-fill: #b03a2e;
+.holdings-action-sell {
+    -fx-text-fill: #e74c3c;
 }
 
-.holdings-action-sell-all {
-    -fx-text-fill: #c0392b;
-}
-.holdings-action-sell-all:hover {
-    -fx-text-fill: #922b21;
+.holdings-action-sell:hover {
+    -fx-text-fill: #b03a2e;
 }
 
 .holdings-empty {

@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.player.Portfolio;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Card;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
@@ -54,7 +55,7 @@ public class HoldingsCard extends Card {
         super(gameManager);
         this.gameManager = gameManager;
 
-        Label title = new Label("Beholdning");
+        Label title = new Label(LanguageManager.get("dashboard.portfolio.title"));
         title.getStyleClass().add("holdings-title");
 
         grid.setHgap(20);
@@ -169,8 +170,14 @@ public class HoldingsCard extends Card {
 
     private void addHeaderRow() {
         String[] headers = {
-                "", "Selskap", "Antall", "Denne uken %",
-                "Verdi NOK", "Avkast. %", "Avkast. NOK", ""
+                "",
+                LanguageManager.get("dashboard.portfolio.company"),
+                LanguageManager.get("dashboard.portfolio.quantity"),
+                LanguageManager.get("dashboard.portfolio.weeklyChange"),
+                LanguageManager.get("dashboard.portfolio.valueNok"),
+                LanguageManager.get("dashboard.portfolio.returnPct"),
+                LanguageManager.get("dashboard.portfolio.returnNok"),
+                ""
         };
         for (int i = 0; i < headers.length; i++) {
             Label label = new Label(headers[i]);
@@ -204,7 +211,7 @@ public class HoldingsCard extends Card {
 
         int dataRow = row + 1;
 
-        Label totalLabel = new Label("Totalt");
+        Label totalLabel = new Label(LanguageManager.get("dashboard.portfolio.total"));
         totalLabel.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(totalLabel, 1, dataRow);
 
@@ -217,10 +224,10 @@ public class HoldingsCard extends Card {
     }
 
     private HBox buildActionButtons(Share share) {
-        Button buy = actionButton("Kjøp", "holdings-action-buy");
-        Button sell = actionButton("Selg", "negative");
+        Button buy = actionButton(LanguageManager.get("dashboard.portfolio.buy"), "holdings-action-buy");
+        Button sell = actionButton(LanguageManager.get("dashboard.portfolio.sell"), "negative");
         sell.getStyleClass().add("holdings-action-sell");
-        Button sellAll = actionButton("Selg alt", "holdings-action-sell");
+        Button sellAll = actionButton(LanguageManager.get("dashboard.portfolio.sellAll"), "holdings-action-sell");
 
         buy.setOnAction(e -> {
             // TODO: open Kjøp-popup for share.getStock()
