@@ -184,8 +184,8 @@ public class StartView {
     private VBox createNewGameContent() {
         HBox nameRow = buildFormRow(nameLabel, nameField);
         HBox capitalRow = buildFormRow(capitalLabel, capitalField);
-        HBox currencyRow = buildFormRow(currencyLabel, currencySelector);
         VBox dropZone = buildDropZone();
+        HBox currencyRow = buildFormRow(currencyLabel, currencySelector);
 
         startButton.setMaxWidth(CARD_WIDTH);
 
@@ -193,8 +193,8 @@ public class StartView {
                 FORM_SPACING,
                 nameRow,
                 capitalRow,
-                currencyRow,
                 dropZone,
+                currencyRow,
                 startButton
         );
         content.setAlignment(Pos.CENTER);

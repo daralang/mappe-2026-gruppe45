@@ -6,11 +6,15 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Manages the active display currency for the application.
+ * Manages the active currency for the loaded stock data.
  *
  * <p>Supported currencies are defined in {@link SupportedCurrency}.
- * The active currency is set once at game start and used by
- * {@link CurrencyFormatter} to format all monetary values consistently.
+ * The active currency is set when a stock file is selected and indicates
+ * which currency the stock prices are denominated in.
+ *
+ * <p>Note: this is the source currency of the stock data, not the display
+ * currency used by {@link CurrencyFormatter}. Display currency is currently
+ * fixed in the formatter and tracked separately.
  *
  * <p>Follows the same utility pattern as {@link LanguageManager}.
  */
