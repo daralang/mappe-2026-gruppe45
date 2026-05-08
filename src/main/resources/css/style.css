@@ -1,14 +1,15 @@
+/* === Navbar === */
 .navbar {
     -fx-background-color: #000000;
     -fx-padding: 0 24 0 24;
     -fx-min-height: 92;
+    -fx-font-family: "Sans-Serif";
 }
 
 .navbar-title {
     -fx-text-fill: white;
     -fx-font-size: 30;
     -fx-font-weight: bold;
-    -fx-font-family: "Sans-Serif";
     -fx-padding: 38 0 8 0;
 }
 
@@ -16,7 +17,6 @@
     -fx-text-fill: white;
     -fx-font-size: 17;
     -fx-background-color: transparent;
-    -fx-font-family: "Sans-Serif";
     -fx-cursor: hand;
     -fx-padding: 50 0 8 0;
 }
@@ -25,7 +25,6 @@
     -fx-text-fill: white;
     -fx-font-size: 12;
     -fx-background-color: transparent;
-    -fx-font-family: "Sans-Serif";
     -fx-cursor: hand;
     -fx-padding: 16 0 0 0;
 }
@@ -37,6 +36,7 @@
     -fx-cursor: hand;
 }
 
+/* === Tabs === */
 .tab-button {
     -fx-background-color: transparent;
     -fx-font-size: 17;
@@ -56,9 +56,10 @@
 .tab-bar {
     -fx-border-color: #999999;
     -fx-border-width: 0 0 1 0;
-    -fx-padding: 0 0 0 0;
+    -fx-padding: 0;
 }
 
+/* === Layout === */
 .content-area {
     -fx-padding: 24 32 24 32;
     -fx-spacing: 16;
@@ -88,6 +89,7 @@
     -fx-background-color: #f5f5f5;
 }
 
+/* === Card / Widget === */
 .card {
     -fx-background-color: white;
     -fx-background-radius: 12;
@@ -95,26 +97,21 @@
     -fx-padding: 16;
 }
 
-.card-label {
+.widget-label {
     -fx-font-size: 12;
     -fx-text-fill: #888888;
 }
 
-.card-value {
+.widget-value {
     -fx-font-size: 18;
     -fx-font-weight: bold;
 }
 
-.card-value-positive {
-    -fx-text-fill: #27ae60;
+.widget-change {
     -fx-font-size: 16;
 }
 
-.card-value-negative {
-    -fx-text-fill: #e74c3c;
-    -fx-font-size: 16;
-}
-
+/* === Area Chart === */
 .area-chart {
     -fx-background-color: transparent;
 }
@@ -151,6 +148,7 @@
     -fx-padding: 0;
 }
 
+/* === Holdings Table === */
 .holdings-title {
     -fx-font-size: 20;
     -fx-font-weight: bold;
@@ -170,16 +168,6 @@
     -fx-padding: 10 0 10 0;
 }
 
-.holdings-positive {
-    -fx-font-size: 13;
-    -fx-text-fill: #27ae60;
-}
-
-.holdings-negative {
-    -fx-font-size: 13;
-    -fx-text-fill: #e74c3c;
-}
-
 .holdings-action-link {
     -fx-font-size: 13;
     -fx-font-weight: bold;
@@ -196,9 +184,6 @@
     -fx-text-fill: #1f6391;
 }
 
-.holdings-action-sell {
-    -fx-text-fill: #e74c3c;
-}
 .holdings-action-sell:hover {
     -fx-text-fill: #b03a2e;
 }
@@ -210,15 +195,7 @@
     -fx-text-fill: #922b21;
 }
 
-.holdings-total-label {
-    -fx-font-size: 13;
-    -fx-font-weight: bold;
-    -fx-text-fill: #333333;
-}
-
 .holdings-empty {
-    -fx-font-size: 12;
-    -fx-text-fill: #888888;
     -fx-padding: 16 0 16 0;
 }
 
@@ -254,6 +231,20 @@
     -fx-background-color: transparent;
 }
 
+/* === Global Utilities === */
+.positive {
+    -fx-text-fill: #27ae60;
+}
+
+.negative {
+    -fx-text-fill: #e74c3c;
+}
+
+.bold {
+    -fx-font-weight: bold;
+}
+
+/* === Scroll === */
 .content-scroll {
     -fx-background-color: transparent;
     -fx-padding: 0;
@@ -306,4 +297,3 @@
 .content-scroll .corner {
     -fx-background-color: transparent;
 }
-
