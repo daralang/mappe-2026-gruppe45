@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.player.Portfolio;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.view.component.Card;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -13,7 +14,6 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -31,7 +31,7 @@ import java.util.Locale;
  * instead. This keeps the main table clean while Dara's currency PR is
  * pending.</p>
  */
-public class HoldingsCard extends VBox {
+public class HoldingsCard extends Card {
 
     private static final DecimalFormat NUMBER_FORMAT;
     private static final DecimalFormat PERCENT_FORMAT;
@@ -51,8 +51,8 @@ public class HoldingsCard extends VBox {
      * @param gameManager the game manager containing player and exchange
      */
     public HoldingsCard(GameManager gameManager) {
+        super(gameManager);
         this.gameManager = gameManager;
-        getStyleClass().add("card");
 
         Label title = new Label("Beholdning");
         title.getStyleClass().add("holdings-title");
@@ -61,10 +61,6 @@ public class HoldingsCard extends VBox {
         configureColumns();
 
         getChildren().addAll(title, grid);
-
-        // TODO: hook into the same observer mechanism the other cards use.
-        // For now we just render once. When the model becomes observable,
-        // call refresh() on change.
         refresh();
     }
 
@@ -91,9 +87,27 @@ public class HoldingsCard extends VBox {
     }
 
     /**
+     * Called when the game state changes (week advanced, buy or sell).
+     * Rebuilds the holdings table to reflect the current portfolio.
+     */
+    @Override
+    public void onGameUpdated() {
+        refresh();
+    }
+
+    /**
+     * Called when the application language changes.
+     * Rebuilds the table so any future i18n keys are picked up.
+     */
+    @Override
+    protected void onLanguageChanged() {
+        refresh();
+    }
+
+    /**
      * Rebuilds the table contents based on the player's current portfolio.
      */
-    public void refresh() {
+    private void refresh() {
         grid.getChildren().clear();
 
         Player player = gameManager.getPlayer();
