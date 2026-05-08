@@ -5,6 +5,8 @@ import edu.ntnu.idatt2003.millions.view.component.Header;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.DashboardView;
 import edu.ntnu.idatt2003.millions.view.exchange.ExchangeView;
+import javafx.scene.Node;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 
 /**
@@ -62,13 +64,29 @@ public class MainView {
      * Switches the content area to the dashboard view.
      */
     public void showDashboard() {
-        root.setCenter(new DashboardView(gameManager, weekBar));
+        root.setCenter(wrapScrollable(new DashboardView(gameManager, weekBar)));
     }
 
     /**
      * Switches the content area to the exchange view.
      */
     public void showExchange() {
-        root.setCenter(new ExchangeView(gameManager, weekBar));
+        root.setCenter(wrapScrollable(new ExchangeView(gameManager, weekBar)));
+    }
+
+    /**
+     * Wraps a view node in a vertically scrollable {@link ScrollPane}.
+     * Horizontal scrolling is disabled; the content fills the pane's width.
+     *
+     * @param content the view node to wrap
+     * @return a configured ScrollPane containing the content
+     */
+    private ScrollPane wrapScrollable(Node content) {
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.getStyleClass().add("content-scroll");
+        return scrollPane;
     }
 }
