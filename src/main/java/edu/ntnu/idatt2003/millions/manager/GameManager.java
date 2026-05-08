@@ -10,7 +10,6 @@ import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +27,6 @@ public class GameManager {
     private Exchange exchange;
     private final GameFileHandler gameFileHandler;
     private final List<GameObserver> observers = new ArrayList<>();
-    private BigDecimal previousNetWorth;
 
     /**
      * Constructs a new GameManager.
@@ -78,7 +76,7 @@ public class GameManager {
      * @param capital   the starting capital for the player, in NOK
      * @param stockFile the file containing stock data to load
      */
-    public void createNewGame(String name, BigDecimal capital, File stockFile) {
+    public void createNewGame(String name, java.math.BigDecimal capital, File stockFile) {
         // TODO: load stocks from stockFile and create Player.
         // When implemented, instantiate the Exchange with a CurrencyConverter:
         //   CurrencyConverter converter = new FixedRateCurrencyConverter();
@@ -106,12 +104,15 @@ public class GameManager {
      * Advances the game by one week and notifies all registered observers.
      * Records the player's current net worth before advancing so that
      * weekly change and historical net worth data are available after
-     * the week has passed.
+     * the week has passed. The {@link CurrencyConverter} is fetched from
+     * the {@link Exchange} so the player's portfolio value can be translated
+     * to NOK.
      */
     public void advanceWeek() {
-        player.setPreviousNetWorth(player.getNetWorth());
+        CurrencyConverter converter = exchange.getCurrencyConverter();
+        player.setPreviousNetWorth(player.getNetWorth(converter));
         exchange.advance();
-        player.recordNetWorth();
+        player.recordNetWorth(converter);
         notifyObservers();
     }
 
@@ -139,7 +140,7 @@ public class GameManager {
      *
      * @return the previous net worth, or null if not yet available
      */
-    public BigDecimal getPreviousNetWorth() {
+    public java.math.BigDecimal getPreviousNetWorth() {
         return player.getPreviousNetWorth();
     }
 
