@@ -182,37 +182,24 @@ public class HoldingsCard extends VBox {
     private void addTotalRow(int row, BigDecimal totalValueNok,
                              BigDecimal totalReturnPercent, BigDecimal totalReturnNok) {
 
-        Region actionSpacer = new Region();
-        actionSpacer.getStyleClass().add("holdings-total-row");
-        grid.add(actionSpacer, 0, row);
+        // Divider line spanning all columns
+        Region divider = new Region();
+        divider.getStyleClass().add("holdings-total-divider");
+        GridPane.setColumnSpan(divider, 8);
+        grid.add(divider, 0, row);
+
+        int dataRow = row + 1;
 
         Label totalLabel = new Label("Totalt");
-        totalLabel.getStyleClass().addAll("holdings-total-label", "holdings-total-row");
-        GridPane.setHalignment(totalLabel, HPos.LEFT);
-        grid.add(totalLabel, 1, row);
-
-        for (int i = 2; i <= 3; i++) {
-            Region spacer = new Region();
-            spacer.getStyleClass().add("holdings-total-row");
-            grid.add(spacer, i, row);
-        }
+        totalLabel.getStyleClass().add("holdings-total-label");
+        grid.add(totalLabel, 1, dataRow);
 
         Label valueNok = new Label(NUMBER_FORMAT.format(totalValueNok));
-        valueNok.getStyleClass().addAll("holdings-total-label", "holdings-total-row");
-        GridPane.setHalignment(valueNok, HPos.RIGHT);
-        grid.add(valueNok, 4, row);
+        valueNok.getStyleClass().add("holdings-total-label");
+        grid.add(valueNok, 4, dataRow);
 
-        Label returnPct = coloredPercentCell(totalReturnPercent);
-        returnPct.getStyleClass().add("holdings-total-row");
-        grid.add(returnPct, 5, row);
-
-        Label returnNok = coloredAmountCell(totalReturnNok);
-        returnNok.getStyleClass().add("holdings-total-row");
-        grid.add(returnNok, 6, row);
-
-        Region detailsSpacer = new Region();
-        detailsSpacer.getStyleClass().add("holdings-total-row");
-        grid.add(detailsSpacer, 7, row);
+        grid.add(coloredPercentCell(totalReturnPercent), 5, dataRow);
+        grid.add(coloredAmountCell(totalReturnNok), 6, dataRow);
     }
 
     private HBox buildActionButtons(Share share) {
