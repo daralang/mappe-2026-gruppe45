@@ -9,9 +9,9 @@ import javafx.scene.layout.VBox;
 /**
  * The portfolio tab view displayed under the dashboard.
  * Shows net worth with chart, weekly performance, available funds,
- * portfolio value and player status.
+ * portfolio value, player status, and the player's holdings.
  */
-public class PortfolioView extends HBox {
+public class PortfolioView extends VBox {
 
     private final GameManager gameManager;
 
@@ -23,6 +23,15 @@ public class PortfolioView extends HBox {
     public PortfolioView(GameManager gameManager) {
         this.gameManager = gameManager;
         setSpacing(16);
+
+        HBox topRow = buildTopRow();
+        HoldingsCard holdingsCard = new HoldingsCard(gameManager);
+
+        getChildren().addAll(topRow, holdingsCard);
+    }
+
+    private HBox buildTopRow() {
+        HBox row = new HBox(16);
 
         NetWorthCard netWorthCard = new NetWorthCard(gameManager);
         HBox.setHgrow(netWorthCard, Priority.ALWAYS);
@@ -39,6 +48,7 @@ public class PortfolioView extends HBox {
         netWorthCard.prefHeightProperty().bind(rightCards.heightProperty());
         netWorthCard.maxHeightProperty().bind(rightCards.heightProperty());
 
-        getChildren().addAll(netWorthCard, rightCards);
+        row.getChildren().addAll(netWorthCard, rightCards);
+        return row;
     }
 }
