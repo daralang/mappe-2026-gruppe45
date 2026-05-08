@@ -91,6 +91,16 @@ public class Exchange {
     }
 
     /**
+     * Returns the currency converter used by this exchange to translate
+     * stock-currency amounts to NOK.
+     *
+     * @return the currency converter
+     */
+    public CurrencyConverter getCurrencyConverter() {
+        return currencyConverter;
+    }
+
+    /**
      * Returns the current trading week.
      *
      * @return the current week number

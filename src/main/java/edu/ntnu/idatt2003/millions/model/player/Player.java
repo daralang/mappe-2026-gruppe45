@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.model.player;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 
 import java.math.BigDecimal;
@@ -120,22 +121,33 @@ public class Player {
     }
 
     /**
-     * Returns the players total net worth calculated as the current balance plus the total value of the portfolio.
+     * Returns the player's total net worth in NOK.
      *
-     * @return the sum of the players money and portfolio net worth
+     * <p>Net worth is the sum of the current balance (already in NOK) and the
+     * portfolio's value, where each share's value is converted from the stock's
+     * native currency to NOK via the given {@link CurrencyConverter}.
+     *
+     * @param converter the currency converter used to translate share values to NOK
+     * @return the sum of the player's money and portfolio net worth, in NOK
+     * @throws NullPointerException if converter is null
      */
-    public BigDecimal getNetWorth() {
-        return money.add(portfolio.getNetWorth());
+    public BigDecimal getNetWorth(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        return money.add(portfolio.getNetWorth(converter));
     }
 
     /**
      * Records the player's current net worth in the history.
      * Called by {@link edu.ntnu.idatt2003.millions.manager.GameManager}
      * before advancing the week.
+     *
+     * @param converter the currency converter used to compute the net worth
+     * @throws NullPointerException if converter is null
      */
-    public void recordNetWorth() {
+    public void recordNetWorth(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
         if (netWorthHistory == null) netWorthHistory = new ArrayList<>();
-        netWorthHistory.add(getNetWorth());
+        netWorthHistory.add(getNetWorth(converter));
     }
 
     /**
@@ -182,11 +194,14 @@ public class Player {
      *          minimum doubled their net worth.</li>
      * </ul>
      *
+     * @param converter the currency converter used to compute the player's net worth in NOK
      * @return the players status level {@link PlayerStatusLevel}
+     * @throws NullPointerException if converter is null
      */
-    public PlayerStatusLevel getStatus() {
+    public PlayerStatusLevel getStatus(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
         int weeksTraded = transactionArchive.countDistinctWeeks();
-        BigDecimal netWorth = getNetWorth();
+        BigDecimal netWorth = getNetWorth(converter);
         BigDecimal twentyPercentGrowth = startingMoney.multiply(new BigDecimal("1.20"));
         BigDecimal doubleGrowth = startingMoney.multiply(new BigDecimal("2.00"));
 
