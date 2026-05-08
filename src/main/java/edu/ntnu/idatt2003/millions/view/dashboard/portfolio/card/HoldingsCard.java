@@ -118,7 +118,7 @@ public class HoldingsCard extends Card {
 
         if (shares.isEmpty()) {
             Label empty = new Label("Du eier ingen andeler ennå");
-            empty.getStyleClass().add("holdings-empty");
+            empty.getStyleClass().addAll("widget-label", "holdings-empty");
             GridPane.setColumnSpan(empty, 8);
             GridPane.setHalignment(empty, HPos.CENTER);
             grid.add(empty, 0, 1);
@@ -205,11 +205,11 @@ public class HoldingsCard extends Card {
         int dataRow = row + 1;
 
         Label totalLabel = new Label("Totalt");
-        totalLabel.getStyleClass().add("holdings-total-label");
+        totalLabel.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(totalLabel, 1, dataRow);
 
         Label valueNok = new Label(NUMBER_FORMAT.format(totalValueNok));
-        valueNok.getStyleClass().add("holdings-total-label");
+        valueNok.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(valueNok, 4, dataRow);
 
         grid.add(coloredPercentCell(totalReturnPercent), 5, dataRow);
@@ -218,7 +218,8 @@ public class HoldingsCard extends Card {
 
     private HBox buildActionButtons(Share share) {
         Button buy = actionButton("Kjøp", "holdings-action-buy");
-        Button sell = actionButton("Selg", "holdings-action-sell");
+        Button sell = actionButton("Selg", "negative");
+        sell.getStyleClass().add("holdings-action-sell");
         Button sellAll = actionButton("Selg alt", "holdings-action-sell");
 
         buy.setOnAction(e -> {
@@ -266,14 +267,14 @@ public class HoldingsCard extends Card {
 
     private Label coloredPercentCell(BigDecimal value) {
         Label label = new Label(PERCENT_FORMAT.format(value) + "%");
-        label.getStyleClass().add(value.signum() < 0 ? "holdings-negative" : "holdings-positive");
+        label.getStyleClass().addAll("holdings-cell", value.signum() < 0 ? "negative" : "positive");
         return label;
     }
 
     private Label coloredAmountCell(BigDecimal value) {
         String formatted = (value.signum() >= 0 ? "+" : "") + NUMBER_FORMAT.format(value);
         Label label = new Label(formatted);
-        label.getStyleClass().add(value.signum() < 0 ? "holdings-negative" : "holdings-positive");
+        label.getStyleClass().addAll("holdings-cell", value.signum() < 0 ? "negative" : "positive");
         return label;
     }
 }
