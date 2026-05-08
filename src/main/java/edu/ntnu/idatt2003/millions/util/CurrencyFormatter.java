@@ -7,9 +7,14 @@ import java.util.Objects;
 
 /**
  * Utility class for formatting monetary values.
+ *
+ * <p>All amounts are formatted in NOK, since portfolio values and net worth
+ * are converted to NOK by {@code GameManager} before being passed in.
+ * Language-based display currency is tracked separately.
  */
 public class CurrencyFormatter {
 
+    private static final String DISPLAY_CURRENCY_CODE = "NOK";
     private static final NumberFormat FORMAT;
 
     static {
@@ -23,14 +28,14 @@ public class CurrencyFormatter {
     }
 
     /**
-     * Formats the given amount using the active currency from {@link CurrencyManager}.
+     * Formats the given amount in NOK.
      *
      * @param amount the amount to format
-     * @return the formatted string, e.g. "5 000,00 USD"
+     * @return the formatted string, e.g. "5 000,00 NOK"
      * @throws NullPointerException if amount is null
      */
     public static String format(BigDecimal amount) {
         Objects.requireNonNull(amount, "Amount cannot be null");
-        return FORMAT.format(amount) + " " + CurrencyManager.get().getCurrencyCode();
+        return FORMAT.format(amount) + " " + DISPLAY_CURRENCY_CODE;
     }
 }

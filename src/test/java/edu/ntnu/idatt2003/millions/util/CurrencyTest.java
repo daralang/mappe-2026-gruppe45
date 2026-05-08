@@ -160,28 +160,24 @@ class CurrencyTest {
     @DisplayName("CurrencyFormatter")
     class CurrencyFormatterTest {
 
-        @BeforeEach
-        void resetToUsd() {
-            CurrencyManager.setCurrency(Currency.getInstance("USD"));
-        }
-
         @Nested
         @DisplayName("format()")
         class Format {
 
             @Test
-            @DisplayName("Should include active currency code in output")
-            void includesCurrencyCode() {
+            @DisplayName("Should include NOK in output")
+            void includesNok() {
                 String result = CurrencyFormatter.format(new BigDecimal("100.00"));
-                assertTrue(result.contains("USD"));
+                assertTrue(result.contains("NOK"));
             }
 
             @Test
-            @DisplayName("Should include NOK when active currency is NOK")
-            void includesNokWhenActive() {
-                CurrencyManager.setCurrency(Currency.getInstance("NOK"));
+            @DisplayName("Should always format in NOK regardless of active currency")
+            void alwaysFormatsInNokRegardlessOfActiveCurrency() {
+                CurrencyManager.setCurrency(Currency.getInstance("USD"));
                 String result = CurrencyFormatter.format(new BigDecimal("100.00"));
                 assertTrue(result.contains("NOK"));
+                assertFalse(result.contains("USD"));
             }
 
             @Test
@@ -189,7 +185,7 @@ class CurrencyTest {
             void formatsZero() {
                 String result = CurrencyFormatter.format(BigDecimal.ZERO);
                 assertNotNull(result);
-                assertTrue(result.contains("USD"));
+                assertTrue(result.contains("NOK"));
             }
 
             @Test
