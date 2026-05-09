@@ -3,33 +3,28 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
+import edu.ntnu.idatt2003.millions.view.component.Modal;
+import edu.ntnu.idatt2003.millions.view.component.SummaryBox;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.util.Objects;
 
 /**
  * Abstract base class for transaction dialogs (buy, sell, sell all).
- * Handles the modal structure, quantity input, summary updates,
- * and confirm/cancel actions. Subclasses define dialog-specific
- * details like title, summary rows, and confirmation logic.
+ * Builds the input form, summary, and confirm/cancel actions on top of
+ * the {@link Modal} infrastructure. Subclasses define the title, summary
+ * rows, and confirmation logic.
  */
-public abstract class TransactionDialog {
+public abstract class TransactionDialog extends Modal {
 
     protected static final DecimalFormat NUMBER_FORMAT;
 
@@ -40,10 +35,9 @@ public abstract class TransactionDialog {
 
     protected final PortfolioController controller;
     protected final Stock stock;
-    protected final Stage stage = new Stage();
 
     protected final TextField quantityInput = new TextField();
-    protected final VBox summaryBox = new VBox();
+    protected final SummaryBox summaryBox = new SummaryBox();
     protected final Label balanceAfterValue = new Label();
     protected final Label errorLabel = new Label();
     protected final Button confirmButton = new Button();
@@ -60,62 +54,24 @@ public abstract class TransactionDialog {
         this.controller = controller;
     }
 
-    /**
-     * Builds and shows the dialog. Subclasses don't override this;
-     * they override the abstract methods called from here.
-     */
-    public void show() {
-        VBox card = new VBox();
-        card.getStyleClass().add("modal-card");
-        card.getChildren().addAll(buildHeader(), buildBody());
-
-        StackPane root = new StackPane(card);
-        root.setStyle("-fx-background-color: transparent;");
-        root.setPadding(new Insets(20));  // gir plass til drop-shadow
-
-        Scene scene = new Scene(root);
-        scene.setFill(null);  // gjør scenen transparent
-        scene.getStylesheets().add(
-                Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm()
+    @Override
+    protected Region buildContent() {
+        VBox content = new VBox();
+        content.getChildren().addAll(
+                buildStandardHeader(getTitle()),
+                buildBody()
         );
+        return content;
+    }
 
-        stage.initStyle(StageStyle.TRANSPARENT);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setScene(scene);
-        stage.setResizable(false);
-
-        scene.setOnKeyPressed(e -> {
-            if (e.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
-                stage.close();
-            }
-        });
-
+    @Override
+    protected void onBeforeShow() {
         updateSummary();
+    }
+
+    @Override
+    protected void showStage() {
         stage.showAndWait();
-    }
-
-    /**
-     * Closes the dialog. Called by the controller after a successful
-     * transaction.
-     */
-    public void close() {
-        stage.close();
-    }
-
-    private HBox buildHeader() {
-        Label title = new Label(getTitle());
-        title.getStyleClass().add("modal-title");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Button close = new Button("✕");
-        close.getStyleClass().add("modal-close");
-        close.setOnAction(e -> stage.close());
-
-        HBox header = new HBox(title, spacer, close);
-        header.getStyleClass().add("modal-header");
-        return header;
     }
 
     private VBox buildBody() {
@@ -131,7 +87,6 @@ public abstract class TransactionDialog {
                 errorLabel,
                 buildActions()
         );
-        summaryBox.getStyleClass().add("modal-summary");
 
         transactionInfoLabel.getStyleClass().add("modal-info");
         transactionInfoLabel.setVisible(false);
@@ -197,7 +152,7 @@ public abstract class TransactionDialog {
     private HBox buildActions() {
         Button cancel = new Button(LanguageManager.get("dialog.button.cancel"));
         cancel.getStyleClass().add("modal-button");
-        cancel.setOnAction(e -> stage.close());
+        cancel.setOnAction(e -> close());
 
         confirmButton.setText(getConfirmButtonText());
         confirmButton.getStyleClass().addAll("modal-button", getConfirmButtonStyleClass());
@@ -211,38 +166,6 @@ public abstract class TransactionDialog {
         HBox actions = new HBox(cancel, confirmButton);
         actions.getStyleClass().add("modal-actions");
         return actions;
-    }
-
-    /**
-     * Adds a row to the summary box. Use addSummaryTotal for the bold
-     * bottom row with the divider.
-     */
-    protected void addSummaryRow(String label, String value) {
-        Label labelNode = new Label(label);
-        labelNode.getStyleClass().add("modal-summary-label");
-        Label valueNode = new Label(value);
-        valueNode.getStyleClass().add("modal-summary-value");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox row = new HBox(labelNode, spacer, valueNode);
-        row.getStyleClass().add("modal-summary-row");
-        summaryBox.getChildren().add(row);
-    }
-
-    protected void addSummaryTotal(String label, String value) {
-        Label labelNode = new Label(label);
-        labelNode.getStyleClass().add("modal-summary-total-label");
-        Label valueNode = new Label(value);
-        valueNode.getStyleClass().add("modal-summary-total-value");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox row = new HBox(labelNode, spacer, valueNode);
-        row.getStyleClass().addAll("modal-summary-row", "modal-summary-total");
-        summaryBox.getChildren().add(row);
     }
 
     /**

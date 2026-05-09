@@ -74,13 +74,13 @@ public abstract class AbstractSellDialog extends TransactionDialog {
     protected void renderSummary(BigDecimal quantity) {
         TransactionPreview preview = controller.previewSell(share, quantity);
 
-        addSummaryRow(LanguageManager.get("dialog.summary.gross"),
+        summaryBox.addRow(LanguageManager.get("dialog.summary.gross"),
                 NUMBER_FORMAT.format(preview.gross()) + " NOK");
-        addSummaryRow(LanguageManager.get("dialog.summary.commissionSell"),
+        summaryBox.addRow(LanguageManager.get("dialog.summary.commissionSell"),
                 "\u2212" + NUMBER_FORMAT.format(preview.commission()) + " NOK");
-        addSummaryRow(LanguageManager.get("dialog.summary.tax"),
+        summaryBox.addRow(LanguageManager.get("dialog.summary.tax"),
                 "\u2212" + NUMBER_FORMAT.format(preview.tax()) + " NOK");
-        addSummaryTotal(LanguageManager.get("dialog.summary.totalReceived"),
+        summaryBox.addTotal(LanguageManager.get("dialog.summary.totalReceived"),
                 NUMBER_FORMAT.format(preview.total()) + " NOK");
 
         renderProfitLoss(preview);
