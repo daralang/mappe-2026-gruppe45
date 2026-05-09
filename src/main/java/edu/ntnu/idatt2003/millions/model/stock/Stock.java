@@ -170,4 +170,18 @@ public class Stock {
         BigDecimal previous = prices.get(prices.size() - 2);
         return latest.subtract(previous);
     }
+
+    /**
+     * Returns the price change this week as a percentage of the previous price.
+     * Returns zero if there is no previous price to compare against.
+     *
+     * @return the weekly change as a percentage, e.g. 3.50 means +3.50%
+     */
+    public BigDecimal getWeeklyChangePercent() {
+        BigDecimal change = getLatestPriceChange();
+        BigDecimal previous = getSalesPrice().subtract(change);
+        if (previous.signum() == 0) return BigDecimal.ZERO;
+        return change.multiply(BigDecimal.valueOf(100))
+                .divide(previous, 2, java.math.RoundingMode.HALF_UP);
+    }
 }
