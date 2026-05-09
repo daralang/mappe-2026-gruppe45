@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.model.player;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -169,6 +170,56 @@ public class Player {
      */
     public void setPreviousNetWorth(BigDecimal previousNetWorth) {
         this.previousNetWorth = previousNetWorth;
+    }
+
+    /**
+     * Returns the change in net worth since the start of the game.
+     *
+     * @return current net worth minus starting money
+     */
+    public BigDecimal getNetWorthChangeSinceStart() {
+        return getNetWorth().subtract(startingMoney);
+    }
+
+    /**
+     * Returns the change in net worth since the start of the game,
+     * as a percentage of starting money. Returns zero if starting money
+     * was zero (cannot compute a percentage of nothing).
+     *
+     * @return the percentage change, or zero if starting money was zero
+     */
+    public BigDecimal getNetWorthChangePercentSinceStart() {
+        if (startingMoney.signum() == 0) return BigDecimal.ZERO;
+        return getNetWorthChangeSinceStart()
+                .multiply(BigDecimal.valueOf(100))
+                .divide(startingMoney, 1, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Returns the change in net worth since the previous week.
+     * Returns null if no week has been advanced yet.
+     *
+     * @return current net worth minus previous net worth, or null
+     */
+    public BigDecimal getWeeklyNetWorthChange() {
+        if (previousNetWorth == null) return null;
+        return getNetWorth().subtract(previousNetWorth);
+    }
+
+    /**
+     * Returns the change in net worth since the previous week,
+     * as a percentage of the previous net worth. Returns null if no week
+     * has been advanced yet, or zero if the previous net worth was zero.
+     *
+     * @return the percentage change, null if no previous week, or zero
+     *         if the previous net worth was zero
+     */
+    public BigDecimal getWeeklyNetWorthChangePercent() {
+        if (previousNetWorth == null) return null;
+        if (previousNetWorth.signum() == 0) return BigDecimal.ZERO;
+        return getWeeklyNetWorthChange()
+                .multiply(BigDecimal.valueOf(100))
+                .divide(previousNetWorth, 1, RoundingMode.HALF_UP);
     }
 
     /***
