@@ -1,7 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
-import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.player.Portfolio;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -17,7 +16,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
@@ -66,14 +64,6 @@ public class HoldingsCard extends Card {
     }
 
     private void configureColumns() {
-        // 0: actions    -> 18% (Kjøp / Selg / Selg alt)
-        // 1: company    -> 22%
-        // 2: quantity   -> 11%
-        // 3: weekly %   -> 12%
-        // 4: value NOK  -> 12%
-        // 5: return %   -> 11%
-        // 6: return NOK -> 11%
-        // 7: details    -> 3%  (chevron icon)
         double[] widths = {18, 22, 10, 12, 12, 10, 11, 5};
         HPos[] alignments = {
                 HPos.LEFT, HPos.LEFT, HPos.RIGHT, HPos.RIGHT,
@@ -111,8 +101,7 @@ public class HoldingsCard extends Card {
     private void refresh() {
         grid.getChildren().clear();
 
-        Player player = gameManager.getPlayer();
-        Portfolio portfolio = player.getPortfolio();
+        Portfolio portfolio = gameManager.getPlayer().getPortfolio();
         List<Share> shares = portfolio.getShares();
 
         addHeaderRow();
@@ -126,46 +115,12 @@ public class HoldingsCard extends Card {
             return;
         }
 
-        BigDecimal totalValueNok = BigDecimal.ZERO;
-        BigDecimal totalReturnNok = BigDecimal.ZERO;
-        BigDecimal totalCost = BigDecimal.ZERO;
-
         int row = 1;
         for (Share share : shares) {
-            Stock stock = share.getStock();
-            BigDecimal quantity = share.getQuantity();
-            BigDecimal purchasePrice = share.getPurchasePrice();
-            BigDecimal salesPrice = stock.getSalesPrice();
-
-            BigDecimal cost = purchasePrice.multiply(quantity);
-            BigDecimal currentValue = salesPrice.multiply(quantity);
-            BigDecimal returnNok = currentValue.subtract(cost);
-            BigDecimal returnPercent = cost.signum() == 0
-                    ? BigDecimal.ZERO
-                    : returnNok.multiply(BigDecimal.valueOf(100))
-                    .divide(cost, 2, RoundingMode.HALF_UP);
-
-            BigDecimal weeklyChange = stock.getLatestPriceChange();
-            BigDecimal previousPrice = salesPrice.subtract(weeklyChange);
-            BigDecimal weeklyPercent = previousPrice.signum() == 0
-                    ? BigDecimal.ZERO
-                    : weeklyChange.multiply(BigDecimal.valueOf(100))
-                    .divide(previousPrice, 2, RoundingMode.HALF_UP);
-
-            addDataRow(row++, share, stock, weeklyPercent, currentValue,
-                    returnPercent, returnNok);
-
-            totalCost = totalCost.add(cost);
-            totalValueNok = totalValueNok.add(currentValue);
-            totalReturnNok = totalReturnNok.add(returnNok);
+            addDataRow(row++, share);
         }
 
-        BigDecimal totalReturnPercent = totalCost.signum() == 0
-                ? BigDecimal.ZERO
-                : totalReturnNok.multiply(BigDecimal.valueOf(100))
-                .divide(totalCost, 2, RoundingMode.HALF_UP);
-
-        addTotalRow(row, totalValueNok, totalReturnPercent, totalReturnNok);
+        addTotalRow(row, portfolio);
     }
 
     private void addHeaderRow() {
@@ -186,24 +141,19 @@ public class HoldingsCard extends Card {
         }
     }
 
-    private void addDataRow(int row, Share share, Stock stock,
-                            BigDecimal weeklyPercent, BigDecimal currentValue,
-                            BigDecimal returnPercent, BigDecimal returnNok) {
-
+    private void addDataRow(int row, Share share) {
+        Stock stock = share.getStock();
         grid.add(buildActionButtons(share), 0, row);
         grid.add(cell(stock.getSymbol() + ", " + stock.getCompany()), 1, row);
         grid.add(cell(NUMBER_FORMAT.format(share.getQuantity())), 2, row);
-        grid.add(coloredPercentCell(weeklyPercent), 3, row);
-        grid.add(cell(NUMBER_FORMAT.format(currentValue)), 4, row);
-        grid.add(coloredPercentCell(returnPercent), 5, row);
-        grid.add(coloredAmountCell(returnNok), 6, row);
+        grid.add(coloredPercentCell(stock.getWeeklyChangePercent()), 3, row);
+        grid.add(cell(NUMBER_FORMAT.format(share.getCurrentValue())), 4, row);
+        grid.add(coloredPercentCell(share.getReturnPercent()), 5, row);
+        grid.add(coloredAmountCell(share.getReturnNok()), 6, row);
         grid.add(buildDetailsButton(share), 7, row);
     }
 
-    private void addTotalRow(int row, BigDecimal totalValueNok,
-                             BigDecimal totalReturnPercent, BigDecimal totalReturnNok) {
-
-        // Divider line spanning all columns
+    private void addTotalRow(int row, Portfolio portfolio) {
         Region divider = new Region();
         divider.getStyleClass().add("holdings-total-divider");
         GridPane.setColumnSpan(divider, 8);
@@ -215,12 +165,12 @@ public class HoldingsCard extends Card {
         totalLabel.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(totalLabel, 1, dataRow);
 
-        Label valueNok = new Label(NUMBER_FORMAT.format(totalValueNok));
+        Label valueNok = new Label(NUMBER_FORMAT.format(portfolio.getTotalValue()));
         valueNok.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(valueNok, 4, dataRow);
 
-        grid.add(coloredPercentCell(totalReturnPercent), 5, dataRow);
-        grid.add(coloredAmountCell(totalReturnNok), 6, dataRow);
+        grid.add(coloredPercentCell(portfolio.getTotalReturnPercent()), 5, dataRow);
+        grid.add(coloredAmountCell(portfolio.getTotalReturnNok()), 6, dataRow);
     }
 
     private HBox buildActionButtons(Share share) {
