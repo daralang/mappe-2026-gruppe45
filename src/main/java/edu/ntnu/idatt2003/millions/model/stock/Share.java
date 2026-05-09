@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.model.stock;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -61,5 +62,45 @@ public class Share {
      */
     public BigDecimal getPurchasePrice() {
         return purchasePrice;
+    }
+
+    /**
+     * Returns the total amount paid to acquire this position (purchasePrice × quantity).
+     *
+     * @return the total cost basis
+     */
+    public BigDecimal getCost() {
+        return purchasePrice.multiply(quantity);
+    }
+
+    /**
+     * Returns the current market value of this position (salesPrice × quantity).
+     *
+     * @return the current value at the stock's latest price
+     */
+    public BigDecimal getCurrentValue() {
+        return stock.getSalesPrice().multiply(quantity);
+    }
+
+    /**
+     * Returns the absolute return for this position (currentValue − cost).
+     *
+     * @return profit or loss in currency units
+     */
+    public BigDecimal getReturnNok() {
+        return getCurrentValue().subtract(getCost());
+    }
+
+    /**
+     * Returns the return for this position as a percentage of cost.
+     * Returns zero if the cost basis is zero.
+     *
+     * @return return as a percentage, e.g. 12.50 means +12.50%
+     */
+    public BigDecimal getReturnPercent() {
+        BigDecimal cost = getCost();
+        if (cost.signum() == 0) return BigDecimal.ZERO;
+        return getReturnNok().multiply(BigDecimal.valueOf(100))
+                .divide(cost, 2, RoundingMode.HALF_UP);
     }
 }
