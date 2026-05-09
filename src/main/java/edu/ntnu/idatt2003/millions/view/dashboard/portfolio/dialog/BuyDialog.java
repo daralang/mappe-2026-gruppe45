@@ -53,7 +53,7 @@ public class BuyDialog extends TransactionDialog {
 
     @Override
     protected void updateSummary() {
-        summaryBox.getChildren().clear();
+        summaryBox.clear();
         hideError();
 
         BigDecimal quantity = getQuantity();
@@ -65,11 +65,11 @@ public class BuyDialog extends TransactionDialog {
 
         TransactionPreview preview = controller.previewBuy(stock, quantity);
 
-        addSummaryRow(LanguageManager.get("dialog.summary.gross"),
+        summaryBox.addRow(LanguageManager.get("dialog.summary.gross"),
                 NUMBER_FORMAT.format(preview.gross()) + " NOK");
-        addSummaryRow(LanguageManager.get("dialog.summary.commissionBuy"),
+        summaryBox.addRow(LanguageManager.get("dialog.summary.commissionBuy"),
                 NUMBER_FORMAT.format(preview.commission()) + " NOK");
-        addSummaryTotal(LanguageManager.get("dialog.summary.totalCost"),
+        summaryBox.addTotal(LanguageManager.get("dialog.summary.totalCost"),
                 NUMBER_FORMAT.format(preview.total()) + " NOK");
 
         balanceAfterValue.setText(

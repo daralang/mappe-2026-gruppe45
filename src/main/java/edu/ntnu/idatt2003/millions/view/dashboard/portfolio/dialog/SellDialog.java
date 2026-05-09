@@ -63,7 +63,7 @@ public class SellDialog extends AbstractSellDialog {
 
     @Override
     protected void updateSummary() {
-        summaryBox.getChildren().clear();
+        summaryBox.clear();
         hideError();
 
         BigDecimal quantity = getQuantity();

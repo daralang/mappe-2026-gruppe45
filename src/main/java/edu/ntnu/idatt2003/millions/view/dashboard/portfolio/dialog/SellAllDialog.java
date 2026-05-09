@@ -41,7 +41,7 @@ public class SellAllDialog extends AbstractSellDialog {
 
     @Override
     protected void updateSummary() {
-        summaryBox.getChildren().clear();
+        summaryBox.clear();
         hideError();
         renderSummary(share.getQuantity());
     }
