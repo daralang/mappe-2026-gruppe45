@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 
+import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.*;
 import javafx.scene.layout.HBox;
@@ -14,6 +15,7 @@ import javafx.scene.layout.VBox;
 public class PortfolioView extends VBox {
 
     private final GameManager gameManager;
+    private final PortfolioController controller;
 
     /**
      * Constructs a new PortfolioView.
@@ -22,10 +24,11 @@ public class PortfolioView extends VBox {
      */
     public PortfolioView(GameManager gameManager) {
         this.gameManager = gameManager;
+        this.controller = new PortfolioController(gameManager);
         setSpacing(16);
 
         HBox topRow = buildTopRow();
-        HoldingsCard holdingsCard = new HoldingsCard(gameManager);
+        HoldingsCard holdingsCard = new HoldingsCard(gameManager, controller);
 
         getChildren().addAll(topRow, holdingsCard);
     }

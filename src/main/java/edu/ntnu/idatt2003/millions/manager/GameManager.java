@@ -5,6 +5,8 @@ import edu.ntnu.idatt2003.millions.file.game.GameState;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 
 import java.io.File;
@@ -19,6 +21,11 @@ import java.util.Objects;
  * saving the current game state, and advancing the game week.
  * Notifies registered {@link GameObserver}s when the game state changes.
  * Delegates file operations to {@link GameFileHandler}.
+ *
+ * <p>Acts as the application's Service Layer: owns the game state
+ * ({@link Player}, {@link Exchange}), exposes a stable API to controllers,
+ * and ensures that observers are notified consistently after every
+ * state-changing operation.</p>
  */
 public class GameManager {
 
@@ -26,7 +33,6 @@ public class GameManager {
     private Exchange exchange;
     private final GameFileHandler gameFileHandler;
     private final List<GameObserver> observers = new ArrayList<>();
-    private BigDecimal previousNetWorth;
 
     /**
      * Constructs a new GameManager.
@@ -87,6 +93,36 @@ public class GameManager {
         GameState state = gameFileHandler.loadGame(file);
         this.player = state.player();
         this.exchange = state.exchange();
+        notifyObservers();
+    }
+
+    /**
+     * Buys the given quantity of a stock for the current player.
+     * Delegates the actual transaction to {@link Exchange} and notifies
+     * observers on success.
+     *
+     * @param symbol   the symbol of the stock to buy
+     * @param quantity the quantity to buy
+     * @return the completed purchase transaction
+     */
+    public Transaction buy(String symbol, BigDecimal quantity) {
+        Transaction transaction = exchange.buy(symbol, quantity, player);
+        notifyObservers();
+        return transaction;
+    }
+
+    /**
+     * Sells the given share for the current player.
+     * Delegates the actual transaction to {@link Exchange} and notifies
+     * observers on success.
+     *
+     * @param share the share to sell
+     * @return the completed sale transaction
+     */
+    public Transaction sell(Share share) {
+        Transaction transaction = exchange.sell(share, player);
+        notifyObservers();
+        return transaction;
     }
 
     /**

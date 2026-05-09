@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
+import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.model.player.Portfolio;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -42,16 +43,19 @@ public class HoldingsCard extends Card {
     }
 
     private final GameManager gameManager;
+    private final PortfolioController controller;
     private final GridPane grid = new GridPane();
 
     /**
      * Constructs a new HoldingsCard.
      *
      * @param gameManager the game manager containing player and exchange
+     * @param controller the controller handling portfolio actions
      */
-    public HoldingsCard(GameManager gameManager) {
+    public HoldingsCard(GameManager gameManager, PortfolioController controller) {
         super(gameManager);
         this.gameManager = gameManager;
+        this.controller = controller;
 
         Label title = new Label(LanguageManager.get("dashboard.portfolio.title"));
         title.getStyleClass().add("holdings-title");
@@ -175,22 +179,12 @@ public class HoldingsCard extends Card {
 
     private HBox buildActionButtons(Share share) {
         Button buy = actionButton(LanguageManager.get("dashboard.portfolio.buy"), "holdings-action-buy");
-        Button sell = actionButton(LanguageManager.get("dashboard.portfolio.sell"), "negative");
-        sell.getStyleClass().add("holdings-action-sell");
+        Button sell = actionButton(LanguageManager.get("dashboard.portfolio.sell"), "holdings-action-sell");
         Button sellAll = actionButton(LanguageManager.get("dashboard.portfolio.sellAll"), "holdings-action-sell");
 
-        buy.setOnAction(e -> {
-            // TODO: open Kjøp-popup for share.getStock()
-            System.out.println("Kjøp clicked for " + share.getStock().getSymbol());
-        });
-        sell.setOnAction(e -> {
-            // TODO: open Selg-popup for share
-            System.out.println("Selg clicked for " + share.getStock().getSymbol());
-        });
-        sellAll.setOnAction(e -> {
-            // TODO: open Selg alt-popup for share.getStock()
-            System.out.println("Selg alt clicked for " + share.getStock().getSymbol());
-        });
+        buy.setOnAction(e -> controller.openBuyDialog(share.getStock()));
+        sell.setOnAction(e -> controller.openSellDialog(share));
+        sellAll.setOnAction(e -> controller.openSellAllDialog(share));
 
         HBox primaryActions = new HBox(8, buy, sell);
         primaryActions.setAlignment(Pos.CENTER_LEFT);
