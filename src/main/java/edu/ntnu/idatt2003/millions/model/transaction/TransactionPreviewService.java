@@ -48,11 +48,15 @@ public class TransactionPreviewService {
      * Computes a preview of selling the given quantity of an owned share
      * for the given player, using the stock's current sales price.
      *
+     * <p>All financial calculations (gross, commission, tax, total, profit
+     * and profit percent) are delegated to {@link SalesCalculator}. The
+     * resulting balance is the player's current cash plus the net payout.</p>
+     *
      * @param share    the share to sell from
      * @param quantity the quantity to sell (may be less than the full share)
      * @param player   the player who would perform the sale
      * @return a preview with gross, commission, tax, total received,
-     *         resulting balance, and the profit or loss on the sale
+     *         resulting balance, and the realized profit or loss
      */
     public TransactionPreview previewSale(
             Share share, BigDecimal quantity, Player player) {
@@ -68,12 +72,8 @@ public class TransactionPreviewService {
         BigDecimal total = calc.calculateTotal();
         BigDecimal balanceAfter = player.getMoney().add(total);
 
-        BigDecimal cost = share.getPurchasePrice().multiply(quantity);
-        BigDecimal profit = total.subtract(cost);
-        BigDecimal profitPercent = cost.signum() == 0
-                ? BigDecimal.ZERO
-                : profit.multiply(BigDecimal.valueOf(100))
-                .divide(cost, 1, RoundingMode.HALF_UP);
+        BigDecimal profit = calc.calculateProfit();
+        BigDecimal profitPercent = calc.calculateProfitPercent();
 
         return new TransactionPreview(
                 gross, commission, tax, total, balanceAfter,

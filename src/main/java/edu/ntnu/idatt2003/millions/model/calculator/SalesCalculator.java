@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.model.calculator;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -38,6 +39,32 @@ public class SalesCalculator implements TransactionCalculator {
         this.quantity = share.getQuantity();
         PurchaseCalculator purchaseCalculator = new PurchaseCalculator(share);
         this.purchaseCosts = purchaseCalculator.calculateTotal();
+    }
+
+    /**
+     * Calculates the realized profit (or loss) from this sale, after
+     * commission and tax. Profit is the total received minus the original
+     * purchase costs.
+     *
+     * @return the realized profit (positive) or loss (negative)
+     */
+    public BigDecimal calculateProfit() {
+        return calculateTotal().subtract(purchaseCosts);
+    }
+
+    /**
+     * Calculates the realized profit (or loss) as a percentage of the
+     * original purchase costs.
+     *
+     * @return the profit percent, or zero if the original cost was zero
+     */
+    public BigDecimal calculateProfitPercent() {
+        if (purchaseCosts.signum() == 0) {
+            return BigDecimal.ZERO;
+        }
+        return calculateProfit()
+                .multiply(BigDecimal.valueOf(100))
+                .divide(purchaseCosts, 1, RoundingMode.HALF_UP);
     }
 
     /**

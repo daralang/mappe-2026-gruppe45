@@ -3,12 +3,11 @@ package edu.ntnu.idatt2003.millions.controller;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreviewService;
-import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog.AbstractSellDialog;
-import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog.BuyDialog;
-import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog.SellAllDialog;
-import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog.SellDialog;
+import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog.*;
+import javafx.application.Platform;
 
 import java.math.BigDecimal;
 
@@ -71,7 +70,7 @@ public class PortfolioController {
                 share, quantity, gameManager.getPlayer());
     }
 
-    // ---- Dialog opening ----
+    // Dialog opening
 
     /**
      * Opens the buy dialog for the given stock and executes the purchase
@@ -109,27 +108,41 @@ public class PortfolioController {
         dialog.show();
     }
 
-    // ---- Mutating operations ----
+    // Mutating operations
 
     private void buy(Stock stock, BigDecimal quantity, BuyDialog dialog) {
+        BigDecimal balanceBefore = gameManager.getPlayer().getMoney();
         try {
-            gameManager.buy(stock.getSymbol(), quantity);
+            Transaction transaction = gameManager.buy(stock.getSymbol(), quantity);
             dialog.close();
-            // TODO: show receipt
+            BigDecimal balanceAfter = gameManager.getPlayer().getMoney();
+            Platform.runLater(() ->
+                    new BuyReceipt(transaction, balanceBefore, balanceAfter).show());
         } catch (Exception e) {
-            dialog.showError(e.getMessage());
+            String message = e.getMessage();
+            if (message == null || message.isBlank()) {
+                message = e.getClass().getSimpleName();
+            }
+            dialog.showError(message);
         }
     }
 
     private void sell(Share share, BigDecimal quantity, AbstractSellDialog dialog) {
+        BigDecimal balanceBefore = gameManager.getPlayer().getMoney();
         try {
             // TODO: when partial sale is implemented, pass quantity through.
             //  For now, the model only supports selling the full Share instance.
-            gameManager.sell(share);
+            Transaction transaction = gameManager.sell(share);
             dialog.close();
-            // TODO: show receipt
+            BigDecimal balanceAfter = gameManager.getPlayer().getMoney();
+            Platform.runLater(() ->
+                    new SellReceipt(transaction, balanceBefore, balanceAfter).show());
         } catch (Exception e) {
-            dialog.showError(e.getMessage());
+            String message = e.getMessage();
+            if (message == null || message.isBlank()) {
+                message = e.getClass().getSimpleName();
+            }
+            dialog.showError(message);
         }
     }
 
