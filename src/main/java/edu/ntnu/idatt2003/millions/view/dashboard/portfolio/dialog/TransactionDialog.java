@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -144,7 +145,7 @@ public abstract class TransactionDialog {
     }
 
     private VBox buildStockSection() {
-        Label label = new Label("Aksje");
+        Label label = new Label(LanguageManager.get("dialog.stock.label"));
         label.getStyleClass().add("modal-section-label");
 
         Label value = new Label(stock.getSymbol() + ", " + stock.getCompany());
@@ -161,7 +162,7 @@ public abstract class TransactionDialog {
      * extras like a "Du eier"-info or a "Selg alt"-shortcut.
      */
     protected VBox buildQuantitySection() {
-        Label label = new Label("Antall andeler");
+        Label label = new Label(LanguageManager.get("dialog.quantity.label"));
         label.getStyleClass().add("modal-section-label");
 
         quantityInput.getStyleClass().add("modal-input");
@@ -172,7 +173,7 @@ public abstract class TransactionDialog {
     }
 
     private VBox buildBalanceSection() {
-        Label availableLabel = new Label("Tilgjengelig nå");
+        Label availableLabel = new Label(LanguageManager.get("dialog.balance.available"));
         availableLabel.getStyleClass().add("modal-balance-label");
         Label availableValue = new Label(
                 NUMBER_FORMAT.format(controller.getCurrentBalance()) + " NOK");
@@ -194,7 +195,7 @@ public abstract class TransactionDialog {
     }
 
     private HBox buildActions() {
-        Button cancel = new Button("Avbryt");
+        Button cancel = new Button(LanguageManager.get("dialog.button.cancel"));
         cancel.getStyleClass().add("modal-button");
         cancel.setOnAction(e -> stage.close());
 

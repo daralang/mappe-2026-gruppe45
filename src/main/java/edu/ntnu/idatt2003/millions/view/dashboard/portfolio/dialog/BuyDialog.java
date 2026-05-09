@@ -3,8 +3,10 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.function.Consumer;
 
 /**
@@ -20,12 +22,13 @@ public class BuyDialog extends TransactionDialog {
 
     @Override
     protected String getTitle() {
-        return "Kjøp aksjer";
+        return LanguageManager.get("dialog.buy.title");
     }
 
     @Override
     protected String getStockHint() {
-        return "Pris per andel: " + NUMBER_FORMAT.format(stock.getSalesPrice()) + " NOK";
+        return MessageFormat.format(LanguageManager.get("dialog.stock.priceHint"),
+                NUMBER_FORMAT.format(stock.getSalesPrice()));
     }
 
     @Override
@@ -35,12 +38,12 @@ public class BuyDialog extends TransactionDialog {
 
     @Override
     protected String getBalanceAfterLabel() {
-        return "Etter kjøp";
+        return LanguageManager.get("dialog.balance.afterBuy");
     }
 
     @Override
     protected String getConfirmButtonText() {
-        return "Bekreft kjøp";
+        return LanguageManager.get("dialog.button.confirmBuy");
     }
 
     @Override
@@ -62,11 +65,11 @@ public class BuyDialog extends TransactionDialog {
 
         TransactionPreview preview = controller.previewBuy(stock, quantity);
 
-        addSummaryRow("Bruttoverdi",
+        addSummaryRow(LanguageManager.get("dialog.summary.gross"),
                 NUMBER_FORMAT.format(preview.gross()) + " NOK");
-        addSummaryRow("Kurtasje (0,5%)",
+        addSummaryRow(LanguageManager.get("dialog.summary.commissionBuy"),
                 NUMBER_FORMAT.format(preview.commission()) + " NOK");
-        addSummaryTotal("Totalkostnad",
+        addSummaryTotal(LanguageManager.get("dialog.summary.totalCost"),
                 NUMBER_FORMAT.format(preview.total()) + " NOK");
 
         balanceAfterValue.setText(
@@ -75,7 +78,7 @@ public class BuyDialog extends TransactionDialog {
         if (preview.balanceAfter().signum() < 0) {
             balanceAfterValue.getStyleClass().removeAll("positive", "negative");
             balanceAfterValue.getStyleClass().add("negative");
-            showError("Du har ikke nok penger til dette kjøpet.");
+            showError(LanguageManager.get("dialog.error.insufficientFunds"));
             setConfirmEnabled(false);
         } else {
             balanceAfterValue.getStyleClass().removeAll("positive", "negative");
@@ -98,7 +101,7 @@ public class BuyDialog extends TransactionDialog {
     protected void onConfirm() {
         BigDecimal quantity = getQuantity();
         if (quantity == null) {
-            showError("Ugyldig antall");
+            showError(LanguageManager.get("dialog.quantity.invalid"));
             return;
         }
         if (onConfirmCallback != null) {

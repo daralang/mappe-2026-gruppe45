@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -10,6 +11,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 
 /**
  * Dialog for selling a user-specified quantity of shares.
@@ -22,7 +24,7 @@ public class SellDialog extends AbstractSellDialog {
 
     @Override
     protected String getTitle() {
-        return "Selg aksjer";
+        return LanguageManager.get("dialog.sell.title");
     }
 
     /**
@@ -31,11 +33,12 @@ public class SellDialog extends AbstractSellDialog {
      */
     @Override
     protected VBox buildQuantitySection() {
-        Label label = new Label("Antall andeler");
+        Label label = new Label(LanguageManager.get("dialog.quantity.label"));
         label.getStyleClass().add("modal-section-label");
 
-        Label owned = new Label("Du eier "
-                + NUMBER_FORMAT.format(share.getQuantity()));
+        Label owned = new Label(MessageFormat.format(
+                LanguageManager.get("dialog.quantity.owned"),
+                NUMBER_FORMAT.format(share.getQuantity())));
         owned.getStyleClass().add("modal-section-hint");
 
         Region spacer = new Region();
@@ -48,7 +51,7 @@ public class SellDialog extends AbstractSellDialog {
                 (obs, oldVal, newVal) -> updateSummary());
         HBox.setHgrow(quantityInput, Priority.ALWAYS);
 
-        Button sellAll = new Button("Selg alt");
+        Button sellAll = new Button(LanguageManager.get("dialog.button.sellAll"));
         sellAll.getStyleClass().add("modal-button");
         sellAll.setOnAction(e ->
                 quantityInput.setText(share.getQuantity().toPlainString()));
@@ -75,8 +78,9 @@ public class SellDialog extends AbstractSellDialog {
             setConfirmEnabled(false);
             balanceAfterValue.setText("");
             setTransactionInfo(null, false);
-            showError("Du eier kun "
-                    + NUMBER_FORMAT.format(share.getQuantity()) + " andeler.");
+            showError(MessageFormat.format(
+                    LanguageManager.get("dialog.quantity.notEnoughShares"),
+                    NUMBER_FORMAT.format(share.getQuantity())));
             return;
         }
 
