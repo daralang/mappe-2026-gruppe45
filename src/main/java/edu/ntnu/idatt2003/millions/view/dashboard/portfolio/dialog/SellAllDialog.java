@@ -2,8 +2,11 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+
+import java.text.MessageFormat;
 
 /**
  * Dialog for confirming a "sell all" action.
@@ -17,7 +20,7 @@ public class SellAllDialog extends AbstractSellDialog {
 
     @Override
     protected String getTitle() {
-        return "Selg alt";
+        return LanguageManager.get("dialog.sellAll.title");
     }
 
     /**
@@ -25,12 +28,12 @@ public class SellAllDialog extends AbstractSellDialog {
      */
     @Override
     protected VBox buildQuantitySection() {
-        Label label = new Label("Antall andeler");
+        Label label = new Label(LanguageManager.get("dialog.quantity.label"));
         label.getStyleClass().add("modal-section-label");
 
-        Label quantity = new Label(
-                NUMBER_FORMAT.format(share.getQuantity())
-                        + " (alle dine andeler)");
+        Label quantity = new Label(MessageFormat.format(
+                LanguageManager.get("dialog.quantity.allShares"),
+                NUMBER_FORMAT.format(share.getQuantity())));
         quantity.getStyleClass().add("modal-section-value");
 
         return new VBox(4, label, quantity);

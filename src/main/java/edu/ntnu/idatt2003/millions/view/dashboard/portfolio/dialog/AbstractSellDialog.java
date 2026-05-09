@@ -3,8 +3,10 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.function.Consumer;
 
 /**
@@ -38,8 +40,8 @@ public abstract class AbstractSellDialog extends TransactionDialog {
 
     @Override
     protected String getStockHint() {
-        return "Salgspris per andel: "
-                + NUMBER_FORMAT.format(stock.getSalesPrice()) + " NOK";
+        return MessageFormat.format(LanguageManager.get("dialog.stock.salesPriceHint"),
+                NUMBER_FORMAT.format(stock.getSalesPrice()));
     }
 
     @Override
@@ -49,12 +51,12 @@ public abstract class AbstractSellDialog extends TransactionDialog {
 
     @Override
     protected String getBalanceAfterLabel() {
-        return "Etter salg";
+        return LanguageManager.get("dialog.balance.afterSell");
     }
 
     @Override
     protected String getConfirmButtonText() {
-        return "Bekreft salg";
+        return LanguageManager.get("dialog.button.confirmSell");
     }
 
     @Override
@@ -72,13 +74,13 @@ public abstract class AbstractSellDialog extends TransactionDialog {
     protected void renderSummary(BigDecimal quantity) {
         TransactionPreview preview = controller.previewSell(share, quantity);
 
-        addSummaryRow("Bruttoverdi",
+        addSummaryRow(LanguageManager.get("dialog.summary.gross"),
                 NUMBER_FORMAT.format(preview.gross()) + " NOK");
-        addSummaryRow("Kurtasje (1%)",
+        addSummaryRow(LanguageManager.get("dialog.summary.commissionSell"),
                 "\u2212" + NUMBER_FORMAT.format(preview.commission()) + " NOK");
-        addSummaryRow("Skatt (30% av gevinst)",
+        addSummaryRow(LanguageManager.get("dialog.summary.tax"),
                 "\u2212" + NUMBER_FORMAT.format(preview.tax()) + " NOK");
-        addSummaryTotal("Du mottar",
+        addSummaryTotal(LanguageManager.get("dialog.summary.totalReceived"),
                 NUMBER_FORMAT.format(preview.total()) + " NOK");
 
         renderProfitLoss(preview);
@@ -91,9 +93,10 @@ public abstract class AbstractSellDialog extends TransactionDialog {
         boolean positive = preview.profit().signum() >= 0;
         String sign = positive ? "+" : "\u2212";
         String pctSign = positive ? "+" : "";
-        String message = (positive ? "Gevinst" : "Tap") + " på dette salget: "
-                + sign + NUMBER_FORMAT.format(preview.profit().abs()) + " NOK ("
+        String suffix = sign + NUMBER_FORMAT.format(preview.profit().abs()) + " NOK ("
                 + pctSign + preview.profitPercent().toPlainString() + "%)";
+        String key = positive ? "dialog.profit.gain" : "dialog.profit.loss";
+        String message = MessageFormat.format(LanguageManager.get(key), suffix);
         setTransactionInfo(message, positive);
     }
 
@@ -108,7 +111,7 @@ public abstract class AbstractSellDialog extends TransactionDialog {
     protected void onConfirm() {
         BigDecimal quantity = getQuantity();
         if (quantity == null) {
-            showError("Ugyldig antall");
+            showError(LanguageManager.get("dialog.quantity.invalid"));
             return;
         }
         if (onConfirmCallback != null) {
