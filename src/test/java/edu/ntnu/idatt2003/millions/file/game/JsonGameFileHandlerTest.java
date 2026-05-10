@@ -297,12 +297,13 @@ class JsonGameFileHandlerTest {
         }
 
         @Test
-        @DisplayName("Should be able to advance week after loading game from file")
-        void canAdvanceWeekAfterLoadingGame() {
+        @DisplayName("Should be able to advance week after loading game and reinitializing exchange")
+        void canAdvanceWeekAfterLoadingGameAndReinitialize() {
             // Arrange
             Path file = tempDir.resolve("save.json");
             handler.saveGame(player, exchange, file.toFile());
             GameState state = handler.loadGame(file.toFile());
+            state.exchange().reinitialize(new FixedRateCurrencyConverter());
 
             // Act & Assert
             assertDoesNotThrow(() -> state.exchange().advance());
