@@ -31,7 +31,7 @@
     -fx-cursor: hand;
 }
 .modal-close:hover {
-    -fx-text-fill: #000000;
+    -fx-text-fill: black;
 }
 
 .modal-body {
@@ -68,17 +68,12 @@
 }
 
 .modal-summary-total {
-    -fx-border-color: #dddddd;
+    -fx-border-color: border;
     -fx-border-width: 1 0 0 0;
     -fx-padding: 8 0 0 0;
 }
 
-.modal-summary-total-label {
-    -fx-font-size: 14;
-    -fx-font-weight: bold;
-}
-
-.modal-summary-total-value {
+.modal-summary-total-text {
     -fx-font-size: 14;
     -fx-font-weight: bold;
 }
@@ -147,7 +142,7 @@
 }
 
 .modal-info-negative {
-    -fx-background-color: #fdecea;
+    -fx-background-color: danger-bg;
     -fx-text-fill: danger-text;
 }
 
@@ -162,10 +157,6 @@
     -fx-alignment: center;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
-}
-
-.modal-meta-row {
-    -fx-padding: 0;
 }
 
 .modal-header-success {

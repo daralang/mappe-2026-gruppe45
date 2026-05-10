@@ -54,7 +54,7 @@
 }
 
 .content-scroll .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: #aaaaaa;
+    -fx-background-color: border-strong;
 }
 
 .content-scroll .scroll-bar:vertical .thumb:pressed {
