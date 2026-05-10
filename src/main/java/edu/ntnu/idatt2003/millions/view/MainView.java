@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view;
 
+import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.component.Header;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
@@ -13,33 +14,44 @@ import javafx.scene.layout.BorderPane;
  * The main view of the application.
  * Contains a persistent {@link Header} and a content area that switches
  * between different views depending on user navigation.
+ *
+ * <p>Navigation between Dashboard and Exchange is handled internally as
+ * purely visual state. Domain-related actions (save, exit, advance week)
+ * are delegated to the controller via callbacks supplied at construction.</p>
  */
 public class MainView {
 
     private final GameManager gameManager;
+    private final PortfolioController portfolioController;
     private final BorderPane root;
     private final Header header;
     private final WeekBar weekBar;
 
     /**
      * Constructs a new MainView with a header and dashboard as the default content.
+     *
+     * @param gameManager    the game manager containing player and exchange
+     * @param onSaveGame     callback invoked when the user clicks "Save game"
+     * @param onExitGame     callback invoked when the user clicks "Exit game"
+     * @param onAdvanceWeek  callback invoked when the user clicks "Advance week"
      */
-    public MainView(GameManager gameManager) {
+    public MainView(GameManager gameManager,
+                    PortfolioController portfolioController,
+                    Runnable onSaveGame,
+                    Runnable onExitGame,
+                    Runnable onAdvanceWeek) {
         this.gameManager = gameManager;
-        this.weekBar = new WeekBar(gameManager);
-        header = new Header();
-        root = new BorderPane();
+        this.portfolioController = portfolioController;
+        this.weekBar = new WeekBar(gameManager, onAdvanceWeek);
+        this.header = new Header(
+                this::showDashboard,
+                this::showExchange,
+                onSaveGame,
+                onExitGame
+        );
+        this.root = new BorderPane();
         root.setTop(header);
         showDashboard();
-    }
-
-    /**
-     * Returns the header component.
-     *
-     * @return the header
-     */
-    public Header getHeader() {
-        return header;
     }
 
     /**
@@ -52,25 +64,16 @@ public class MainView {
     }
 
     /**
-     * Returns the weekbar component
-     *
-     * @return the weekbar
-     */
-    public WeekBar getWeekBar() {
-        return weekBar;
-    }
-
-    /**
      * Switches the content area to the dashboard view.
      */
-    public void showDashboard() {
-        root.setCenter(wrapScrollable(new DashboardView(gameManager, weekBar)));
+    private void showDashboard() {
+        root.setCenter(wrapScrollable(new DashboardView(gameManager, portfolioController, weekBar)));
     }
 
     /**
      * Switches the content area to the exchange view.
      */
-    public void showExchange() {
+    private void showExchange() {
         root.setCenter(wrapScrollable(new ExchangeView(gameManager, weekBar)));
     }
 

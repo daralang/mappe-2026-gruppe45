@@ -7,7 +7,6 @@ import edu.ntnu.idatt2003.millions.view.component.Card;
 import javafx.scene.control.Label;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Locale;
 
 /**
@@ -47,19 +46,16 @@ public class WeeklyChangeCard extends Card {
      * Shows a dash if no week has been advanced yet.
      */
     private void updateDisplay() {
-        BigDecimal previousNetWorth = gameManager.getPreviousNetWorth();
-        if (previousNetWorth == null) {
+        var converter = gameManager.getExchange().getCurrencyConverter();
+        var player = gameManager.getPlayer();
+
+        BigDecimal change = player.getWeeklyNetWorthChange(converter);
+        if (change == null) {
             changeLabel.setText("–");
             return;
         }
 
-        BigDecimal currentNetWorth = gameManager.getPlayer().getNetWorth(
-                gameManager.getExchange().getCurrencyConverter());
-        BigDecimal change = currentNetWorth.subtract(previousNetWorth);
-        BigDecimal percentChange = change
-                .divide(previousNetWorth, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100))
-                .setScale(1, RoundingMode.HALF_UP);
+        BigDecimal percentChange = player.getWeeklyNetWorthChangePercent(converter);
 
         String arrow = change.compareTo(BigDecimal.ZERO) >= 0 ? "↗" : "↘";
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";

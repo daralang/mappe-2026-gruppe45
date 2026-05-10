@@ -12,7 +12,6 @@ import javafx.scene.control.Label;
 import javafx.util.StringConverter;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Locale;
 
@@ -104,14 +103,12 @@ public class NetWorthCard extends Card {
      * Updates the net worth label and change label with current values.
      */
     private void updateDisplay() {
-        BigDecimal netWorth = gameManager.getPlayer().getNetWorth(
-                gameManager.getExchange().getCurrencyConverter());
-        BigDecimal startingMoney = gameManager.getPlayer().getStartingMoney();
-        BigDecimal change = netWorth.subtract(startingMoney);
-        BigDecimal percentChange = change
-                .divide(startingMoney, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100))
-                .setScale(1, RoundingMode.HALF_UP);
+        var converter = gameManager.getExchange().getCurrencyConverter();
+        var player = gameManager.getPlayer();
+
+        BigDecimal netWorth = player.getNetWorth(converter);
+        BigDecimal change = player.getNetWorthChangeSinceStart(converter);
+        BigDecimal percentChange = player.getNetWorthChangePercentSinceStart(converter);
 
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
         String formattedPercent = String.format(Locale.of("no"), "%.1f", percentChange);

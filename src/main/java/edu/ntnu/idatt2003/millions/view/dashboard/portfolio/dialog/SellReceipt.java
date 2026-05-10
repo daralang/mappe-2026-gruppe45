@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
+import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -16,11 +16,15 @@ import java.math.BigDecimal;
  */
 public class SellReceipt extends TransactionReceipt {
 
+    private final TransactionPreview preview;
+
     public SellReceipt(
             Transaction transaction,
             BigDecimal balanceBefore,
-            BigDecimal balanceAfter) {
+            BigDecimal balanceAfter,
+            TransactionPreview preview) {
         super(transaction, balanceBefore, balanceAfter);
+        this.preview = preview;
     }
 
     @Override
@@ -40,31 +44,23 @@ public class SellReceipt extends TransactionReceipt {
 
     @Override
     protected void renderSummary() {
-        BigDecimal gross = transaction.getCalculator().calculateGross();
-        BigDecimal commission = transaction.getCalculator().calculateCommission();
-        BigDecimal tax = transaction.getCalculator().calculateTax();
-        BigDecimal total = transaction.getCalculator().calculateTotal();
-
         summaryBox.addRow(LanguageManager.get("receipt.summary.gross"),
-                NUMBER_FORMAT.format(gross) + " NOK");
+                NUMBER_FORMAT.format(preview.gross()) + " NOK");
         summaryBox.addRow(LanguageManager.get("receipt.summary.commissionSell"),
-                "\u2212" + NUMBER_FORMAT.format(commission) + " NOK");
+                "−" + NUMBER_FORMAT.format(preview.commission()) + " NOK");
         summaryBox.addRow(LanguageManager.get("receipt.summary.tax"),
-                "\u2212" + NUMBER_FORMAT.format(tax) + " NOK");
+                "−" + NUMBER_FORMAT.format(preview.tax()) + " NOK");
         summaryBox.addTotal(LanguageManager.get("receipt.summary.totalReceived"),
-                NUMBER_FORMAT.format(total) + " NOK");
+                NUMBER_FORMAT.format(preview.total()) + " NOK");
     }
 
     @Override
     protected VBox buildExtraContent() {
-        // Safe cast: SellReceipt is only constructed for Sale transactions,
-        // which always use SalesCalculator.
-        SalesCalculator calc = (SalesCalculator) transaction.getCalculator();
-        BigDecimal profit = calc.calculateProfit();
-        BigDecimal profitPercent = calc.calculateProfitPercent();
+        BigDecimal profit = preview.profit();
+        BigDecimal profitPercent = preview.profitPercent();
 
         boolean positive = profit.signum() >= 0;
-        String sign = positive ? "+" : "\u2212";
+        String sign = positive ? "+" : "−";
         String pctSign = positive ? "+" : "";
 
         Label label = new Label(positive

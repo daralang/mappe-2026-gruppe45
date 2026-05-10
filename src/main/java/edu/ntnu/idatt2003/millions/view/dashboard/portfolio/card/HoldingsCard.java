@@ -111,7 +111,7 @@ public class HoldingsCard extends Card {
         addHeaderRow();
 
         if (shares.isEmpty()) {
-            Label empty = new Label("Du eier ingen andeler ennå");
+            Label empty = new Label(LanguageManager.get("dashboard.portfolio.empty"));
             empty.getStyleClass().addAll("widget-label", "holdings-empty");
             GridPane.setColumnSpan(empty, 8);
             GridPane.setHalignment(empty, HPos.CENTER);
@@ -195,11 +195,10 @@ public class HoldingsCard extends Card {
     }
 
     private Button buildDetailsButton(Share share) {
-        Button details = new Button("\u276F");
+        Button details = new Button("❯");
         details.getStyleClass().add("holdings-details-chevron");
         details.setOnAction(e -> {
-            // TODO: open Detaljer-popup ...
-            System.out.println("Detaljer clicked for " + share.getStock().getSymbol());
+            // TODO: open Detaljer-popup with detailed share info
         });
         return details;
     }

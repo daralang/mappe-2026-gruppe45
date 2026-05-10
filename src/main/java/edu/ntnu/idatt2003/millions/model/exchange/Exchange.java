@@ -1,8 +1,7 @@
 package edu.ntnu.idatt2003.millions.model.exchange;
 
+import edu.ntnu.idatt2003.millions.factory.TransactionFactory;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
-import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
-import edu.ntnu.idatt2003.millions.model.transaction.Sale;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -184,7 +183,7 @@ public class Exchange {
 
         Stock stock = getStock(symbol);
         Share share = new Share(stock, quantity, stock.getSalesPrice());
-        Purchase purchase = new Purchase(share, week);
+        Transaction purchase = TransactionFactory.createPurchase(share, week);
 
         BigDecimal totalCost = purchase.getCalculator().calculateTotal();
         BigDecimal totalCostInNok = currencyConverter.convert(totalCost, stock.getCurrency(), NOK);
@@ -210,7 +209,7 @@ public class Exchange {
         Objects.requireNonNull(share, "Share cannot be null");
         validatePlayer(player);
 
-        Sale sale = new Sale(share, week);
+        Transaction sale = TransactionFactory.createSale(share, week);
         BigDecimal totalValue = sale.getCalculator().calculateTotal();
         BigDecimal totalValueInNok = currencyConverter.convert(totalValue, share.getStock().getCurrency(), NOK);
         player.addMoney(totalValueInNok);

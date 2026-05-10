@@ -22,9 +22,10 @@ public class WeekBar extends HBox implements GameObserver {
     /**
      * Constructs a new WeekBar and registers itself as a game observer.
      *
-     * @param gameManager the game manager to observe
+     * @param gameManager    the game manager to observe
+     * @param onAdvanceWeek  callback invoked when the user clicks "Advance week"
      */
-    public WeekBar(GameManager gameManager) {
+    public WeekBar(GameManager gameManager, Runnable onAdvanceWeek) {
         this.gameManager = gameManager;
         gameManager.addObserver(this);
 
@@ -37,6 +38,7 @@ public class WeekBar extends HBox implements GameObserver {
 
         advanceButton = new Button(LanguageManager.get("app.advanceWeek"));
         advanceButton.getStyleClass().add("advance-button");
+        advanceButton.setOnAction(e -> onAdvanceWeek.run());
 
         getChildren().addAll(weekLabel, advanceButton);
 
@@ -60,14 +62,5 @@ public class WeekBar extends HBox implements GameObserver {
     public void onGameUpdated() {
         weekLabel.setText(LanguageManager.get("app.week") + " "
                 + gameManager.getExchange().getWeek());
-    }
-
-    /**
-     * Returns the advance week button.
-     *
-     * @return the advance button
-     */
-    public Button getAdvanceButton() {
-        return advanceButton;
     }
 }
