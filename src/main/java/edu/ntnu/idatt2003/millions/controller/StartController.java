@@ -140,12 +140,10 @@ public class StartController {
             if (name.isBlank()) {
                 throw new IllegalArgumentException("Player name cannot be blank");
             }
-            if (stockFilePath.isBlank()) {
-                throw new IllegalArgumentException("Stock file must be selected");
-            }
 
             BigDecimal parsedCapital = parseCapital(capital);
-            gameManager.createNewGame(name, parsedCapital, new File(stockFilePath));
+            File stockFile = requireFilePath(stockFilePath, "Stock file must be selected");
+            gameManager.createNewGame(name, parsedCapital, stockFile);
             showMainView();
         } catch (IllegalArgumentException exception) {
             showError(exception.getMessage());
@@ -170,6 +168,24 @@ public class StartController {
     }
 
     /**
+     * Validates a file path from UI input and converts it to a {@link File}.
+     *
+     * <p>The method is package-private so controller tests can verify file path
+     * validation without starting JavaFX.</p>
+     *
+     * @param filePath the file path text entered or selected by the user
+     * @param message  the exception message used when the path is missing
+     * @return a file representing the validated path
+     * @throws IllegalArgumentException if the path is null or blank
+     */
+    File requireFilePath(String filePath, String message) {
+        if (filePath == null || filePath.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
+        return new File(filePath);
+    }
+
+    /**
      * Validates input, loads an existing saved game through {@link GameManager},
      * and shows the main view.
      *
@@ -179,12 +195,8 @@ public class StartController {
     void handleLoadGame() {
         try {
             String saveFilePath = view.getSaveFilePath();
-
-            if (saveFilePath.isBlank()) {
-                throw new IllegalArgumentException("Save file must be selected");
-            }
-
-            gameManager.loadGame(new File(saveFilePath));
+            File saveFile = requireFilePath(saveFilePath, "Save file must be selected");
+            gameManager.loadGame(saveFile);
             showMainView();
         } catch (RuntimeException exception) {
             showError(exception.getMessage());
