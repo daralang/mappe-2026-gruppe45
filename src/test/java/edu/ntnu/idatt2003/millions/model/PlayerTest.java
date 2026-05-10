@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,7 +23,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * Unit tests for the {@link Player} class.
  * <p>
  * This test class verifies the behaviour of the Player model, including
- * construction, money management, and associated portfolio and archive.
+ * construction, money management, net worth calculation with currency
+ * conversion, status progression, net worth history and the previous
+ * net worth bookkeeping used by the game manager.
  * </p>
  * <p>
  * All tests follow the AAA pattern.
@@ -29,10 +34,25 @@ import static org.junit.jupiter.api.Assertions.*;
 class PlayerTest {
 
     private Player player;
+    private CurrencyConverter converter;
+
+    private static final Currency NOK = Currency.getInstance("NOK");
+    private static final Currency USD = Currency.getInstance("USD");
 
     @BeforeEach
     void setUp() {
         player = new Player("Alva", new BigDecimal("1000.00"));
+        converter = new FixedRateCurrencyConverter();
+    }
+
+    /**
+     * Helper that creates a NOK-currency stock with a single price.
+     * Keeping the stock currency aligned with the player's NOK balance avoids
+     * conversion noise in the assertions.
+     */
+    private static Stock nokStock(String symbol, String company, BigDecimal price) {
+        return new Stock(symbol, company,
+                new ArrayList<>(List.of(price)), NOK);
     }
 
     @Nested
@@ -117,6 +137,16 @@ class PlayerTest {
             // Act & Assert
             assertTrue(player.getTransactionArchive().isEmpty());
         }
+
+        @Test
+        @DisplayName("Should seed net worth history with starting money")
+        void seedsNetWorthHistoryWithStartingMoney() {
+            // Act
+            List<BigDecimal> history = player.getNetWorthHistory();
+            // Assert
+            assertEquals(1, history.size());
+            assertEquals(0, new BigDecimal("1000.00").compareTo(history.getFirst()));
+        }
     }
 
     @Nested
@@ -198,58 +228,160 @@ class PlayerTest {
         @DisplayName("Should return balance only when portfolio is empty")
         void returnsMoneyWhenPortfolioIsEmpty() {
             // Act & Assert
-            assertEquals(0, player.getMoney().compareTo(player.getNetWorth()));
+            assertEquals(0, player.getMoney().compareTo(player.getNetWorth(converter)));
         }
 
         @Test
-        @DisplayName("Should return balance plus portfolio value when portfolio has shares")
+        @DisplayName("Should return balance plus portfolio value when portfolio has NOK shares")
         void returnsMoneyAndPortfolioValue() {
-            //Arrange
-            Stock stock = new Stock("DCL", "Dara, Inc",
-                    new ArrayList<>(List.of(new BigDecimal("1000.00"))));
-            Share share = new Share(stock, new BigDecimal("10"), new BigDecimal("700.00"));
+            // Arrange
+            Share share = new Share(nokStock("DCL", "Dara, Inc", new BigDecimal("1000.00")),
+                    new BigDecimal("10"), new BigDecimal("700.00"));
             player.getPortfolio().addShare(share);
             BigDecimal expected = player.getMoney()
-                    .add(player.getPortfolio().getNetWorth());
-            //Act & Assert
-            assertEquals(0, expected.compareTo(player.getNetWorth()));
+                    .add(player.getPortfolio().getNetWorth(converter));
+            // Act & Assert
+            assertEquals(0, expected.compareTo(player.getNetWorth(converter)));
         }
 
         @Test
         @DisplayName("Should return correct net worth after money is withdrawn")
         void returnsCorrectNetWorthAfterMoneyIsWithdrawn() {
-            //Arrange
+            // Arrange
             player.withdrawMoney(new BigDecimal("500.00"));
-            BigDecimal expected = player.getMoney().add(player.getPortfolio().getNetWorth());
+            BigDecimal expected = player.getMoney()
+                    .add(player.getPortfolio().getNetWorth(converter));
             // Act & Assert
-            assertEquals(0, expected.compareTo(player.getNetWorth()));
+            assertEquals(0, expected.compareTo(player.getNetWorth(converter)));
         }
 
         @Test
         @DisplayName("Should return correct net worth after share is removed from portfolio")
         void returnsCorrectNetWorthAfterShareRemoved() {
-            //Arrange
-            Stock stock = new Stock("DCL", "Dara, Inc",
-                    new ArrayList<>(List.of(new BigDecimal("1000.00"))));
-            Share share = new Share(stock, new BigDecimal("10"), new BigDecimal("700.00"));
+            // Arrange
+            Share share = new Share(nokStock("DCL", "Dara, Inc", new BigDecimal("1000.00")),
+                    new BigDecimal("10"), new BigDecimal("700.00"));
             player.getPortfolio().addShare(share);
             player.getPortfolio().removeShare(share);
             // Act & Assert
-            assertEquals(0, player.getMoney().compareTo(player.getNetWorth()));
+            assertEquals(0, player.getMoney().compareTo(player.getNetWorth(converter)));
         }
 
         @Test
-        @DisplayName("Should not retunr a value less than current money balance")
+        @DisplayName("Should not return a value less than current money balance")
         void returnsNotValueLessBalance() {
-            //Arrange
-            Stock stock = new Stock("DCL", "Dara, Inc",
-                    new ArrayList<>(List.of(new BigDecimal("1000.00"))));
-            Share share = new Share(stock, new BigDecimal("10"), new BigDecimal("700.00"));
+            // Arrange
+            Share share = new Share(nokStock("DCL", "Dara, Inc", new BigDecimal("1000.00")),
+                    new BigDecimal("10"), new BigDecimal("700.00"));
             player.getPortfolio().addShare(share);
-            //Act
-            BigDecimal result = player.getNetWorth();
-            //Assert
+            // Act
+            BigDecimal result = player.getNetWorth(converter);
+            // Assert
             assertTrue(result.compareTo(player.getMoney()) >= 0);
+        }
+
+        @Test
+        @DisplayName("Should add converted USD share value to NOK balance")
+        void addsConvertedUsdShareValueToBalance() {
+            // Arrange
+            Share usdShare = new Share(
+                    new Stock("AAPL", "Apple Inc",
+                            new ArrayList<>(List.of(new BigDecimal("100.00"))), USD),
+                    new BigDecimal("5"), new BigDecimal("50.00"));
+            player.getPortfolio().addShare(usdShare);
+            BigDecimal expected = player.getMoney()
+                    .add(player.getPortfolio().getNetWorth(converter));
+            // Act
+            BigDecimal actual = player.getNetWorth(converter);
+            // Assert
+            assertEquals(0, expected.compareTo(actual));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when converter is null")
+        void throwsExceptionWhenConverterIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    player.getNetWorth(null));
+        }
+    }
+
+    @Nested
+    @DisplayName("recordNetWorth()")
+    class RecordNetWorth {
+
+        @Test
+        @DisplayName("Should append current net worth to history")
+        void appendsCurrentNetWorthToHistory() {
+            // Arrange
+            int initialSize = player.getNetWorthHistory().size();
+            // Act
+            player.recordNetWorth(converter);
+            // Assert
+            assertEquals(initialSize + 1, player.getNetWorthHistory().size());
+        }
+
+        @Test
+        @DisplayName("Should record matching value as getNetWorth")
+        void recordsMatchingValue() {
+            // Arrange
+            BigDecimal expected = player.getNetWorth(converter);
+            // Act
+            player.recordNetWorth(converter);
+            // Assert
+            BigDecimal recorded = player.getNetWorthHistory().getLast();
+            assertEquals(0, expected.compareTo(recorded));
+        }
+
+        @Test
+        @DisplayName("Should support multiple recordings in order")
+        void supportsMultipleRecordings() {
+            // Arrange
+            player.recordNetWorth(converter);
+            player.addMoney(new BigDecimal("500.00"));
+            player.recordNetWorth(converter);
+            // Act
+            List<BigDecimal> history = player.getNetWorthHistory();
+            // Assert: starting money + two recordings
+            assertEquals(3, history.size());
+            assertTrue(history.getLast().compareTo(history.get(history.size() - 2)) >= 0);
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when converter is null")
+        void throwsExceptionWhenConverterIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    player.recordNetWorth(null));
+        }
+    }
+
+    @Nested
+    @DisplayName("getNetWorthHistory()")
+    class GetNetWorthHistory {
+
+        @Test
+        @DisplayName("Should return a copy that does not affect the internal list")
+        void returnsCopy() {
+            // Arrange
+            List<BigDecimal> history = player.getNetWorthHistory();
+            // Act
+            history.clear();
+            // Assert
+            assertFalse(player.getNetWorthHistory().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should reflect every recordNetWorth call in order")
+        void reflectsRecordingsInOrder() {
+            // Arrange
+            player.recordNetWorth(converter);
+            player.addMoney(new BigDecimal("100.00"));
+            player.recordNetWorth(converter);
+            // Act
+            List<BigDecimal> history = player.getNetWorthHistory();
+            // Assert
+            assertEquals(3, history.size());
         }
     }
 
@@ -260,149 +392,154 @@ class PlayerTest {
         @Test
         @DisplayName("Should return NOVICE when player has just started")
         void returnsNoviceStatusWhenPlayerHasJustStarted() {
-            //Act & Assert
-            assertEquals(PlayerStatusLevel.NOVICE, player.getStatus());
+            // Act & Assert
+            assertEquals(PlayerStatusLevel.NOVICE, player.getStatus(converter));
         }
 
         @Test
         @DisplayName("Should return NOVICE when player has traded less than 10 weeks")
         void returnsNoviceStatusWhenLessThan10Weeks() {
-            //Arrange
-            Stock stock = new Stock("DCL", "Dara, Inc",
-                    new ArrayList<>(List.of(new BigDecimal("1000.00"))));
+            // Arrange
+            Stock stock = nokStock("DCL", "Dara, Inc", new BigDecimal("1000.00"));
             Share share = new Share(stock, new BigDecimal("8"), new BigDecimal("100.00"));
             Purchase purchase = new Purchase(share, 1);
             purchase.commit(player);
-            assertEquals(PlayerStatusLevel.NOVICE, player.getStatus());
             // Act & Assert
-            assertEquals(PlayerStatusLevel.NOVICE, player.getStatus());
+            assertEquals(PlayerStatusLevel.NOVICE, player.getStatus(converter));
         }
 
         @Test
-        @DisplayName("Should return NOVICE when player has traded 10 weeks but not increased net " +
-                "worth by 20%")
+        @DisplayName("Should return NOVICE when player has traded 10 weeks but not increased net "
+                + "worth by 20%")
         void returnNoviceStatusWhenEnoughWeeksNotEnoughGrowth() {
             // Arrange
             player = new Player("AKL", new BigDecimal("800.00"));
             for (int week = 1; week <= 10; week++) {
-                Stock stock = new Stock("MR" + week, "Majid Company" + week,
-                        new ArrayList<>(List.of((new BigDecimal("10.00")))));
+                Stock stock = nokStock("MR" + week, "Majid Company" + week,
+                        new BigDecimal("10.00"));
                 Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
                 Purchase purchase = new Purchase(share, week);
                 purchase.commit(player);
             }
-            //Not enough net worth growth
+            // Not enough net worth growth
             player.addMoney(new BigDecimal("50.00"));
-            //Act & Assert
-            assertEquals(PlayerStatusLevel.NOVICE, player.getStatus());
+            // Act & Assert
+            assertEquals(PlayerStatusLevel.NOVICE, player.getStatus(converter));
         }
 
         @Test
-        @DisplayName("Should return INVESTOR when player has traded 10 weeks " +
-                "and increased their net worth by 20%")
+        @DisplayName("Should return INVESTOR when player has traded 10 weeks "
+                + "and increased their net worth by 20%")
         void returnsInvestorWhenConditionsMet() {
-            //Arrange
+            // Arrange
             player = new Player("AKL", new BigDecimal("1000.00"));
             for (int week = 1; week <= 10; week++) {
-                Stock stock = new Stock("MR" + week, "Majid Company" + week,
-                        new ArrayList<>(List.of((new BigDecimal("10.00")))));
+                Stock stock = nokStock("MR" + week, "Majid Company" + week,
+                        new BigDecimal("10.00"));
                 Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
                 Purchase purchase = new Purchase(share, week);
                 purchase.commit(player);
             }
             player.addMoney(new BigDecimal("500.00"));
             // Act & Assert
-            assertEquals(PlayerStatusLevel.INVESTOR, player.getStatus());
+            assertEquals(PlayerStatusLevel.INVESTOR, player.getStatus(converter));
         }
 
         @Test
-        @DisplayName("Should not return INVESTOR when player has traded 10 weeks but not " +
-                "increased their net worth by 20%")
+        @DisplayName("Should not return INVESTOR when player has traded 10 weeks but not "
+                + "increased their net worth by 20%")
         void returnsNotInvestorWhenNotEnoughGrowth() {
-            //Arrange
+            // Arrange
             player = new Player("AKL", new BigDecimal("1000.00"));
             for (int week = 1; week <= 10; week++) {
-                Stock stock = new Stock("DCL", "Dara, Inc",
-                        new ArrayList<>(List.of((new BigDecimal("10.00")))));
+                Stock stock = nokStock("DCL", "Dara, Inc", new BigDecimal("10.00"));
                 Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
                 Purchase purchase = new Purchase(share, week);
                 purchase.commit(player);
             }
             player.addMoney(new BigDecimal("50.00"));
-            //Act & Assert
-            assertNotEquals(PlayerStatusLevel.INVESTOR, player.getStatus());
+            // Act & Assert
+            assertNotEquals(PlayerStatusLevel.INVESTOR, player.getStatus(converter));
         }
 
         @Test
-        @DisplayName("Should not return INVESTOR when player has increased net worth by 20% " +
-                "but traded less than 10 weeks")
+        @DisplayName("Should not return INVESTOR when player has increased net worth by 20% "
+                + "but traded less than 10 weeks")
         void returnsNotInvestorWhenEnoughGrowthNotWeeks() {
-            //Arrange
+            // Arrange
             player = new Player("AKL", new BigDecimal("1000.00"));
             for (int week = 1; week <= 5; week++) {
-                Stock stock = new Stock("MR" + week, "Majid Company" + week,
-                        new ArrayList<>(List.of((new BigDecimal("10.00")))));
+                Stock stock = nokStock("MR" + week, "Majid Company" + week,
+                        new BigDecimal("10.00"));
                 Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
                 Purchase purchase = new Purchase(share, week);
                 purchase.commit(player);
             }
             player.addMoney(new BigDecimal("500.00"));
             // Act & Assert
-            assertNotEquals(PlayerStatusLevel.INVESTOR, player.getStatus());
+            assertNotEquals(PlayerStatusLevel.INVESTOR, player.getStatus(converter));
         }
 
         @Test
-        @DisplayName("Should return SPECULATOR when player has traded 20 weeks and doubled" +
-                " net worth")
+        @DisplayName("Should return SPECULATOR when player has traded 20 weeks and doubled"
+                + " net worth")
         void returnsSpeculatorWhenConditionsMet() {
-            //Arrange
+            // Arrange
             player = new Player("DCL", new BigDecimal("1000.00"));
             for (int week = 1; week <= 20; week++) {
-                Stock stock = new Stock("MR" + week, "Majid Company" + week,
-                        new ArrayList<>(List.of((new BigDecimal("10.00")))));
+                Stock stock = nokStock("MR" + week, "Majid Company" + week,
+                        new BigDecimal("10.00"));
                 Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
                 Purchase purchase = new Purchase(share, week);
                 purchase.commit(player);
             }
             player.addMoney(new BigDecimal("2000.00"));
-            //Act & Arrange
-            assertEquals(PlayerStatusLevel.SPECULATOR, player.getStatus());
+            // Act & Assert
+            assertEquals(PlayerStatusLevel.SPECULATOR, player.getStatus(converter));
         }
 
         @Test
-        @DisplayName("Should not return SPECULATOR when player has traded 20 weeks " +
-                "but not doubled their net worth")
+        @DisplayName("Should not return SPECULATOR when player has traded 20 weeks "
+                + "but not doubled their net worth")
         void returnsNotSpeculatorWhenNotEnoughGrowth() {
-            //Arrange
+            // Arrange
             player = new Player("AKL", new BigDecimal("1000.00"));
             for (int week = 1; week <= 20; week++) {
-                Stock stock = new Stock("DCL" + week, "Dara, Inc" + week,
-                        new ArrayList<>(List.of((new BigDecimal("10.00")))));
+                Stock stock = nokStock("DCL" + week, "Dara, Inc" + week,
+                        new BigDecimal("10.00"));
                 Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
                 Purchase purchase = new Purchase(share, week);
                 purchase.commit(player);
             }
             player.addMoney(new BigDecimal("500.00"));
-            //Act & Assert
-            assertNotEquals(PlayerStatusLevel.SPECULATOR, player.getStatus());
+            // Act & Assert
+            assertNotEquals(PlayerStatusLevel.SPECULATOR, player.getStatus(converter));
         }
 
         @Test
-        @DisplayName("Should not return SPECULATOR when player has doubled net worth " +
-                "but traded less than 20 weeks")
+        @DisplayName("Should not return SPECULATOR when player has doubled net worth "
+                + "but traded less than 20 weeks")
         void returnsNotSpeculatorWhenNotEnoughWeeks() {
-            //Arrange
+            // Arrange
             player = new Player("AKL", new BigDecimal("1000.00"));
             for (int week = 1; week <= 10; week++) {
-                Stock stock = new Stock("DCL" + week, "Dara, Inc" + week,
-                        new ArrayList<>(List.of((new BigDecimal("10.00")))));
+                Stock stock = nokStock("DCL" + week, "Dara, Inc" + week,
+                        new BigDecimal("10.00"));
                 Share share = new Share(stock, new BigDecimal("1"), new BigDecimal("1.00"));
                 Purchase purchase = new Purchase(share, week);
                 purchase.commit(player);
             }
             player.addMoney(new BigDecimal("2000.00"));
-            //Act & Assert
-            assertNotEquals(PlayerStatusLevel.SPECULATOR, player.getStatus());
+            // Act & Assert
+            assertNotEquals(PlayerStatusLevel.SPECULATOR, player.getStatus(converter));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when converter is null")
+        void throwsExceptionWhenConverterIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    player.getStatus(null));
         }
     }
 

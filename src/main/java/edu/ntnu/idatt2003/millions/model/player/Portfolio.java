@@ -1,11 +1,13 @@
 package edu.ntnu.idatt2003.millions.model.player;
 
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
 
@@ -104,14 +106,24 @@ public class Portfolio {
     }
 
     /**
-     * Returns the net worth total of the portfolio calculated as the sum of the sale value of all
-     * shares using {@link SalesCalculator}
+     * Returns the total net worth of the portfolio in NOK.
      *
-     * @return the total sale value of all shares in the portfolio
+     * <p>For each share, the sale value is computed using {@link SalesCalculator}
+     * in the stock's native currency, then converted to NOK via the given
+     * {@link CurrencyConverter}. The converted values are summed.
+     *
+     * @param converter the currency converter used to translate share values to NOK
+     * @return the total net worth in NOK
+     * @throws NullPointerException if converter is null
      */
-    public BigDecimal getNetWorth() {
+    public BigDecimal getNetWorth(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        Currency nok = Currency.getInstance("NOK");
         return shares.stream()
-                .map(share -> new SalesCalculator(share).calculateTotal())
+                .map(share -> {
+                    BigDecimal saleValue = new SalesCalculator(share).calculateTotal();
+                    return converter.convert(saleValue, share.getStock().getCurrency(), nok);
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 

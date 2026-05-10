@@ -33,7 +33,8 @@ public class StatusCard extends Card {
         getChildren().addAll(titleLabel, valueLabel);
 
         valueLabel.setText(LanguageManager.get(
-                gameManager.getPlayer().getStatus().getI18nKey()));
+                gameManager.getPlayer().getStatus(
+                        gameManager.getExchange().getCurrencyConverter()).getI18nKey()));
     }
 
     /**
@@ -43,7 +44,8 @@ public class StatusCard extends Card {
     protected void onLanguageChanged() {
         titleLabel.setText(LanguageManager.get("dashboard.status"));
         valueLabel.setText(LanguageManager.get(
-                gameManager.getPlayer().getStatus().getI18nKey()));
+                gameManager.getPlayer().getStatus(
+                        gameManager.getExchange().getCurrencyConverter()).getI18nKey()));
     }
 
     /**
@@ -53,6 +55,7 @@ public class StatusCard extends Card {
     @Override
     public void onGameUpdated() {
         valueLabel.setText(LanguageManager.get(
-                gameManager.getPlayer().getStatus().getI18nKey()));
+                gameManager.getPlayer().getStatus(
+                        gameManager.getExchange().getCurrencyConverter()).getI18nKey()));
     }
 }

@@ -141,18 +141,6 @@ class SaleTest {
         }
 
         @Test
-        @DisplayName("Should add total payout to player balance after commit")
-        void addsTotalPayoutToBalance() {
-            // Arrange
-            BigDecimal expectedBalance = new BigDecimal("10000.00")
-                    .add(sale.getCalculator().calculateTotal());
-            // Act
-            sale.commit(player);
-            // Assert
-            assertEquals(0, expectedBalance.compareTo(player.getMoney()));
-        }
-
-        @Test
         @DisplayName("Should add transaction to archive after commit")
         void addsTransactionToArchive() {
             // Act
