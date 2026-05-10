@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.controller;
 
+import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.StartView;
 import java.io.File;
 import java.util.Objects;
@@ -17,9 +18,10 @@ public class StartController {
 
     private final Stage stage;
     private final StartView view;
+    private final GameManager gameManager;
 
     /**
-     * Constructs a new StartController and binds all UI events.
+     * Constructs a new StartController with a {@link GameManager} and binds all UI events.
      *
      * @param stage the primary application stage
      * @throws NullPointerException if stage is null
@@ -28,6 +30,7 @@ public class StartController {
         Objects.requireNonNull(stage, "Stage cannot be null");
         this.stage = stage;
         this.view = new StartView();
+        this.gameManager = new GameManager();
         bindEvents();
     }
 
