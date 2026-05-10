@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.controller;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.StartView;
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.Objects;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -83,7 +84,8 @@ public class StartController {
     }
 
     /**
-     * Validates input and starts a new game session.
+     * Validates input, starts a new game session through {@link GameManager},
+     * and shows the main view.
      *
      * @throws IllegalArgumentException if name, capital, or stock file path is blank
      */
@@ -102,7 +104,9 @@ public class StartController {
             throw new IllegalArgumentException("Stock file must be selected");
         }
 
-        // TODO: parse capital, load exchange from file, create Player, start MainController
+        BigDecimal parsedCapital = new BigDecimal(capital);
+        gameManager.createNewGame(name, parsedCapital, new File(stockFilePath));
+        showMainView();
     }
 
     /**
