@@ -4,7 +4,6 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -21,7 +20,7 @@ public class ViewHeader extends VBox {
     private Button activeButton;
     private final String titleKey;
     private final List<String> labelKeys;
-    private final Label titleLabel;
+    private final StyledText titleLabel;
     private final HBox tabBar;
 
     /**
@@ -39,8 +38,7 @@ public class ViewHeader extends VBox {
         setSpacing(8);
 
         // Tittelrad
-        titleLabel = new Label(LanguageManager.get(titleKey));
-        titleLabel.getStyleClass().add("page-title");
+        titleLabel = StyledText.pageTitle(LanguageManager.get(titleKey));
 
         HBox titleRow = new HBox(12, titleLabel, weekBar);
         HBox.setHgrow(weekBar, Priority.ALWAYS);
