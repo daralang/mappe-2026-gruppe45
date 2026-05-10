@@ -297,12 +297,30 @@ public class StartView {
     }
 
     /**
+     * Sets the player name input field.
+     *
+     * @param name the player name to display; {@code null} clears the field
+     */
+    public void setName(String name) {
+        nameField.setText(name == null ? "" : name);
+    }
+
+    /**
      * Returns the trimmed player name entered by the user.
      *
      * @return trimmed player name
      */
     public String getName() {
         return nameField.getText().trim();
+    }
+
+    /**
+     * Sets the starting capital input field.
+     *
+     * @param capital the starting capital to display; {@code null} clears the field
+     */
+    public void setCapital(String capital) {
+        capitalField.setText(capital == null ? "" : capital);
     }
 
     /**
