@@ -161,8 +161,8 @@ public class Exchange {
     /**
      * Buys a given quantity of a stock for a player.
      * The total cost is computed in the stock's native currency, converted to NOK
-     * via the active {@link CurrencyConverter}, and withdrawn from the player's balance.
-     * The purchase is then committed and returned.
+     * via the active {@link CurrencyConverter}, and passed to {@link TransactionFactory}.
+     * The purchase commits the balance withdrawal and is then returned.
      *
      * @param symbol   the symbol of the stock to buy
      * @param quantity how many shares to buy
@@ -171,7 +171,7 @@ public class Exchange {
      * @throws NullPointerException     if symbol, quantity, or player is null
      * @throws IllegalArgumentException if the symbol is blank, not found,
      *                                  or quantity is not greater than zero
-     * @throws IllegalStateException    if the player does not have enough money
+     * @throws IllegalArgumentException if the player does not have enough money
      */
     public Transaction buy(String symbol, BigDecimal quantity, Player player) {
         validateSymbol(symbol);
@@ -183,12 +183,11 @@ public class Exchange {
 
         Stock stock = getStock(symbol);
         Share share = new Share(stock, quantity, stock.getSalesPrice());
-        Transaction purchase = TransactionFactory.createPurchase(share, week);
-
-        BigDecimal totalCost = purchase.getCalculator().calculateTotal();
+        Transaction purchaseWithoutSettlement = TransactionFactory.createPurchase(share, week);
+        BigDecimal totalCost = purchaseWithoutSettlement.getCalculator().calculateTotal();
         BigDecimal totalCostInNok = currencyConverter.convert(totalCost, stock.getCurrency(), NOK);
-        player.withdrawMoney(totalCostInNok);
 
+        Transaction purchase = TransactionFactory.createPurchase(share, week, totalCostInNok);
         purchase.commit(player);
         return purchase;
     }
