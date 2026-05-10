@@ -46,13 +46,16 @@ public class WeeklyChangeCard extends Card {
      * Shows a dash if no week has been advanced yet.
      */
     private void updateDisplay() {
-        BigDecimal change = gameManager.getPlayer().getWeeklyNetWorthChange();
+        var converter = gameManager.getExchange().getCurrencyConverter();
+        var player = gameManager.getPlayer();
+
+        BigDecimal change = player.getWeeklyNetWorthChange(converter);
         if (change == null) {
             changeLabel.setText("–");
             return;
         }
 
-        BigDecimal percentChange = gameManager.getPlayer().getWeeklyNetWorthChangePercent();
+        BigDecimal percentChange = player.getWeeklyNetWorthChangePercent(converter);
 
         String arrow = change.compareTo(BigDecimal.ZERO) >= 0 ? "↗" : "↘";
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";

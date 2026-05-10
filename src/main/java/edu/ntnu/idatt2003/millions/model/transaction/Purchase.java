@@ -38,9 +38,6 @@ public class Purchase extends Transaction {
         Objects.requireNonNull(player, "Player cannot be null");
         if (isCommitted()) throw new IllegalStateException("Transaction is already committed");
 
-        BigDecimal totalCost = getCalculator().calculateTotal();
-
-        player.withdrawMoney(totalCost);
         player.getPortfolio().addShare(getShare());
         player.getTransactionArchive().add(this);
 

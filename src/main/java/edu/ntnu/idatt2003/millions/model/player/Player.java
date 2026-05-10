@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.model.player;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 
 import java.math.BigDecimal;
@@ -121,22 +122,33 @@ public class Player {
     }
 
     /**
-     * Returns the players total net worth calculated as the current balance plus the total value of the portfolio.
+     * Returns the player's total net worth in NOK.
      *
-     * @return the sum of the players money and portfolio net worth
+     * <p>Net worth is the sum of the current balance (already in NOK) and the
+     * portfolio's value, where each share's value is converted from the stock's
+     * native currency to NOK via the given {@link CurrencyConverter}.
+     *
+     * @param converter the currency converter used to translate share values to NOK
+     * @return the sum of the player's money and portfolio net worth, in NOK
+     * @throws NullPointerException if converter is null
      */
-    public BigDecimal getNetWorth() {
-        return money.add(portfolio.getNetWorth());
+    public BigDecimal getNetWorth(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        return money.add(portfolio.getNetWorth(converter));
     }
 
     /**
      * Records the player's current net worth in the history.
      * Called by {@link edu.ntnu.idatt2003.millions.manager.GameManager}
      * before advancing the week.
+     *
+     * @param converter the currency converter used to compute the net worth
+     * @throws NullPointerException if converter is null
      */
-    public void recordNetWorth() {
+    public void recordNetWorth(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
         if (netWorthHistory == null) netWorthHistory = new ArrayList<>();
-        netWorthHistory.add(getNetWorth());
+        netWorthHistory.add(getNetWorth(converter));
     }
 
     /**
@@ -173,53 +185,65 @@ public class Player {
     }
 
     /**
-     * Returns the change in net worth since the start of the game.
+     * Returns the absolute change in net worth since the start of the game.
      *
-     * @return current net worth minus starting money
+     * @param converter the currency converter used to compute the current net worth
+     * @return current net worth minus starting money, in NOK
+     * @throws NullPointerException if converter is null
      */
-    public BigDecimal getNetWorthChangeSinceStart() {
-        return getNetWorth().subtract(startingMoney);
+    public BigDecimal getNetWorthChangeSinceStart(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        return getNetWorth(converter).subtract(startingMoney);
     }
 
     /**
-     * Returns the change in net worth since the start of the game,
-     * as a percentage of starting money. Returns zero if starting money
-     * was zero (cannot compute a percentage of nothing).
+     * Returns the percentage change in net worth since the start of the game.
+     * Returns zero if the starting money was zero.
      *
-     * @return the percentage change, or zero if starting money was zero
+     * @param converter the currency converter used to compute the current net worth
+     * @return percent change since start, e.g. 12.5 means +12.5%
+     * @throws NullPointerException if converter is null
      */
-    public BigDecimal getNetWorthChangePercentSinceStart() {
+    public BigDecimal getNetWorthChangePercentSinceStart(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
         if (startingMoney.signum() == 0) return BigDecimal.ZERO;
-        return getNetWorthChangeSinceStart()
+        return getNetWorthChangeSinceStart(converter)
+                .divide(startingMoney, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
-                .divide(startingMoney, 1, RoundingMode.HALF_UP);
+                .setScale(1, RoundingMode.HALF_UP);
     }
 
     /**
-     * Returns the change in net worth since the previous week.
+     * Returns the absolute change in net worth since the previous week.
      * Returns null if no week has been advanced yet.
      *
-     * @return current net worth minus previous net worth, or null
+     * @param converter the currency converter used to compute the current net worth
+     * @return current net worth minus previous net worth, or null if not available
+     * @throws NullPointerException if converter is null
      */
-    public BigDecimal getWeeklyNetWorthChange() {
+    public BigDecimal getWeeklyNetWorthChange(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
         if (previousNetWorth == null) return null;
-        return getNetWorth().subtract(previousNetWorth);
+        return getNetWorth(converter).subtract(previousNetWorth);
     }
 
     /**
-     * Returns the change in net worth since the previous week,
-     * as a percentage of the previous net worth. Returns null if no week
-     * has been advanced yet, or zero if the previous net worth was zero.
+     * Returns the percentage change in net worth since the previous week.
+     * Returns null if no week has been advanced yet, or zero if the previous
+     * net worth was zero.
      *
-     * @return the percentage change, null if no previous week, or zero
-     *         if the previous net worth was zero
+     * @param converter the currency converter used to compute the current net worth
+     * @return percent change since last week, or null if not available
+     * @throws NullPointerException if converter is null
      */
-    public BigDecimal getWeeklyNetWorthChangePercent() {
+    public BigDecimal getWeeklyNetWorthChangePercent(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
         if (previousNetWorth == null) return null;
         if (previousNetWorth.signum() == 0) return BigDecimal.ZERO;
-        return getWeeklyNetWorthChange()
+        return getWeeklyNetWorthChange(converter)
+                .divide(previousNetWorth, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
-                .divide(previousNetWorth, 1, RoundingMode.HALF_UP);
+                .setScale(1, RoundingMode.HALF_UP);
     }
 
     /***
@@ -233,11 +257,14 @@ public class Player {
      *          minimum doubled their net worth.</li>
      * </ul>
      *
+     * @param converter the currency converter used to compute the player's net worth in NOK
      * @return the players status level {@link PlayerStatusLevel}
+     * @throws NullPointerException if converter is null
      */
-    public PlayerStatusLevel getStatus() {
+    public PlayerStatusLevel getStatus(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
         int weeksTraded = transactionArchive.countDistinctWeeks();
-        BigDecimal netWorth = getNetWorth();
+        BigDecimal netWorth = getNetWorth(converter);
         BigDecimal twentyPercentGrowth = startingMoney.multiply(new BigDecimal("1.20"));
         BigDecimal doubleGrowth = startingMoney.multiply(new BigDecimal("2.00"));
 
