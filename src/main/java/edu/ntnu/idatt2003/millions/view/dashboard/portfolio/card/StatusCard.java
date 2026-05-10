@@ -32,30 +32,25 @@ public class StatusCard extends Card {
 
         getChildren().addAll(titleLabel, valueLabel);
 
-        valueLabel.setText(LanguageManager.get(
-                gameManager.getPlayer().getStatus(
-                        gameManager.getExchange().getCurrencyConverter()).getI18nKey()));
+        valueLabel.setText(LanguageManager.get(gameManager.getPlayerStatus().getI18nKey()));
     }
 
     /**
      * Updates all text elements to the current language.
+     * Reads the status from {@link GameManager} via the facade.
      */
     @Override
     protected void onLanguageChanged() {
         titleLabel.setText(LanguageManager.get("dashboard.status"));
-        valueLabel.setText(LanguageManager.get(
-                gameManager.getPlayer().getStatus(
-                        gameManager.getExchange().getCurrencyConverter()).getI18nKey()));
+        valueLabel.setText(LanguageManager.get(gameManager.getPlayerStatus().getI18nKey()));
     }
 
     /**
      * Called when the game state has changed.
-     * Refreshes the displayed status level.
+     * Refreshes the displayed status level via the {@link GameManager} facade.
      */
     @Override
     public void onGameUpdated() {
-        valueLabel.setText(LanguageManager.get(
-                gameManager.getPlayer().getStatus(
-                        gameManager.getExchange().getCurrencyConverter()).getI18nKey()));
+        valueLabel.setText(LanguageManager.get(gameManager.getPlayerStatus().getI18nKey()));
     }
 }
