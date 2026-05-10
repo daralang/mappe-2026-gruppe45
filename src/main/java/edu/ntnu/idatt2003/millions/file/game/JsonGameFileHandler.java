@@ -4,7 +4,6 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -21,6 +20,13 @@ import java.util.Objects;
  * Uses Gson for serialization and deserialization.
  * Transactions are serialized with a type field to distinguish
  * between purchases and sales when loading the game back.
+ *
+ * <p>This class is pure infrastructure: it does not own domain decisions,
+ * such as which {@link edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter}
+ * implementation to use. Callers (typically
+ * {@link edu.ntnu.idatt2003.millions.manager.GameManager}) are responsible for
+ * reinitializing the loaded {@link Exchange} with a converter via
+ * {@link Exchange#reinitialize} before it is used.
  */
 public class JsonGameFileHandler implements GameFileHandler {
 
@@ -72,6 +78,10 @@ public class JsonGameFileHandler implements GameFileHandler {
      * each share in the player's portfolio to the correct stock reference
      * from the exchange.
      *
+     * <p>The returned {@link Exchange} has not yet had its transient fields
+     * (random source, currency converter) populated. Callers must invoke
+     * {@link Exchange#reinitialize} before using the exchange.
+     *
      * @param file the file to load the game state from
      * @return a {@link GameState} containing the deserialized player and exchange
      * @throws NullPointerException if the file is null
@@ -85,8 +95,6 @@ public class JsonGameFileHandler implements GameFileHandler {
             JsonObject gameState = gson.fromJson(reader, JsonObject.class);
 
             Exchange exchange = gson.fromJson(gameState.get("exchange"), Exchange.class);
-            exchange.reinitialize(new FixedRateCurrencyConverter());
-
             Player player = gson.fromJson(gameState.get("player"), Player.class);
 
             relinkShares(player, exchange);
