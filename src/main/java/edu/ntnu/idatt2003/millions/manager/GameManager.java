@@ -39,6 +39,11 @@ import java.util.Objects;
  * and ensures that observers are notified consistently after every
  * state-changing operation.</p>
  *
+ * <p>Game creation validates player input before performing any file I/O,
+ * and only mutates the active game state once both the player and the
+ * exchange have been successfully constructed. This ensures that a failed
+ * {@code createNewGame} call leaves any previously active game intact.</p>
+ *
  * <p>Also exposes facade query methods for derived values such as net worth,
  * weekly change and player status. These methods let the view layer read
  * derived state without composing {@link Player} and {@link Exchange}
@@ -92,9 +97,11 @@ public class GameManager {
     /**
      * Creates a new game with the given player name and starting capital.
      *
-     * <p>Loads default stock data from {@link #DEFAULT_STOCK_RESOURCE}, creates
-     * a new {@link Player}, and instantiates an {@link Exchange}. Observers are
-     * notified once the new game state is active.</p>
+     * <p>Validates the player input first by constructing a {@link Player},
+     * then loads default stock data from {@link #DEFAULT_STOCK_RESOURCE} and
+     * instantiates an {@link Exchange}. The active game state is only mutated
+     * once both steps succeed, leaving any previous game intact on failure.
+     * Observers are notified once the new game state is active.</p>
      *
      * @param name    the name of the player
      * @param capital the starting capital for the player, in NOK
@@ -105,18 +112,21 @@ public class GameManager {
      * @throws UncheckedIOException     if the default stock data cannot be read
      */
     public void createNewGame(String name, BigDecimal capital) {
+        Player newPlayer = new Player(name, capital);
         List<Stock> stocks = loadDefaultStocks();
-        initializeNewGame(name, capital, stocks);
+        activate(newPlayer, stocks);
     }
 
     /**
      * Creates a new game with the given player name, starting capital,
      * and custom stock data file.
      *
-     * <p>Loads stocks from {@code stockFile} through a {@link StockFileHandler},
-     * creates a new {@link Player}, and instantiates an {@link Exchange} with a
-     * {@link FixedRateCurrencyConverter}. Observers are notified once the new
-     * game state is active.
+     * <p>Validates the player input first by constructing a {@link Player},
+     * then loads stocks from {@code stockFile} through a {@link StockFileHandler}
+     * and instantiates an {@link Exchange} with a {@link FixedRateCurrencyConverter}.
+     * The active game state is only mutated once both steps succeed, leaving any
+     * previous game intact on failure. Observers are notified once the new game
+     * state is active.</p>
      *
      * @param name      the name of the player
      * @param capital   the starting capital for the player, in NOK
@@ -127,21 +137,22 @@ public class GameManager {
      */
     public void createNewGame(String name, BigDecimal capital, File stockFile) {
         Objects.requireNonNull(stockFile, "Stock file cannot be null");
+        Player newPlayer = new Player(name, capital);
         StockFileHandler stockFileHandler = new CsvStockFileHandler();
         List<Stock> stocks = stockFileHandler.readStocks(stockFile.toPath());
-
-        initializeNewGame(name, capital, stocks);
+        activate(newPlayer, stocks);
     }
 
     /**
-     * Initializes the active game state from already loaded stocks.
+     * Activates a new game state once the player and stocks have been
+     * successfully constructed and loaded. Replaces the active player and
+     * exchange atomically and notifies observers.
      *
-     * @param name    the name of the player
-     * @param capital the starting capital for the player, in NOK
-     * @param stocks  the stocks to list on the exchange
+     * @param newPlayer the validated player instance
+     * @param stocks    the stocks to list on the exchange
      */
-    private void initializeNewGame(String name, BigDecimal capital, List<Stock> stocks) {
-        this.player = new Player(name, capital);
+    private void activate(Player newPlayer, List<Stock> stocks) {
+        this.player = newPlayer;
         this.exchange = new Exchange(DEFAULT_EXCHANGE_NAME, stocks, new FixedRateCurrencyConverter());
         notifyObservers();
     }
