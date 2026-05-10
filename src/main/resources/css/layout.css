@@ -1,0 +1,104 @@
+.content-area {
+    -fx-padding: 24 32 24 32;
+    -fx-spacing: 16;
+}
+
+.view-header-title {
+    -fx-font-size: 24;
+    -fx-font-weight: bold;
+}
+
+.week-label {
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+}
+
+.advance-button {
+    -fx-background-color: transparent;
+    -fx-border-color: border;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+    -fx-font-size: 14;
+    -fx-padding: 4 12 4 12;
+}
+
+.advance-button:hover {
+    -fx-background-color: surface-alt;
+}
+
+/* === Card / Widget === */
+.card {
+    -fx-background-color: surface;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 12, 0, 0, 2);
+    -fx-padding: 16;
+}
+
+.widget-label {
+    -fx-font-size: 12;
+    -fx-text-fill: text-secondary;
+}
+
+.widget-value {
+    -fx-font-size: 18;
+    -fx-font-weight: bold;
+}
+
+.widget-change {
+    -fx-font-size: 16;
+}
+
+/* === Scroll === */
+.content-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.content-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.content-scroll .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 10;
+    -fx-padding: 4 2 4 2;
+}
+
+.content-scroll .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+}
+
+.content-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: border;
+    -fx-background-radius: 6;
+    -fx-background-insets: 0;
+}
+
+.content-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #aaaaaa;
+}
+
+.content-scroll .scroll-bar:vertical .thumb:pressed {
+    -fx-background-color: text-secondary;
+}
+
+.content-scroll .scroll-bar:vertical .increment-button,
+.content-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+}
+
+.content-scroll .scroll-bar:vertical .increment-arrow,
+.content-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.content-scroll .corner {
+    -fx-background-color: transparent;
+}
