@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.view.StartView;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.Objects;
+import javafx.scene.control.Alert;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -131,6 +132,19 @@ public class StartController {
      */
     private void showMainView() {
         new MainController(stage, gameManager).show();
+    }
+
+    /**
+     * Shows an error dialog with a user-facing message.
+     *
+     * @param message the error message to show
+     */
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Could not start game");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     /**
