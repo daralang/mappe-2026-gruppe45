@@ -33,8 +33,10 @@ public class MainController {
     public MainController(Stage stage, GameManager gameManager) {
         this.stage = stage;
         this.gameManager = gameManager;
+        PortfolioController portfolioController = new PortfolioController(gameManager);
         this.view = new MainView(
                 gameManager,
+                portfolioController,
                 this::handleSaveGame,
                 this::handleExitGame,
                 this::handleAdvanceWeek
