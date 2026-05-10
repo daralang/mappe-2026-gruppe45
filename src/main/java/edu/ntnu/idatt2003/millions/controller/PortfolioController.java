@@ -112,12 +112,14 @@ public class PortfolioController {
 
     private void buy(Stock stock, BigDecimal quantity, BuyDialog dialog) {
         BigDecimal balanceBefore = gameManager.getPlayer().getMoney();
+        TransactionPreview preview = previewService.previewPurchase(
+                stock, quantity, gameManager.getPlayer());
         try {
             Transaction transaction = gameManager.buy(stock.getSymbol(), quantity);
             dialog.close();
             BigDecimal balanceAfter = gameManager.getPlayer().getMoney();
             Platform.runLater(() ->
-                    new BuyReceipt(transaction, balanceBefore, balanceAfter).show());
+                    new BuyReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (Exception e) {
             String message = e.getMessage();
             if (message == null || message.isBlank()) {
@@ -129,6 +131,8 @@ public class PortfolioController {
 
     private void sell(Share share, BigDecimal quantity, AbstractSellDialog dialog) {
         BigDecimal balanceBefore = gameManager.getPlayer().getMoney();
+        TransactionPreview preview = previewService.previewSale(
+                share, share.getQuantity(), gameManager.getPlayer());
         try {
             // TODO: when partial sale is implemented, pass quantity through.
             //  For now, the model only supports selling the full Share instance.
@@ -136,7 +140,7 @@ public class PortfolioController {
             dialog.close();
             BigDecimal balanceAfter = gameManager.getPlayer().getMoney();
             Platform.runLater(() ->
-                    new SellReceipt(transaction, balanceBefore, balanceAfter).show());
+                    new SellReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (Exception e) {
             String message = e.getMessage();
             if (message == null || message.isBlank()) {

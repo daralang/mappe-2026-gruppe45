@@ -14,8 +14,9 @@ import java.io.File;
 
 /**
  * Controller for the main view of the application.
- * Handles navigation between the different views and connects
- * the header buttons to the correct actions.
+ * Handles save, exit and advance-week actions and delegates them to
+ * {@link GameManager}. Navigation between Dashboard and Exchange is
+ * purely visual state and handled inside the view.
  */
 public class MainController {
 
@@ -24,7 +25,7 @@ public class MainController {
     private final GameManager gameManager;
 
     /**
-     * Constructs a new MainController and sets up navigation.
+     * Constructs a new MainController and creates the main view.
      *
      * @param stage       the primary stage
      * @param gameManager the game manager containing player and exchange
@@ -32,26 +33,20 @@ public class MainController {
     public MainController(Stage stage, GameManager gameManager) {
         this.stage = stage;
         this.gameManager = gameManager;
-        this.view = new MainView(gameManager);
-
-        bindEvents();
-    }
-
-    /**
-     * Binds UI events to their corresponding handler methods.
-     */
-    private void bindEvents() {
-        view.getHeader().getDashboardButton().setOnAction(e -> view.showDashboard());
-        view.getHeader().getExchangeButton().setOnAction(e -> view.showExchange());
-        view.getHeader().getSaveButton().setOnAction(e -> handleSaveGame());
-        view.getHeader().getExitButton().setOnAction(e -> handleExitGame());
-
-        view.getWeekBar().getAdvanceButton().setOnAction(e -> handleAdvanceWeek());
+        PortfolioController portfolioController = new PortfolioController(gameManager);
+        this.view = new MainView(
+                gameManager,
+                portfolioController,
+                this::handleSaveGame,
+                this::handleExitGame,
+                this::handleAdvanceWeek
+        );
     }
 
     /**
      * Advances the game by one week.
-     * Registered {@link GameObserver}s are notified automatically by {@link GameManager}.
+     * Registered {@link GameObserver}s are notified automatically by
+     * {@link GameManager}.
      */
     private void handleAdvanceWeek() {
         gameManager.advanceWeek();

@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
+import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 
 import java.math.BigDecimal;
@@ -10,11 +11,15 @@ import java.math.BigDecimal;
  */
 public class BuyReceipt extends TransactionReceipt {
 
+    private final TransactionPreview preview;
+
     public BuyReceipt(
             Transaction transaction,
             BigDecimal balanceBefore,
-            BigDecimal balanceAfter) {
+            BigDecimal balanceAfter,
+            TransactionPreview preview) {
         super(transaction, balanceBefore, balanceAfter);
+        this.preview = preview;
     }
 
     @Override
@@ -34,15 +39,11 @@ public class BuyReceipt extends TransactionReceipt {
 
     @Override
     protected void renderSummary() {
-        BigDecimal gross = transaction.getCalculator().calculateGross();
-        BigDecimal commission = transaction.getCalculator().calculateCommission();
-        BigDecimal total = transaction.getCalculator().calculateTotal();
-
         summaryBox.addRow(LanguageManager.get("receipt.summary.gross"),
-                NUMBER_FORMAT.format(gross) + " NOK");
+                NUMBER_FORMAT.format(preview.gross()) + " NOK");
         summaryBox.addRow(LanguageManager.get("receipt.summary.commissionBuy"),
-                NUMBER_FORMAT.format(commission) + " NOK");
+                NUMBER_FORMAT.format(preview.commission()) + " NOK");
         summaryBox.addTotal(LanguageManager.get("receipt.summary.totalCost"),
-                NUMBER_FORMAT.format(total) + " NOK");
+                NUMBER_FORMAT.format(preview.total()) + " NOK");
     }
 }

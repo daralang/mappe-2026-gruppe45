@@ -26,8 +26,16 @@ public class Header extends HBox {
 
     /**
      * Constructs a new Header with navigation and action buttons.
+     *
+     * @param onDashboard callback invoked when the user clicks "Mine sider"
+     * @param onExchange  callback invoked when the user clicks "Børs"
+     * @param onSaveGame  callback invoked when the user clicks "Lagre spill"
+     * @param onExitGame  callback invoked when the user clicks "Avslutt spill"
      */
-    public Header() {
+    public Header(Runnable onDashboard,
+                  Runnable onExchange,
+                  Runnable onSaveGame,
+                  Runnable onExitGame) {
         getStyleClass().add("navbar");
 
         Label title = new Label(LanguageManager.get("app.title"));
@@ -43,6 +51,9 @@ public class Header extends HBox {
         leaderboardButton.getStyleClass().add("navbar-link");
         helpButton.getStyleClass().add("navbar-link");
 
+        dashboardButton.setOnAction(e -> onDashboard.run());
+        exchangeButton.setOnAction(e -> onExchange.run());
+
         HBox navLinks = new HBox(60, dashboardButton, exchangeButton, leaderboardButton, helpButton);
         navLinks.setAlignment(Pos.TOP_CENTER);
 
@@ -50,6 +61,9 @@ public class Header extends HBox {
         exitButton = new Button(LanguageManager.get("nav.exitGame"));
         saveButton.getStyleClass().add("navbar-action");
         exitButton.getStyleClass().add("navbar-action");
+
+        saveButton.setOnAction(e -> onSaveGame.run());
+        exitButton.setOnAction(e -> onExitGame.run());
 
         HBox actions = new HBox(16, saveButton, exitButton);
         actions.setAlignment(Pos.CENTER_RIGHT);
@@ -90,68 +104,5 @@ public class Header extends HBox {
         helpButton.setText(LanguageManager.get("nav.help"));
         saveButton.setText(LanguageManager.get("nav.saveGame"));
         exitButton.setText(LanguageManager.get("nav.exitGame"));
-    }
-
-    /**
-     * Returns the dashboard navigation button.
-     *
-     * @return the dashboard button
-     */
-    public Button getDashboardButton() {
-        return dashboardButton;
-    }
-
-    /**
-     * Returns the exchange navigation button.
-     *
-     * @return the exchange button
-     */
-    public Button getExchangeButton() {
-        return exchangeButton;
-    }
-
-    /**
-     * Returns the leaderboard navigation button.
-     *
-     * @return the leaderboard button
-     */
-    public Button getLeaderboardButton() {
-        return leaderboardButton;
-    }
-
-    /**
-     * Returns the help navigation button.
-     *
-     * @return the help button
-     */
-    public Button getHelpButton() {
-        return helpButton;
-    }
-
-    /**
-     * Returns the notification bell button.
-     *
-     * @return the bell button
-     */
-    public Button getBellButton() {
-        return bellButton;
-    }
-
-    /**
-     * Returns the save game button.
-     *
-     * @return the save button
-     */
-    public Button getSaveButton() {
-        return saveButton;
-    }
-
-    /**
-     * Returns the exit game button.
-     *
-     * @return the exit button
-     */
-    public Button getExitButton() {
-        return exitButton;
     }
 }

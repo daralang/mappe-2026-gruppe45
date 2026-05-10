@@ -1,10 +1,10 @@
 package edu.ntnu.idatt2003.millions.view.dashboard;
 
+import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.PortfolioView;
-import javafx.scene.control.Button;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
@@ -13,22 +13,27 @@ import java.util.List;
 /**
  * The dashboard view of the application.
  * Contains a tab bar for navigating between portfolio, transactions,
- * watchlist and loans.
+ * watchlist and loans. Tab navigation is purely visual state and
+ * handled internally by this view.
  */
 public class DashboardView extends VBox {
 
     private final GameManager gameManager;
-    private final ViewHeader viewHeader;
+    private final PortfolioController portfolioController;
     private final VBox contentArea;
 
     /**
      * Constructs a new DashboardView with a tab bar.
+     *
+     * @param gameManager the game manager containing player and exchange
+     * @param weekBar     the week bar shared with the rest of the application
      */
-    public DashboardView(GameManager gameManager, WeekBar weekBar) {
+    public DashboardView(GameManager gameManager, PortfolioController portfolioController, WeekBar weekBar) {
         this.gameManager = gameManager;
+        this.portfolioController = portfolioController;
         getStyleClass().add("content-area");
 
-        viewHeader = new ViewHeader(
+        ViewHeader viewHeader = new ViewHeader(
                 "dashboard.title",
                 List.of(
                         "dashboard.tab.portfolio",
@@ -42,39 +47,31 @@ public class DashboardView extends VBox {
         contentArea = new VBox();
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
+        viewHeader.setTabAction(0, this::showPortfolio);
+        viewHeader.setTabAction(1, this::showTransactions);
+        viewHeader.setTabAction(2, this::showWatchlist);
+        viewHeader.setTabAction(3, this::showLoans);
+
         getChildren().addAll(viewHeader, contentArea);
         showPortfolio();
     }
 
-    public Button getPortfolioButton() {
-        return viewHeader.getTabButton(0);
+    private void showPortfolio() {
+        contentArea.getChildren().setAll(new PortfolioView(gameManager, portfolioController));
     }
 
-    public Button getTransactionsButton() {
-        return viewHeader.getTabButton(1);
+    private void showTransactions() {
+        contentArea.getChildren().clear();
+        // contentArea.getChildren().setAll(new TransactionsView(gameManager));
     }
 
-    public Button getWatchlistButton() {
-        return viewHeader.getTabButton(2);
+    private void showWatchlist() {
+        contentArea.getChildren().clear();
+        // contentArea.getChildren().setAll(new WatchlistView(gameManager));
     }
 
-    public Button getLoansButton() {
-        return viewHeader.getTabButton(3);
-    }
-
-    public void showPortfolio() {
-        contentArea.getChildren().setAll(new PortfolioView(gameManager));
-    }
-
-    public void showTransactions() {
-        //contentArea.getChildren().setAll(new TransactionsView(gameManager));
-    }
-
-    public void showWatchlist() {
-        //contentArea.getChildren().setAll(new WatchlistView(gameManager));
-    }
-
-    public void showLoans() {
-        //contentArea.getChildren().setAll(new LoansView(gameManager));
+    private void showLoans() {
+        contentArea.getChildren().clear();
+        // contentArea.getChildren().setAll(new LoansView(gameManager));
     }
 }
