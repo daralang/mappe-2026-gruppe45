@@ -17,24 +17,11 @@ public class PortfolioValueCard extends WidgetCard {
         super(gameManager, "dashboard.portfolioValue");
         this.gameManager = gameManager;
         getChildren().addAll(titleLabel, valueLabel);
-
-        valueLabel.setText(CurrencyFormatter.format(gameManager.getPortfolioValue()));
+        refreshDisplay();
     }
 
-    /**
-     * Updates the title label to the current language.
-     */
     @Override
-    protected void onLanguageChanged() {
-        titleLabel.setText(LanguageManager.get("dashboard.portfolioValue"));
-    }
-
-    /**
-     * Called when the game state has changed.
-     * Refreshes the displayed portfolio value via the {@link GameManager} facade.
-     */
-    @Override
-    public void onGameUpdated() {
+    protected void refreshDisplay() {
         valueLabel.setText(CurrencyFormatter.format(gameManager.getPortfolioValue()));
     }
 }
