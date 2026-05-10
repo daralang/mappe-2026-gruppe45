@@ -10,11 +10,11 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for validation helpers in {@link StartController}.
+ * Unit tests for {@link StartInputValidator}.
  *
  * <p>The tests cover controller input parsing without starting JavaFX.</p>
  */
-class StartControllerTest {
+class StartInputValidatorTest {
 
     @Nested
     @DisplayName("parseCapital()")
@@ -26,7 +26,7 @@ class StartControllerTest {
             // Arrange
             String capital = "10000.00";
             // Act
-            BigDecimal result = StartController.parseCapital(capital);
+            BigDecimal result = StartInputValidator.parseCapital(capital);
             // Assert
             assertEquals(0, new BigDecimal("10000.00").compareTo(result));
         }
@@ -36,7 +36,7 @@ class StartControllerTest {
         void throwsExceptionWhenInputIsNull() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    StartController.parseCapital(null));
+                    StartInputValidator.parseCapital(null));
         }
 
         @Test
@@ -44,7 +44,7 @@ class StartControllerTest {
         void throwsExceptionWhenInputIsBlank() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    StartController.parseCapital(" "));
+                    StartInputValidator.parseCapital(" "));
         }
 
         @Test
@@ -52,7 +52,7 @@ class StartControllerTest {
         void throwsExceptionWhenInputIsNotValidNumber() {
             // Act & Assert
             assertThrows(NumberFormatException.class, () ->
-                    StartController.parseCapital("not-a-number"));
+                    StartInputValidator.parseCapital("not-a-number"));
         }
     }
 
@@ -66,7 +66,7 @@ class StartControllerTest {
             // Arrange
             String path = "stocks.csv";
             // Act
-            File file = StartController.requireFilePath(path, "File must be selected");
+            File file = StartInputValidator.requireFilePath(path, "File must be selected");
             // Assert
             assertEquals(path, file.getPath());
         }
@@ -76,7 +76,7 @@ class StartControllerTest {
         void throwsExceptionWhenPathIsNull() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    StartController.requireFilePath(null, "File must be selected"));
+                    StartInputValidator.requireFilePath(null, "File must be selected"));
         }
 
         @Test
@@ -84,7 +84,7 @@ class StartControllerTest {
         void throwsExceptionWhenPathIsBlank() {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    StartController.requireFilePath(" ", "File must be selected"));
+                    StartInputValidator.requireFilePath(" ", "File must be selected"));
         }
 
         @Test
@@ -94,9 +94,60 @@ class StartControllerTest {
             String message = "Stock file must be selected";
             // Act
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-                    StartController.requireFilePath(" ", message));
+                    StartInputValidator.requireFilePath(" ", message));
             // Assert
             assertEquals(message, exception.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("requireCsvFilePath()")
+    class RequireCsvFilePath {
+
+        @Test
+        @DisplayName("Should return file when path ends with csv")
+        void returnsFileWhenPathEndsWithCsv() {
+            // Arrange
+            String path = "stocks.csv";
+            // Act
+            File file = StartInputValidator.requireCsvFilePath(path);
+            // Assert
+            assertEquals(path, file.getPath());
+        }
+
+        @Test
+        @DisplayName("Should return file when path ends with uppercase CSV")
+        void returnsFileWhenPathEndsWithUppercaseCsv() {
+            // Arrange
+            String path = "stocks.CSV";
+            // Act
+            File file = StartInputValidator.requireCsvFilePath(path);
+            // Assert
+            assertEquals(path, file.getPath());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when path is null")
+        void throwsExceptionWhenPathIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    StartInputValidator.requireCsvFilePath(null));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when path is blank")
+        void throwsExceptionWhenPathIsBlank() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    StartInputValidator.requireCsvFilePath(" "));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when path is not csv")
+        void throwsExceptionWhenPathIsNotCsv() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    StartInputValidator.requireCsvFilePath("stocks.json"));
         }
     }
 }
