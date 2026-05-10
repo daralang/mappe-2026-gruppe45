@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -84,7 +85,7 @@ public class JsonGameFileHandler implements GameFileHandler {
             JsonObject gameState = gson.fromJson(reader, JsonObject.class);
 
             Exchange exchange = gson.fromJson(gameState.get("exchange"), Exchange.class);
-            exchange.reinitialize();
+            exchange.reinitialize(new FixedRateCurrencyConverter());
 
             Player player = gson.fromJson(gameState.get("player"), Player.class);
 

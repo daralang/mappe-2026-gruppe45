@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.file.game;
 
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,10 +44,12 @@ class JsonGameFileHandlerTest {
     @BeforeEach
     void setUp() {
         handler = new JsonGameFileHandler();
-        stock = new Stock("AAPL", "Apple Inc.",
-                new ArrayList<>(List.of(new BigDecimal("276.43"))));
+        stock = new Stock("EQNR", "Equinor ASA",
+                new ArrayList<>(List.of(new BigDecimal("276.43"))),
+                Currency.getInstance("NOK"));
         exchange = new Exchange("Oslo Børs",
-                new ArrayList<>(List.of(stock)));
+                new ArrayList<>(List.of(stock)),
+                new FixedRateCurrencyConverter());
         player = new Player("Alva", new BigDecimal("10000.00"));
     }
 
@@ -95,7 +99,7 @@ class JsonGameFileHandlerTest {
         void savesGameWithTransactionsInArchive() {
             // Arrange
             Path file = tempDir.resolve("save.json");
-            exchange.buy("AAPL", new BigDecimal("5"), player);
+            exchange.buy("EQNR", new BigDecimal("5"), player);
             // Act & Assert
             assertDoesNotThrow(() ->
                     handler.saveGame(player, exchange, file.toFile()));
@@ -199,7 +203,7 @@ class JsonGameFileHandlerTest {
         void returnsCorrectNumberOfSharesAfterLoad() {
             // Arrange
             Path file = tempDir.resolve("save.json");
-            exchange.buy("AAPL", new BigDecimal("5"), player);
+            exchange.buy("EQNR", new BigDecimal("5"), player);
             handler.saveGame(player, exchange, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
@@ -212,12 +216,12 @@ class JsonGameFileHandlerTest {
         void relinksShareStockReferenceAfterLoad() {
             // Arrange
             Path file = tempDir.resolve("save.json");
-            exchange.buy("AAPL", new BigDecimal("5"), player);
+            exchange.buy("EQNR", new BigDecimal("5"), player);
             handler.saveGame(player, exchange, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             Share loadedShare = state.player().getPortfolio().getShares().getFirst();
-            Stock exchangeStock = state.exchange().getStock("AAPL");
+            Stock exchangeStock = state.exchange().getStock("EQNR");
             // Assert
             assertSame(exchangeStock, loadedShare.getStock());
         }
@@ -227,7 +231,7 @@ class JsonGameFileHandlerTest {
         void returnsCorrectNumberOfTransactionsAfterLoad() {
             // Arrange
             Path file = tempDir.resolve("save.json");
-            exchange.buy("AAPL", new BigDecimal("5"), player);
+            exchange.buy("EQNR", new BigDecimal("5"), player);
             handler.saveGame(player, exchange, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
@@ -270,7 +274,7 @@ class JsonGameFileHandlerTest {
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
-            assertEquals(3, state.exchange().getStock("AAPL")
+            assertEquals(3, state.exchange().getStock("EQNR")
                     .getHistoricalPrices().size());
         }
 
@@ -313,7 +317,7 @@ class JsonGameFileHandlerTest {
         @DisplayName("Should allow advance() to be called after reinitialize")
         void allowsAdvanceAfterReinitialize() {
             // Arrange
-            exchange.reinitialize();
+            exchange.reinitialize(new FixedRateCurrencyConverter());
 
             // Act & Assert
             assertDoesNotThrow(() -> exchange.advance());

@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -33,12 +35,14 @@ class ExchangeTest {
     private Exchange exchange;
     private Player player;
     private Stock stock;
+    private CurrencyConverter converter;
 
     @BeforeEach
     void setUp() {
         stock = new Stock("DIS", "The Walt Disney Company",
                 new ArrayList<>(List.of(new BigDecimal("100.00"))));
-        exchange = new Exchange("NYSE", new ArrayList<>(List.of(stock)));
+        converter = new FixedRateCurrencyConverter();
+        exchange = new Exchange("NYSE", new ArrayList<>(List.of(stock)), converter);
         player = new Player("Alva", new BigDecimal("10000.00"));
     }
 
@@ -67,7 +71,7 @@ class ExchangeTest {
             List<Stock> stocks = new ArrayList<>(List.of(stock));
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    new Exchange(null, stocks));
+                    new Exchange(null, stocks, converter));
         }
 
         @Test
@@ -77,7 +81,7 @@ class ExchangeTest {
             List<Stock> stocks = new ArrayList<>(List.of(stock));
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    new Exchange("", stocks));
+                    new Exchange("", stocks, converter));
         }
 
         @Test
@@ -85,7 +89,7 @@ class ExchangeTest {
         void throwsExceptionWhenStockListIsNull() {
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    new Exchange("NYSE", null));
+                    new Exchange("NYSE", null, converter));
         }
 
         @Test
@@ -95,7 +99,7 @@ class ExchangeTest {
             List<Stock> emptyList = new ArrayList<>();
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    new Exchange("NYSE", emptyList));
+                    new Exchange("NYSE", emptyList, converter));
         }
 
         @Test
@@ -106,7 +110,7 @@ class ExchangeTest {
             stocks.add(null);
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    new Exchange("NYSE", stocks));
+                    new Exchange("NYSE", stocks, converter));
         }
 
         @Test
@@ -118,7 +122,17 @@ class ExchangeTest {
             List<Stock> stocks = new ArrayList<>(List.of(stock, duplicate));
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    new Exchange("NYSE", stocks));
+                    new Exchange("NYSE", stocks, converter));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when currency converter is null")
+        void throwsExceptionWhenCurrencyConverterIsNull() {
+            // Arrange
+            List<Stock> stocks = new ArrayList<>(List.of(stock));
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    new Exchange("NYSE", stocks, null));
         }
     }
 
@@ -462,7 +476,7 @@ class ExchangeTest {
                     new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("120.00"))));
             loser = new Stock("AKL", "Alva Company",
                     new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("80.00"))));
-            exchange = new Exchange("Oslo Børs", new ArrayList<>(List.of(gainer, loser)));
+            exchange = new Exchange("Oslo Børs", new ArrayList<>(List.of(gainer, loser)), converter);
         }
 
         @Test
@@ -491,7 +505,7 @@ class ExchangeTest {
             Stock flat = new Stock("MR", "Majid, Inc",
                     new ArrayList<>(List.of(new BigDecimal("100.00"),
                             new BigDecimal("120.00"))));
-            exchange = new Exchange("Stockholm Börs", new ArrayList<>(List.of(flat)));
+            exchange = new Exchange("Stockholm Börs", new ArrayList<>(List.of(flat)), converter);
             // Act & Assert
             assertTrue(exchange.getLosers(20).isEmpty());
         }
@@ -534,7 +548,7 @@ class ExchangeTest {
                     new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("120.00"))));
             loser = new Stock("AKL", "Alva Company",
                     new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("80.00"))));
-            exchange = new Exchange("Oslo Børs", new ArrayList<>(List.of(gainer, loser)));
+            exchange = new Exchange("Oslo Børs", new ArrayList<>(List.of(gainer, loser)), converter);
         }
 
         @Test
@@ -562,7 +576,7 @@ class ExchangeTest {
             //Arrange
             Stock flat = new Stock("MR", "Majid, Inc",
                     new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("50.00"))));
-            exchange = new Exchange("Stockholm Börs", new ArrayList<>(List.of(flat)));
+            exchange = new Exchange("Stockholm Börs", new ArrayList<>(List.of(flat)), converter);
             //Act & Assert
             assertTrue(exchange.getGainers(10).isEmpty());
         }

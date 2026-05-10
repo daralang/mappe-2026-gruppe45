@@ -103,7 +103,8 @@ public class NetWorthCard extends Card {
      * Updates the net worth label and change label with current values.
      */
     private void updateDisplay() {
-        BigDecimal netWorth = gameManager.getPlayer().getNetWorth();
+        BigDecimal netWorth = gameManager.getPlayer().getNetWorth(
+                gameManager.getExchange().getCurrencyConverter());
         BigDecimal startingMoney = gameManager.getPlayer().getStartingMoney();
         BigDecimal change = netWorth.subtract(startingMoney);
         BigDecimal percentChange = change
@@ -142,7 +143,8 @@ public class NetWorthCard extends Card {
     @Override
     public void onGameUpdated() {
         int nextPoint = series.getData().size() + 1;
-        double netWorth = gameManager.getPlayer().getNetWorth().doubleValue();
+        double netWorth = gameManager.getPlayer().getNetWorth(
+                gameManager.getExchange().getCurrencyConverter()).doubleValue();
         series.getData().add(new XYChart.Data<>(nextPoint, netWorth));
         xAxis.setUpperBound(nextPoint);
         xAxis.setTickUnit(Math.max(1, nextPoint / 8));
