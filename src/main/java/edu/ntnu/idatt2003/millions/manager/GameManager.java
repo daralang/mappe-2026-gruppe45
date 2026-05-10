@@ -3,39 +3,50 @@ package edu.ntnu.idatt2003.millions.manager;
 import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
 import edu.ntnu.idatt2003.millions.file.game.GameState;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
+import edu.ntnu.idatt2003.millions.file.stock.StockFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * Manages the overall game lifecycle.
- * Responsible for creating new games, loading saved games,
- * saving the current game state, and advancing the game week.
- * Notifies registered {@link GameObserver}s when the game state changes.
- * Delegates file operations to {@link GameFileHandler}.
+ * Service-layer manager for the game lifecycle: creates new games, loads and
+ * saves game state, and advances the game week. Owns the active {@link Player}
+ * and {@link Exchange}, and notifies registered {@link GameObserver}s after
+ * every state-changing operation. Delegates persistence to {@link GameFileHandler}.
  *
- * <p>Acts as the application's Service Layer: owns the game state
- * ({@link Player}, {@link Exchange}), exposes a stable API to controllers,
- * and ensures that observers are notified consistently after every
- * state-changing operation.</p>
+ * <p>{@code createNewGame} validates player input before performing any file I/O
+ * and only swaps in the new state once the player and exchange are fully
+ * constructed, so failures leave the previous game intact. The four-argument
+ * overload accepts the {@link Currency} of the stock prices so the
+ * {@link Exchange} can convert to NOK through its {@link CurrencyConverter};
+ * the three-argument overload defaults to USD.</p>
  *
- * <p>Also exposes facade query methods for derived values such as net worth,
- * weekly change and player status. These methods let the view layer read
- * derived state without composing {@link Player} and {@link Exchange}
- * directly through {@link CurrencyConverter}.</p>
+ * <p>Also exposes facade query methods (net worth, weekly change, status,
+ * portfolio value) so views can read derived values without composing
+ * {@link Player} and {@link Exchange} through the converter themselves.</p>
  */
 public class GameManager {
+
+    private static final String DEFAULT_EXCHANGE_NAME = "MainExchange";
+    private static final String DEFAULT_STOCK_RESOURCE = "/data/sp500.csv";
+    private static final Currency DEFAULT_STOCK_CURRENCY = Currency.getInstance("USD");
 
     private Player player;
     private Exchange exchange;
@@ -78,23 +89,99 @@ public class GameManager {
     }
 
     /**
-     * Creates a new game with the given player name, starting capital,
-     * and stock data file.
+     * Creates a new game with the given player name and starting capital.
      *
-     * <p>Once implemented, this method will load stocks from {@code stockFile},
-     * create a new {@link Player} with the given name and capital, and instantiate
-     * an {@link Exchange} with a {@link FixedRateCurrencyConverter} so that
-     * subsequent transactions are converted to NOK against the player's balance.
+     * <p>Validates the player input first by constructing a {@link Player},
+     * then loads default stock data from {@link #DEFAULT_STOCK_RESOURCE} and
+     * instantiates an {@link Exchange}. The active game state is only mutated
+     * once both steps succeed, leaving any previous game intact on failure.
+     * Observers are notified once the new game state is active.</p>
      *
-     * @param name      the name of the player
-     * @param capital   the starting capital for the player, in NOK
-     * @param stockFile the file containing stock data to load
+     * @param name    the name of the player
+     * @param capital the starting capital for the player, in NOK
+     * @throws NullPointerException     if name or capital is null
+     * @throws IllegalArgumentException if name is blank, capital is negative,
+     *                                  or the default stock file contains no stocks
+     * @throws IllegalStateException    if the default stock data cannot be found
+     * @throws UncheckedIOException     if the default stock data cannot be read
+     */
+    public void createNewGame(String name, BigDecimal capital) {
+        Player newPlayer = new Player(name, capital);
+        List<Stock> stocks = loadDefaultStocks();
+        activate(newPlayer, stocks);
+    }
+
+    /**
+     * Convenience overload of {@link #createNewGame(String, BigDecimal, File, Currency)}
+     * that defaults the stock currency to USD.
+     *
+     * @param name      the player name
+     * @param capital   the starting capital, in NOK
+     * @param stockFile the CSV file with stock data
+     * @throws NullPointerException     if any argument is null
+     * @throws IllegalArgumentException if name is blank, capital is negative,
+     *                                  or the file contains no stocks
      */
     public void createNewGame(String name, BigDecimal capital, File stockFile) {
-        // TODO: load stocks from stockFile and create Player.
-        // When implemented, instantiate the Exchange with a CurrencyConverter:
-        //   CurrencyConverter converter = new FixedRateCurrencyConverter();
-        //   this.exchange = new Exchange("MainExchange", stocks, converter);
+        createNewGame(name, capital, stockFile, DEFAULT_STOCK_CURRENCY);
+    }
+
+    /**
+     * Creates a new game from the given stock file, tagging every parsed
+     * {@link Stock} with {@code currency} so the {@link Exchange} converts
+     * prices to NOK on every trade. See class-level Javadoc for validation
+     * order and observer semantics.
+     *
+     * @param name      the player name
+     * @param capital   the starting capital, in NOK
+     * @param stockFile the CSV file with stock data
+     * @param currency  the currency the stock prices are quoted in
+     * @throws NullPointerException     if any argument is null
+     * @throws IllegalArgumentException if name is blank, capital is negative,
+     *                                  or the file contains no stocks
+     */
+    public void createNewGame(String name, BigDecimal capital, File stockFile, Currency currency) {
+        Objects.requireNonNull(stockFile, "Stock file cannot be null");
+        Objects.requireNonNull(currency, "Currency cannot be null");
+        Player newPlayer = new Player(name, capital);
+        StockFileHandler stockFileHandler = new CsvStockFileHandler();
+        List<Stock> stocks = stockFileHandler.readStocks(stockFile.toPath(), currency);
+        activate(newPlayer, stocks);
+    }
+
+    /**
+     * Activates a new game state once the player and stocks have been
+     * successfully constructed and loaded. Replaces the active player and
+     * exchange atomically and notifies observers.
+     *
+     * @param newPlayer the validated player instance
+     * @param stocks    the stocks to list on the exchange
+     */
+    private void activate(Player newPlayer, List<Stock> stocks) {
+        this.player = newPlayer;
+        this.exchange = new Exchange(DEFAULT_EXCHANGE_NAME, stocks, new FixedRateCurrencyConverter());
+        notifyObservers();
+    }
+
+    /**
+     * Loads default stock data from the application resources.
+     * Streams the resource directly through the {@link StockFileHandler}
+     * so no intermediate file is written to disk.
+     *
+     * @return the default stocks for a new game
+     * @throws IllegalStateException if the default stock data cannot be found
+     * @throws UncheckedIOException  if the default stock data cannot be read
+     */
+    private List<Stock> loadDefaultStocks() {
+        StockFileHandler stockFileHandler = new CsvStockFileHandler();
+        try (InputStream inputStream = GameManager.class.getResourceAsStream(DEFAULT_STOCK_RESOURCE)) {
+            if (inputStream == null) {
+                throw new IllegalStateException("Default stock data not found: " + DEFAULT_STOCK_RESOURCE);
+            }
+            return stockFileHandler.readStocks(inputStream, DEFAULT_STOCK_CURRENCY);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Could not read default stock data", e);
+        }
     }
 
     /**
