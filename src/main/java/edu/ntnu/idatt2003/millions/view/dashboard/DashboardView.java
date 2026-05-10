@@ -47,10 +47,10 @@ public class DashboardView extends VBox {
         contentArea = new VBox();
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
-        viewHeader.getTabButton(0).setOnAction(e -> showPortfolio());
-        viewHeader.getTabButton(1).setOnAction(e -> showTransactions());
-        viewHeader.getTabButton(2).setOnAction(e -> showWatchlist());
-        viewHeader.getTabButton(3).setOnAction(e -> showLoans());
+        viewHeader.setTabAction(0, this::showPortfolio);
+        viewHeader.setTabAction(1, this::showTransactions);
+        viewHeader.setTabAction(2, this::showWatchlist);
+        viewHeader.setTabAction(3, this::showLoans);
 
         getChildren().addAll(viewHeader, contentArea);
         showPortfolio();
@@ -61,14 +61,17 @@ public class DashboardView extends VBox {
     }
 
     private void showTransactions() {
+        contentArea.getChildren().clear();
         // contentArea.getChildren().setAll(new TransactionsView(gameManager));
     }
 
     private void showWatchlist() {
+        contentArea.getChildren().clear();
         // contentArea.getChildren().setAll(new WatchlistView(gameManager));
     }
 
     private void showLoans() {
+        contentArea.getChildren().clear();
         // contentArea.getChildren().setAll(new LoansView(gameManager));
     }
 }
