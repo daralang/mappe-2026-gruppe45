@@ -146,7 +146,7 @@ public class StartController {
             if (stockFilePath.isBlank()) {
                 gameManager.createNewGame(name, parsedCapital);
             } else {
-                File stockFile = requireFilePath(stockFilePath, "Stock file must be selected");
+                File stockFile = requireCsvFilePath(stockFilePath);
                 gameManager.createNewGame(name, parsedCapital, stockFile);
             }
             showMainView();
@@ -188,6 +188,24 @@ public class StartController {
             throw new IllegalArgumentException(message);
         }
         return new File(filePath);
+    }
+
+    /**
+     * Validates a custom stock file path and requires it to point to a CSV file.
+     *
+     * <p>The method is package-private so controller tests can verify stock file
+     * validation without starting JavaFX.</p>
+     *
+     * @param filePath the stock file path selected by the user
+     * @return a CSV file representing the validated path
+     * @throws IllegalArgumentException if the path is missing or does not end with {@code .csv}
+     */
+    static File requireCsvFilePath(String filePath) {
+        File file = requireFilePath(filePath, "Stock file must be selected");
+        if (!file.getName().toLowerCase().endsWith(".csv")) {
+            throw new IllegalArgumentException("Stock file must be a CSV file");
+        }
+        return file;
     }
 
     /**
