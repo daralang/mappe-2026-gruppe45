@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
@@ -28,6 +29,11 @@ import java.util.Objects;
  * ({@link Player}, {@link Exchange}), exposes a stable API to controllers,
  * and ensures that observers are notified consistently after every
  * state-changing operation.</p>
+ *
+ * <p>Also exposes facade query methods for derived values such as net worth,
+ * weekly change and player status. These methods let the view layer read
+ * derived state without composing {@link Player} and {@link Exchange}
+ * directly through {@link CurrencyConverter}.</p>
  */
 public class GameManager {
 
@@ -181,6 +187,77 @@ public class GameManager {
      */
     public BigDecimal getPreviousNetWorth() {
         return player.getPreviousNetWorth();
+    }
+
+    /**
+     * Returns the player's current net worth in NOK.
+     * Facade method that fetches the converter from the active {@link Exchange}
+     * and delegates to {@link Player}.
+     *
+     * @return the player's net worth in NOK
+     */
+    public BigDecimal getPlayerNetWorth() {
+        return player.getNetWorth(exchange.getCurrencyConverter());
+    }
+
+    /**
+     * Returns the absolute change in the player's net worth since the start of the game,
+     * in NOK. Facade method that delegates to {@link Player}.
+     *
+     * @return current net worth minus starting money, in NOK
+     */
+    public BigDecimal getPlayerNetWorthChangeSinceStart() {
+        return player.getNetWorthChangeSinceStart(exchange.getCurrencyConverter());
+    }
+
+    /**
+     * Returns the percentage change in the player's net worth since the start of the game.
+     * Facade method that delegates to {@link Player}.
+     *
+     * @return percent change since start, e.g. 12.5 means +12.5%
+     */
+    public BigDecimal getPlayerNetWorthChangePercentSinceStart() {
+        return player.getNetWorthChangePercentSinceStart(exchange.getCurrencyConverter());
+    }
+
+    /**
+     * Returns the absolute change in the player's net worth since the previous week, in NOK.
+     * Returns null if no week has been advanced yet. Facade method that delegates to {@link Player}.
+     *
+     * @return current net worth minus previous net worth, or null if not available
+     */
+    public BigDecimal getPlayerWeeklyNetWorthChange() {
+        return player.getWeeklyNetWorthChange(exchange.getCurrencyConverter());
+    }
+
+    /**
+     * Returns the percentage change in the player's net worth since the previous week.
+     * Returns null if no week has been advanced yet. Facade method that delegates to {@link Player}.
+     *
+     * @return percent change since last week, or null if not available
+     */
+    public BigDecimal getPlayerWeeklyNetWorthChangePercent() {
+        return player.getWeeklyNetWorthChangePercent(exchange.getCurrencyConverter());
+    }
+
+    /**
+     * Returns the player's current status level. Facade method that delegates to
+     * {@link Player#getStatus(CurrencyConverter)}.
+     *
+     * @return the player's status level
+     */
+    public PlayerStatusLevel getPlayerStatus() {
+        return player.getStatus(exchange.getCurrencyConverter());
+    }
+
+    /**
+     * Returns the total value of the player's portfolio in NOK.
+     * Facade method that delegates to {@link Player}.
+     *
+     * @return the portfolio value in NOK
+     */
+    public BigDecimal getPortfolioValue() {
+        return player.getPortfolio().getNetWorth(exchange.getCurrencyConverter());
     }
 
     /**
