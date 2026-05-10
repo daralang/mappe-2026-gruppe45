@@ -109,4 +109,17 @@ public class ViewHeader extends VBox {
     public Button getTabButton(int index) {
         return (Button) tabBar.getChildren().get(index);
     }
+
+    /**
+     * Sets an action for the tab at the given index.
+     * The action runs in addition to the built-in active-tab styling,
+     * so callers do not need to invoke {@link #setActive(Button)} themselves.
+     *
+     * @param index  the zero-based index of the tab button
+     * @param action the action to run when the tab is clicked
+     */
+    public void setTabAction(int index, Runnable action) {
+        Button button = getTabButton(index);
+        button.setOnAction(e -> { setActive(button); action.run(); });
+    }
 }
