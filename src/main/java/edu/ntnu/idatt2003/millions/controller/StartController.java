@@ -1,12 +1,14 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import edu.ntnu.idatt2003.millions.view.StartView;
 import java.io.File;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Objects;
+import java.util.function.Consumer;
 import javafx.scene.control.Alert;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -22,7 +24,7 @@ import javafx.stage.Stage;
  * so the controller keeps a single, consistent validation strategy and
  * stays free of domain rules.</p>
  *
- * <p>Errors from the start flow are translated to user-facing dialogs by
+ * <p>Errors from the start flow are translated to user-facing messages by
  * a shared error-handling helper that catches the concrete exception types
  * the flow can legitimately produce (input validation, missing game state
  * and file I/O), while letting programming errors surface as crashes.</p>
@@ -31,8 +33,10 @@ public class StartController {
 
     private final Stage stage;
     private final StartView view;
+    private final StartScreenInputs inputs;
     private final GameManager gameManager;
     private final Runnable showMainViewAction;
+    private final Consumer<String> errorSink;
 
     /**
      * Constructs a new StartController with a default {@link GameManager}.
@@ -49,42 +53,71 @@ public class StartController {
     }
 
     /**
-     * Constructs a new StartController with the given {@link GameManager} and binds all UI events.
+     * Constructs a new StartController with the given {@link GameManager}.
      *
      * <p>Injecting the manager keeps the controller flexible while preserving
-     * the normal production flow through {@link #StartController(Stage)}.</p>
+     * the normal production flow through {@link #StartController(Stage)}.
+     * Event bindings are deferred to {@link #show()}.</p>
      *
      * @param stage       the primary application stage
      * @param gameManager the game manager used to create or load game state
      * @throws NullPointerException if stage or game manager is null
      */
     public StartController(Stage stage, GameManager gameManager) {
-        this(stage, gameManager, new StartView(), () -> new MainController(stage, gameManager).show());
+        this(stage, gameManager, new StartView(),
+                () -> new MainController(stage, gameManager).show(),
+                StartController::showAlert);
     }
 
     /**
-     * Constructs a new StartController with injected dependencies and binds all UI events.
-     *
-     * <p>This constructor is package-private so controller tests in the same package
-     * can inject a controlled {@link StartView} and navigation action while production
-     * code uses the public constructors.</p>
+     * Full dependency injection constructor used by production wiring and by
+     * controller tests that need access to the concrete {@link StartView}.
+     * Event bindings are deferred to {@link #show()}.
      *
      * @param stage              the primary application stage
      * @param gameManager        the game manager used to create or load game state
      * @param view               the start view that exposes user input and controls
      * @param showMainViewAction the action used to navigate to the main view
-     * @throws NullPointerException if stage, game manager, view, or navigation action is null
+     * @param errorSink          the consumer that displays user-facing error messages
+     * @throws NullPointerException if any argument is null
      */
-    StartController(Stage stage, GameManager gameManager, StartView view, Runnable showMainViewAction) {
-        Objects.requireNonNull(stage, "Stage cannot be null");
-        Objects.requireNonNull(gameManager, "GameManager cannot be null");
-        Objects.requireNonNull(view, "StartView cannot be null");
-        Objects.requireNonNull(showMainViewAction, "Show main view action cannot be null");
-        this.stage = stage;
-        this.view = view;
-        this.gameManager = gameManager;
-        this.showMainViewAction = showMainViewAction;
-        bindEvents();
+    StartController(Stage stage,
+                    GameManager gameManager,
+                    StartView view,
+                    Runnable showMainViewAction,
+                    Consumer<String> errorSink) {
+        this.stage = Objects.requireNonNull(stage, "Stage cannot be null");
+        this.gameManager = Objects.requireNonNull(gameManager, "GameManager cannot be null");
+        this.view = Objects.requireNonNull(view, "StartView cannot be null");
+        this.inputs = view;
+        this.showMainViewAction = Objects.requireNonNull(showMainViewAction, "Show main view action cannot be null");
+        this.errorSink = Objects.requireNonNull(errorSink, "Error sink cannot be null");
+    }
+
+    /**
+     * Test-only seam that constructs the controller without requiring a
+     * {@link Stage} or a fully built {@link StartView}. The controller
+     * reads user input. reports errors to {@code errorSink} and navigates
+     * through {@code showMainViewAction}.
+     * {@link #show()} and the file-chooser handlers are not safe to call
+     * on instances created through this constructor.
+     *
+     * @param gameManager        the game manager used to create or load game state
+     * @param inputs             the input seam the start flow reads from
+     * @param showMainViewAction the action used to navigate to the main view
+     * @param errorSink          the consumer that receives user-facing error messages
+     * @throws NullPointerException if any argument is null
+     */
+    StartController(GameManager gameManager,
+                    StartScreenInputs inputs,
+                    Runnable showMainViewAction,
+                    Consumer<String> errorSink) {
+        this.stage = null;
+        this.view = null;
+        this.gameManager = Objects.requireNonNull(gameManager, "GameManager cannot be null");
+        this.inputs = Objects.requireNonNull(inputs, "Inputs cannot be null");
+        this.showMainViewAction = Objects.requireNonNull(showMainViewAction, "Show main view action cannot be null");
+        this.errorSink = Objects.requireNonNull(errorSink, "Error sink cannot be null");
     }
 
     /**
@@ -98,7 +131,7 @@ public class StartController {
         view.getDropZone().setOnDragDropped(e -> {
             var db = e.getDragboard();
             if (db.hasFiles()) {
-                view.setStockFilePath(db.getFiles().getFirst().getAbsolutePath());
+                inputs.setStockFilePath(db.getFiles().getFirst().getAbsolutePath());
                 e.setDropCompleted(true);
             }
             e.consume();
@@ -116,7 +149,7 @@ public class StartController {
                 new FileChooser.ExtensionFilter("Data files", "*.csv"));
         File file = chooser.showOpenDialog(stage);
         if (file != null) {
-            view.setStockFilePath(file.getAbsolutePath());
+            inputs.setStockFilePath(file.getAbsolutePath());
         }
     }
 
@@ -131,7 +164,7 @@ public class StartController {
                 new FileChooser.ExtensionFilter("Save files", "*.json"));
         File file = chooser.showOpenDialog(stage);
         if (file != null) {
-            view.setSaveFilePath(file.getAbsolutePath());
+            inputs.setSaveFilePath(file.getAbsolutePath());
         }
     }
 
@@ -145,15 +178,15 @@ public class StartController {
      */
     void handleStartGame() {
         runOrShowError(() -> {
-            String name = StartInputValidator.requireName(view.getName());
-            BigDecimal parsedCapital = StartInputValidator.parseCapital(view.getCapital());
-            String stockFilePath = view.getStockFilePath();
+            String name = StartInputValidator.requireName(inputs.getName());
+            BigDecimal parsedCapital = StartInputValidator.parseCapital(inputs.getCapital());
+            String stockFilePath = inputs.getStockFilePath();
 
             if (stockFilePath.isBlank()) {
                 gameManager.createNewGame(name, parsedCapital);
             } else {
                 File stockFile = StartInputValidator.requireCsvFilePath(stockFilePath);
-                Currency currency = StartInputValidator.requireCurrency(view.getSelectedCurrency());
+                Currency currency = StartInputValidator.requireCurrency(inputs.getSelectedCurrency());
                 gameManager.createNewGame(name, parsedCapital, stockFile, currency);
             }
             showMainView();
@@ -169,7 +202,7 @@ public class StartController {
      */
     void handleLoadGame() {
         runOrShowError(() -> {
-            String saveFilePath = view.getSaveFilePath();
+            String saveFilePath = inputs.getSaveFilePath();
             File saveFile = StartInputValidator.requireFilePath(saveFilePath, "Save file must be selected");
             gameManager.loadGame(saveFile);
             showMainView();
@@ -189,7 +222,7 @@ public class StartController {
         try {
             action.run();
         } catch (IllegalArgumentException | IllegalStateException | UncheckedIOException exception) {
-            showError(exception.getMessage());
+            errorSink.accept(exception.getMessage());
         }
     }
 
@@ -201,11 +234,13 @@ public class StartController {
     }
 
     /**
-     * Shows an error dialog with a user-facing message.
+     * Default error sink used in production. Displays the message in a JavaFX
+     * {@link Alert} dialog. Tests inject a different consumer to avoid
+     * starting the JavaFX toolkit.
      *
      * @param message the error message to show
      */
-    private void showError(String message) {
+    private static void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Could not open game");
         alert.setHeaderText(null);
@@ -214,9 +249,10 @@ public class StartController {
     }
 
     /**
-     * Displays the start screen on the primary stage.
+     * Displays the start screen on the primary stage and binds UI events.
      */
     public void show() {
+        bindEvents();
         stage.setTitle("Millions");
         stage.setScene(view.getScene());
         stage.show();

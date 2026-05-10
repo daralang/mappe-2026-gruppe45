@@ -30,7 +30,7 @@ import java.util.Currency;
  * card with inline label-field rows, a drag-and-drop file zone,
  * and a currency selector that activates once a file is chosen.
  */
-public class StartView {
+public class StartView implements StartScreenInputs {
 
     private static final double SCENE_WIDTH = 900;
     private static final double SCENE_HEIGHT = 700;
@@ -61,6 +61,7 @@ public class StartView {
     private final Label stockFileNameLabel;
     private final VBox dropZone;
     private final Button startButton;
+    private String stockFilePath = "";
 
     // Load game tab
     private final StyledText saveFileLabel;
@@ -259,26 +260,31 @@ public class StartView {
 
     /**
      * Returns the path to the stock data file selected by the user.
+     * The path is stored independently of any UI label so changes to the
+     * drop-zone presentation do not affect the controller's contract.
      *
-     * @return stock file path, or empty string
+     * @return stock file path, or empty string when none is selected
      */
     public String getStockFilePath() {
-        return stockFileNameLabel.getText().trim();
+        return stockFilePath;
     }
 
     /**
-     * Returns the path to the save file selected by the user.
-     * Sets the stock file path, shows the filename in the drop zone,
-     * and enables the currency selector.
+     * Sets the stock file path. Updates the internal data field, mirrors the
+     * filename in the drop-zone label, and enables or disables the currency
+     * selector accordingly. The data field is the source of truth for
+     * {@link #getStockFilePath()}.
      *
      * @param path the absolute file path; {@code null} or blank resets the zone
      */
     public void setStockFilePath(String path) {
         if (path == null || path.isBlank()) {
+            this.stockFilePath = "";
             stockFileNameLabel.setText("");
             stockFileNameLabel.setVisible(false);
             currencySelector.setDisable(true);
         } else {
+            this.stockFilePath = path;
             stockFileNameLabel.setText(path);
             stockFileNameLabel.setVisible(true);
             currencySelector.setDisable(false);
