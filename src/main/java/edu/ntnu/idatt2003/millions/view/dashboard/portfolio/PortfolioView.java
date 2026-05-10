@@ -16,6 +16,7 @@ public class PortfolioView extends VBox {
 
     private final GameManager gameManager;
     private final PortfolioController controller;
+    private final Runnable onExploreStocks;
 
     /**
      * Constructs a new PortfolioView.
@@ -23,15 +24,19 @@ public class PortfolioView extends VBox {
      * @param gameManager the game manager containing player and exchange
      * @param controller  the controller handling portfolio actions
      */
-    public PortfolioView(GameManager gameManager, PortfolioController controller) {
+    public PortfolioView(GameManager gameManager,
+                         PortfolioController controller,
+                         Runnable onExploreStocks) {
         this.gameManager = gameManager;
         this.controller = controller;
+        this.onExploreStocks = onExploreStocks;
         setSpacing(16);
 
         HBox topRow = buildTopRow();
         HoldingsCard holdingsCard = new HoldingsCard(gameManager, controller);
+        ExploreStocksButton exploreButton = new ExploreStocksButton(onExploreStocks);
 
-        getChildren().addAll(topRow, holdingsCard);
+        getChildren().addAll(topRow, holdingsCard, exploreButton);
     }
 
     private HBox buildTopRow() {

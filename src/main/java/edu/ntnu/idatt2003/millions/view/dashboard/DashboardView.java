@@ -20,6 +20,7 @@ public class DashboardView extends VBox {
 
     private final GameManager gameManager;
     private final PortfolioController portfolioController;
+    private final Runnable onExploreStocks;
     private final VBox contentArea;
 
     /**
@@ -28,9 +29,13 @@ public class DashboardView extends VBox {
      * @param gameManager the game manager containing player and exchange
      * @param weekBar     the week bar shared with the rest of the application
      */
-    public DashboardView(GameManager gameManager, PortfolioController portfolioController, WeekBar weekBar) {
+    public DashboardView(GameManager gameManager,
+                         PortfolioController portfolioController,
+                         WeekBar weekBar,
+                         Runnable onExploreStocks) {
         this.gameManager = gameManager;
         this.portfolioController = portfolioController;
+        this.onExploreStocks = onExploreStocks;
         getStyleClass().add("content-area");
 
         ViewHeader viewHeader = new ViewHeader(
@@ -57,21 +62,22 @@ public class DashboardView extends VBox {
     }
 
     private void showPortfolio() {
-        contentArea.getChildren().setAll(new PortfolioView(gameManager, portfolioController));
+        contentArea.getChildren().setAll(
+                new PortfolioView(gameManager, portfolioController, onExploreStocks));
     }
 
     private void showTransactions() {
-        contentArea.getChildren().clear();
+        contentArea.getChildren().clear(); // remove this when implementing setAll
         // contentArea.getChildren().setAll(new TransactionsView(gameManager));
     }
 
     private void showWatchlist() {
-        contentArea.getChildren().clear();
+        contentArea.getChildren().clear(); // remove this when implementing setAll
         // contentArea.getChildren().setAll(new WatchlistView(gameManager));
     }
 
     private void showLoans() {
-        contentArea.getChildren().clear();
+        contentArea.getChildren().clear(); // remove this when implementing setAll
         // contentArea.getChildren().setAll(new LoansView(gameManager));
     }
 }
