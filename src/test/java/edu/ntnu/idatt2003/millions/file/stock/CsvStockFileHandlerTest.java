@@ -7,11 +7,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -120,9 +124,11 @@ class CsvStockFileHandlerTest {
         @Test
         @DisplayName("Should throw exception when path is null")
         void throwsExceptionWhenPathIsNull() {
+            // Arrange
+            Path nullPath = null;
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    handler.readStocks(null));
+                    handler.readStocks(nullPath));
         }
 
         @Test
@@ -133,6 +139,161 @@ class CsvStockFileHandlerTest {
             // Act & Assert
             assertThrows(UncheckedIOException.class, () ->
                     handler.readStocks(file));
+        }
+
+        @Test
+        @DisplayName("Should default stock currency to USD when no currency is supplied")
+        void defaultsCurrencyToUsd() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "AAPL,Apple Inc.,276.43\n");
+            // Act
+            List<Stock> stocks = handler.readStocks(file);
+            // Assert
+            assertEquals(Currency.getInstance("USD"), stocks.getFirst().getCurrency());
+        }
+    }
+
+    @Nested
+    @DisplayName("readStocks(Path, Currency)")
+    class ReadStocksWithCurrency {
+
+        @Test
+        @DisplayName("Should tag every parsed stock with the supplied currency")
+        void tagsStocksWithSuppliedCurrency() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "AAPL,Apple Inc.,276.43\nMSFT,Microsoft,404.68\n");
+            Currency eur = Currency.getInstance("EUR");
+            // Act
+            List<Stock> stocks = handler.readStocks(file, eur);
+            // Assert
+            assertEquals(2, stocks.size());
+            assertTrue(stocks.stream().allMatch(stock -> eur.equals(stock.getCurrency())));
+        }
+
+        @Test
+        @DisplayName("Should return empty list when file is empty")
+        void returnsEmptyListWhenFileIsEmpty() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "");
+            // Act
+            List<Stock> stocks = handler.readStocks(file, Currency.getInstance("NOK"));
+            // Assert
+            assertTrue(stocks.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when path is null")
+        void throwsExceptionWhenPathIsNull() {
+            // Arrange
+            Currency usd = Currency.getInstance("USD");
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    handler.readStocks((Path) null, usd));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when currency is null")
+        void throwsExceptionWhenCurrencyIsNull() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "AAPL,Apple Inc.,276.43\n");
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    handler.readStocks(file, null));
+        }
+    }
+
+    @Nested
+    @DisplayName("readStocks(InputStream)")
+    class ReadStocksFromStream {
+
+        @Test
+        @DisplayName("Should parse stocks from input stream")
+        void parsesStocksFromStream() {
+            // Arrange
+            InputStream stream = new ByteArrayInputStream(
+                    "AAPL,Apple Inc.,276.43\nMSFT,Microsoft,404.68\n".getBytes(StandardCharsets.UTF_8));
+            // Act
+            List<Stock> stocks = handler.readStocks(stream);
+            // Assert
+            assertEquals(2, stocks.size());
+            assertEquals("AAPL", stocks.getFirst().getSymbol());
+        }
+
+        @Test
+        @DisplayName("Should default stock currency to USD when no currency is supplied")
+        void defaultsCurrencyToUsd() {
+            // Arrange
+            InputStream stream = new ByteArrayInputStream(
+                    "AAPL,Apple Inc.,276.43\n".getBytes(StandardCharsets.UTF_8));
+            // Act
+            List<Stock> stocks = handler.readStocks(stream);
+            // Assert
+            assertEquals(Currency.getInstance("USD"), stocks.getFirst().getCurrency());
+        }
+
+        @Test
+        @DisplayName("Should return empty list when stream is empty")
+        void returnsEmptyListWhenStreamIsEmpty() {
+            // Arrange
+            InputStream stream = new ByteArrayInputStream(new byte[0]);
+            // Act
+            List<Stock> stocks = handler.readStocks(stream);
+            // Assert
+            assertTrue(stocks.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when stream is null")
+        void throwsExceptionWhenStreamIsNull() {
+            // Arrange
+            InputStream nullStream = null;
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    handler.readStocks(nullStream));
+        }
+    }
+
+    @Nested
+    @DisplayName("readStocks(InputStream, Currency)")
+    class ReadStocksFromStreamWithCurrency {
+
+        @Test
+        @DisplayName("Should tag every parsed stock with the supplied currency")
+        void tagsStocksWithSuppliedCurrency() {
+            // Arrange
+            InputStream stream = new ByteArrayInputStream(
+                    "AAPL,Apple Inc.,276.43\nMSFT,Microsoft,404.68\n".getBytes(StandardCharsets.UTF_8));
+            Currency gbp = Currency.getInstance("GBP");
+            // Act
+            List<Stock> stocks = handler.readStocks(stream, gbp);
+            // Assert
+            assertEquals(2, stocks.size());
+            assertTrue(stocks.stream().allMatch(stock -> gbp.equals(stock.getCurrency())));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when stream is null")
+        void throwsExceptionWhenStreamIsNull() {
+            // Arrange
+            Currency usd = Currency.getInstance("USD");
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    handler.readStocks((InputStream) null, usd));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when currency is null")
+        void throwsExceptionWhenCurrencyIsNull() {
+            // Arrange
+            InputStream stream = new ByteArrayInputStream(
+                    "AAPL,Apple Inc.,276.43\n".getBytes(StandardCharsets.UTF_8));
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    handler.readStocks(stream, null));
         }
     }
 

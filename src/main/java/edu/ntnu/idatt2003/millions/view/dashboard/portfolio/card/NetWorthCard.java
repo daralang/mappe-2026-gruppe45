@@ -78,14 +78,14 @@ public class NetWorthCard extends WidgetCard {
         }
     }
 
-    @Override
-    protected void refreshDisplay() {
-        var converter = gameManager.getExchange().getCurrencyConverter();
-        var player = gameManager.getPlayer();
-
-        BigDecimal netWorth = player.getNetWorth(converter);
-        BigDecimal change = player.getNetWorthChangeSinceStart(converter);
-        BigDecimal percentChange = player.getNetWorthChangePercentSinceStart(converter);
+    /**
+     * Updates the net worth label and change label with current values.
+     * Reads derived values from {@link GameManager} via facade methods.
+     */
+    private void updateDisplay() {
+        BigDecimal netWorth = gameManager.getPlayerNetWorth();
+        BigDecimal change = gameManager.getPlayerNetWorthChangeSinceStart();
+        BigDecimal percentChange = gameManager.getPlayerNetWorthChangePercentSinceStart();
 
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
         String formattedPercent = String.format(Locale.of("no"), "%.1f", percentChange);
@@ -101,11 +101,25 @@ public class NetWorthCard extends WidgetCard {
         );
     }
 
+    /**
+     * Updates the title label to the current language.
+     * Also refreshes the display in case number formatting changes.
+     */
+    @Override
+    protected void onLanguageChanged() {
+        titleLabel.setText(LanguageManager.get("dashboard.netWorth"));
+        updateDisplay();
+    }
+
+    /**
+     * Called when the game state has changed.
+     * Adds a new data point to the chart, extends the x-axis and refreshes the display.
+     * The new point is read via the {@link GameManager} facade.
+     */
     @Override
     public void onGameUpdated() {
         int nextPoint = series.getData().size() + 1;
-        double netWorth = gameManager.getPlayer().getNetWorth(
-                gameManager.getExchange().getCurrencyConverter()).doubleValue();
+        double netWorth = gameManager.getPlayerNetWorth().doubleValue();
         series.getData().add(new XYChart.Data<>(nextPoint, netWorth));
         xAxis.setUpperBound(nextPoint);
         xAxis.setTickUnit(Math.max(1, nextPoint / 8));
