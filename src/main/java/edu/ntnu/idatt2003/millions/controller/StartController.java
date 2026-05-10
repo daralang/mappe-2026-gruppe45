@@ -115,18 +115,20 @@ public class StartController {
     /**
      * Validates input, loads an existing saved game through {@link GameManager},
      * and shows the main view.
-     *
-     * @throws IllegalArgumentException if no save file has been selected
      */
     private void handleLoadGame() {
-        String saveFilePath = view.getSaveFilePath();
+        try {
+            String saveFilePath = view.getSaveFilePath();
 
-        if (saveFilePath.isBlank()) {
-            throw new IllegalArgumentException("Save file must be selected");
+            if (saveFilePath.isBlank()) {
+                throw new IllegalArgumentException("Save file must be selected");
+            }
+
+            gameManager.loadGame(new File(saveFilePath));
+            showMainView();
+        } catch (RuntimeException exception) {
+            showError(exception.getMessage());
         }
-
-        gameManager.loadGame(new File(saveFilePath));
-        showMainView();
     }
 
     /**
