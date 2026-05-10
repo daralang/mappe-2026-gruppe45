@@ -198,8 +198,7 @@ public class HoldingsCard extends Card {
         Button details = new Button("❯");
         details.getStyleClass().add("holdings-details-chevron");
         details.setOnAction(e -> {
-            // TODO: open Detaljer-popup ...
-            System.out.println("Detaljer clicked for " + share.getStock().getSymbol());
+            // TODO: open Detaljer-popup with detailed share info
         });
         return details;
     }

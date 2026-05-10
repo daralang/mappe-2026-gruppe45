@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
+import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -15,18 +16,15 @@ import java.math.BigDecimal;
  */
 public class SellReceipt extends TransactionReceipt {
 
-    private final BigDecimal profit;
-    private final BigDecimal profitPercent;
+    private final TransactionPreview preview;
 
     public SellReceipt(
             Transaction transaction,
             BigDecimal balanceBefore,
             BigDecimal balanceAfter,
-            BigDecimal profit,
-            BigDecimal profitPercent) {
+            TransactionPreview preview) {
         super(transaction, balanceBefore, balanceAfter);
-        this.profit = profit;
-        this.profitPercent = profitPercent;
+        this.preview = preview;
     }
 
     @Override
@@ -46,23 +44,21 @@ public class SellReceipt extends TransactionReceipt {
 
     @Override
     protected void renderSummary() {
-        BigDecimal gross = transaction.getCalculator().calculateGross();
-        BigDecimal commission = transaction.getCalculator().calculateCommission();
-        BigDecimal tax = transaction.getCalculator().calculateTax();
-        BigDecimal total = transaction.getCalculator().calculateTotal();
-
         summaryBox.addRow(LanguageManager.get("receipt.summary.gross"),
-                NUMBER_FORMAT.format(gross) + " NOK");
+                NUMBER_FORMAT.format(preview.gross()) + " NOK");
         summaryBox.addRow(LanguageManager.get("receipt.summary.commissionSell"),
-                "−" + NUMBER_FORMAT.format(commission) + " NOK");
+                "−" + NUMBER_FORMAT.format(preview.commission()) + " NOK");
         summaryBox.addRow(LanguageManager.get("receipt.summary.tax"),
-                "−" + NUMBER_FORMAT.format(tax) + " NOK");
+                "−" + NUMBER_FORMAT.format(preview.tax()) + " NOK");
         summaryBox.addTotal(LanguageManager.get("receipt.summary.totalReceived"),
-                NUMBER_FORMAT.format(total) + " NOK");
+                NUMBER_FORMAT.format(preview.total()) + " NOK");
     }
 
     @Override
     protected VBox buildExtraContent() {
+        BigDecimal profit = preview.profit();
+        BigDecimal profitPercent = preview.profitPercent();
+
         boolean positive = profit.signum() >= 0;
         String sign = positive ? "+" : "−";
         String pctSign = positive ? "+" : "";
