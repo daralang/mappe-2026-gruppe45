@@ -3,16 +3,6 @@
     -fx-spacing: 16;
 }
 
-.view-header-title {
-    -fx-font-size: 24;
-    -fx-font-weight: bold;
-}
-
-.week-label {
-    -fx-font-size: 14;
-    -fx-font-weight: bold;
-}
-
 .advance-button {
     -fx-background-color: transparent;
     -fx-border-color: border;
@@ -27,26 +17,12 @@
     -fx-background-color: surface-alt;
 }
 
-/* === Card / Widget === */
+/* === Card === */
 .card {
     -fx-background-color: surface;
     -fx-background-radius: 12;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 12, 0, 0, 2);
     -fx-padding: 16;
-}
-
-.widget-label {
-    -fx-font-size: 12;
-    -fx-text-fill: text-secondary;
-}
-
-.widget-value {
-    -fx-font-size: 18;
-    -fx-font-weight: bold;
-}
-
-.widget-change {
-    -fx-font-size: 16;
 }
 
 /* === Scroll === */

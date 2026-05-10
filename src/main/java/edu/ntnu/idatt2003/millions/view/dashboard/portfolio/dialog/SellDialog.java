@@ -34,12 +34,12 @@ public class SellDialog extends AbstractSellDialog {
     @Override
     protected VBox buildQuantitySection() {
         Label label = new Label(LanguageManager.get("dialog.quantity.label"));
-        label.getStyleClass().add("modal-section-label");
+        label.getStyleClass().add("detail-label");
 
         Label owned = new Label(MessageFormat.format(
                 LanguageManager.get("dialog.quantity.owned"),
                 NUMBER_FORMAT.format(share.getQuantity())));
-        owned.getStyleClass().add("modal-section-hint");
+        owned.getStyleClass().add("detail-label");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

@@ -40,7 +40,7 @@ public class ViewHeader extends VBox {
 
         // Tittelrad
         titleLabel = new Label(LanguageManager.get(titleKey));
-        titleLabel.getStyleClass().add("view-header-title");
+        titleLabel.getStyleClass().add("page-title");
 
         HBox titleRow = new HBox(12, titleLabel, weekBar);
         HBox.setHgrow(weekBar, Priority.ALWAYS);

@@ -101,13 +101,13 @@ public abstract class TransactionDialog extends Modal {
 
     private VBox buildStockSection() {
         Label label = new Label(LanguageManager.get("dialog.stock.label"));
-        label.getStyleClass().add("modal-section-label");
+        label.getStyleClass().add("detail-label");
 
         Label value = new Label(stock.getSymbol() + ", " + stock.getCompany());
         value.getStyleClass().add("modal-section-value");
 
         Label hint = new Label(getStockHint());
-        hint.getStyleClass().add("modal-section-hint");
+        hint.getStyleClass().add("detail-label");
 
         return new VBox(4, label, value, hint);
     }
@@ -118,7 +118,7 @@ public abstract class TransactionDialog extends Modal {
      */
     protected VBox buildQuantitySection() {
         Label label = new Label(LanguageManager.get("dialog.quantity.label"));
-        label.getStyleClass().add("modal-section-label");
+        label.getStyleClass().add("detail-label");
 
         quantityInput.getStyleClass().add("modal-input");
         quantityInput.setText(getInitialQuantity().toPlainString());
@@ -129,18 +129,18 @@ public abstract class TransactionDialog extends Modal {
 
     private VBox buildBalanceSection() {
         Label availableLabel = new Label(LanguageManager.get("dialog.balance.available"));
-        availableLabel.getStyleClass().add("modal-balance-label");
+        availableLabel.getStyleClass().add("detail-label");
         Label availableValue = new Label(
                 NUMBER_FORMAT.format(controller.getCurrentBalance()) + " NOK");
-        availableValue.getStyleClass().add("modal-balance-value");
+        availableValue.getStyleClass().add("detail-value");
         Region spacer1 = new Region();
         HBox.setHgrow(spacer1, Priority.ALWAYS);
         HBox availableRow = new HBox(availableLabel, spacer1, availableValue);
         availableRow.getStyleClass().add("modal-balance-row");
 
         Label afterLabel = new Label(getBalanceAfterLabel());
-        afterLabel.getStyleClass().add("modal-balance-label");
-        balanceAfterValue.getStyleClass().addAll("modal-balance-value", "positive");
+        afterLabel.getStyleClass().add("detail-label");
+        balanceAfterValue.getStyleClass().addAll("detail-value", "positive");
         Region spacer2 = new Region();
         HBox.setHgrow(spacer2, Priority.ALWAYS);
         HBox afterRow = new HBox(afterLabel, spacer2, balanceAfterValue);
