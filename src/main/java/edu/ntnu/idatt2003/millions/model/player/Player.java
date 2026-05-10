@@ -31,14 +31,15 @@ public class Player {
      * @param name          the player's name
      * @param startingMoney the amount of money the player starts with
      * @throws NullPointerException     if the name or starting balance is null
-     * @throws IllegalArgumentException if the name is blank or the starting balance is negative
+     * @throws IllegalArgumentException if the name is blank or the starting balance
+     *                                  is not strictly greater than zero
      */
     public Player(String name, BigDecimal startingMoney) {
         Objects.requireNonNull(name, "Player name cannot be null");
         Objects.requireNonNull(startingMoney, "Starting money cannot be null");
         if (name.isBlank()) throw new IllegalArgumentException("Player name cannot be blank");
-        if (startingMoney.compareTo(BigDecimal.ZERO) < 0)
-            throw new IllegalArgumentException("Starting money cannot be negative");
+        if (startingMoney.compareTo(BigDecimal.ZERO) <= 0)
+            throw new IllegalArgumentException("Starting money must be greater than zero");
 
         this.name = name;
         this.startingMoney = startingMoney;
