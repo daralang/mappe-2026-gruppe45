@@ -2,8 +2,8 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
-import javafx.scene.control.Label;
 
 /**
  * Widget card displaying the player's current status level.
@@ -11,12 +11,11 @@ import javafx.scene.control.Label;
 public class StatusCard extends WidgetCard {
 
     private final GameManager gameManager;
-    private final Label valueLabel = new Label();
+    private final StyledText valueLabel = StyledText.widgetValue();
 
     public StatusCard(GameManager gameManager) {
         super(gameManager, "dashboard.status");
         this.gameManager = gameManager;
-        valueLabel.getStyleClass().add("widget-value");
         getChildren().addAll(titleLabel, valueLabel);
         refreshDisplay();
     }

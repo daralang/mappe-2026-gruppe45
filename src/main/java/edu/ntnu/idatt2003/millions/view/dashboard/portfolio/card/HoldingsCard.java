@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Card;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -57,8 +58,7 @@ public class HoldingsCard extends Card {
         this.gameManager = gameManager;
         this.controller = controller;
 
-        Label title = new Label(LanguageManager.get("dashboard.portfolio.title"));
-        title.getStyleClass().add("section-title");
+        StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
         setSpacing(16);
 
         grid.setHgap(20);

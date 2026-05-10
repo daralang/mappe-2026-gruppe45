@@ -2,8 +2,8 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
-import javafx.scene.control.Label;
 
 import java.math.BigDecimal;
 import java.util.Locale;
@@ -16,12 +16,11 @@ import java.util.Locale;
 public class WeeklyChangeCard extends WidgetCard {
 
     private final GameManager gameManager;
-    private final Label changeLabel = new Label();
+    private final StyledText changeLabel = StyledText.widgetChange();
 
     public WeeklyChangeCard(GameManager gameManager) {
         super(gameManager, "dashboard.weeklyChange");
         this.gameManager = gameManager;
-        changeLabel.getStyleClass().add("widget-change");
         getChildren().addAll(titleLabel, changeLabel);
         refreshDisplay();
     }

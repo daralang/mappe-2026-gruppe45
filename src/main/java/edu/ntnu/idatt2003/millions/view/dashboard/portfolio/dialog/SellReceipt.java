@@ -3,7 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import javafx.scene.control.Label;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -63,15 +63,13 @@ public class SellReceipt extends TransactionReceipt {
         String sign = positive ? "+" : "−";
         String pctSign = positive ? "+" : "";
 
-        Label label = new Label(positive
+        StyledText label = StyledText.detailLabel(positive
                 ? LanguageManager.get("receipt.profit.gain")
                 : LanguageManager.get("receipt.profit.loss"));
-        label.getStyleClass().add("detail-label");
 
-        Label value = new Label(
+        StyledText value = StyledText.detailValue(
                 sign + NUMBER_FORMAT.format(profit.abs()) + " NOK ("
                         + pctSign + profitPercent.toPlainString() + "%)");
-        value.getStyleClass().add("detail-value");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

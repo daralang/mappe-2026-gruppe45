@@ -3,12 +3,12 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
 import javafx.collections.ListChangeListener;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Label;
 import javafx.util.StringConverter;
 
 import java.math.BigDecimal;
@@ -22,17 +22,14 @@ import java.util.Locale;
 public class NetWorthCard extends WidgetCard {
 
     private final GameManager gameManager;
-    private final Label netWorthLabel = new Label();
-    private final Label changeLabel = new Label();
+    private final StyledText netWorthLabel = StyledText.widgetValue();
+    private final StyledText changeLabel = StyledText.widgetChange();
     private final NumberAxis xAxis;
     private final XYChart.Series<Number, Number> series;
 
     public NetWorthCard(GameManager gameManager) {
         super(gameManager, "dashboard.netWorth");
         this.gameManager = gameManager;
-
-        netWorthLabel.getStyleClass().add("widget-value");
-        changeLabel.getStyleClass().add("widget-change");
 
         List<BigDecimal> history = gameManager.getPlayer().getNetWorthHistory();
         int historySize = history.size();

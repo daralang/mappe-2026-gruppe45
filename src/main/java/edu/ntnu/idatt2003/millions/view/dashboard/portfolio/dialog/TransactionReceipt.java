@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Modal;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.SummaryBox;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -108,8 +109,7 @@ public abstract class TransactionReceipt extends Modal {
     }
 
     private VBox buildStockSection() {
-        Label label = new Label(LanguageManager.get("receipt.stock.label"));
-        label.getStyleClass().add("detail-label");
+        StyledText label = StyledText.detailLabel(LanguageManager.get("receipt.stock.label"));
 
         Label value = new Label(
                 transaction.getShare().getStock().getSymbol() + ", "
@@ -138,27 +138,23 @@ public abstract class TransactionReceipt extends Modal {
     }
 
     private VBox buildMetaCell(String label, String value) {
-        Label labelNode = new Label(label);
-        labelNode.getStyleClass().add("detail-label");
+        StyledText labelNode = StyledText.detailLabel(label);
         Label valueNode = new Label(value);
         valueNode.getStyleClass().add("modal-section-value");
         return new VBox(4, labelNode, valueNode);
     }
 
     private VBox buildBalanceSection() {
-        Label beforeLabel = new Label(LanguageManager.get("receipt.balance.before"));
-        beforeLabel.getStyleClass().add("detail-label");
-        Label beforeValue = new Label(NUMBER_FORMAT.format(balanceBefore) + " NOK");
-        beforeValue.getStyleClass().add("detail-value");
+        StyledText beforeLabel = StyledText.detailLabel(LanguageManager.get("receipt.balance.before"));
+        StyledText beforeValue = StyledText.detailValue(NUMBER_FORMAT.format(balanceBefore) + " NOK");
         Region spacer1 = new Region();
         HBox.setHgrow(spacer1, Priority.ALWAYS);
         HBox beforeRow = new HBox(beforeLabel, spacer1, beforeValue);
         beforeRow.getStyleClass().add("modal-balance-row");
 
-        Label afterLabel = new Label(LanguageManager.get("receipt.balance.after"));
-        afterLabel.getStyleClass().add("detail-label");
-        Label afterValue = new Label(NUMBER_FORMAT.format(balanceAfter) + " NOK");
-        afterValue.getStyleClass().addAll("detail-value", "positive");
+        StyledText afterLabel = StyledText.detailLabel(LanguageManager.get("receipt.balance.after"));
+        StyledText afterValue = StyledText.detailValue(NUMBER_FORMAT.format(balanceAfter) + " NOK");
+        afterValue.getStyleClass().add("positive");
         Region spacer2 = new Region();
         HBox.setHgrow(spacer2, Priority.ALWAYS);
         HBox afterRow = new HBox(afterLabel, spacer2, afterValue);

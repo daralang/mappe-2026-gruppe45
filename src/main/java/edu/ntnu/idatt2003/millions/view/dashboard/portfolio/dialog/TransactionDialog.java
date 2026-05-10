@@ -4,6 +4,7 @@ import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Modal;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.SummaryBox;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -38,7 +39,7 @@ public abstract class TransactionDialog extends Modal {
 
     protected final TextField quantityInput = new TextField();
     protected final SummaryBox summaryBox = new SummaryBox();
-    protected final Label balanceAfterValue = new Label();
+    protected final StyledText balanceAfterValue = StyledText.detailValue();
     protected final Label errorLabel = new Label();
     protected final Button confirmButton = new Button();
     protected final Label transactionInfoLabel = new Label();
@@ -100,14 +101,12 @@ public abstract class TransactionDialog extends Modal {
     }
 
     private VBox buildStockSection() {
-        Label label = new Label(LanguageManager.get("dialog.stock.label"));
-        label.getStyleClass().add("detail-label");
+        StyledText label = StyledText.detailLabel(LanguageManager.get("dialog.stock.label"));
 
         Label value = new Label(stock.getSymbol() + ", " + stock.getCompany());
         value.getStyleClass().add("modal-section-value");
 
-        Label hint = new Label(getStockHint());
-        hint.getStyleClass().add("detail-label");
+        StyledText hint = StyledText.detailLabel(getStockHint());
 
         return new VBox(4, label, value, hint);
     }
@@ -117,8 +116,7 @@ public abstract class TransactionDialog extends Modal {
      * extras like a "Du eier"-info or a "Selg alt"-shortcut.
      */
     protected VBox buildQuantitySection() {
-        Label label = new Label(LanguageManager.get("dialog.quantity.label"));
-        label.getStyleClass().add("detail-label");
+        StyledText label = StyledText.detailLabel(LanguageManager.get("dialog.quantity.label"));
 
         quantityInput.getStyleClass().add("modal-input");
         quantityInput.setText(getInitialQuantity().toPlainString());
@@ -128,19 +126,16 @@ public abstract class TransactionDialog extends Modal {
     }
 
     private VBox buildBalanceSection() {
-        Label availableLabel = new Label(LanguageManager.get("dialog.balance.available"));
-        availableLabel.getStyleClass().add("detail-label");
-        Label availableValue = new Label(
+        StyledText availableLabel = StyledText.detailLabel(LanguageManager.get("dialog.balance.available"));
+        StyledText availableValue = StyledText.detailValue(
                 NUMBER_FORMAT.format(controller.getCurrentBalance()) + " NOK");
-        availableValue.getStyleClass().add("detail-value");
         Region spacer1 = new Region();
         HBox.setHgrow(spacer1, Priority.ALWAYS);
         HBox availableRow = new HBox(availableLabel, spacer1, availableValue);
         availableRow.getStyleClass().add("modal-balance-row");
 
-        Label afterLabel = new Label(getBalanceAfterLabel());
-        afterLabel.getStyleClass().add("detail-label");
-        balanceAfterValue.getStyleClass().addAll("detail-value", "positive");
+        StyledText afterLabel = StyledText.detailLabel(getBalanceAfterLabel());
+        balanceAfterValue.getStyleClass().add("positive");
         Region spacer2 = new Region();
         HBox.setHgrow(spacer2, Priority.ALWAYS);
         HBox afterRow = new HBox(afterLabel, spacer2, balanceAfterValue);
