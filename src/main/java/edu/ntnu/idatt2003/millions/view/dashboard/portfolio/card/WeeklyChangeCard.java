@@ -43,19 +43,17 @@ public class WeeklyChangeCard extends Card {
 
     /**
      * Updates the displayed week change based on the current and previous net worth.
-     * Shows a dash if no week has been advanced yet.
+     * Shows a dash if no week has been advanced yet. Reads derived values from
+     * {@link GameManager} via facade methods.
      */
     private void updateDisplay() {
-        var converter = gameManager.getExchange().getCurrencyConverter();
-        var player = gameManager.getPlayer();
-
-        BigDecimal change = player.getWeeklyNetWorthChange(converter);
+        BigDecimal change = gameManager.getPlayerWeeklyNetWorthChange();
         if (change == null) {
             changeLabel.setText("–");
             return;
         }
 
-        BigDecimal percentChange = player.getWeeklyNetWorthChangePercent(converter);
+        BigDecimal percentChange = gameManager.getPlayerWeeklyNetWorthChangePercent();
 
         String arrow = change.compareTo(BigDecimal.ZERO) >= 0 ? "↗" : "↘";
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
