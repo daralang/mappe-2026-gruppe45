@@ -227,6 +227,49 @@ class GameManagerTest {
             assertThrows(IllegalArgumentException.class, () ->
                     newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile));
         }
+
+        @Test
+        @DisplayName("Should tag uploaded stocks with the selected currency")
+        void tagsUploadedStocksWithSelectedCurrency() throws IOException {
+            // Arrange
+            File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
+            Currency selectedCurrency = Currency.getInstance("EUR");
+            GameManager newGameManager = new GameManager();
+            // Act
+            newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile, selectedCurrency);
+            // Assert
+            assertEquals(selectedCurrency,
+                    newGameManager.getExchange().getStock("AAPL").getCurrency());
+        }
+
+        @Test
+        @DisplayName("Should convert purchase cost from selected currency to NOK")
+        void convertsPurchaseCostFromSelectedCurrencyToNok() throws IOException {
+            // Arrange
+            File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
+            Currency usd = Currency.getInstance("USD");
+            GameManager newGameManager = new GameManager();
+            newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile, usd);
+            // Act
+            newGameManager.buy("AAPL", QUANTITY);
+            // Assert: 5 * 100 USD * 1.005 commission = 502.50 USD; * 9.21 NOK/USD = 4628.0250 NOK
+            BigDecimal expectedRemaining = STARTING_MONEY.subtract(new BigDecimal("4628.0250"));
+            assertEquals(0,
+                    expectedRemaining.compareTo(newGameManager.getPlayer().getMoney()));
+            assertEquals(usd,
+                    newGameManager.getExchange().getStock("AAPL").getCurrency());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when currency is null")
+        void throwsExceptionWhenCurrencyIsNull() throws IOException {
+            // Arrange
+            File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
+            GameManager newGameManager = new GameManager();
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile, null));
+        }
     }
 
     @Nested

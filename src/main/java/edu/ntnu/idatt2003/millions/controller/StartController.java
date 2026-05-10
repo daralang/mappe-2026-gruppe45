@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.view.StartView;
 import java.io.File;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.Objects;
 import javafx.scene.control.Alert;
 import javafx.stage.FileChooser;
@@ -152,7 +153,8 @@ public class StartController {
                 gameManager.createNewGame(name, parsedCapital);
             } else {
                 File stockFile = StartInputValidator.requireCsvFilePath(stockFilePath);
-                gameManager.createNewGame(name, parsedCapital, stockFile);
+                Currency currency = StartInputValidator.requireCurrency(view.getSelectedCurrency());
+                gameManager.createNewGame(name, parsedCapital, stockFile, currency);
             }
             showMainView();
         });

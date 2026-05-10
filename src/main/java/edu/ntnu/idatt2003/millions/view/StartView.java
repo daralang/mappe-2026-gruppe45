@@ -20,6 +20,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
+import java.util.Currency;
+
 /**
  * Start view for the application.
  *
@@ -335,6 +337,17 @@ public class StartView {
      */
     public String getCapital() {
         return capitalField.getText().trim();
+    }
+
+    /**
+     * Returns the currency currently selected in the currency selector.
+     * Used when uploading custom stock data so the controller can pass the
+     * chosen currency to the {@code GameManager}.
+     *
+     * @return the selected currency, or {@code null} if none is selected
+     */
+    public Currency getSelectedCurrency() {
+        return currencySelector.getValue();
     }
 
     /**

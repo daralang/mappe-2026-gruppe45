@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.controller;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.Currency;
 
 /**
  * Validates and converts input from the start screen.
@@ -59,6 +60,20 @@ final class StartInputValidator {
             throw new IllegalArgumentException(message);
         }
         return new File(filePath);
+    }
+
+    /**
+     * Validates that a currency has been selected.
+     *
+     * @param currency the currency selected in the UI
+     * @return the validated currency
+     * @throws IllegalArgumentException if the currency is null
+     */
+    static Currency requireCurrency(Currency currency) {
+        if (currency == null) {
+            throw new IllegalArgumentException("Currency must be selected");
+        }
+        return currency;
     }
 
     /**
