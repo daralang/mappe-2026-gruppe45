@@ -16,7 +16,13 @@ import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +47,7 @@ import java.util.Objects;
 public class GameManager {
 
     private static final String DEFAULT_EXCHANGE_NAME = "MainExchange";
+    private static final String DEFAULT_STOCK_RESOURCE = "/data/sp500.csv";
 
     private Player player;
     private Exchange exchange;
@@ -83,8 +90,28 @@ public class GameManager {
     }
 
     /**
+     * Creates a new game with the given player name and starting capital.
+     *
+     * <p>Loads default stock data from {@link #DEFAULT_STOCK_RESOURCE}, creates
+     * a new {@link Player}, and instantiates an {@link Exchange}. Observers are
+     * notified once the new game state is active.</p>
+     *
+     * @param name    the name of the player
+     * @param capital the starting capital for the player, in NOK
+     * @throws NullPointerException     if name or capital is null
+     * @throws IllegalArgumentException if name is blank, capital is negative,
+     *                                  or the default stock file contains no stocks
+     * @throws IllegalStateException    if the default stock data cannot be found
+     * @throws UncheckedIOException     if the default stock data cannot be read
+     */
+    public void createNewGame(String name, BigDecimal capital) {
+        List<Stock> stocks = loadDefaultStocks();
+        initializeNewGame(name, capital, stocks);
+    }
+
+    /**
      * Creates a new game with the given player name, starting capital,
-     * and stock data file.
+     * and custom stock data file.
      *
      * <p>Loads stocks from {@code stockFile} through a {@link StockFileHandler},
      * creates a new {@link Player}, and instantiates an {@link Exchange} with a
@@ -103,9 +130,46 @@ public class GameManager {
         StockFileHandler stockFileHandler = new CsvStockFileHandler();
         List<Stock> stocks = stockFileHandler.readStocks(stockFile.toPath());
 
+        initializeNewGame(name, capital, stocks);
+    }
+
+    /**
+     * Initializes the active game state from already loaded stocks.
+     *
+     * @param name    the name of the player
+     * @param capital the starting capital for the player, in NOK
+     * @param stocks  the stocks to list on the exchange
+     */
+    private void initializeNewGame(String name, BigDecimal capital, List<Stock> stocks) {
         this.player = new Player(name, capital);
         this.exchange = new Exchange(DEFAULT_EXCHANGE_NAME, stocks, new FixedRateCurrencyConverter());
         notifyObservers();
+    }
+
+    /**
+     * Loads default stock data from the application resources.
+     *
+     * @return the default stocks for a new game
+     * @throws IllegalStateException if the default stock data cannot be found
+     * @throws UncheckedIOException  if the default stock data cannot be read
+     */
+    private List<Stock> loadDefaultStocks() {
+        StockFileHandler stockFileHandler = new CsvStockFileHandler();
+        try (InputStream inputStream = GameManager.class.getResourceAsStream(DEFAULT_STOCK_RESOURCE)) {
+            if (inputStream == null) {
+                throw new IllegalStateException("Default stock data not found: " + DEFAULT_STOCK_RESOURCE);
+            }
+
+            Path tempFile = Files.createTempFile("default-stocks", ".csv");
+            try {
+                Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+                return stockFileHandler.readStocks(tempFile);
+            } finally {
+                Files.deleteIfExists(tempFile);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException("Could not read default stock data", e);
+        }
     }
 
     /**
