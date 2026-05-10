@@ -7,9 +7,12 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,6 +23,11 @@ import java.util.Objects;
  * saving the current game state, and advancing the game week.
  * Notifies registered {@link GameObserver}s when the game state changes.
  * Delegates file operations to {@link GameFileHandler}.
+ *
+ * <p>Acts as the application's Service Layer: owns the game state
+ * ({@link Player}, {@link Exchange}), exposes a stable API to controllers,
+ * and ensures that observers are notified consistently after every
+ * state-changing operation.</p>
  */
 public class GameManager {
 
@@ -76,7 +84,7 @@ public class GameManager {
      * @param capital   the starting capital for the player, in NOK
      * @param stockFile the file containing stock data to load
      */
-    public void createNewGame(String name, java.math.BigDecimal capital, File stockFile) {
+    public void createNewGame(String name, BigDecimal capital, File stockFile) {
         // TODO: load stocks from stockFile and create Player.
         // When implemented, instantiate the Exchange with a CurrencyConverter:
         //   CurrencyConverter converter = new FixedRateCurrencyConverter();
@@ -87,7 +95,8 @@ public class GameManager {
      * Loads a saved game state from a JSON file.
      * Delegates the file operation to the game file handler and reinitializes
      * the exchange with a {@link FixedRateCurrencyConverter}, since the
-     * converter is transient and not restored by Gson.
+     * converter is transient and not restored by Gson. Notifies observers
+     * once the loaded state is in place.
      *
      * @param file the file to load the game state from
      * @throws NullPointerException if the file is null
@@ -98,6 +107,36 @@ public class GameManager {
         this.player = state.player();
         this.exchange = state.exchange();
         this.exchange.reinitialize(new FixedRateCurrencyConverter());
+        notifyObservers();
+    }
+
+    /**
+     * Buys the given quantity of a stock for the current player.
+     * Delegates the actual transaction to {@link Exchange} and notifies
+     * observers on success.
+     *
+     * @param symbol   the symbol of the stock to buy
+     * @param quantity the quantity to buy
+     * @return the completed purchase transaction
+     */
+    public Transaction buy(String symbol, BigDecimal quantity) {
+        Transaction transaction = exchange.buy(symbol, quantity, player);
+        notifyObservers();
+        return transaction;
+    }
+
+    /**
+     * Sells the given share for the current player.
+     * Delegates the actual transaction to {@link Exchange} and notifies
+     * observers on success.
+     *
+     * @param share the share to sell
+     * @return the completed sale transaction
+     */
+    public Transaction sell(Share share) {
+        Transaction transaction = exchange.sell(share, player);
+        notifyObservers();
+        return transaction;
     }
 
     /**
@@ -140,7 +179,7 @@ public class GameManager {
      *
      * @return the previous net worth, or null if not yet available
      */
-    public java.math.BigDecimal getPreviousNetWorth() {
+    public BigDecimal getPreviousNetWorth() {
         return player.getPreviousNetWorth();
     }
 

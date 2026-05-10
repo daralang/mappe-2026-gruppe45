@@ -32,10 +32,10 @@ public class WeeklyChangeCard extends Card {
         setSpacing(4);
 
         titleLabel = new Label(LanguageManager.get("dashboard.weeklyChange"));
-        titleLabel.getStyleClass().add("card-label");
+        titleLabel.getStyleClass().add("widget-label");
 
         changeLabel = new Label();
-        changeLabel.getStyleClass().add("card-value");
+        changeLabel.getStyleClass().add("widget-change");
 
         getChildren().addAll(titleLabel, changeLabel);
 
@@ -67,9 +67,9 @@ public class WeeklyChangeCard extends Card {
         String formattedPercent = String.format(Locale.of("no"), "%.1f", percentChange);
         changeLabel.setText(arrow + " " + sign + formattedPercent + "%  "
                 + sign + CurrencyFormatter.format(change.abs()));
-        changeLabel.getStyleClass().removeAll("card-value-positive", "card-value-negative");
+        changeLabel.getStyleClass().removeAll("positive", "negative");
         changeLabel.getStyleClass().add(
-                change.compareTo(BigDecimal.ZERO) >= 0 ? "card-value-positive" : "card-value-negative"
+                change.compareTo(BigDecimal.ZERO) >= 0 ? "positive" : "negative"
         );
     }
 
