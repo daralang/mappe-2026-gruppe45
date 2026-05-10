@@ -21,9 +21,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * This test class verifies the behaviour of the Purchase model,
  * including construction and committing a purchase transaction.
  * </p>
- * <p>
- * All tests follow the AAA pattern.
- * </p>
  */
 class PurchaseTest {
 
@@ -140,6 +137,65 @@ class PurchaseTest {
             purchase.commit(player);
             // Assert
             assertFalse(player.getTransactionArchive().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should deduct total cost from player balance after commit")
+        void deductsTotalCostFromBalance() {
+            // Arrange
+            BigDecimal balanceBefore = player.getMoney();
+            BigDecimal expectedBalance = balanceBefore.subtract(purchase.getCalculator().calculateTotal());
+            // Act
+            purchase.commit(player);
+            // Assert
+            assertEquals(0, expectedBalance.compareTo(player.getMoney()));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when player has insufficient funds")
+        void throwsExceptionWhenInsufficientFunds() {
+            // Arrange
+            Player poorPlayer = new Player("Dara", new BigDecimal("100.00"));
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    purchase.commit(poorPlayer));
+        }
+
+        @Test
+        @DisplayName("Should not add share to portfolio when player has insufficient funds")
+        void doesNotAddShareToPortfolioWhenInsufficientFunds() {
+            // Arrange
+            Player poorPlayer = new Player("Alva", new BigDecimal("100.00"));
+            // Act
+            assertThrows(IllegalArgumentException.class, () ->
+                    purchase.commit(poorPlayer));
+            // Assert
+            assertFalse(poorPlayer.getPortfolio().contains(share));
+        }
+
+        @Test
+        @DisplayName("Should not change balance when player has insufficient funds")
+        void doesNotChangeBalanceWhenInsufficientFunds() {
+            // Arrange
+            Player poorPlayer = new Player("Dara", new BigDecimal("100.00"));
+            BigDecimal balanceBefore = poorPlayer.getMoney();
+            // Act
+            assertThrows(IllegalArgumentException.class, () ->
+                    purchase.commit(poorPlayer));
+            // Assert
+            assertEquals(0, balanceBefore.compareTo(poorPlayer.getMoney()));
+        }
+
+        @Test
+        @DisplayName("Should not add transaction to archive when player has insufficient funds")
+        void doesNotAddTransactionToArchiveWhenInsufficientFunds() {
+            // Arrange
+            Player poorPlayer = new Player("Bob", new BigDecimal("100.00"));
+            // Act
+            assertThrows(IllegalArgumentException.class, () ->
+                    purchase.commit(poorPlayer));
+            // Assert
+            assertTrue(poorPlayer.getTransactionArchive().isEmpty());
         }
 
         @Test
