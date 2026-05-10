@@ -87,27 +87,29 @@ public class StartController {
     /**
      * Validates input, starts a new game session through {@link GameManager},
      * and shows the main view.
-     *
-     * @throws IllegalArgumentException if name, capital, or stock file path is blank
      */
     private void handleStartGame() {
-        String name = view.getName();
-        String capital = view.getCapital();
-        String stockFilePath = view.getStockFilePath();
+        try {
+            String name = view.getName();
+            String capital = view.getCapital();
+            String stockFilePath = view.getStockFilePath();
 
-        if (name.isBlank()) {
-            throw new IllegalArgumentException("Player name cannot be blank");
-        }
-        if (capital.isBlank()) {
-            throw new IllegalArgumentException("Starting capital cannot be blank");
-        }
-        if (stockFilePath.isBlank()) {
-            throw new IllegalArgumentException("Stock file must be selected");
-        }
+            if (name.isBlank()) {
+                throw new IllegalArgumentException("Player name cannot be blank");
+            }
+            if (capital.isBlank()) {
+                throw new IllegalArgumentException("Starting capital cannot be blank");
+            }
+            if (stockFilePath.isBlank()) {
+                throw new IllegalArgumentException("Stock file must be selected");
+            }
 
-        BigDecimal parsedCapital = new BigDecimal(capital);
-        gameManager.createNewGame(name, parsedCapital, new File(stockFilePath));
-        showMainView();
+            BigDecimal parsedCapital = new BigDecimal(capital);
+            gameManager.createNewGame(name, parsedCapital, new File(stockFilePath));
+            showMainView();
+        } catch (IllegalArgumentException exception) {
+            showError(exception.getMessage());
+        }
     }
 
     /**
