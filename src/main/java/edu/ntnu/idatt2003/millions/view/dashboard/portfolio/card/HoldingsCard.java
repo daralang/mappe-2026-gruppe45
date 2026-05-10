@@ -58,7 +58,8 @@ public class HoldingsCard extends Card {
         this.controller = controller;
 
         Label title = new Label(LanguageManager.get("dashboard.portfolio.title"));
-        title.getStyleClass().add("holdings-title");
+        title.getStyleClass().add("section-title");
+        setSpacing(16);
 
         grid.setHgap(20);
         configureColumns();

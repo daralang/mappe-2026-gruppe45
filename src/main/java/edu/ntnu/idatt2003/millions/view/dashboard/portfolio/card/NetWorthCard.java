@@ -3,7 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.Card;
+import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
 import javafx.collections.ListChangeListener;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.NumberAxis;
@@ -16,35 +16,22 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Card displaying the player's net worth over time as an area chart.
+ * Widget card displaying the player's net worth over time as an area chart.
  * Also shows total change in value and percentage since the start of the game.
  */
-public class NetWorthCard extends Card {
+public class NetWorthCard extends WidgetCard {
 
     private final GameManager gameManager;
-    private final Label titleLabel;
-    private final Label netWorthLabel;
-    private final Label changeLabel;
+    private final Label netWorthLabel = new Label();
+    private final Label changeLabel = new Label();
     private final NumberAxis xAxis;
     private final XYChart.Series<Number, Number> series;
 
-    /**
-     * Constructs a new NetWorthCard and initializes the display.
-     *
-     * @param gameManager the game manager containing player and exchange
-     */
     public NetWorthCard(GameManager gameManager) {
-        super(gameManager);
+        super(gameManager, "dashboard.netWorth");
         this.gameManager = gameManager;
-        setSpacing(4);
 
-        titleLabel = new Label(LanguageManager.get("dashboard.netWorth"));
-        titleLabel.getStyleClass().add("widget-label");
-
-        netWorthLabel = new Label();
         netWorthLabel.getStyleClass().add("widget-value");
-
-        changeLabel = new Label();
         changeLabel.getStyleClass().add("widget-change");
 
         List<BigDecimal> history = gameManager.getPlayer().getNetWorthHistory();
@@ -67,7 +54,6 @@ public class NetWorthCard extends Card {
         });
 
         series = new XYChart.Series<>();
-
         series.getData().addListener((ListChangeListener<XYChart.Data<Number, Number>>) change -> {
             while (change.next()) {
                 change.getAddedSubList().forEach(d -> {
@@ -85,13 +71,9 @@ public class NetWorthCard extends Card {
         getChildren().addAll(titleLabel, netWorthLabel, changeLabel, chart);
 
         loadHistory();
-        updateDisplay();
+        refreshDisplay();
     }
 
-    /**
-     * Loads existing net worth history into the chart.
-     * Called once at construction to populate the chart with historical data.
-     */
     private void loadHistory() {
         List<BigDecimal> history = gameManager.getPlayer().getNetWorthHistory();
         for (int i = 0; i < history.size(); i++) {
@@ -99,10 +81,8 @@ public class NetWorthCard extends Card {
         }
     }
 
-    /**
-     * Updates the net worth label and change label with current values.
-     */
-    private void updateDisplay() {
+    @Override
+    protected void refreshDisplay() {
         var converter = gameManager.getExchange().getCurrencyConverter();
         var player = gameManager.getPlayer();
 
@@ -124,20 +104,6 @@ public class NetWorthCard extends Card {
         );
     }
 
-    /**
-     * Updates the title label to the current language.
-     * Also refreshes the display in case number formatting changes.
-     */
-    @Override
-    protected void onLanguageChanged() {
-        titleLabel.setText(LanguageManager.get("dashboard.netWorth"));
-        updateDisplay();
-    }
-
-    /**
-     * Called when the game state has changed.
-     * Adds a new data point to the chart, extends the x-axis and refreshes the display.
-     */
     @Override
     public void onGameUpdated() {
         int nextPoint = series.getData().size() + 1;
@@ -146,6 +112,6 @@ public class NetWorthCard extends Card {
         series.getData().add(new XYChart.Data<>(nextPoint, netWorth));
         xAxis.setUpperBound(nextPoint);
         xAxis.setTickUnit(Math.max(1, nextPoint / 8));
-        updateDisplay();
+        refreshDisplay();
     }
 }

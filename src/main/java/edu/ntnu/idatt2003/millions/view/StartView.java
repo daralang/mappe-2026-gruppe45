@@ -70,11 +70,11 @@ public class StartView {
      */
     public StartView() {
         LanguagePicker languagePicker = new LanguagePicker();
-        title = StyledText.HEADING_ONE(LanguageManager.get("app.title"));
+        title = StyledText.headingOne(LanguageManager.get("app.title"));
 
-        nameLabel = StyledText.PARAGRAPH_ONE();
-        capitalLabel = StyledText.PARAGRAPH_ONE();
-        currencyLabel = StyledText.PARAGRAPH_ONE();
+        nameLabel = StyledText.paragraphOne();
+        capitalLabel = StyledText.paragraphOne();
+        currencyLabel = StyledText.paragraphOne();
         nameField = new TextField();
         capitalField = new TextField();
         currencySelector = new CurrencySelector();
@@ -87,7 +87,7 @@ public class StartView {
         stockFileNameLabel.setVisible(false);
         startButton = new Button();
 
-        saveFileLabel = StyledText.PARAGRAPH_ONE();
+        saveFileLabel = StyledText.paragraphOne();
         saveFileField = new TextField();
         browseSaveFileButton = new Button();
         loadButton = new Button();

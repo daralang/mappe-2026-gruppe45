@@ -66,12 +66,12 @@ public class SellReceipt extends TransactionReceipt {
         Label label = new Label(positive
                 ? LanguageManager.get("receipt.profit.gain")
                 : LanguageManager.get("receipt.profit.loss"));
-        label.getStyleClass().add("modal-summary-label");
+        label.getStyleClass().add("detail-label");
 
         Label value = new Label(
                 sign + NUMBER_FORMAT.format(profit.abs()) + " NOK ("
                         + pctSign + profitPercent.toPlainString() + "%)");
-        value.getStyleClass().add("modal-summary-value");
+        value.getStyleClass().add("detail-value");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

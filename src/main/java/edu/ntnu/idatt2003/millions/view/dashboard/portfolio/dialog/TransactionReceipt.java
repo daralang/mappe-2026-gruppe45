@@ -109,7 +109,7 @@ public abstract class TransactionReceipt extends Modal {
 
     private VBox buildStockSection() {
         Label label = new Label(LanguageManager.get("receipt.stock.label"));
-        label.getStyleClass().add("modal-section-label");
+        label.getStyleClass().add("detail-label");
 
         Label value = new Label(
                 transaction.getShare().getStock().getSymbol() + ", "
@@ -139,7 +139,7 @@ public abstract class TransactionReceipt extends Modal {
 
     private VBox buildMetaCell(String label, String value) {
         Label labelNode = new Label(label);
-        labelNode.getStyleClass().add("modal-section-label");
+        labelNode.getStyleClass().add("detail-label");
         Label valueNode = new Label(value);
         valueNode.getStyleClass().add("modal-section-value");
         return new VBox(4, labelNode, valueNode);
@@ -147,18 +147,18 @@ public abstract class TransactionReceipt extends Modal {
 
     private VBox buildBalanceSection() {
         Label beforeLabel = new Label(LanguageManager.get("receipt.balance.before"));
-        beforeLabel.getStyleClass().add("modal-balance-label");
+        beforeLabel.getStyleClass().add("detail-label");
         Label beforeValue = new Label(NUMBER_FORMAT.format(balanceBefore) + " NOK");
-        beforeValue.getStyleClass().add("modal-balance-value");
+        beforeValue.getStyleClass().add("detail-value");
         Region spacer1 = new Region();
         HBox.setHgrow(spacer1, Priority.ALWAYS);
         HBox beforeRow = new HBox(beforeLabel, spacer1, beforeValue);
         beforeRow.getStyleClass().add("modal-balance-row");
 
         Label afterLabel = new Label(LanguageManager.get("receipt.balance.after"));
-        afterLabel.getStyleClass().add("modal-balance-label");
+        afterLabel.getStyleClass().add("detail-label");
         Label afterValue = new Label(NUMBER_FORMAT.format(balanceAfter) + " NOK");
-        afterValue.getStyleClass().addAll("modal-balance-value", "positive");
+        afterValue.getStyleClass().addAll("detail-value", "positive");
         Region spacer2 = new Region();
         HBox.setHgrow(spacer2, Priority.ALWAYS);
         HBox afterRow = new HBox(afterLabel, spacer2, afterValue);

@@ -39,19 +39,9 @@
     -fx-spacing: 20;
 }
 
-.modal-section-label {
-    -fx-font-size: 13;
-    -fx-text-fill: text-secondary;
-}
-
 .modal-section-value {
     -fx-font-size: 16;
     -fx-font-weight: bold;
-}
-
-.modal-section-hint {
-    -fx-font-size: 13;
-    -fx-text-fill: text-secondary;
 }
 
 .modal-input {
@@ -77,16 +67,6 @@
     -fx-alignment: center-left;
 }
 
-.modal-summary-label {
-    -fx-font-size: 13;
-    -fx-text-fill: text-secondary;
-}
-
-.modal-summary-value {
-    -fx-font-size: 13;
-    -fx-text-fill: text-primary;
-}
-
 .modal-summary-total {
     -fx-border-color: #dddddd;
     -fx-border-width: 1 0 0 0;
@@ -105,16 +85,6 @@
 
 .modal-balance-row {
     -fx-alignment: center-left;
-}
-
-.modal-balance-label {
-    -fx-font-size: 13;
-    -fx-text-fill: text-secondary;
-}
-
-.modal-balance-value {
-    -fx-font-size: 13;
-    -fx-text-fill: text-primary;
 }
 
 .modal-actions {
