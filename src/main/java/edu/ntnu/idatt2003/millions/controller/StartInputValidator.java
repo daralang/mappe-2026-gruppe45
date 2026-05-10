@@ -38,13 +38,19 @@ final class StartInputValidator {
      *
      * @param capital the capital text entered by the user
      * @return the parsed starting capital
-     * @throws IllegalArgumentException if the capital is null, blank, or not a valid decimal number
+     * @throws IllegalArgumentException if the capital is null, blank, not a valid
+     *                                  decimal number, or not strictly greater
+     *                                  than zero
      */
     static BigDecimal parseCapital(String capital) {
         if (capital == null || capital.isBlank()) {
             throw new IllegalArgumentException("Starting capital cannot be blank");
         }
-        return new BigDecimal(capital);
+        BigDecimal parsed = new BigDecimal(capital);
+        if (parsed.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Starting capital must be greater than zero");
+        }
+        return parsed;
     }
 
     /**
