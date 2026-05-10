@@ -49,6 +49,12 @@ public class StyledText extends Label {
     /** @return a label styled as section-title */
     public static StyledText sectionTitle(String text) { return new StyledText(text, "section-title"); }
 
+    /** @return an empty label styled as week-label */
+    public static StyledText weekLabel() { return new StyledText("week-label"); }
+
+    /** @return a label styled as week-label */
+    public static StyledText weekLabel(String text) { return new StyledText(text, "week-label"); }
+
     /** @return an empty label styled as widget-label */
     public static StyledText widgetLabel() { return new StyledText("widget-label"); }
 
