@@ -142,70 +142,17 @@ public class StartController {
                 throw new IllegalArgumentException("Player name cannot be blank");
             }
 
-            BigDecimal parsedCapital = parseCapital(capital);
+            BigDecimal parsedCapital = StartInputValidator.parseCapital(capital);
             if (stockFilePath.isBlank()) {
                 gameManager.createNewGame(name, parsedCapital);
             } else {
-                File stockFile = requireCsvFilePath(stockFilePath);
+                File stockFile = StartInputValidator.requireCsvFilePath(stockFilePath);
                 gameManager.createNewGame(name, parsedCapital, stockFile);
             }
             showMainView();
         } catch (IllegalArgumentException exception) {
             showError(exception.getMessage());
         }
-    }
-
-    /**
-     * Parses starting capital from UI input.
-     *
-     * <p>The method is package-private so controller tests can verify the
-     * validation and parsing logic without starting JavaFX.</p>
-     *
-     * @param capital the capital text entered by the user
-     * @return the parsed starting capital
-     * @throws IllegalArgumentException if the capital is null, blank, or not a valid decimal number
-     */
-    static BigDecimal parseCapital(String capital) {
-        if (capital == null || capital.isBlank()) {
-            throw new IllegalArgumentException("Starting capital cannot be blank");
-        }
-        return new BigDecimal(capital);
-    }
-
-    /**
-     * Validates a file path from UI input and converts it to a {@link File}.
-     *
-     * <p>The method is package-private so controller tests can verify file path
-     * validation without starting JavaFX.</p>
-     *
-     * @param filePath the file path text entered or selected by the user
-     * @param message  the exception message used when the path is missing
-     * @return a file representing the validated path
-     * @throws IllegalArgumentException if the path is null or blank
-     */
-    static File requireFilePath(String filePath, String message) {
-        if (filePath == null || filePath.isBlank()) {
-            throw new IllegalArgumentException(message);
-        }
-        return new File(filePath);
-    }
-
-    /**
-     * Validates a custom stock file path and requires it to point to a CSV file.
-     *
-     * <p>The method is package-private so controller tests can verify stock file
-     * validation without starting JavaFX.</p>
-     *
-     * @param filePath the stock file path selected by the user
-     * @return a CSV file representing the validated path
-     * @throws IllegalArgumentException if the path is missing or does not end with {@code .csv}
-     */
-    static File requireCsvFilePath(String filePath) {
-        File file = requireFilePath(filePath, "Stock file must be selected");
-        if (!file.getName().toLowerCase().endsWith(".csv")) {
-            throw new IllegalArgumentException("Stock file must be a CSV file");
-        }
-        return file;
     }
 
     /**
@@ -218,7 +165,7 @@ public class StartController {
     void handleLoadGame() {
         try {
             String saveFilePath = view.getSaveFilePath();
-            File saveFile = requireFilePath(saveFilePath, "Save file must be selected");
+            File saveFile = StartInputValidator.requireFilePath(saveFilePath, "Save file must be selected");
             gameManager.loadGame(saveFile);
             showMainView();
         } catch (RuntimeException exception) {
