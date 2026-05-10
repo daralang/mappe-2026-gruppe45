@@ -2,34 +2,20 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.Card;
-import javafx.scene.control.Label;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
 
 /**
- * Card displaying the player's current status level.
+ * Widget card displaying the player's current status level.
  */
-public class StatusCard extends Card {
+public class StatusCard extends WidgetCard {
 
     private final GameManager gameManager;
-    private final Label titleLabel;
-    private final Label valueLabel;
+    private final StyledText valueLabel = StyledText.widgetValue();
 
-    /**
-     * Constructs a new StatusCard and initializes the display.
-     *
-     * @param gameManager the game manager containing player and exchange
-     */
     public StatusCard(GameManager gameManager) {
-        super(gameManager);
+        super(gameManager, "dashboard.status");
         this.gameManager = gameManager;
-        setSpacing(4);
-
-        titleLabel = new Label(LanguageManager.get("dashboard.status"));
-        titleLabel.getStyleClass().add("widget-label");
-
-        valueLabel = new Label();
-        valueLabel.getStyleClass().add("widget-value");
-
         getChildren().addAll(titleLabel, valueLabel);
 
         valueLabel.setText(LanguageManager.get(gameManager.getPlayerStatus().getI18nKey()));

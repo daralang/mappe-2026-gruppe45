@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Card;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -57,8 +58,8 @@ public class HoldingsCard extends Card {
         this.gameManager = gameManager;
         this.controller = controller;
 
-        Label title = new Label(LanguageManager.get("dashboard.portfolio.title"));
-        title.getStyleClass().add("holdings-title");
+        StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
+        setSpacing(16);
 
         grid.setHgap(20);
         configureColumns();
@@ -111,8 +112,8 @@ public class HoldingsCard extends Card {
         addHeaderRow();
 
         if (shares.isEmpty()) {
-            Label empty = new Label(LanguageManager.get("dashboard.portfolio.empty"));
-            empty.getStyleClass().addAll("widget-label", "holdings-empty");
+            StyledText empty = StyledText.widgetLabel(LanguageManager.get("dashboard.portfolio.empty"));
+            empty.getStyleClass().add("holdings-empty");
             GridPane.setColumnSpan(empty, 8);
             GridPane.setHalignment(empty, HPos.CENTER);
             grid.add(empty, 0, 1);

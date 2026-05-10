@@ -2,54 +2,26 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.Card;
-import javafx.scene.control.Label;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
 
 /**
- * Card displaying the player's currently available funds for trading.
+ * Widget card displaying the player's currently available funds for trading.
  */
-public class AvailableFundsCard extends Card {
+public class AvailableFundsCard extends WidgetCard {
 
     private final GameManager gameManager;
-    private final Label valueLabel;
-    private final Label titleLabel;
+    private final StyledText valueLabel = StyledText.widgetValue();
 
-    /**
-     * Constructs a new AvailableFundsCard and initializes the display.
-     *
-     * @param gameManager the game manager containing player and exchange
-     */
     public AvailableFundsCard(GameManager gameManager) {
-        super(gameManager);
+        super(gameManager, "dashboard.availableFunds");
         this.gameManager = gameManager;
-        setSpacing(4);
-
-        titleLabel = new Label(LanguageManager.get("dashboard.availableFunds"));
-        titleLabel.getStyleClass().add("widget-label");
-
-        valueLabel = new Label();
-        valueLabel.getStyleClass().add("widget-value");
-
         getChildren().addAll(titleLabel, valueLabel);
-
-        valueLabel.setText(CurrencyFormatter.format(gameManager.getPlayer().getMoney()));
+        refreshDisplay();
     }
 
-    /**
-     * Updates the title label to the current language.
-     */
     @Override
-    protected void onLanguageChanged() {
-        titleLabel.setText(LanguageManager.get("dashboard.availableFunds"));
-    }
-
-    /**
-     * Called when the game state has changed.
-     * Refreshes the displayed available funds.
-     */
-    @Override
-    public void onGameUpdated() {
+    protected void refreshDisplay() {
         valueLabel.setText(CurrencyFormatter.format(gameManager.getPlayer().getMoney()));
     }
 }

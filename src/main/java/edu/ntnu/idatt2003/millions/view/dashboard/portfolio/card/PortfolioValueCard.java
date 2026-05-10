@@ -2,35 +2,20 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.Card;
-import javafx.scene.control.Label;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
 
 /**
- * Card displaying the total value of the player's portfolio.
+ * Widget card displaying the total value of the player's portfolio.
  */
-public class PortfolioValueCard extends Card {
+public class PortfolioValueCard extends WidgetCard {
 
     private final GameManager gameManager;
-    private final Label titleLabel;
-    private final Label valueLabel;
+    private final StyledText valueLabel = StyledText.widgetValue();
 
-    /**
-     * Constructs a new PortfolioValueCard and initializes the display.
-     *
-     * @param gameManager the game manager containing player and exchange
-     */
     public PortfolioValueCard(GameManager gameManager) {
-        super(gameManager);
+        super(gameManager, "dashboard.portfolioValue");
         this.gameManager = gameManager;
-        setSpacing(4);
-
-        titleLabel = new Label(LanguageManager.get("dashboard.portfolioValue"));
-        titleLabel.getStyleClass().add("widget-label");
-
-        valueLabel = new Label();
-        valueLabel.getStyleClass().add("widget-value");
-
         getChildren().addAll(titleLabel, valueLabel);
 
         valueLabel.setText(CurrencyFormatter.format(gameManager.getPortfolioValue()));
