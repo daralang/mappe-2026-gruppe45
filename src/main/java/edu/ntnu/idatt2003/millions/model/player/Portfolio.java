@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
@@ -124,5 +125,42 @@ public class Portfolio {
                     return converter.convert(saleValue, share.getStock().getCurrency(), nok);
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Returns the total current market value of all positions in the portfolio.
+     *
+     * @return sum of {@link Share#getCurrentValue()} for all shares
+     */
+    public BigDecimal getTotalValue() {
+        return shares.stream()
+                .map(Share::getCurrentValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Returns the total absolute return across all positions.
+     *
+     * @return sum of {@link Share#getReturnNok()} for all shares
+     */
+    public BigDecimal getTotalReturnNok() {
+        return shares.stream()
+                .map(Share::getReturnNok)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Returns the total return as a percentage of total cost across all positions.
+     * Returns zero if the total cost basis is zero.
+     *
+     * @return total return as a percentage
+     */
+    public BigDecimal getTotalReturnPercent() {
+        BigDecimal totalCost = shares.stream()
+                .map(Share::getCost)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (totalCost.signum() == 0) return BigDecimal.ZERO;
+        return getTotalReturnNok().multiply(BigDecimal.valueOf(100))
+                .divide(totalCost, 2, RoundingMode.HALF_UP);
     }
 }

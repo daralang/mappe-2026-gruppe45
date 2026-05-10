@@ -26,10 +26,10 @@ public class AvailableFundsCard extends Card {
         setSpacing(4);
 
         titleLabel = new Label(LanguageManager.get("dashboard.availableFunds"));
-        titleLabel.getStyleClass().add("card-label");
+        titleLabel.getStyleClass().add("widget-label");
 
         valueLabel = new Label();
-        valueLabel.getStyleClass().add("card-value");
+        valueLabel.getStyleClass().add("widget-value");
 
         getChildren().addAll(titleLabel, valueLabel);
 

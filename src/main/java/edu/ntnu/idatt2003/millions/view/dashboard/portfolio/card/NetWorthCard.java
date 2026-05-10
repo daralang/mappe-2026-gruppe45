@@ -40,12 +40,13 @@ public class NetWorthCard extends Card {
         setSpacing(4);
 
         titleLabel = new Label(LanguageManager.get("dashboard.netWorth"));
-        titleLabel.getStyleClass().add("card-label");
+        titleLabel.getStyleClass().add("widget-label");
 
         netWorthLabel = new Label();
-        netWorthLabel.getStyleClass().add("card-value");
+        netWorthLabel.getStyleClass().add("widget-value");
 
         changeLabel = new Label();
+        changeLabel.getStyleClass().add("widget-change");
 
         List<BigDecimal> history = gameManager.getPlayer().getNetWorthHistory();
         int historySize = history.size();
@@ -120,9 +121,9 @@ public class NetWorthCard extends Card {
                 + "  " + sign + formattedPercent + "% "
                 + LanguageManager.get("dashboard.sinceStart"));
 
-        changeLabel.getStyleClass().removeAll("card-value-positive", "card-value-negative");
+        changeLabel.getStyleClass().removeAll("positive", "negative");
         changeLabel.getStyleClass().add(
-                change.compareTo(BigDecimal.ZERO) >= 0 ? "card-value-positive" : "card-value-negative"
+                change.compareTo(BigDecimal.ZERO) >= 0 ? "positive" : "negative"
         );
     }
 
