@@ -112,12 +112,14 @@ public class PortfolioController {
 
     private void buy(Stock stock, BigDecimal quantity, BuyDialog dialog) {
         BigDecimal balanceBefore = gameManager.getPlayer().getMoney();
+        TransactionPreview preview = previewService.previewPurchase(
+                stock, quantity, gameManager.getPlayer());
         try {
             Transaction transaction = gameManager.buy(stock.getSymbol(), quantity);
             dialog.close();
             BigDecimal balanceAfter = gameManager.getPlayer().getMoney();
             Platform.runLater(() ->
-                    new BuyReceipt(transaction, balanceBefore, balanceAfter).show());
+                    new BuyReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (Exception e) {
             String message = e.getMessage();
             if (message == null || message.isBlank()) {
@@ -138,8 +140,7 @@ public class PortfolioController {
             dialog.close();
             BigDecimal balanceAfter = gameManager.getPlayer().getMoney();
             Platform.runLater(() ->
-                    new SellReceipt(transaction, balanceBefore, balanceAfter,
-                            preview.profit(), preview.profitPercent()).show());
+                    new SellReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (Exception e) {
             String message = e.getMessage();
             if (message == null || message.isBlank()) {
