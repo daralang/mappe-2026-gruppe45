@@ -21,10 +21,11 @@ public class PortfolioView extends VBox {
      * Constructs a new PortfolioView.
      *
      * @param gameManager the game manager containing player and exchange
+     * @param controller  the controller handling portfolio actions
      */
-    public PortfolioView(GameManager gameManager) {
+    public PortfolioView(GameManager gameManager, PortfolioController controller) {
         this.gameManager = gameManager;
-        this.controller = new PortfolioController(gameManager);
+        this.controller = controller;
         setSpacing(16);
 
         HBox topRow = buildTopRow();

@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view;
 
+import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.component.Header;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
@@ -21,6 +22,7 @@ import javafx.scene.layout.BorderPane;
 public class MainView {
 
     private final GameManager gameManager;
+    private final PortfolioController portfolioController;
     private final BorderPane root;
     private final Header header;
     private final WeekBar weekBar;
@@ -34,10 +36,12 @@ public class MainView {
      * @param onAdvanceWeek  callback invoked when the user clicks "Advance week"
      */
     public MainView(GameManager gameManager,
+                    PortfolioController portfolioController,
                     Runnable onSaveGame,
                     Runnable onExitGame,
                     Runnable onAdvanceWeek) {
         this.gameManager = gameManager;
+        this.portfolioController = portfolioController;
         this.weekBar = new WeekBar(gameManager, onAdvanceWeek);
         this.header = new Header(
                 this::showDashboard,
@@ -63,7 +67,7 @@ public class MainView {
      * Switches the content area to the dashboard view.
      */
     private void showDashboard() {
-        root.setCenter(wrapScrollable(new DashboardView(gameManager, weekBar)));
+        root.setCenter(wrapScrollable(new DashboardView(gameManager, portfolioController, weekBar)));
     }
 
     /**

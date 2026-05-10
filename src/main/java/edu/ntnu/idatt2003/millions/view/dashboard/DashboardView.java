@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard;
 
+import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
@@ -18,6 +19,7 @@ import java.util.List;
 public class DashboardView extends VBox {
 
     private final GameManager gameManager;
+    private final PortfolioController portfolioController;
     private final VBox contentArea;
 
     /**
@@ -26,8 +28,9 @@ public class DashboardView extends VBox {
      * @param gameManager the game manager containing player and exchange
      * @param weekBar     the week bar shared with the rest of the application
      */
-    public DashboardView(GameManager gameManager, WeekBar weekBar) {
+    public DashboardView(GameManager gameManager, PortfolioController portfolioController, WeekBar weekBar) {
         this.gameManager = gameManager;
+        this.portfolioController = portfolioController;
         getStyleClass().add("content-area");
 
         ViewHeader viewHeader = new ViewHeader(
@@ -54,7 +57,7 @@ public class DashboardView extends VBox {
     }
 
     private void showPortfolio() {
-        contentArea.getChildren().setAll(new PortfolioView(gameManager));
+        contentArea.getChildren().setAll(new PortfolioView(gameManager, portfolioController));
     }
 
     private void showTransactions() {
