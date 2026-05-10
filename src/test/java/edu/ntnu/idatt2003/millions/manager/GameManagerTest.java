@@ -270,6 +270,62 @@ class GameManagerTest {
             assertThrows(NullPointerException.class, () ->
                     newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile, null));
         }
+
+        @Test
+        @DisplayName("Should default stock currency to USD when no currency is supplied")
+        void defaultsStockCurrencyToUsdForCustomFile() throws IOException {
+            // Arrange
+            File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
+            GameManager newGameManager = new GameManager();
+            // Act
+            newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile);
+            // Assert
+            assertEquals(Currency.getInstance("USD"),
+                    newGameManager.getExchange().getStock("AAPL").getCurrency());
+        }
+
+        @Test
+        @DisplayName("Should tag default stock data with USD")
+        void tagsDefaultStockDataWithUsd() {
+            // Arrange
+            GameManager newGameManager = new GameManager();
+            // Act
+            newGameManager.createNewGame("Dara", STARTING_MONEY);
+            // Assert
+            assertEquals(Currency.getInstance("USD"),
+                    newGameManager.getExchange().getStock("AAPL").getCurrency());
+        }
+
+        @Test
+        @DisplayName("Should leave previous game state intact when createNewGame fails")
+        void leavesPreviousStateIntactOnFailure() throws IOException {
+            // Arrange: an already-active game from setUp() loaded "NYSE" with EQNR
+            CountingObserver observer = new CountingObserver();
+            gameManager.addObserver(observer);
+            File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
+            // Act: a failed createNewGame must not mutate the active state
+            assertThrows(IllegalArgumentException.class, () ->
+                    gameManager.createNewGame("", STARTING_MONEY, stockFile));
+            // Assert: previous player and exchange remain
+            assertEquals("Dara", gameManager.getPlayer().getName());
+            assertEquals("NYSE", gameManager.getExchange().getName());
+            assertTrue(gameManager.getExchange().hasStock("EQNR"));
+            assertFalse(gameManager.getExchange().hasStock("AAPL"));
+            assertEquals(0, observer.updateCount);
+        }
+
+        @Test
+        @DisplayName("Should not notify observers when stock file is null")
+        void doesNotNotifyObserversWhenStockFileIsNull() {
+            // Arrange
+            CountingObserver observer = new CountingObserver();
+            GameManager newGameManager = new GameManager();
+            newGameManager.addObserver(observer);
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    newGameManager.createNewGame("Dara", STARTING_MONEY, null));
+            assertEquals(0, observer.updateCount);
+        }
     }
 
     @Nested
