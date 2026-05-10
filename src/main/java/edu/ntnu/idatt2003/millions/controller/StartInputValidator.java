@@ -19,7 +19,7 @@ final class StartInputValidator {
         // Utility class - should not be instantiated
     }
 
-    /**
+     /**
      * Validates a player name from UI input.
      *
      * @param name the player name entered by the user
