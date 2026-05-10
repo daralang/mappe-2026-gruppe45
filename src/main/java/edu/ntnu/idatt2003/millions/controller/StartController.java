@@ -23,16 +23,35 @@ public class StartController {
     private final GameManager gameManager;
 
     /**
-     * Constructs a new StartController with a {@link GameManager} and binds all UI events.
+     * Constructs a new StartController with a default {@link GameManager}.
+     *
+     * <p>This constructor is used by the application startup flow. It delegates
+     * to {@link #StartController(Stage, GameManager)} so tests and alternate
+     * startup paths can inject their own game manager.</p>
      *
      * @param stage the primary application stage
      * @throws NullPointerException if stage is null
      */
     public StartController(Stage stage) {
+        this(stage, new GameManager());
+    }
+
+    /**
+     * Constructs a new StartController with the given {@link GameManager} and binds all UI events.
+     *
+     * <p>Injecting the manager keeps the controller testable while preserving
+     * the normal production flow through {@link #StartController(Stage)}.</p>
+     *
+     * @param stage       the primary application stage
+     * @param gameManager the game manager used to create or load game state
+     * @throws NullPointerException if stage or game manager is null
+     */
+    public StartController(Stage stage, GameManager gameManager) {
         Objects.requireNonNull(stage, "Stage cannot be null");
+        Objects.requireNonNull(gameManager, "GameManager cannot be null");
         this.stage = stage;
         this.view = new StartView();
-        this.gameManager = new GameManager();
+        this.gameManager = gameManager;
         bindEvents();
     }
 
@@ -145,7 +164,7 @@ public class StartController {
      */
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Could not start game");
+        alert.setTitle("Could not open game");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
