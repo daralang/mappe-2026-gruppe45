@@ -123,8 +123,11 @@ public class StartController {
     /**
      * Validates input, starts a new game session through {@link GameManager},
      * and shows the main view.
+     *
+     * <p>Package-private visibility allows controller tests in this package
+     * to call the handler without simulating a JavaFX button click.</p>
      */
-    private void handleStartGame() {
+    void handleStartGame() {
         try {
             String name = view.getName();
             String capital = view.getCapital();
@@ -151,8 +154,11 @@ public class StartController {
     /**
      * Validates input, loads an existing saved game through {@link GameManager},
      * and shows the main view.
+     *
+     * <p>Package-private visibility allows controller tests in this package
+     * to call the handler without simulating a JavaFX button click.</p>
      */
-    private void handleLoadGame() {
+    void handleLoadGame() {
         try {
             String saveFilePath = view.getSaveFilePath();
 
