@@ -48,6 +48,7 @@ public class StartView {
     // New game tab
     private final StyledText nameLabel;
     private final StyledText capitalLabel;
+    private final StyledText fileLabel;
     private final StyledText currencyLabel;
     private final TextField nameField;
     private final TextField capitalField;
@@ -75,6 +76,7 @@ public class StartView {
         nameLabel = StyledText.PARAGRAPH_ONE();
         capitalLabel = StyledText.PARAGRAPH_ONE();
         currencyLabel = StyledText.PARAGRAPH_ONE();
+        fileLabel = StyledText.PARAGRAPH_ONE();
         nameField = new TextField();
         capitalField = new TextField();
         currencySelector = new CurrencySelector();
@@ -193,6 +195,7 @@ public class StartView {
                 FORM_SPACING,
                 nameRow,
                 capitalRow,
+                fileLabel,
                 dropZone,
                 currencyRow,
                 startButton
@@ -210,6 +213,7 @@ public class StartView {
     private VBox createLoadGameContent() {
         saveFileField.setEditable(false);
         saveFileField.setMaxWidth(CARD_WIDTH);
+        fileLabel.setMaxWidth(CARD_WIDTH);
         browseSaveFileButton.setMaxWidth(CARD_WIDTH);
         loadButton.setMaxWidth(CARD_WIDTH);
 
@@ -236,7 +240,7 @@ public class StartView {
         nameLabel.setText(LanguageManager.get("start.new.nameLabel"));
         capitalLabel.setText(LanguageManager.get("start.new.capitalLabel"));
         currencyLabel.setText(LanguageManager.get("start.new.currencyLabel"));
-
+        fileLabel.setText(LanguageManager.get("start.new.fileLabel"));
         dropZoneHint.setText(LanguageManager.get("start.new.dropZoneHint"));
         dropZoneOr.setText(LanguageManager.get("start.new.dropZoneOr"));
         browseStockFileButton.setText(LanguageManager.get("start.file.browse"));
