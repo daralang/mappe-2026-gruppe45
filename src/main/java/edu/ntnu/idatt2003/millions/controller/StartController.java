@@ -160,7 +160,7 @@ public class StartController {
      * @return the parsed starting capital
      * @throws IllegalArgumentException if the capital is null, blank, or not a valid decimal number
      */
-    BigDecimal parseCapital(String capital) {
+    static BigDecimal parseCapital(String capital) {
         if (capital == null || capital.isBlank()) {
             throw new IllegalArgumentException("Starting capital cannot be blank");
         }
@@ -178,7 +178,7 @@ public class StartController {
      * @return a file representing the validated path
      * @throws IllegalArgumentException if the path is null or blank
      */
-    File requireFilePath(String filePath, String message) {
+    static File requireFilePath(String filePath, String message) {
         if (filePath == null || filePath.isBlank()) {
             throw new IllegalArgumentException(message);
         }
