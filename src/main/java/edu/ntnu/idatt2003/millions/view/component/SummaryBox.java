@@ -48,13 +48,17 @@ public class SummaryBox extends VBox {
     }
 
     private HBox buildRow(String label, String value, boolean total) {
-        Label labelNode = new Label(label);
-        labelNode.getStyleClass().add(
-                total ? "modal-summary-total-text" : "detail-label");
-
-        Label valueNode = new Label(value);
-        valueNode.getStyleClass().add(
-                total ? "modal-summary-total-text" : "detail-value");
+        Label labelNode;
+        Label valueNode;
+        if (total) {
+            labelNode = new Label(label);
+            labelNode.getStyleClass().add("modal-summary-total-text");
+            valueNode = new Label(value);
+            valueNode.getStyleClass().add("modal-summary-total-text");
+        } else {
+            labelNode = StyledText.detailLabel(label);
+            valueNode = StyledText.detailValue(value);
+        }
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

@@ -112,8 +112,8 @@ public class HoldingsCard extends Card {
         addHeaderRow();
 
         if (shares.isEmpty()) {
-            Label empty = new Label(LanguageManager.get("dashboard.portfolio.empty"));
-            empty.getStyleClass().addAll("widget-label", "holdings-empty");
+            StyledText empty = StyledText.widgetLabel(LanguageManager.get("dashboard.portfolio.empty"));
+            empty.getStyleClass().add("holdings-empty");
             GridPane.setColumnSpan(empty, 8);
             GridPane.setHalignment(empty, HPos.CENTER);
             grid.add(empty, 0, 1);

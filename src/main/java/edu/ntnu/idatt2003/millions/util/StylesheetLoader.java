@@ -24,7 +24,7 @@ public class StylesheetLoader {
      * Each constant maps to a CSS file in {@code src/main/resources/css/}.
      */
     public enum Stylesheet {
-        BASE("/css/base.css"),
+        TOKENS("/css/tokens.css"),
         TITLE("/css/title.css"),
         DROP_ZONE("/css/dropfile.css"),
         OTHER("/css/style.css");
