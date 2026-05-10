@@ -20,6 +20,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
+import java.util.Currency;
+
 /**
  * Start view for the application.
  *
@@ -28,7 +30,7 @@ import javafx.scene.layout.VBox;
  * card with inline label-field rows, a drag-and-drop file zone,
  * and a currency selector that activates once a file is chosen.
  */
-public class StartView {
+public class StartView implements StartScreenInputs {
 
     private static final double SCENE_WIDTH = 900;
     private static final double SCENE_HEIGHT = 700;
@@ -48,6 +50,7 @@ public class StartView {
     // New game tab
     private final StyledText nameLabel;
     private final StyledText capitalLabel;
+    private final StyledText fileLabel;
     private final StyledText currencyLabel;
     private final TextField nameField;
     private final TextField capitalField;
@@ -56,7 +59,9 @@ public class StartView {
     private final Label dropZoneOr;
     private final Button browseStockFileButton;
     private final Label stockFileNameLabel;
+    private final VBox dropZone;
     private final Button startButton;
+    private String stockFilePath = "";
 
     // Load game tab
     private final StyledText saveFileLabel;
@@ -75,6 +80,7 @@ public class StartView {
         nameLabel = StyledText.PARAGRAPH_ONE();
         capitalLabel = StyledText.PARAGRAPH_ONE();
         currencyLabel = StyledText.PARAGRAPH_ONE();
+        fileLabel = StyledText.PARAGRAPH_ONE();
         nameField = new TextField();
         capitalField = new TextField();
         currencySelector = new CurrencySelector();
@@ -85,6 +91,7 @@ public class StartView {
         browseStockFileButton = new Button();
         stockFileNameLabel = new Label();
         stockFileNameLabel.setVisible(false);
+        dropZone = buildDropZone();
         startButton = new Button();
 
         saveFileLabel = StyledText.PARAGRAPH_ONE();
@@ -184,7 +191,6 @@ public class StartView {
     private VBox createNewGameContent() {
         HBox nameRow = buildFormRow(nameLabel, nameField);
         HBox capitalRow = buildFormRow(capitalLabel, capitalField);
-        VBox dropZone = buildDropZone();
         HBox currencyRow = buildFormRow(currencyLabel, currencySelector);
 
         startButton.setMaxWidth(CARD_WIDTH);
@@ -193,6 +199,7 @@ public class StartView {
                 FORM_SPACING,
                 nameRow,
                 capitalRow,
+                fileLabel,
                 dropZone,
                 currencyRow,
                 startButton
@@ -210,6 +217,7 @@ public class StartView {
     private VBox createLoadGameContent() {
         saveFileField.setEditable(false);
         saveFileField.setMaxWidth(CARD_WIDTH);
+        fileLabel.setMaxWidth(CARD_WIDTH);
         browseSaveFileButton.setMaxWidth(CARD_WIDTH);
         loadButton.setMaxWidth(CARD_WIDTH);
 
@@ -236,7 +244,7 @@ public class StartView {
         nameLabel.setText(LanguageManager.get("start.new.nameLabel"));
         capitalLabel.setText(LanguageManager.get("start.new.capitalLabel"));
         currencyLabel.setText(LanguageManager.get("start.new.currencyLabel"));
-
+        fileLabel.setText(LanguageManager.get("start.new.fileLabel"));
         dropZoneHint.setText(LanguageManager.get("start.new.dropZoneHint"));
         dropZoneOr.setText(LanguageManager.get("start.new.dropZoneOr"));
         browseStockFileButton.setText(LanguageManager.get("start.file.browse"));
@@ -252,26 +260,31 @@ public class StartView {
 
     /**
      * Returns the path to the stock data file selected by the user.
+     * The path is stored independently of any UI label so changes to the
+     * drop-zone presentation do not affect the controller's contract.
      *
-     * @return stock file path, or empty string
+     * @return stock file path, or empty string when none is selected
      */
     public String getStockFilePath() {
-        return stockFileNameLabel.getText().trim();
+        return stockFilePath;
     }
 
     /**
-     * Returns the path to the save file selected by the user.
-     * Sets the stock file path, shows the filename in the drop zone,
-     * and enables the currency selector.
+     * Sets the stock file path. Updates the internal data field, mirrors the
+     * filename in the drop-zone label, and enables or disables the currency
+     * selector accordingly. The data field is the source of truth for
+     * {@link #getStockFilePath()}.
      *
      * @param path the absolute file path; {@code null} or blank resets the zone
      */
     public void setStockFilePath(String path) {
         if (path == null || path.isBlank()) {
+            this.stockFilePath = "";
             stockFileNameLabel.setText("");
             stockFileNameLabel.setVisible(false);
             currencySelector.setDisable(true);
         } else {
+            this.stockFilePath = path;
             stockFileNameLabel.setText(path);
             stockFileNameLabel.setVisible(true);
             currencySelector.setDisable(false);
@@ -297,12 +310,30 @@ public class StartView {
     }
 
     /**
+     * Sets the player name input field.
+     *
+     * @param name the player name to display; {@code null} clears the field
+     */
+    public void setName(String name) {
+        nameField.setText(name == null ? "" : name);
+    }
+
+    /**
      * Returns the trimmed player name entered by the user.
      *
      * @return trimmed player name
      */
     public String getName() {
         return nameField.getText().trim();
+    }
+
+    /**
+     * Sets the starting capital input field.
+     *
+     * @param capital the starting capital to display; {@code null} clears the field
+     */
+    public void setCapital(String capital) {
+        capitalField.setText(capital == null ? "" : capital);
     }
 
     /**
@@ -315,6 +346,17 @@ public class StartView {
     }
 
     /**
+     * Returns the currency currently selected in the currency selector.
+     * Used when uploading custom stock data so the controller can pass the
+     * chosen currency to the {@code GameManager}.
+     *
+     * @return the selected currency, or {@code null} if none is selected
+     */
+    public Currency getSelectedCurrency() {
+        return currencySelector.getValue();
+    }
+
+    /**
      * @return save file path, or empty string
      *
      */
@@ -323,10 +365,13 @@ public class StartView {
     }
 
     /**
-     * @return the drop zone node for drag-and-drop binding in controller
+     * Returns the drop zone node so the controller can bind drag-and-drop
+     * handlers without depending on the internal layout structure.
+     *
+     * @return the drop zone node
      */
     public VBox getDropZone() {
-        return (VBox) browseStockFileButton.getParent();
+        return dropZone;
     }
 
     /**
