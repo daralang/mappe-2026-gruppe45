@@ -51,6 +51,10 @@ public abstract class Modal {
         Scene scene = new Scene(root);
         scene.setFill(null);
         scene.getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/css/tokens.css"))
+                        .toExternalForm()
+        );
+        scene.getStylesheets().add(
                 Objects.requireNonNull(getClass().getResource("/css/style.css"))
                         .toExternalForm()
         );

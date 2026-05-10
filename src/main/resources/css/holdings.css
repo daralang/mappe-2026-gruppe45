@@ -1,0 +1,71 @@
+.holdings-header {
+    -fx-font-size: 13;
+    -fx-font-weight: bold;
+    -fx-text-fill: text-primary;
+    -fx-padding: 0 0 8 0;
+}
+
+.holdings-cell {
+    -fx-font-size: 13;
+    -fx-text-fill: text-primary;
+    -fx-padding: 10 0 10 0;
+}
+
+.holdings-action-link {
+    -fx-font-size: 13;
+    -fx-font-weight: bold;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 4 0 4 0;
+    -fx-cursor: hand;
+}
+
+.holdings-action-buy {
+    -fx-text-fill: primary;
+}
+.holdings-action-buy:hover {
+    -fx-text-fill: primary-dark;
+}
+
+.holdings-action-sell {
+    -fx-text-fill: danger;
+}
+.holdings-action-sell:hover {
+    -fx-text-fill: danger-dark;
+}
+
+.holdings-empty {
+    -fx-padding: 16 0 16 0;
+}
+
+.holdings-total-divider {
+    -fx-min-height: 17;
+    -fx-pref-height: 17;
+    -fx-max-height: 17;
+    -fx-border-color: border;
+    -fx-border-width: 1 0 0 0;
+    -fx-border-insets: 8 0 0 0;
+}
+
+.holdings-details-chevron {
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+    -fx-text-fill: text-secondary;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+    -fx-min-width: -infinity;
+    -fx-pref-width: -infinity;
+    -fx-min-height: -infinity;
+    -fx-pref-height: -infinity;
+}
+.holdings-details-chevron:hover {
+    -fx-text-fill: black;
+}
+.holdings-details-chevron:focused {
+    -fx-background-color: transparent;
+}

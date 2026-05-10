@@ -5,7 +5,6 @@ import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 
 /**
@@ -16,7 +15,7 @@ import javafx.scene.layout.HBox;
 public class WeekBar extends HBox implements GameObserver {
 
     private final GameManager gameManager;
-    private final Label weekLabel;
+    private final StyledText weekLabel;
     private final Button advanceButton;
 
     /**
@@ -32,9 +31,8 @@ public class WeekBar extends HBox implements GameObserver {
         setSpacing(24);
         setAlignment(Pos.CENTER_RIGHT);
 
-        weekLabel = new Label(LanguageManager.get("app.week") + " "
+        weekLabel = StyledText.weekLabel(LanguageManager.get("app.week") + " "
                 + gameManager.getExchange().getWeek());
-        weekLabel.getStyleClass().add("week-label");
 
         advanceButton = new Button(LanguageManager.get("app.advanceWeek"));
         advanceButton.getStyleClass().add("advance-button");

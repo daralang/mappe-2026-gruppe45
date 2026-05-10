@@ -1,0 +1,11 @@
+.positive {
+    -fx-text-fill: success;
+}
+
+.negative {
+    -fx-text-fill: danger;
+}
+
+.bold {
+    -fx-font-weight: bold;
+}
