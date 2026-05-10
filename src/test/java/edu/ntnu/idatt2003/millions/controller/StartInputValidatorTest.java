@@ -17,6 +17,38 @@ import static org.junit.jupiter.api.Assertions.*;
 class StartInputValidatorTest {
 
     @Nested
+    @DisplayName("requireName()")
+    class RequireName {
+
+        @Test
+        @DisplayName("Should return trimmed name when input is valid")
+        void returnsTrimmedNameWhenInputIsValid() {
+            // Arrange
+            String name = "  Dara  ";
+            // Act
+            String result = StartInputValidator.requireName(name);
+            // Assert
+            assertEquals("Dara", result);
+        }
+
+        @Test
+        @DisplayName("Should throw exception when input is null")
+        void throwsExceptionWhenInputIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    StartInputValidator.requireName(null));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when input is blank")
+        void throwsExceptionWhenInputIsBlank() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    StartInputValidator.requireName("   "));
+        }
+    }
+
+    @Nested
     @DisplayName("parseCapital()")
     class ParseCapital {
 

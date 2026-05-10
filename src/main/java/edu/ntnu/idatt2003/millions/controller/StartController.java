@@ -14,7 +14,11 @@ import javafx.stage.Stage;
  *
  * <p>Handles user interactions on the start screen, including
  * file selection for stock data and saved games, as well as
- * starting or loading a game session.
+ * starting or loading a game session.</p>
+ *
+ * <p>All UI-input validation is delegated to {@link StartInputValidator}
+ * so the controller keeps a single, consistent validation strategy and
+ * stays free of domain rules.</p>
  */
 public class StartController {
 
@@ -134,15 +138,10 @@ public class StartController {
      */
     void handleStartGame() {
         try {
-            String name = view.getName();
-            String capital = view.getCapital();
+            String name = StartInputValidator.requireName(view.getName());
+            BigDecimal parsedCapital = StartInputValidator.parseCapital(view.getCapital());
             String stockFilePath = view.getStockFilePath();
 
-            if (name.isBlank()) {
-                throw new IllegalArgumentException("Player name cannot be blank");
-            }
-
-            BigDecimal parsedCapital = StartInputValidator.parseCapital(capital);
             if (stockFilePath.isBlank()) {
                 gameManager.createNewGame(name, parsedCapital);
             } else {
