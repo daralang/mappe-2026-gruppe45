@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.Currency;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -129,6 +130,30 @@ class StartInputValidatorTest {
                     StartInputValidator.requireFilePath(" ", message));
             // Assert
             assertEquals(message, exception.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("requireCurrency()")
+    class RequireCurrency {
+
+        @Test
+        @DisplayName("Should return currency when input is valid")
+        void returnsCurrencyWhenInputIsValid() {
+            // Arrange
+            Currency currency = Currency.getInstance("USD");
+            // Act
+            Currency result = StartInputValidator.requireCurrency(currency);
+            // Assert
+            assertEquals(currency, result);
+        }
+
+        @Test
+        @DisplayName("Should throw exception when input is null")
+        void throwsExceptionWhenInputIsNull() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    StartInputValidator.requireCurrency(null));
         }
     }
 
