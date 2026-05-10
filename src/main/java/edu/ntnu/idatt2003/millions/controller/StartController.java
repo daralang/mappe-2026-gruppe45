@@ -140,19 +140,33 @@ public class StartController {
             if (name.isBlank()) {
                 throw new IllegalArgumentException("Player name cannot be blank");
             }
-            if (capital.isBlank()) {
-                throw new IllegalArgumentException("Starting capital cannot be blank");
-            }
             if (stockFilePath.isBlank()) {
                 throw new IllegalArgumentException("Stock file must be selected");
             }
 
-            BigDecimal parsedCapital = new BigDecimal(capital);
+            BigDecimal parsedCapital = parseCapital(capital);
             gameManager.createNewGame(name, parsedCapital, new File(stockFilePath));
             showMainView();
         } catch (IllegalArgumentException exception) {
             showError(exception.getMessage());
         }
+    }
+
+    /**
+     * Parses starting capital from UI input.
+     *
+     * <p>The method is package-private so controller tests can verify the
+     * validation and parsing logic without starting JavaFX.</p>
+     *
+     * @param capital the capital text entered by the user
+     * @return the parsed starting capital
+     * @throws IllegalArgumentException if the capital is null, blank, or not a valid decimal number
+     */
+    BigDecimal parseCapital(String capital) {
+        if (capital == null || capital.isBlank()) {
+            throw new IllegalArgumentException("Starting capital cannot be blank");
+        }
+        return new BigDecimal(capital);
     }
 
     /**
