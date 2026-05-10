@@ -3,12 +3,15 @@ package edu.ntnu.idatt2003.millions.manager;
 import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
 import edu.ntnu.idatt2003.millions.file.game.GameState;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
+import edu.ntnu.idatt2003.millions.file.stock.StockFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 
@@ -36,6 +39,8 @@ import java.util.Objects;
  * directly through {@link CurrencyConverter}.</p>
  */
 public class GameManager {
+
+    private static final String DEFAULT_EXCHANGE_NAME = "MainExchange";
 
     private Player player;
     private Exchange exchange;
@@ -81,20 +86,26 @@ public class GameManager {
      * Creates a new game with the given player name, starting capital,
      * and stock data file.
      *
-     * <p>Once implemented, this method will load stocks from {@code stockFile},
-     * create a new {@link Player} with the given name and capital, and instantiate
-     * an {@link Exchange} with a {@link FixedRateCurrencyConverter} so that
-     * subsequent transactions are converted to NOK against the player's balance.
+     * <p>Loads stocks from {@code stockFile} through a {@link StockFileHandler},
+     * creates a new {@link Player}, and instantiates an {@link Exchange} with a
+     * {@link FixedRateCurrencyConverter}. Observers are notified once the new
+     * game state is active.
      *
      * @param name      the name of the player
      * @param capital   the starting capital for the player, in NOK
      * @param stockFile the file containing stock data to load
+     * @throws NullPointerException     if name, capital, or stock file is null
+     * @throws IllegalArgumentException if name is blank, capital is negative,
+     *                                  or the stock file contains no stocks
      */
     public void createNewGame(String name, BigDecimal capital, File stockFile) {
-        // TODO: load stocks from stockFile and create Player.
-        // When implemented, instantiate the Exchange with a CurrencyConverter:
-        //   CurrencyConverter converter = new FixedRateCurrencyConverter();
-        //   this.exchange = new Exchange("MainExchange", stocks, converter);
+        Objects.requireNonNull(stockFile, "Stock file cannot be null");
+        StockFileHandler stockFileHandler = new CsvStockFileHandler();
+        List<Stock> stocks = stockFileHandler.readStocks(stockFile.toPath());
+
+        this.player = new Player(name, capital);
+        this.exchange = new Exchange(DEFAULT_EXCHANGE_NAME, stocks, new FixedRateCurrencyConverter());
+        notifyObservers();
     }
 
     /**
