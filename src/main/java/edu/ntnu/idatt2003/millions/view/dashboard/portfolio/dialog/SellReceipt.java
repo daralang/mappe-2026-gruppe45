@@ -1,6 +1,5 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.scene.control.Label;
@@ -16,11 +15,18 @@ import java.math.BigDecimal;
  */
 public class SellReceipt extends TransactionReceipt {
 
+    private final BigDecimal profit;
+    private final BigDecimal profitPercent;
+
     public SellReceipt(
             Transaction transaction,
             BigDecimal balanceBefore,
-            BigDecimal balanceAfter) {
+            BigDecimal balanceAfter,
+            BigDecimal profit,
+            BigDecimal profitPercent) {
         super(transaction, balanceBefore, balanceAfter);
+        this.profit = profit;
+        this.profitPercent = profitPercent;
     }
 
     @Override
@@ -48,23 +54,17 @@ public class SellReceipt extends TransactionReceipt {
         summaryBox.addRow(LanguageManager.get("receipt.summary.gross"),
                 NUMBER_FORMAT.format(gross) + " NOK");
         summaryBox.addRow(LanguageManager.get("receipt.summary.commissionSell"),
-                "\u2212" + NUMBER_FORMAT.format(commission) + " NOK");
+                "−" + NUMBER_FORMAT.format(commission) + " NOK");
         summaryBox.addRow(LanguageManager.get("receipt.summary.tax"),
-                "\u2212" + NUMBER_FORMAT.format(tax) + " NOK");
+                "−" + NUMBER_FORMAT.format(tax) + " NOK");
         summaryBox.addTotal(LanguageManager.get("receipt.summary.totalReceived"),
                 NUMBER_FORMAT.format(total) + " NOK");
     }
 
     @Override
     protected VBox buildExtraContent() {
-        // Safe cast: SellReceipt is only constructed for Sale transactions,
-        // which always use SalesCalculator.
-        SalesCalculator calc = (SalesCalculator) transaction.getCalculator();
-        BigDecimal profit = calc.calculateProfit();
-        BigDecimal profitPercent = calc.calculateProfitPercent();
-
         boolean positive = profit.signum() >= 0;
-        String sign = positive ? "+" : "\u2212";
+        String sign = positive ? "+" : "−";
         String pctSign = positive ? "+" : "";
 
         Label label = new Label(positive
