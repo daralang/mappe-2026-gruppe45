@@ -10,27 +10,53 @@ import java.util.Objects;
 /**
  * Represents a purchase transaction for a given share.
  * A purchase records the share bought and the week it was acquired,
- * and uses a {@link PurchaseCalculator} to process the transaction.
+ * uses a {@link PurchaseCalculator} to calculate the share cost, and owns
+ * the balance withdrawal when the transaction is committed for a {@link Player}.
  */
 public class Purchase extends Transaction {
+    private final BigDecimal settlementAmount;
 
     /**
      * Constructs a new Purchase for the specified share and week.
+     * The settlement amount defaults to the total calculated by {@link PurchaseCalculator}.
      *
      * @param share the share being purchased
      * @param week  the week in which the purchase takes place
      */
     public Purchase(Share share, int week) {
         super(share, week, new PurchaseCalculator(share));
+        this.settlementAmount = getCalculator().calculateTotal();
+    }
+
+    /**
+     * Constructs a new Purchase for the specified share, week, and settlement amount.
+     *
+     * <p>The settlement amount represents the amount that will be withdrawn from
+     * the {@link Player} when {@link #commit(Player)} is called.</p>
+     *
+     * @param share            the share being purchased
+     * @param week             the week in which the purchase takes place
+     * @param settlementAmount the amount to withdraw from the player during commit
+     * @throws NullPointerException     if the settlement amount is null
+     * @throws IllegalArgumentException if the settlement amount is negative
+     */
+    public Purchase(Share share, int week, BigDecimal settlementAmount) {
+        super(share, week, new PurchaseCalculator(share));
+        Objects.requireNonNull(settlementAmount, "Settlement amount cannot be null");
+        if (settlementAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Settlement amount cannot be negative");
+        }
+        this.settlementAmount = settlementAmount;
     }
 
     /**
      * Commits this purchase for the given player.
-     * Withdraws the total cost from the player's balance, adds the share
+     * Withdraws the settlement amount from the player's balance, adds the share
      * to the player's portfolio, and records the transaction in the archive.
      *
      * @param player the player executing the purchase
      * @throws NullPointerException  if the player is null
+     * @throws IllegalArgumentException if the player has insufficient funds
      * @throws IllegalStateException if the transaction has already been committed
      */
     @Override
@@ -38,6 +64,7 @@ public class Purchase extends Transaction {
         Objects.requireNonNull(player, "Player cannot be null");
         if (isCommitted()) throw new IllegalStateException("Transaction is already committed");
 
+        player.withdrawMoney(settlementAmount);
         player.getPortfolio().addShare(getShare());
         player.getTransactionArchive().add(this);
 
