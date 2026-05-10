@@ -26,8 +26,8 @@ public class StartController {
      * Constructs a new StartController with a default {@link GameManager}.
      *
      * <p>This constructor is used by the application startup flow. It delegates
-     * to {@link #StartController(Stage, GameManager)} so tests and alternate
-     * startup paths can inject their own game manager.</p>
+     * to {@link #StartController(Stage, GameManager)} so alternate startup paths
+     * can inject their own game manager.</p>
      *
      * @param stage the primary application stage
      * @throws NullPointerException if stage is null
@@ -39,7 +39,7 @@ public class StartController {
     /**
      * Constructs a new StartController with the given {@link GameManager} and binds all UI events.
      *
-     * <p>Injecting the manager keeps the controller testable while preserving
+     * <p>Injecting the manager keeps the controller flexible while preserving
      * the normal production flow through {@link #StartController(Stage)}.</p>
      *
      * @param stage       the primary application stage
@@ -47,10 +47,27 @@ public class StartController {
      * @throws NullPointerException if stage or game manager is null
      */
     public StartController(Stage stage, GameManager gameManager) {
+        this(stage, gameManager, new StartView());
+    }
+
+    /**
+     * Constructs a new StartController with injected dependencies and binds all UI events.
+     *
+     * <p>This constructor is package-private so controller tests in the same package
+     * can inject a controlled {@link StartView} while production code uses the public
+     * constructors.</p>
+     *
+     * @param stage       the primary application stage
+     * @param gameManager the game manager used to create or load game state
+     * @param view        the start view that exposes user input and controls
+     * @throws NullPointerException if stage, game manager, or view is null
+     */
+    StartController(Stage stage, GameManager gameManager, StartView view) {
         Objects.requireNonNull(stage, "Stage cannot be null");
         Objects.requireNonNull(gameManager, "GameManager cannot be null");
+        Objects.requireNonNull(view, "StartView cannot be null");
         this.stage = stage;
-        this.view = new StartView();
+        this.view = view;
         this.gameManager = gameManager;
         bindEvents();
     }
