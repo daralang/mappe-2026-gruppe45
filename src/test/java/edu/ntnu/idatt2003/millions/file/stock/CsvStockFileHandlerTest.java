@@ -120,9 +120,11 @@ class CsvStockFileHandlerTest {
         @Test
         @DisplayName("Should throw exception when path is null")
         void throwsExceptionWhenPathIsNull() {
+            // Arrange
+            Path nullPath = null;
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    handler.readStocks(null));
+                    handler.readStocks(nullPath));
         }
 
         @Test
