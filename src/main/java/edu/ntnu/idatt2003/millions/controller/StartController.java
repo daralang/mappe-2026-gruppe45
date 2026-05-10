@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.controller;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.StartView;
 import java.io.File;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.util.Objects;
 import javafx.scene.control.Alert;
@@ -19,6 +20,11 @@ import javafx.stage.Stage;
  * <p>All UI-input validation is delegated to {@link StartInputValidator}
  * so the controller keeps a single, consistent validation strategy and
  * stays free of domain rules.</p>
+ *
+ * <p>Errors from the start flow are translated to user-facing dialogs by
+ * a shared error-handling helper that catches the concrete exception types
+ * the flow can legitimately produce (input validation, missing game state
+ * and file I/O), while letting programming errors surface as crashes.</p>
  */
 public class StartController {
 
@@ -137,7 +143,7 @@ public class StartController {
      * to call the handler without simulating a JavaFX button click.</p>
      */
     void handleStartGame() {
-        try {
+        runOrShowError(() -> {
             String name = StartInputValidator.requireName(view.getName());
             BigDecimal parsedCapital = StartInputValidator.parseCapital(view.getCapital());
             String stockFilePath = view.getStockFilePath();
@@ -149,9 +155,7 @@ public class StartController {
                 gameManager.createNewGame(name, parsedCapital, stockFile);
             }
             showMainView();
-        } catch (IllegalArgumentException exception) {
-            showError(exception.getMessage());
-        }
+        });
     }
 
     /**
@@ -162,12 +166,27 @@ public class StartController {
      * to call the handler without simulating a JavaFX button click.</p>
      */
     void handleLoadGame() {
-        try {
+        runOrShowError(() -> {
             String saveFilePath = view.getSaveFilePath();
             File saveFile = StartInputValidator.requireFilePath(saveFilePath, "Save file must be selected");
             gameManager.loadGame(saveFile);
             showMainView();
-        } catch (RuntimeException exception) {
+        });
+    }
+
+    /**
+     * Runs the given action and translates expected game errors to a user-facing
+     * error dialog. Catches the specific exception types that the start flow can
+     * legitimately produce: input validation failures, missing game state, and
+     * file I/O errors. Programming errors such as {@link NullPointerException}
+     * are intentionally not caught so they surface during development.
+     *
+     * @param action the start-flow action to execute
+     */
+    private void runOrShowError(Runnable action) {
+        try {
+            action.run();
+        } catch (IllegalArgumentException | IllegalStateException | UncheckedIOException exception) {
             showError(exception.getMessage());
         }
     }
