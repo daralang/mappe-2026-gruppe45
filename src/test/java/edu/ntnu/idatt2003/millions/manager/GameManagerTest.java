@@ -167,6 +167,25 @@ class GameManagerTest {
         }
 
         @Test
+        @DisplayName("Should create player and exchange from default stock data")
+        void createsPlayerAndExchangeFromDefaultStockData() {
+            // Arrange
+            CountingObserver observer = new CountingObserver();
+            GameManager newGameManager = new GameManager();
+            newGameManager.addObserver(observer);
+            // Act
+            newGameManager.createNewGame("Dara", STARTING_MONEY);
+            // Assert
+            assertEquals("Dara", newGameManager.getPlayer().getName());
+            assertEquals(0, STARTING_MONEY.compareTo(newGameManager.getPlayer().getMoney()));
+            assertEquals("MainExchange", newGameManager.getExchange().getName());
+            assertTrue(newGameManager.getExchange().hasStock("NVDA"));
+            assertTrue(newGameManager.getExchange().hasStock("AAPL"));
+            assertNotNull(newGameManager.getExchange().getCurrencyConverter());
+            assertEquals(1, observer.updateCount);
+        }
+
+        @Test
         @DisplayName("Should throw exception when stock file is null")
         void throwsExceptionWhenStockFileIsNull() {
             // Arrange
