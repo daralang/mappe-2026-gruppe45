@@ -1,6 +1,8 @@
 package edu.ntnu.idatt2003.millions.model;
 
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.player.Portfolio;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Unit tests for the {@link Portfolio} class.
  * <p>
  * This test class verifies the behaviour of the Portfolio model, including adding, removing,
- * retrieving and filtering shares.
+ * retrieving and filtering shares, as well as net worth calculation with currency conversion.
  * </p>
  * <p>
  * All tests follow the AAA pattern.
@@ -28,14 +31,21 @@ import static org.junit.jupiter.api.Assertions.*;
 class PortfolioTest {
     private Portfolio portfolio;
     private Share share;
+    private CurrencyConverter converter;
+
+    private static final Currency NOK = Currency.getInstance("NOK");
+    private static final Currency USD = Currency.getInstance("USD");
+    private static final Currency EUR = Currency.getInstance("EUR");
 
     @BeforeEach
     void setUp() {
         // Arrange
         portfolio = new Portfolio();
         share = new Share(
-                new Stock("DIS", "The Walt Disney Company", new ArrayList<>(List.of(new BigDecimal("100")))),
+                new Stock("DIS", "The Walt Disney Company",
+                        new ArrayList<>(List.of(new BigDecimal("100"))), NOK),
                 new BigDecimal("10"), new BigDecimal("50"));
+        converter = new FixedRateCurrencyConverter();
     }
 
     @Nested
@@ -127,7 +137,8 @@ class PortfolioTest {
         void returnsOnlyMatchingSymbols() {
             // Arrange
             Share nike = new Share(
-                    new Stock("NKE", "NIKE, Inc", new ArrayList<>(List.of(new BigDecimal("100")))),
+                    new Stock("NKE", "NIKE, Inc",
+                            new ArrayList<>(List.of(new BigDecimal("100"))), NOK),
                     new BigDecimal("10"), new BigDecimal("50"));
             portfolio.addShare(share);
             portfolio.addShare(nike);
@@ -256,66 +267,139 @@ class PortfolioTest {
         @DisplayName("Should return zero when portfolio is empty")
         void returnsZeroWhenPortfolioIsEmpty() {
             // Act & Assert
-            assertEquals(0, BigDecimal.ZERO.compareTo(portfolio.getNetWorth()));
+            assertEquals(0, BigDecimal.ZERO.compareTo(portfolio.getNetWorth(converter)));
         }
 
         @Test
-        @DisplayName("Should return total sale value of a single share in portfolio")
-        void returnsTotalSalesValueOfAllShares() {
-            //Arrange
+        @DisplayName("Should return total sale value of a single NOK share without conversion")
+        void returnsTotalSalesValueOfSingleNokShare() {
+            // Arrange
             portfolio.addShare(share);
             BigDecimal expected = new SalesCalculator(share).calculateTotal();
             // Act & Assert
-            assertEquals(0, expected.compareTo(portfolio.getNetWorth()));
+            assertEquals(0, expected.compareTo(portfolio.getNetWorth(converter)));
         }
 
         @Test
-        @DisplayName("Should sum sale value of multiple shares in portfolio")
-        void sumsValueOfMultipleShares() {
-            //Arrange
+        @DisplayName("Should sum sale value of multiple NOK shares in portfolio")
+        void sumsValueOfMultipleNokShares() {
+            // Arrange
             Share share2 = new Share(
-                    new Stock("DCL", "Dara, Inc", new ArrayList<>(List.of(new BigDecimal("50.00")))),
+                    new Stock("DCL", "Dara, Inc",
+                            new ArrayList<>(List.of(new BigDecimal("50.00"))), NOK),
                     new BigDecimal("10"), new BigDecimal("50.00"));
             portfolio.addShare(share);
             portfolio.addShare(share2);
             BigDecimal expected = new SalesCalculator(share).calculateTotal()
                     .add(new SalesCalculator(share2).calculateTotal());
             // Act & Assert
-            assertEquals(0, expected.compareTo(portfolio.getNetWorth()));
+            assertEquals(0, expected.compareTo(portfolio.getNetWorth(converter)));
         }
 
         @Test
         @DisplayName("Should return zero when share has zero quantity")
         void returnsZeroWhenShareHasZeroQuantity() {
-            //Arrange
+            // Arrange
             Share zeroShare = new Share(
-                    new Stock("DCL", "Dara, Inc", new ArrayList<>(List.of(new BigDecimal("100.00")))),
+                    new Stock("DCL", "Dara, Inc",
+                            new ArrayList<>(List.of(new BigDecimal("100.00"))), NOK),
                     new BigDecimal("0"), new BigDecimal("50.00"));
             portfolio.addShare(zeroShare);
-            //Act & Assert
-            assertEquals(0, BigDecimal.ZERO.compareTo(portfolio.getNetWorth()));
+            // Act & Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(portfolio.getNetWorth(converter)));
         }
 
         @Test
         @DisplayName("Should return correct net worth after share is removed")
         void returnsCorrectNetWorthAfterShareIsRemoved() {
-            //Arrange
+            // Arrange
             portfolio.addShare(share);
             portfolio.removeShare(share);
-            //Act & Assert
-            assertEquals(0, BigDecimal.ZERO.compareTo(portfolio.getNetWorth()));
+            // Act & Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(portfolio.getNetWorth(converter)));
         }
 
         @Test
-        @DisplayName("Should not return a value higher than total gross value")
+        @DisplayName("Should not return a value higher than total gross value for NOK shares")
         void returnsNotValueHigherThanGrossValue() {
-            //Arrange
+            // Arrange
             portfolio.addShare(share);
             BigDecimal gross = new SalesCalculator(share).calculateGross();
-            //Act
-            BigDecimal result = portfolio.getNetWorth();
-            //Assert
+            // Act
+            BigDecimal result = portfolio.getNetWorth(converter);
+            // Assert
             assertTrue(result.compareTo(gross) <= 0);
+        }
+
+        @Test
+        @DisplayName("Should convert USD share value to NOK using the converter")
+        void convertsUsdShareValueToNok() {
+            // Arrange
+            Share usdShare = new Share(
+                    new Stock("AAPL", "Apple Inc",
+                            new ArrayList<>(List.of(new BigDecimal("100.00"))), USD),
+                    new BigDecimal("10"), new BigDecimal("50.00"));
+            portfolio.addShare(usdShare);
+            BigDecimal saleValueUsd = new SalesCalculator(usdShare).calculateTotal();
+            BigDecimal expected = converter.convert(saleValueUsd, USD, NOK);
+            // Act
+            BigDecimal actual = portfolio.getNetWorth(converter);
+            // Assert
+            assertEquals(0, expected.compareTo(actual));
+        }
+
+        @Test
+        @DisplayName("Should sum converted values when shares have different currencies")
+        void sumsConvertedValuesAcrossCurrencies() {
+            // Arrange
+            Share usdShare = new Share(
+                    new Stock("AAPL", "Apple Inc",
+                            new ArrayList<>(List.of(new BigDecimal("100.00"))), USD),
+                    new BigDecimal("5"), new BigDecimal("50.00"));
+            Share eurShare = new Share(
+                    new Stock("SAP", "SAP SE",
+                            new ArrayList<>(List.of(new BigDecimal("200.00"))), EUR),
+                    new BigDecimal("3"), new BigDecimal("100.00"));
+            portfolio.addShare(usdShare);
+            portfolio.addShare(eurShare);
+
+            BigDecimal usdInNok = converter.convert(
+                    new SalesCalculator(usdShare).calculateTotal(), USD, NOK);
+            BigDecimal eurInNok = converter.convert(
+                    new SalesCalculator(eurShare).calculateTotal(), EUR, NOK);
+            BigDecimal expected = usdInNok.add(eurInNok);
+            // Act
+            BigDecimal actual = portfolio.getNetWorth(converter);
+            // Assert
+            assertEquals(0, expected.compareTo(actual));
+        }
+
+        @Test
+        @DisplayName("Should return same value when all shares are already in NOK")
+        void returnsIdenticalValueForNokShares() {
+            // Arrange
+            portfolio.addShare(share);
+            BigDecimal saleValue = new SalesCalculator(share).calculateTotal();
+            // Act
+            BigDecimal actual = portfolio.getNetWorth(converter);
+            // Assert
+            assertEquals(0, saleValue.compareTo(actual));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when converter is null")
+        void throwsExceptionWhenConverterIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    portfolio.getNetWorth(null));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when converter is null and portfolio is empty")
+        void throwsExceptionWhenConverterIsNullAndPortfolioEmpty() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    portfolio.getNetWorth(null));
         }
     }
 }
