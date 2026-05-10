@@ -95,14 +95,14 @@ public class StartController {
     }
 
     /**
-     * Opens a file chooser for selecting a stock data file (CSV or JSON).
+     * Opens a file chooser for selecting a stock data file (CSV).
      * If a file is chosen, the path is shown in the view.
      */
     private void handleBrowseStockFile() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Select stock file");
         chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Data files", "*.csv", "*.json"));
+                new FileChooser.ExtensionFilter("Data files", "*.csv"));
         File file = chooser.showOpenDialog(stage);
         if (file != null) {
             view.setStockFilePath(file.getAbsolutePath());
