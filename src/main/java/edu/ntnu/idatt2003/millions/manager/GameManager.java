@@ -20,9 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -159,6 +156,8 @@ public class GameManager {
 
     /**
      * Loads default stock data from the application resources.
+     * Streams the resource directly through the {@link StockFileHandler}
+     * so no intermediate file is written to disk.
      *
      * @return the default stocks for a new game
      * @throws IllegalStateException if the default stock data cannot be found
@@ -170,14 +169,7 @@ public class GameManager {
             if (inputStream == null) {
                 throw new IllegalStateException("Default stock data not found: " + DEFAULT_STOCK_RESOURCE);
             }
-
-            Path tempFile = Files.createTempFile("default-stocks", ".csv");
-            try {
-                Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
-                return stockFileHandler.readStocks(tempFile);
-            } finally {
-                Files.deleteIfExists(tempFile);
-            }
+            return stockFileHandler.readStocks(inputStream);
         } catch (IOException e) {
             throw new UncheckedIOException("Could not read default stock data", e);
         }

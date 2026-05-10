@@ -5,8 +5,11 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -20,6 +23,9 @@ import java.util.Objects;
  * <p>Each line in the file represents a stock on the form:
  * {@code symbol,name,price}. Lines starting with {@code #} and
  * blank lines are ignored.</p>
+ *
+ * <p>Both file paths and arbitrary input streams are supported as input,
+ * which lets callers parse classpath resources without writing them to disk.</p>
  */
 public class CsvStockFileHandler implements StockFileHandler {
 
@@ -68,18 +74,49 @@ public class CsvStockFileHandler implements StockFileHandler {
         Objects.requireNonNull(path, "Path cannot be null");
 
         try (BufferedReader reader = Files.newBufferedReader(path)) {
-            return reader.lines()
-                    .filter(line -> !line.isBlank() && !line.startsWith(COMMENT_PREFIX))
-                    .map(line -> line.split(DELIMITER))
-                    .filter(fields -> fields.length == EXPECTED_FIELDS)
-                    .map(fields -> new Stock(
-                            fields[SYMBOL_INDEX].trim(),
-                            fields[NAME_INDEX].trim(),
-                            new ArrayList<>(List.of(new BigDecimal(fields[PRICE_INDEX].trim())))))
-                    .toList();
+            return parse(reader);
         } catch (IOException e) {
             throw new UncheckedIOException("Could not read file: " + path, e);
         }
+    }
+
+    /**
+     * Reads stock data from a CSV input stream. Lines starting with {@code #}
+     * and blank lines are skipped. Lines with invalid format are also skipped.
+     * The caller retains ownership of the stream and is responsible for
+     * closing it.
+     *
+     * @param inputStream the input stream to read from
+     * @return a list of stocks parsed from the stream
+     * @throws NullPointerException if inputStream is null
+     * @throws UncheckedIOException if the stream cannot be read
+     */
+    @Override
+    public List<Stock> readStocks(InputStream inputStream) {
+        Objects.requireNonNull(inputStream, "Input stream cannot be null");
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+        return parse(reader);
+    }
+
+    /**
+     * Parses CSV stock data from the given reader. Lines starting with
+     * {@code #} and blank lines are skipped, as are lines that do not have
+     * the expected number of fields.
+     *
+     * @param reader the buffered reader to parse from
+     * @return a list of stocks parsed from the reader
+     */
+    private List<Stock> parse(BufferedReader reader) {
+        return reader.lines()
+                .filter(line -> !line.isBlank() && !line.startsWith(COMMENT_PREFIX))
+                .map(line -> line.split(DELIMITER))
+                .filter(fields -> fields.length == EXPECTED_FIELDS)
+                .map(fields -> new Stock(
+                        fields[SYMBOL_INDEX].trim(),
+                        fields[NAME_INDEX].trim(),
+                        new ArrayList<>(List.of(new BigDecimal(fields[PRICE_INDEX].trim())))))
+                .toList();
     }
 
     /**

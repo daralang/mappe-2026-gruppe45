@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.file.stock;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -9,6 +10,10 @@ import java.util.List;
  * Interface for reading and writing stock data to and from files.
  * Implementations of this interface handle a specific file format,
  * making it easy to add support for new formats in the future.
+ *
+ * <p>Reading is exposed for both file paths and arbitrary input streams,
+ * which lets callers parse classpath resources or in-memory data without
+ * routing them through the filesystem.</p>
  */
 public interface StockFileHandler {
 
@@ -19,6 +24,17 @@ public interface StockFileHandler {
      * @return a list of stocks parsed from the file
      */
     List<Stock> readStocks(Path path);
+
+    /**
+     * Reads stock data from the given input stream. Useful for parsing
+     * classpath resources or in-memory data without writing to disk.
+     * The caller retains ownership of the stream and is responsible for
+     * closing it.
+     *
+     * @param inputStream the input stream to read from
+     * @return a list of stocks parsed from the stream
+     */
+    List<Stock> readStocks(InputStream inputStream);
 
     /**
      * Writes stock data to the file at the given path.
