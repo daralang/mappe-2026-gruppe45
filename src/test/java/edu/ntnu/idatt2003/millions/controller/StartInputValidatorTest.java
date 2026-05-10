@@ -100,25 +100,19 @@ class StartInputValidatorTest {
         }
 
         @Test
-        @DisplayName("Should accept zero as a valid parse value")
-        void acceptsZero() {
-            // Arrange
-            String capital = "0";
-            // Act
-            BigDecimal result = StartInputValidator.parseCapital(capital);
-            // Assert
-            assertEquals(0, BigDecimal.ZERO.compareTo(result));
+        @DisplayName("Should throw exception when input is zero")
+        void throwsExceptionWhenInputIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    StartInputValidator.parseCapital("0"));
         }
 
         @Test
-        @DisplayName("Should parse negative numbers without checking sign")
-        void parsesNegativeNumber() {
-            // Arrange: domain layer (Player) is responsible for rejecting negative capital
-            String capital = "-100";
-            // Act
-            BigDecimal result = StartInputValidator.parseCapital(capital);
-            // Assert
-            assertEquals(0, new BigDecimal("-100").compareTo(result));
+        @DisplayName("Should throw exception when input is negative")
+        void throwsExceptionWhenInputIsNegative() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    StartInputValidator.parseCapital("-100"));
         }
     }
 

@@ -207,14 +207,25 @@ class GameManagerTest {
         }
 
         @Test
-        @DisplayName("Should throw exception when capital is negative")
-        void throwsExceptionWhenCapitalIsNegative() throws IOException {
+        @DisplayName("Should throw exception when capital is not greater than zero")
+        void throwsExceptionWhenCapitalIsNotPositive() throws IOException {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,276.43\n");
             GameManager newGameManager = new GameManager();
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     newGameManager.createNewGame("Dara", new BigDecimal("-1.00"), stockFile));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when capital is zero")
+        void throwsExceptionWhenCapitalIsZero() throws IOException {
+            // Arrange
+            File stockFile = createStockFile("AAPL,Apple Inc.,276.43\n");
+            GameManager newGameManager = new GameManager();
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    newGameManager.createNewGame("Dara", BigDecimal.ZERO, stockFile));
         }
 
         @Test
