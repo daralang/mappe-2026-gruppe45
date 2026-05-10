@@ -110,7 +110,8 @@ public class StartController {
     }
 
     /**
-     * Validates input and loads an existing saved game.
+     * Validates input, loads an existing saved game through {@link GameManager},
+     * and shows the main view.
      *
      * @throws IllegalArgumentException if no save file has been selected
      */
@@ -121,7 +122,8 @@ public class StartController {
             throw new IllegalArgumentException("Save file must be selected");
         }
 
-        // TODO: load GameState, create MainController from state
+        gameManager.loadGame(new File(saveFilePath));
+        showMainView();
     }
 
     /**
