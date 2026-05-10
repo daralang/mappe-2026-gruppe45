@@ -21,6 +21,7 @@ public class StartController {
     private final Stage stage;
     private final StartView view;
     private final GameManager gameManager;
+    private final Runnable showMainViewAction;
 
     /**
      * Constructs a new StartController with a default {@link GameManager}.
@@ -47,28 +48,31 @@ public class StartController {
      * @throws NullPointerException if stage or game manager is null
      */
     public StartController(Stage stage, GameManager gameManager) {
-        this(stage, gameManager, new StartView());
+        this(stage, gameManager, new StartView(), () -> new MainController(stage, gameManager).show());
     }
 
     /**
      * Constructs a new StartController with injected dependencies and binds all UI events.
      *
      * <p>This constructor is package-private so controller tests in the same package
-     * can inject a controlled {@link StartView} while production code uses the public
-     * constructors.</p>
+     * can inject a controlled {@link StartView} and navigation action while production
+     * code uses the public constructors.</p>
      *
-     * @param stage       the primary application stage
-     * @param gameManager the game manager used to create or load game state
-     * @param view        the start view that exposes user input and controls
-     * @throws NullPointerException if stage, game manager, or view is null
+     * @param stage              the primary application stage
+     * @param gameManager        the game manager used to create or load game state
+     * @param view               the start view that exposes user input and controls
+     * @param showMainViewAction the action used to navigate to the main view
+     * @throws NullPointerException if stage, game manager, view, or navigation action is null
      */
-    StartController(Stage stage, GameManager gameManager, StartView view) {
+    StartController(Stage stage, GameManager gameManager, StartView view, Runnable showMainViewAction) {
         Objects.requireNonNull(stage, "Stage cannot be null");
         Objects.requireNonNull(gameManager, "GameManager cannot be null");
         Objects.requireNonNull(view, "StartView cannot be null");
+        Objects.requireNonNull(showMainViewAction, "Show main view action cannot be null");
         this.stage = stage;
         this.view = view;
         this.gameManager = gameManager;
+        this.showMainViewAction = showMainViewAction;
         bindEvents();
     }
 
@@ -177,7 +181,7 @@ public class StartController {
      * Shows the main view using the active {@link GameManager}.
      */
     private void showMainView() {
-        new MainController(stage, gameManager).show();
+        showMainViewAction.run();
     }
 
     /**
