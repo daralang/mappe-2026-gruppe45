@@ -57,6 +57,7 @@ public class StartView {
     private final Label dropZoneOr;
     private final Button browseStockFileButton;
     private final Label stockFileNameLabel;
+    private final VBox dropZone;
     private final Button startButton;
 
     // Load game tab
@@ -87,6 +88,7 @@ public class StartView {
         browseStockFileButton = new Button();
         stockFileNameLabel = new Label();
         stockFileNameLabel.setVisible(false);
+        dropZone = buildDropZone();
         startButton = new Button();
 
         saveFileLabel = StyledText.PARAGRAPH_ONE();
@@ -186,7 +188,6 @@ public class StartView {
     private VBox createNewGameContent() {
         HBox nameRow = buildFormRow(nameLabel, nameField);
         HBox capitalRow = buildFormRow(capitalLabel, capitalField);
-        VBox dropZone = buildDropZone();
         HBox currencyRow = buildFormRow(currencyLabel, currencySelector);
 
         startButton.setMaxWidth(CARD_WIDTH);
@@ -345,10 +346,13 @@ public class StartView {
     }
 
     /**
-     * @return the drop zone node for drag-and-drop binding in controller
+     * Returns the drop zone node so the controller can bind drag-and-drop
+     * handlers without depending on the internal layout structure.
+     *
+     * @return the drop zone node
      */
     public VBox getDropZone() {
-        return (VBox) browseStockFileButton.getParent();
+        return dropZone;
     }
 
     /**
