@@ -8,11 +8,28 @@ import java.math.BigDecimal;
  *
  * <p>This utility keeps simple UI-input validation out of {@link StartController}
  * while staying in the controller layer. It does not contain domain business rules.</p>
+ *
+ * <p>Provides validators for player name, starting capital and file paths,
+ * including a CSV-specific check for stock data files.</p>
  */
 final class StartInputValidator {
 
     private StartInputValidator() {
         // Utility class - should not be instantiated
+    }
+
+    /**
+     * Validates a player name from UI input.
+     *
+     * @param name the player name entered by the user
+     * @return the trimmed player name
+     * @throws IllegalArgumentException if the name is null or blank
+     */
+    static String requireName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Player name cannot be blank");
+        }
+        return name.trim();
     }
 
     /**
