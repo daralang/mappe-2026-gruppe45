@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.model.exchange;
 
 import edu.ntnu.idatt2003.millions.factory.TransactionFactory;
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -9,6 +10,7 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Comparator;
+import java.util.Currency;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +21,10 @@ import java.util.Random;
  * Represents a stock exchange where players can buy and sell shares.
  * The exchange keeps track of all listed stocks and the current week.
  * Prices are updated each week using the advance() method.
+ *
+ * <p>Buy and sell transactions are denominated in each stock's native currency
+ * but converted to NOK via a {@link CurrencyConverter} before the player's
+ * balance is adjusted.
  */
 public class Exchange {
     private final String name;
@@ -34,20 +40,28 @@ public class Exchange {
     /** The maximum amount a stock price can change per week (10%). */
     private static final BigDecimal MAX_WEEKLY_CHANGE = new BigDecimal("0.10");
 
+    private static final Currency NOK = Currency.getInstance("NOK");
+
+    @SuppressWarnings("java:S2065") // transient is needed to prevent Gson from serializing the converter
+    private transient CurrencyConverter currencyConverter;
+
     /**
-     * Creates a new exchange with the given name and a list of stocks.
-     * The stocks are stored in a map using their symbol as the key.
-     * Week starts at 1.
+     * Creates a new exchange with the given name, list of stocks, and currency converter.
+     * The stocks are stored in a map using their symbol as the key. Week starts at 1.
+     * The converter is used by {@link #buy} and {@link #sell} to translate transaction
+     * amounts from each stock's native currency to NOK before adjusting the player's balance.
      *
-     * @param name the name of the exchange
-     * @param stocks the stocks that can be traded on this exchange
-     * @throws NullPointerException if the name, stocks, or any stock in the list is null
+     * @param name              the name of the exchange
+     * @param stocks            the stocks that can be traded on this exchange
+     * @param currencyConverter the converter used to translate stock-currency amounts to NOK
+     * @throws NullPointerException     if name, stocks, currencyConverter, or any stock in the list is null
      * @throws IllegalArgumentException if name is blank, stocks is empty,
      *                                  contains null, or contains duplicate symbols
      */
-    public Exchange(String name, List<Stock> stocks) {
+    public Exchange(String name, List<Stock> stocks, CurrencyConverter currencyConverter) {
         Objects.requireNonNull(name, "Exchange name cannot be null");
         Objects.requireNonNull(stocks, "Exchange stocks cannot be null");
+        Objects.requireNonNull(currencyConverter, "CurrencyConverter cannot be null");
 
         if (name.isBlank()) throw new IllegalArgumentException("Exchange name cannot be blank");
         if (stocks.isEmpty()) throw new IllegalArgumentException("Exchange stocks cannot be empty");
@@ -55,6 +69,7 @@ public class Exchange {
         this.name = name;
         this.week = 1;
         this.stockMap = new HashMap<>();
+        this.currencyConverter = currencyConverter;
 
         for (Stock stock : stocks) {
             Objects.requireNonNull(stock, "Stock list cannot contain null");
@@ -72,6 +87,16 @@ public class Exchange {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Returns the currency converter used by this exchange to translate
+     * stock-currency amounts to NOK.
+     *
+     * @return the currency converter
+     */
+    public CurrencyConverter getCurrencyConverter() {
+        return currencyConverter;
     }
 
     /**
@@ -135,17 +160,18 @@ public class Exchange {
 
     /**
      * Buys a given quantity of a stock for a player.
-     * A new share is created at the current sales price, and the transaction
-     * is committed right away. The transaction is then returned.
+     * The total cost is computed in the stock's native currency, converted to NOK
+     * via the active {@link CurrencyConverter}, and withdrawn from the player's balance.
+     * The purchase is then committed and returned.
      *
-     * @param symbol the symbol of the stock to buy
+     * @param symbol   the symbol of the stock to buy
      * @param quantity how many shares to buy
-     * @param player the player making the purchase
+     * @param player   the player making the purchase
      * @return the completed purchase transaction
-     * @throws NullPointerException if symbol, quantity, or player is null
+     * @throws NullPointerException     if symbol, quantity, or player is null
      * @throws IllegalArgumentException if the symbol is blank, not found,
      *                                  or quantity is not greater than zero
-     * @throws IllegalStateException if the player does not have enough money
+     * @throws IllegalStateException    if the player does not have enough money
      */
     public Transaction buy(String symbol, BigDecimal quantity, Player player) {
         validateSymbol(symbol);
@@ -158,18 +184,25 @@ public class Exchange {
         Stock stock = getStock(symbol);
         Share share = new Share(stock, quantity, stock.getSalesPrice());
         Transaction purchase = TransactionFactory.createPurchase(share, week);
+
+        BigDecimal totalCost = purchase.getCalculator().calculateTotal();
+        BigDecimal totalCostInNok = currencyConverter.convert(totalCost, stock.getCurrency(), NOK);
+        player.withdrawMoney(totalCostInNok);
+
         purchase.commit(player);
         return purchase;
     }
 
     /**
      * Sells a share for a player.
-     * A sale transaction is created and committed, then returned.
+     * The net payout is computed in the stock's native currency, converted to NOK
+     * via the active {@link CurrencyConverter}, and added to the player's balance.
+     * The sale is then committed and returned.
      *
-     * @param share the share to sell
+     * @param share  the share to sell
      * @param player the player selling the share
      * @return the completed sale transaction
-     * @throws NullPointerException if share or player is null
+     * @throws NullPointerException  if share or player is null
      * @throws IllegalStateException if the share is not in the player's portfolio
      */
     public Transaction sell(Share share, Player player) {
@@ -177,6 +210,10 @@ public class Exchange {
         validatePlayer(player);
 
         Transaction sale = TransactionFactory.createSale(share, week);
+        BigDecimal totalValue = sale.getCalculator().calculateTotal();
+        BigDecimal totalValueInNok = currencyConverter.convert(totalValue, share.getStock().getCurrency(), NOK);
+        player.addMoney(totalValueInNok);
+
         sale.commit(player);
         return sale;
     }
@@ -273,10 +310,16 @@ public class Exchange {
     /**
      * Reinitializes transient fields after deserialization.
      * Must be called by {@link edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler}
-     * after loading a game from file, since Gson does not invoke constructors.
+     * after loading a game from file, since Gson does not invoke constructors and
+     * the converter is marked transient.
+     *
+     * @param currencyConverter the converter to use for the loaded game session
+     * @throws NullPointerException if currencyConverter is null
      */
-    public void reinitialize() {
+    public void reinitialize(CurrencyConverter currencyConverter) {
+        Objects.requireNonNull(currencyConverter, "CurrencyConverter cannot be null");
         this.random = new Random();
+        this.currencyConverter = currencyConverter;
     }
 
 }

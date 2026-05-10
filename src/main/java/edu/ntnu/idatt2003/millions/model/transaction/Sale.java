@@ -40,8 +40,6 @@ public class Sale extends Transaction {
         if (isCommitted()) throw new IllegalStateException("Sale is already committed");
         if (!player.getPortfolio().contains(getShare())) throw new IllegalStateException("Sale is not in portfolio");
 
-        BigDecimal totalValue = getCalculator().calculateTotal();
-        player.addMoney(totalValue);
         player.getPortfolio().removeShare(getShare());
         player.getTransactionArchive().add(this);
         markAsCommitted();
