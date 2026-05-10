@@ -126,7 +126,8 @@ public class StartController {
 
     /**
      * Validates input, starts a new game session through {@link GameManager},
-     * and shows the main view.
+     * and shows the main view. A custom stock file is optional; if none is
+     * selected, the default stock data is used.
      *
      * <p>Package-private visibility allows controller tests in this package
      * to call the handler without simulating a JavaFX button click.</p>
@@ -142,8 +143,12 @@ public class StartController {
             }
 
             BigDecimal parsedCapital = parseCapital(capital);
-            File stockFile = requireFilePath(stockFilePath, "Stock file must be selected");
-            gameManager.createNewGame(name, parsedCapital, stockFile);
+            if (stockFilePath.isBlank()) {
+                gameManager.createNewGame(name, parsedCapital);
+            } else {
+                File stockFile = requireFilePath(stockFilePath, "Stock file must be selected");
+                gameManager.createNewGame(name, parsedCapital, stockFile);
+            }
             showMainView();
         } catch (IllegalArgumentException exception) {
             showError(exception.getMessage());
