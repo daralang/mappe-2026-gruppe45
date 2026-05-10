@@ -121,6 +121,13 @@ public class StartController {
     }
 
     /**
+     * Shows the main view using the active {@link GameManager}.
+     */
+    private void showMainView() {
+        new MainController(stage, gameManager).show();
+    }
+
+    /**
      * Displays the start screen on the primary stage.
      */
     public void show() {
