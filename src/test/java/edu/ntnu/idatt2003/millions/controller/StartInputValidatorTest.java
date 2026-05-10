@@ -52,11 +52,11 @@ class StartInputValidatorTest {
         @DisplayName("Should preserve internal whitespace when trimming")
         void preservesInternalWhitespace() {
             // Arrange
-            String name = "  John Doe  ";
+            String name = "  Dara Alva  ";
             // Act
             String result = StartInputValidator.requireName(name);
             // Assert
-            assertEquals("John Doe", result);
+            assertEquals("Dara Alva", result);
         }
     }
 
