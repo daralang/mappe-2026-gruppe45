@@ -47,6 +47,17 @@ class StartInputValidatorTest {
             assertThrows(IllegalArgumentException.class, () ->
                     StartInputValidator.requireName("   "));
         }
+
+        @Test
+        @DisplayName("Should preserve internal whitespace when trimming")
+        void preservesInternalWhitespace() {
+            // Arrange
+            String name = "  John Doe  ";
+            // Act
+            String result = StartInputValidator.requireName(name);
+            // Assert
+            assertEquals("John Doe", result);
+        }
     }
 
     @Nested
@@ -86,6 +97,28 @@ class StartInputValidatorTest {
             // Act & Assert
             assertThrows(NumberFormatException.class, () ->
                     StartInputValidator.parseCapital("not-a-number"));
+        }
+
+        @Test
+        @DisplayName("Should accept zero as a valid parse value")
+        void acceptsZero() {
+            // Arrange
+            String capital = "0";
+            // Act
+            BigDecimal result = StartInputValidator.parseCapital(capital);
+            // Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should parse negative numbers without checking sign")
+        void parsesNegativeNumber() {
+            // Arrange: domain layer (Player) is responsible for rejecting negative capital
+            String capital = "-100";
+            // Act
+            BigDecimal result = StartInputValidator.parseCapital(capital);
+            // Assert
+            assertEquals(0, new BigDecimal("-100").compareTo(result));
         }
     }
 
@@ -205,6 +238,25 @@ class StartInputValidatorTest {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     StartInputValidator.requireCsvFilePath("stocks.json"));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when path has no extension")
+        void throwsExceptionWhenPathHasNoExtension() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    StartInputValidator.requireCsvFilePath("stocks"));
+        }
+
+        @Test
+        @DisplayName("Should accept absolute paths with directory separators")
+        void acceptsAbsolutePathWithDirectorySeparators() {
+            // Arrange
+            String path = "/path/to/stocks.csv";
+            // Act
+            File file = StartInputValidator.requireCsvFilePath(path);
+            // Assert
+            assertEquals(path, file.getPath());
         }
     }
 }
