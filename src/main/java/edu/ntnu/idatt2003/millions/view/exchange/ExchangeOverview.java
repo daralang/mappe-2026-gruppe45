@@ -7,6 +7,8 @@ import edu.ntnu.idatt2003.millions.view.exchange.overview.GainersCard;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.LosersCard;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.StockRankingTable;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.TotalStocksCard;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -55,9 +57,22 @@ public class ExchangeOverview extends VBox implements GameObserver {
                 exchange.getLosers(RANKING_LIMIT)
         );
 
-        HBox.setHgrow(winnersTable, Priority.ALWAYS);
-        HBox.setHgrow(losersTable, Priority.ALWAYS);
-        HBox tables = new HBox(16, winnersTable, losersTable);
+        winnersTable.setMaxWidth(Double.MAX_VALUE);
+        losersTable.setMaxWidth(Double.MAX_VALUE);
+
+        ColumnConstraints leftCol = new ColumnConstraints();
+        leftCol.setPercentWidth(50);
+        leftCol.setHgrow(Priority.ALWAYS);
+
+        ColumnConstraints rightCol = new ColumnConstraints();
+        rightCol.setPercentWidth(50);
+        rightCol.setHgrow(Priority.ALWAYS);
+
+        GridPane tables = new GridPane();
+        tables.setHgap(16);
+        tables.getColumnConstraints().addAll(leftCol, rightCol);
+        tables.add(winnersTable, 0, 0);
+        tables.add(losersTable, 1, 0);
 
         getChildren().addAll(statCards, tables);
     }

@@ -6,9 +6,9 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * A reusable table component displaying a ranked list of stocks with their
+ * A table component displaying a ranked list of stocks with their
  * current price and weekly percentage change.
  * Used for both winners and losers in the exchange overview.
  */
@@ -28,6 +28,7 @@ public class StockRankingTable extends VBox {
     private static final double SYMBOL_WIDTH = 60;
     private static final double PRICE_WIDTH  = 70;
     private static final double CHANGE_WIDTH = 70;
+    private static final double NAME_WIDTH = 70;
 
     /**
      * Constructs a StockRankingTable with a title and an initial list of stocks.
@@ -74,6 +75,7 @@ public class StockRankingTable extends VBox {
         Label change = StyledText.detailLabel(LanguageManager.get("exchange.overview.columnChange"));
 
         symbol.setMinWidth(SYMBOL_WIDTH);
+        stock.setMinWidth(NAME_WIDTH);
         price.setMinWidth(PRICE_WIDTH);
         price.setAlignment(Pos.CENTER_RIGHT);
         change.setMinWidth(CHANGE_WIDTH);
@@ -94,6 +96,7 @@ public class StockRankingTable extends VBox {
         Label priceLabel  = StyledText.detailValue(stock.getSalesPrice().toPlainString());
         Label changeLabel = StyledText.detailValue(formatChange(stock));
 
+        nameLabel.setMinWidth(NAME_WIDTH);
         symbolLabel.setMinWidth(SYMBOL_WIDTH);
         priceLabel.setMinWidth(PRICE_WIDTH);
         priceLabel.setAlignment(Pos.CENTER_RIGHT);
@@ -106,22 +109,22 @@ public class StockRankingTable extends VBox {
     }
 
     /**
-     * Lays out three labels in a spaced HBox row.
+     * Lays out four labels in a fixed-width HBox row.
      *
-     * @param left   label for the left column
-     * @param center label for the center column
-     * @param right  label for the right column
+     * @param left   label for the symbol column
+     * @param center label for the company name column
+     * @param price  label for the price column
+     * @param right  label for the change column
      * @return a configured HBox
      */
     private HBox buildRow(Label left, Label center, Label price, Label right) {
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        center.setMinWidth(0);
+        center.setMaxWidth(Double.MAX_VALUE);
+        center.setTextOverrun(OverrunStyle.ELLIPSIS);
+        HBox.setHgrow(center, Priority.ALWAYS);
 
-        HBox row = new HBox(8, left, center, spacer, price, right);
+        HBox row = new HBox(8, left, center, price, right);
         row.setAlignment(Pos.CENTER_LEFT);
-        HBox.setHgrow(row.getChildren().get(3), Priority.NEVER);
-        right.setMinWidth(60);
-        right.setAlignment(Pos.CENTER_RIGHT);
         return row;
     }
 
