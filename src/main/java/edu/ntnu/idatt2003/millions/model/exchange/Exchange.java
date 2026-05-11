@@ -330,8 +330,6 @@ public class Exchange {
 
     /**
      * Returns a stream of stocks with a positive weekly percentage change.
-     * Used internally by {@link #getGainers} and {@link #countGainers}
-     * to avoid duplicating the filter predicate.
      *
      * @return a stream of gaining stocks
      */
@@ -342,8 +340,6 @@ public class Exchange {
 
     /**
      * Returns a stream of stocks with a negative weekly percentage change.
-     * Used internally by {@link #getLosers} and {@link #countLosers}
-     * to avoid duplicating the filter predicate.
      *
      * @return a stream of losing stocks
      */
