@@ -22,6 +22,11 @@ public class StatusCard extends WidgetCard {
 
     @Override
     protected void refreshDisplay() {
-        valueLabel.setText(LanguageManager.get(gameManager.getPlayerStatus().getI18nKey()));
+        String key = switch (gameManager.getPlayerStatus()) {
+            case NOVICE -> "status.novice";
+            case INVESTOR -> "status.investor";
+            case SPECULATOR -> "status.speculator";
+        };
+        valueLabel.setText(LanguageManager.get(key));
     }
 }

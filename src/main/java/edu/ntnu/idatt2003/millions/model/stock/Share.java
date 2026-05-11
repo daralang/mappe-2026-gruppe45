@@ -83,11 +83,12 @@ public class Share {
     }
 
     /**
-     * Returns the absolute return for this position (currentValue − cost).
+     * Returns the absolute return for this position (currentValue − cost)
+     * in the stock's native currency.
      *
-     * @return profit or loss in currency units
+     * @return profit or loss in the stock's native currency
      */
-    public BigDecimal getReturnNok() {
+    public BigDecimal getReturnNative() {
         return getCurrentValue().subtract(getCost());
     }
 
@@ -100,7 +101,7 @@ public class Share {
     public BigDecimal getReturnPercent() {
         BigDecimal cost = getCost();
         if (cost.signum() == 0) return BigDecimal.ZERO;
-        return getReturnNok().multiply(BigDecimal.valueOf(100))
+        return getReturnNative().multiply(BigDecimal.valueOf(100))
                 .divide(cost, 2, RoundingMode.HALF_UP);
     }
 }

@@ -1,6 +1,5 @@
 package edu.ntnu.idatt2003.millions.model.player;
 
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 
@@ -106,61 +105,91 @@ public class Portfolio {
     }
 
     /**
-     * Returns the total net worth of the portfolio in NOK.
+     * Returns the total market value of the portfolio in NOK.
      *
-     * <p>For each share, the sale value is computed using {@link SalesCalculator}
-     * in the stock's native currency, then converted to NOK via the given
+     * <p>For each share, the current market value ({@link edu.ntnu.idatt2003.millions.model.stock.Share#getCurrentValue()},
+     * i.e. {@code salesPrice × quantity}) is converted to NOK via the given
      * {@link CurrencyConverter}. The converted values are summed.
+     * Sale commission and tax are NOT deducted — those are transaction-level
+     * concerns handled by {@link edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator}
+     * at the point of sale.
      *
-     * @param converter the currency converter used to translate share values to NOK
-     * @return the total net worth in NOK
+     * @param converter the currency converter used to translate each share's market value to NOK
+     * @return the total market value of all positions in NOK
      * @throws NullPointerException if converter is null
      */
     public BigDecimal getNetWorth(CurrencyConverter converter) {
         Objects.requireNonNull(converter, "Converter cannot be null");
         Currency nok = Currency.getInstance("NOK");
         return shares.stream()
-                .map(share -> {
-                    BigDecimal saleValue = new SalesCalculator(share).calculateTotal();
-                    return converter.convert(saleValue, share.getStock().getCurrency(), nok);
-                })
+                .map(share -> converter.convert(
+                        share.getCurrentValue(), share.getStock().getCurrency(), nok))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
-     * Returns the total current market value of all positions in the portfolio.
+     * Returns the total current market value of all positions in the portfolio
+     * in each stock's native currency. Only meaningful for single-currency portfolios.
      *
      * @return sum of {@link Share#getCurrentValue()} for all shares
      */
-    public BigDecimal getTotalValue() {
+    public BigDecimal getTotalValueNative() {
         return shares.stream()
                 .map(Share::getCurrentValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
-     * Returns the total absolute return across all positions.
+     * Returns the total absolute return across all positions in each stock's
+     * native currency. Only meaningful for single-currency portfolios.
      *
-     * @return sum of {@link Share#getReturnNok()} for all shares
+     * @return sum of {@link Share#getReturnNative()} for all shares
      */
-    public BigDecimal getTotalReturnNok() {
+    public BigDecimal getTotalReturnNative() {
         return shares.stream()
-                .map(Share::getReturnNok)
+                .map(Share::getReturnNative)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
-     * Returns the total return as a percentage of total cost across all positions.
+     * Returns the total absolute return across all positions in NOK.
+     *
+     * @param converter the currency converter used to translate each return to NOK
+     * @return total return in NOK
+     * @throws NullPointerException if converter is null
+     */
+    public BigDecimal getTotalReturnInNok(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        Currency nok = Currency.getInstance("NOK");
+        return shares.stream()
+                .map(share -> converter.convert(
+                        share.getReturnNative(), share.getStock().getCurrency(), nok))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Returns the total return as a percentage of total cost across all positions,
+     * with all values converted to NOK before computing the ratio.
      * Returns zero if the total cost basis is zero.
      *
+     * @param converter the currency converter used to translate costs and returns to NOK
      * @return total return as a percentage
+     * @throws NullPointerException if converter is null
      */
-    public BigDecimal getTotalReturnPercent() {
-        BigDecimal totalCost = shares.stream()
-                .map(Share::getCost)
+    public BigDecimal getTotalReturnPercent(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        BigDecimal totalCostInNok = getTotalCostInNok(converter);
+        if (totalCostInNok.signum() == 0) return BigDecimal.ZERO;
+        return getTotalReturnInNok(converter)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(totalCostInNok, 2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal getTotalCostInNok(CurrencyConverter converter) {
+        Currency nok = Currency.getInstance("NOK");
+        return shares.stream()
+                .map(share -> converter.convert(
+                        share.getCost(), share.getStock().getCurrency(), nok))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (totalCost.signum() == 0) return BigDecimal.ZERO;
-        return getTotalReturnNok().multiply(BigDecimal.valueOf(100))
-                .divide(totalCost, 2, RoundingMode.HALF_UP);
     }
 }

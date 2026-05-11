@@ -40,10 +40,10 @@ public class BuyReceipt extends TransactionReceipt {
     @Override
     protected void renderSummary() {
         summaryBox.addRow(LanguageManager.get("receipt.summary.gross"),
-                NUMBER_FORMAT.format(preview.gross()) + " NOK");
+                NUMBER_FORMAT.format(preview.gross()) + " " + currencyCode());
         summaryBox.addRow(LanguageManager.get("receipt.summary.commissionBuy"),
-                NUMBER_FORMAT.format(preview.commission()) + " NOK");
+                NUMBER_FORMAT.format(preview.commission()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("receipt.summary.totalCost"),
-                NUMBER_FORMAT.format(preview.total()) + " NOK");
+                NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
     }
 }
