@@ -12,6 +12,7 @@ import edu.ntnu.idatt2003.millions.model.transaction.Sale;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -98,6 +99,7 @@ public class JsonGameFileHandler implements GameFileHandler {
             Player player = gson.fromJson(gameState.get("player"), Player.class);
 
             relinkShares(player, exchange);
+            mergeSharesBySymbol(player);
 
             return new GameState(player, exchange);
 
@@ -174,5 +176,31 @@ public class JsonGameFileHandler implements GameFileHandler {
                 .toList();
 
         player.getPortfolio().setShares(relinked);
+    }
+
+    /**
+     * Consolidates any duplicate-symbol shares in the player's portfolio using
+     * weighted-average purchase price (GAV). Called after {@link #relinkShares}
+     * to enforce the one-share-per-symbol invariant on legacy save files.
+     *
+     * @param player the player whose portfolio should be consolidated
+     */
+    private void mergeSharesBySymbol(Player player) {
+        List<Share> merged = new ArrayList<>();
+        for (Share share : player.getPortfolio().getShares()) {
+            String symbol = share.getStock().getSymbol();
+            boolean found = false;
+            for (int i = 0; i < merged.size(); i++) {
+                if (merged.get(i).getStock().getSymbol().equals(symbol)) {
+                    merged.set(i, merged.get(i).mergedWith(share));
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                merged.add(share);
+            }
+        }
+        player.getPortfolio().setShares(merged);
     }
 }
