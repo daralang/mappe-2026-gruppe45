@@ -21,31 +21,59 @@ import java.util.List;
 public class StockRankingCard extends VBox {
 
     private final VBox rows;
+    private final String titleKey;
+    private final StyledText titleLabel;
+
+    private final Label symbolHeader;
+    private final Label stockHeader;
+    private final Label priceHeader;
+    private final Label changeHeader;
 
     private static final double SYMBOL_WIDTH = 60;
     private static final double PRICE_WIDTH  = 70;
     private static final double CHANGE_WIDTH = 70;
-    private static final double NAME_WIDTH = 70;
+    private static final double NAME_WIDTH   = 70;
 
     /**
-     * Constructs a StockRankingTable with a title and an initial list of stocks.
+     * Constructs a StockRankingCard with a title and an initial list of stocks.
+     * Registers a language observer so that the title and column headers
+     * are refreshed automatically when the language changes.
      *
      * @param titleKey the i18n key for the table title
      * @param stocks   the initial list of stocks to display
      * @throws NullPointerException if titleKey or stocks is null
      */
     public StockRankingCard(String titleKey, List<Stock> stocks) {
+        this.titleKey = titleKey;
         getStyleClass().add("card");
         setSpacing(12);
 
-        StyledText title = StyledText.widgetValue(LanguageManager.get(titleKey));
+        titleLabel = StyledText.widgetValue(LanguageManager.get(titleKey));
+        symbolHeader = addHeaderLabel(LanguageManager.get("exchange.overview.columnSymbol"));
+        stockHeader = addHeaderLabel(LanguageManager.get("exchange.overview.columnStock"));
+        priceHeader = addHeaderLabel(LanguageManager.get("exchange.overview.columnPrice"));
+        changeHeader = addHeaderLabel(LanguageManager.get("exchange.overview.columnChange"));
 
-        HBox header = addHeader();
+        applyColumnConstraints(symbolHeader, stockHeader, priceHeader, changeHeader);
+        HBox header = addRow(symbolHeader, stockHeader, priceHeader, changeHeader);
 
         rows = new VBox(4);
-        getChildren().addAll(title, header, rows);
+        getChildren().addAll(titleLabel, header, rows);
 
+        LanguageManager.addObserver(this::refreshLabels);
         update(stocks);
+    }
+
+    /**
+     * Updates the title and all column header labels to reflect the current language.
+     * Called automatically when the active language changes.
+     */
+    private void refreshLabels() {
+        titleLabel.setText(LanguageManager.get(titleKey));
+        symbolHeader.setText(LanguageManager.get("exchange.overview.columnSymbol"));
+        stockHeader.setText(LanguageManager.get("exchange.overview.columnStock"));
+        priceHeader.setText(LanguageManager.get("exchange.overview.columnPrice"));
+        changeHeader.setText(LanguageManager.get("exchange.overview.columnChange"));
     }
 
     /**
@@ -58,21 +86,6 @@ public class StockRankingCard extends VBox {
     public void update(List<Stock> stocks) {
         rows.getChildren().clear();
         stocks.forEach(stock -> rows.getChildren().add(addRow(stock)));
-    }
-
-    /**
-     * Builds the column header row using the holdings-header style.
-     *
-     * @return an HBox containing the header labels
-     */
-    private HBox addHeader() {
-        Label symbol = addHeaderLabel(LanguageManager.get("exchange.overview.columnSymbol"));
-        Label stock  = addHeaderLabel(LanguageManager.get("exchange.overview.columnStock"));
-        Label price  = addHeaderLabel(LanguageManager.get("exchange.overview.columnPrice"));
-        Label change = addHeaderLabel(LanguageManager.get("exchange.overview.columnChange"));
-
-        applyColumnConstraints(symbol, stock, price, change);
-        return addRow(symbol, stock, price, change);
     }
 
     /**
