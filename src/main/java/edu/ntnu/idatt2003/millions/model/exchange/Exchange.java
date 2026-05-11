@@ -9,7 +9,6 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Currency;
 import java.util.List;
