@@ -49,7 +49,7 @@ public class TransactionPreviewService {
         BigDecimal balanceAfter = player.getMoney().subtract(totalInNok);
 
         return new TransactionPreview(
-                gross, commission, tax, total, totalInNok, balanceAfter, null, null);
+                gross, commission, tax, total, totalInNok, balanceAfter, null, null, null);
     }
 
     /**
@@ -82,9 +82,13 @@ public class TransactionPreviewService {
 
         BigDecimal profit = calc.calculateProfit();
         BigDecimal profitPercent = calc.calculateProfitPercent();
+        Currency currency = share.getStock().getCurrency();
+        BigDecimal profitInNok = currency.equals(NOK)
+                ? null
+                : converter.convert(profit, currency, NOK);
 
         return new TransactionPreview(
                 gross, commission, tax, total, totalInNok, balanceAfter,
-                profit, profitPercent);
+                profit, profitPercent, profitInNok);
     }
 }
