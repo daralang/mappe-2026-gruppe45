@@ -55,7 +55,8 @@ public class PortfolioController {
      */
     public TransactionPreview previewBuy(Stock stock, BigDecimal quantity) {
         return previewService.previewPurchase(
-                stock, quantity, gameManager.getPlayer());
+                stock, quantity, gameManager.getPlayer(),
+                gameManager.getExchange().getCurrencyConverter());
     }
 
     /**
@@ -67,7 +68,8 @@ public class PortfolioController {
      */
     public TransactionPreview previewSell(Share share, BigDecimal quantity) {
         return previewService.previewSale(
-                share, quantity, gameManager.getPlayer());
+                share, quantity, gameManager.getPlayer(),
+                gameManager.getExchange().getCurrencyConverter());
     }
 
     // Dialog opening
@@ -113,7 +115,8 @@ public class PortfolioController {
     private void buy(Stock stock, BigDecimal quantity, BuyDialog dialog) {
         BigDecimal balanceBefore = gameManager.getPlayer().getMoney();
         TransactionPreview preview = previewService.previewPurchase(
-                stock, quantity, gameManager.getPlayer());
+                stock, quantity, gameManager.getPlayer(),
+                gameManager.getExchange().getCurrencyConverter());
         try {
             Transaction transaction = gameManager.buy(stock.getSymbol(), quantity);
             dialog.close();
@@ -132,7 +135,8 @@ public class PortfolioController {
     private void sell(Share share, BigDecimal quantity, AbstractSellDialog dialog) {
         BigDecimal balanceBefore = gameManager.getPlayer().getMoney();
         TransactionPreview preview = previewService.previewSale(
-                share, share.getQuantity(), gameManager.getPlayer());
+                share, share.getQuantity(), gameManager.getPlayer(),
+                gameManager.getExchange().getCurrencyConverter());
         try {
             // TODO: when partial sale is implemented, pass quantity through.
             //  For now, the model only supports selling the full Share instance.

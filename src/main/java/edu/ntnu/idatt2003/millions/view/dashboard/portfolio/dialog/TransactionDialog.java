@@ -164,6 +164,14 @@ public abstract class TransactionDialog extends Modal {
     }
 
     /**
+     * Returns the ISO currency code for the stock in this dialog (e.g. "USD", "EUR").
+     * Used to label summary values in their native trading currency.
+     */
+    protected String currencyCode() {
+        return stock.getCurrency().getCurrencyCode();
+    }
+
+    /**
      * Parses the current quantity input. Returns null on invalid input.
      */
     protected BigDecimal getQuantity() {

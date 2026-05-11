@@ -45,8 +45,8 @@ class GameManagerTest {
     private static final BigDecimal QUANTITY = new BigDecimal("5");
     private static final BigDecimal PURCHASE_COMMISSION = new BigDecimal("2.50000");
     private static final BigDecimal SALE_COMMISSION = new BigDecimal("5.0000");
-    private static final BigDecimal EXPECTED_PORTFOLIO_VALUE = new BigDecimal("495.0000");
-    private static final BigDecimal EXPECTED_NET_WORTH_AFTER_PURCHASE = new BigDecimal("9992.50000");
+    private static final BigDecimal EXPECTED_PORTFOLIO_VALUE = new BigDecimal("500.0000");
+    private static final BigDecimal EXPECTED_NET_WORTH_AFTER_PURCHASE = new BigDecimal("9997.50000");
 
     private GameManager gameManager;
 
@@ -425,7 +425,7 @@ class GameManagerTest {
             gameManager.buy("EQNR", QUANTITY);
             // Act
             BigDecimal netWorth = gameManager.getPlayerNetWorth();
-            // Assert: cash after purchase plus portfolio liquidation value
+            // Assert: cash after purchase plus portfolio market value (5 × 100 NOK)
             assertEquals(0, EXPECTED_NET_WORTH_AFTER_PURCHASE.compareTo(netWorth));
         }
     }
@@ -542,7 +542,7 @@ class GameManagerTest {
             gameManager.buy("EQNR", QUANTITY);
             // Act
             BigDecimal value = gameManager.getPortfolioValue();
-            // Assert: 5 shares * 100 NOK minus 1% sale commission
+            // Assert: 5 shares × 100 NOK = 500 NOK market value (no fees deducted)
             assertEquals(0, EXPECTED_PORTFOLIO_VALUE.compareTo(value));
         }
     }

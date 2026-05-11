@@ -45,13 +45,13 @@ public class SellReceipt extends TransactionReceipt {
     @Override
     protected void renderSummary() {
         summaryBox.addRow(LanguageManager.get("receipt.summary.gross"),
-                NUMBER_FORMAT.format(preview.gross()) + " NOK");
+                NUMBER_FORMAT.format(preview.gross()) + " " + currencyCode());
         summaryBox.addRow(LanguageManager.get("receipt.summary.commissionSell"),
-                "−" + NUMBER_FORMAT.format(preview.commission()) + " NOK");
+                "−" + NUMBER_FORMAT.format(preview.commission()) + " " + currencyCode());
         summaryBox.addRow(LanguageManager.get("receipt.summary.tax"),
-                "−" + NUMBER_FORMAT.format(preview.tax()) + " NOK");
+                "−" + NUMBER_FORMAT.format(preview.tax()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("receipt.summary.totalReceived"),
-                NUMBER_FORMAT.format(preview.total()) + " NOK");
+                NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
     }
 
     @Override
@@ -68,7 +68,7 @@ public class SellReceipt extends TransactionReceipt {
                 : LanguageManager.get("receipt.profit.loss"));
 
         StyledText value = StyledText.detailValue(
-                sign + NUMBER_FORMAT.format(profit.abs()) + " NOK ("
+                sign + NUMBER_FORMAT.format(profit.abs()) + " " + currencyCode() + " ("
                         + pctSign + profitPercent.toPlainString() + "%)");
 
         Region spacer = new Region();

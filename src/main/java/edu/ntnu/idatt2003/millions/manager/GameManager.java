@@ -338,13 +338,70 @@ public class GameManager {
     }
 
     /**
-     * Returns the total value of the player's portfolio in NOK.
+     * Returns the total market value of the player's portfolio in NOK
+     * ({@code salesPrice × quantity} per share, converted to NOK).
+     * Sale commission and tax are not deducted.
      * Facade method that delegates to {@link Player}.
      *
-     * @return the portfolio value in NOK
+     * @return the portfolio market value in NOK
      */
     public BigDecimal getPortfolioValue() {
         return player.getPortfolio().getNetWorth(exchange.getCurrencyConverter());
+    }
+
+    /**
+     * Returns the current market value of the given share position in NOK
+     * (salesPrice × quantity × exchange rate, no fees deducted).
+     *
+     * @param share the share to value
+     * @return the position's market value in NOK
+     */
+    public BigDecimal getShareValueInNok(Share share) {
+        CurrencyConverter converter = exchange.getCurrencyConverter();
+        return converter.convert(
+                share.getCurrentValue(), share.getStock().getCurrency(), Currency.getInstance("NOK"));
+    }
+
+    /**
+     * Returns the unrealized return on the given share position in NOK
+     * (currentValue − cost, converted to NOK at the current rate).
+     *
+     * @param share the share to evaluate
+     * @return the position's return in NOK
+     */
+    public BigDecimal getShareReturnInNok(Share share) {
+        CurrencyConverter converter = exchange.getCurrencyConverter();
+        return converter.convert(
+                share.getReturnNative(), share.getStock().getCurrency(), Currency.getInstance("NOK"));
+    }
+
+    /**
+     * Returns the total market value of all portfolio positions in NOK
+     * (no fees deducted). Used for the holdings table "Verdi NOK" total.
+     *
+     * @return total market value in NOK
+     */
+    public BigDecimal getTotalPortfolioValueInNok() {
+        return player.getPortfolio().getNetWorth(exchange.getCurrencyConverter());
+    }
+
+    /**
+     * Returns the total unrealized return across all portfolio positions in NOK.
+     *
+     * @return total return in NOK
+     */
+    public BigDecimal getTotalPortfolioReturnInNok() {
+        return player.getPortfolio().getTotalReturnInNok(exchange.getCurrencyConverter());
+    }
+
+    /**
+     * Returns the total portfolio return as a percentage of total cost,
+     * with all amounts converted to NOK before computing the ratio.
+     *
+     * @return total return percentage
+     */
+    public BigDecimal getTotalPortfolioReturnPercent() {
+        return player.getPortfolio().getTotalReturnPercent(exchange.getCurrencyConverter());
     }
 
     /**
