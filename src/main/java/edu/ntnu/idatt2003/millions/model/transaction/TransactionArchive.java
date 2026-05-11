@@ -1,7 +1,5 @@
 package edu.ntnu.idatt2003.millions.model.transaction;
 
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
-
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -131,7 +129,7 @@ public class TransactionArchive {
      * @return commission totals per currency; empty map if no sales exist
      */
     public Map<Currency, BigDecimal> getTotalSaleCommissionByCurrency() {
-        return sumSalesAttribute(SalesCalculator::calculateCommission);
+        return sumSalesAttribute(Sale::getCommission);
     }
 
     /**
@@ -141,7 +139,7 @@ public class TransactionArchive {
      * @return tax totals per currency; empty map if no sales exist
      */
     public Map<Currency, BigDecimal> getTotalSaleTaxByCurrency() {
-        return sumSalesAttribute(SalesCalculator::calculateTax);
+        return sumSalesAttribute(Sale::getTax);
     }
 
     /**
@@ -165,11 +163,10 @@ public class TransactionArchive {
             java.util.function.UnaryOperator<BigDecimal> mapper) {
         Map<Currency, BigDecimal> result = new HashMap<>();
         for (Transaction transaction : transactions) {
-            if (!(transaction instanceof Sale)) continue;
-            SalesCalculator calculator = new SalesCalculator(transaction.getShare());
-            BigDecimal profit = calculator.calculateProfit();
+            if (!(transaction instanceof Sale sale)) continue;
+            BigDecimal profit = sale.getProfit();
             if (!filter.test(profit)) continue;
-            Currency currency = transaction.getShare().getStock().getCurrency();
+            Currency currency = sale.getShare().getStock().getCurrency();
             result.merge(currency, mapper.apply(profit), BigDecimal::add);
         }
         return result;
@@ -181,13 +178,12 @@ public class TransactionArchive {
      * {@link #getTotalSaleTaxByCurrency()}.
      */
     private Map<Currency, BigDecimal> sumSalesAttribute(
-            java.util.function.Function<SalesCalculator, BigDecimal> extractor) {
+            java.util.function.Function<Sale, BigDecimal> extractor) {
         Map<Currency, BigDecimal> result = new HashMap<>();
         for (Transaction transaction : transactions) {
-            if (!(transaction instanceof Sale)) continue;
-            SalesCalculator calculator = new SalesCalculator(transaction.getShare());
-            Currency currency = transaction.getShare().getStock().getCurrency();
-            result.merge(currency, extractor.apply(calculator), BigDecimal::add);
+            if (!(transaction instanceof Sale sale)) continue;
+            Currency currency = sale.getShare().getStock().getCurrency();
+            result.merge(currency, extractor.apply(sale), BigDecimal::add);
         }
         return result;
     }

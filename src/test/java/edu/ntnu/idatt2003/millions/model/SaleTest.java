@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -38,6 +39,53 @@ class SaleTest {
                         new ArrayList<>(List.of(new BigDecimal("100.00")))),
                 new BigDecimal("10"), new BigDecimal("50.00"));
         player.getPortfolio().addShare(share);
+    }
+
+    @Nested
+    @DisplayName("Frozen financial values")
+    class FrozenValues {
+
+        @Test
+        @DisplayName("Financial values are non-null after construction")
+        void valuesAreSetOnConstruction() {
+            Sale sale = new Sale(share, 1);
+            assertNotNull(sale.getGross());
+            assertNotNull(sale.getCommission());
+            assertNotNull(sale.getTax());
+            assertNotNull(sale.getTotal());
+            assertNotNull(sale.getProfit());
+            assertNotNull(sale.getProfitPercent());
+        }
+
+        @Test
+        @DisplayName("Frozen values match SalesCalculator results at construction time")
+        void valuesMatchCalculatorAtConstruction() {
+            SalesCalculator expected = new SalesCalculator(share);
+            Sale sale = new Sale(share, 1);
+            assertEquals(0, expected.calculateGross().compareTo(sale.getGross()));
+            assertEquals(0, expected.calculateCommission().compareTo(sale.getCommission()));
+            assertEquals(0, expected.calculateTax().compareTo(sale.getTax()));
+            assertEquals(0, expected.calculateTotal().compareTo(sale.getTotal()));
+            assertEquals(0, expected.calculateProfit().compareTo(sale.getProfit()));
+            assertEquals(0, expected.calculateProfitPercent().compareTo(sale.getProfitPercent()));
+        }
+
+        @Test
+        @DisplayName("Frozen values do not change when stock price advances")
+        void valuesDoNotChangeWhenPriceMoves() {
+            Sale sale = new Sale(share, 1);
+            BigDecimal frozenCommission = sale.getCommission();
+            BigDecimal frozenTax        = sale.getTax();
+            BigDecimal frozenTotal      = sale.getTotal();
+            BigDecimal frozenProfit     = sale.getProfit();
+
+            share.getStock().addNewSalesPrice(new BigDecimal("999.00"));
+
+            assertEquals(0, frozenCommission.compareTo(sale.getCommission()));
+            assertEquals(0, frozenTax.compareTo(sale.getTax()));
+            assertEquals(0, frozenTotal.compareTo(sale.getTotal()));
+            assertEquals(0, frozenProfit.compareTo(sale.getProfit()));
+        }
     }
 
     @Nested

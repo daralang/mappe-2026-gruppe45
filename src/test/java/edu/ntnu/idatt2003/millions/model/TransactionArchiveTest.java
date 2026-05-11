@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -314,6 +315,33 @@ class TransactionArchiveTest {
             // Assert
             assertEquals(1, result.size());
             assertTrue(result.containsKey(Currency.getInstance("USD")));
+        }
+
+        @Test
+        @DisplayName("Realized gain reflects sale-time price, not current price")
+        void usesConstructionTimePriceNotCurrentPrice() {
+            // Arrange — sale at price 200.00
+            Player player = new Player("Alva", new BigDecimal("100000.00"));
+            Share gainShare = makeShare("DIS", new BigDecimal("200.00"), new BigDecimal("100.00"));
+            player.getPortfolio().addShare(gainShare);
+            Sale sale = new Sale(gainShare, 1);
+            BigDecimal profitAtSaleTime = sale.getProfit();
+            sale.commit(player);
+            archive.add(sale);
+
+            // Stock price advances to a much higher value after the sale
+            gainShare.getStock().addNewSalesPrice(new BigDecimal("999.00"));
+
+            // A live SalesCalculator would now compute a higher profit
+            BigDecimal liveProfit = new SalesCalculator(gainShare).calculateProfit();
+            assertNotEquals(0, profitAtSaleTime.compareTo(liveProfit),
+                    "Pre-condition: live price should produce a different profit");
+
+            // Act
+            Map<Currency, BigDecimal> result = archive.getRealizedGainsByCurrency();
+
+            // Assert — archive must reflect the frozen sale-time value, not the live price
+            assertEquals(0, profitAtSaleTime.compareTo(result.get(Currency.getInstance("USD"))));
         }
     }
 
