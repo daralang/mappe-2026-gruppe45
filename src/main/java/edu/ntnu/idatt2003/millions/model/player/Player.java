@@ -141,7 +141,7 @@ public class Player {
 
     /**
      * Records the player's current net worth in the history.
-     * Called by {@link edu.ntnu.idatt2003.millions.manager.GameManager}
+     * Called by {@link edu.ntnu.idatt2003.millions.service.GameService}
      * before advancing the week.
      *
      * @param converter the currency converter used to compute the net worth
@@ -177,7 +177,7 @@ public class Player {
 
     /**
      * Sets the player's previous net worth.
-     * Called by {@link edu.ntnu.idatt2003.millions.manager.GameManager}
+     * Called by {@link edu.ntnu.idatt2003.millions.service.GameService}
      * before advancing the week.
      *
      * @param previousNetWorth the net worth to store

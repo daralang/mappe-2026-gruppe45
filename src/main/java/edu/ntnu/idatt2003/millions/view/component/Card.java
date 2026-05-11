@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.scene.layout.VBox;
@@ -15,11 +15,11 @@ public abstract class Card extends VBox implements GameObserver {
     /**
      * Constructs a new Card and registers itself as a game observer.
      *
-     * @param gameManager the game manager to observe
+     * @param gameService the game manager to observe
      */
-    protected Card(GameManager gameManager) {
+    protected Card(GameService gameService) {
         getStyleClass().add("card");
-        gameManager.addObserver(this);
+        gameService.addObserver(this);
         LanguageManager.addObserver(this::onLanguageChanged);
     }
 

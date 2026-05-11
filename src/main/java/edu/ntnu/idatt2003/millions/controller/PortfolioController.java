@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.controller;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 /**
  * Controller for portfolio actions (buy, sell, sell all, view details).
  * Opens the corresponding dialogs and delegates the actual transactions
- * to the model via {@link GameManager}.
+ * to the model via {@link GameService}.
  *
  * <p>Provides read-only operations such as {@link #previewBuy(Stock, BigDecimal)}
  * and {@link #getCurrentBalance()} for views that need to display
@@ -22,16 +22,16 @@ import java.math.BigDecimal;
  */
 public class PortfolioController {
 
-    private final GameManager gameManager;
+    private final GameService gameService;
     private final TransactionPreviewService previewService;
 
     /**
      * Constructs a new PortfolioController.
      *
-     * @param gameManager the game manager containing player and exchange
+     * @param gameService the game manager containing player and exchange
      */
-    public PortfolioController(GameManager gameManager) {
-        this.gameManager = gameManager;
+    public PortfolioController(GameService gameService) {
+        this.gameService = gameService;
         this.previewService = new TransactionPreviewService();
     }
 
@@ -43,7 +43,7 @@ public class PortfolioController {
      * @return the player's available funds
      */
     public BigDecimal getCurrentBalance() {
-        return gameManager.getPlayer().getMoney();
+        return gameService.getPlayer().getMoney();
     }
 
     /**
@@ -55,8 +55,8 @@ public class PortfolioController {
      */
     public TransactionPreview previewBuy(Stock stock, BigDecimal quantity) {
         return previewService.previewPurchase(
-                stock, quantity, gameManager.getPlayer(),
-                gameManager.getExchange().getCurrencyConverter());
+                stock, quantity, gameService.getPlayer(),
+                gameService.getCurrencyConverter());
     }
 
     /**
@@ -68,8 +68,8 @@ public class PortfolioController {
      */
     public TransactionPreview previewSell(Share share, BigDecimal quantity) {
         return previewService.previewSale(
-                share, quantity, gameManager.getPlayer(),
-                gameManager.getExchange().getCurrencyConverter());
+                share, quantity, gameService.getPlayer(),
+                gameService.getCurrencyConverter());
     }
 
     // Dialog opening
@@ -113,14 +113,14 @@ public class PortfolioController {
     // Mutating operations
 
     private void buy(Stock stock, BigDecimal quantity, BuyDialog dialog) {
-        BigDecimal balanceBefore = gameManager.getPlayer().getMoney();
+        BigDecimal balanceBefore = gameService.getPlayer().getMoney();
         TransactionPreview preview = previewService.previewPurchase(
-                stock, quantity, gameManager.getPlayer(),
-                gameManager.getExchange().getCurrencyConverter());
+                stock, quantity, gameService.getPlayer(),
+                gameService.getCurrencyConverter());
         try {
-            Transaction transaction = gameManager.buy(stock.getSymbol(), quantity);
+            Transaction transaction = gameService.buy(stock.getSymbol(), quantity);
             dialog.close();
-            BigDecimal balanceAfter = gameManager.getPlayer().getMoney();
+            BigDecimal balanceAfter = gameService.getPlayer().getMoney();
             Platform.runLater(() ->
                     new BuyReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (Exception e) {
@@ -133,16 +133,16 @@ public class PortfolioController {
     }
 
     private void sell(Share share, BigDecimal quantity, AbstractSellDialog dialog) {
-        BigDecimal balanceBefore = gameManager.getPlayer().getMoney();
+        BigDecimal balanceBefore = gameService.getPlayer().getMoney();
         TransactionPreview preview = previewService.previewSale(
-                share, share.getQuantity(), gameManager.getPlayer(),
-                gameManager.getExchange().getCurrencyConverter());
+                share, share.getQuantity(), gameService.getPlayer(),
+                gameService.getCurrencyConverter());
         try {
             // TODO: when partial sale is implemented, pass quantity through.
             //  For now, the model only supports selling the full Share instance.
-            Transaction transaction = gameManager.sell(share);
+            Transaction transaction = gameService.sell(share);
             dialog.close();
-            BigDecimal balanceAfter = gameManager.getPlayer().getMoney();
+            BigDecimal balanceAfter = gameService.getPlayer().getMoney();
             Platform.runLater(() ->
                     new SellReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (Exception e) {

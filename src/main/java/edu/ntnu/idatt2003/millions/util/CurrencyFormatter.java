@@ -9,7 +9,7 @@ import java.util.Objects;
  * Utility class for formatting monetary values.
  *
  * <p>All amounts are formatted in NOK, since portfolio values and net worth
- * are converted to NOK by {@code GameManager} before being passed in.
+ * are converted to NOK by {@code GameService} before being passed in.
  * Language-based display currency is tracked separately.
  */
 public class CurrencyFormatter {
