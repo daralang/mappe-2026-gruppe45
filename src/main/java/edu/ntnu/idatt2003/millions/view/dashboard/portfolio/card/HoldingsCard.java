@@ -20,10 +20,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Card displaying the player's holdings (shares owned), with action buttons
@@ -35,13 +32,6 @@ import java.util.Locale;
  * pending.</p>
  */
 public class HoldingsCard extends Card {
-
-    private static final DecimalFormat NUMBER_FORMAT;
-
-    static {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("nb-NO"));
-        NUMBER_FORMAT = new DecimalFormat("#,##0.00", symbols);
-    }
 
     private final GameService gameService;
     private final PortfolioService portfolioService = new PortfolioService();
@@ -151,9 +141,9 @@ public class HoldingsCard extends Card {
         Stock stock = share.getStock();
         grid.add(buildActionButtons(share), 0, row);
         grid.add(cell(stock.getSymbol() + ", " + stock.getCompany()), 1, row);
-        grid.add(cell(NUMBER_FORMAT.format(share.getQuantity())), 2, row);
+        grid.add(cell(ChangeFormatter.formatPlain(share.getQuantity())), 2, row);
         grid.add(coloredPercentCell(stock.getWeeklyChangePercent()), 3, row);
-        grid.add(cell(NUMBER_FORMAT.format(portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))), 4, row);
+        grid.add(cell(ChangeFormatter.formatPlain(portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))), 4, row);
         grid.add(coloredPercentCell(share.getReturnPercent()), 5, row);
         grid.add(coloredAmountCell(portfolioService.getShareReturnInNok(share, gameService.getCurrencyConverter())), 6, row);
         grid.add(buildDetailsButton(share), 7, row);
@@ -171,7 +161,7 @@ public class HoldingsCard extends Card {
         totalLabel.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(totalLabel, 1, dataRow);
 
-        Label valueNok = new Label(NUMBER_FORMAT.format(portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
+        Label valueNok = new Label(ChangeFormatter.formatPlain(portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
         valueNok.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(valueNok, 4, dataRow);
 
