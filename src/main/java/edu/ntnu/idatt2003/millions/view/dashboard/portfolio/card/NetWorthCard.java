@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
@@ -90,12 +91,11 @@ public class NetWorthCard extends WidgetCard {
         BigDecimal percentChange = gameManager.getPlayerNetWorthChangePercentSinceStart();
 
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
-        String formattedPercent = String.format(Locale.of("no"), "%.1f", percentChange);
 
         netWorthLabel.setText(CurrencyFormatter.format(netWorth));
         changeLabel.setText(sign + CurrencyFormatter.format(change.abs())
-                + "  " + sign + formattedPercent + "% "
-                + LanguageManager.get("dashboard.sinceStart"));
+                + "  " + ChangeFormatter.formatSignedPercent(percentChange)
+                + " " + LanguageManager.get("dashboard.sinceStart"));
 
         ColourChange.applyChangeStyle(changeLabel, change);
     }
