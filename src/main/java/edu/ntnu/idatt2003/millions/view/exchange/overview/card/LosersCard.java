@@ -30,7 +30,6 @@ public class LosersCard extends WidgetCard {
      */
     @Override
     protected void refreshDisplay() {
-        valueLabel.setText(String.valueOf(
-                gameManager.getExchange().getLosers(Integer.MAX_VALUE).size()));
+        valueLabel.setText(String.valueOf(gameManager.getExchange().countLosers()));
     }
 }

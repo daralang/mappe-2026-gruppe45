@@ -30,7 +30,6 @@ public class GainersCard extends WidgetCard {
      */
     @Override
     protected void refreshDisplay() {
-        valueLabel.setText(String.valueOf(
-                gameManager.getExchange().getGainers(Integer.MAX_VALUE).size()));
+        valueLabel.setText(String.valueOf(gameManager.getExchange().countGainers()));
     }
 }

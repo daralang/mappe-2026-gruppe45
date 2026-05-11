@@ -316,6 +316,28 @@ public class Exchange {
     }
 
     /**
+     * Returns the number of stocks that had a positive weekly percentage change.
+     *
+     * @return the count of stocks with a weekly change above zero
+     */
+    public long countGainers() {
+        return stockMap.values().stream()
+                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) > 0)
+                .count();
+    }
+
+    /**
+     * Returns the number of stocks that had a negative weekly percentage change.
+     *
+     * @return the count of stocks with a weekly change below zero
+     */
+    public long countLosers() {
+        return stockMap.values().stream()
+                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) < 0)
+                .count();
+    }
+
+    /**
      * Reinitializes transient fields after deserialization.
      * Must be called by {@link edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler}
      * after loading a game from file, since Gson does not invoke constructors and
