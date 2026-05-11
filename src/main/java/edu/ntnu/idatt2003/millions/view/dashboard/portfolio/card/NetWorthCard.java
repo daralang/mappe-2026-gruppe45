@@ -82,7 +82,8 @@ public class NetWorthCard extends WidgetCard {
      * Updates the net worth label and change label with current values.
      * Reads derived values from {@link GameManager} via facade methods.
      */
-    private void updateDisplay() {
+    @Override
+    protected void refreshDisplay() {
         BigDecimal netWorth = gameManager.getPlayerNetWorth();
         BigDecimal change = gameManager.getPlayerNetWorthChangeSinceStart();
         BigDecimal percentChange = gameManager.getPlayerNetWorthChangePercentSinceStart();
@@ -102,19 +103,10 @@ public class NetWorthCard extends WidgetCard {
     }
 
     /**
-     * Updates the title label to the current language.
-     * Also refreshes the display in case number formatting changes.
-     */
-    @Override
-    protected void onLanguageChanged() {
-        titleLabel.setText(LanguageManager.get("dashboard.netWorth"));
-        updateDisplay();
-    }
-
-    /**
      * Called when the game state has changed.
      * Adds a new data point to the chart, extends the x-axis and refreshes the display.
-     * The new point is read via the {@link GameManager} facade.
+     * Overrides {@link WidgetCard#onGameUpdated()} because this card has additional
+     * update logic (chart point) beyond just refreshing text.
      */
     @Override
     public void onGameUpdated() {

@@ -67,7 +67,8 @@ public class MainView {
      * Switches the content area to the dashboard view.
      */
     private void showDashboard() {
-        root.setCenter(wrapScrollable(new DashboardView(gameManager, portfolioController, weekBar)));
+        root.setCenter(wrapScrollable(
+                new DashboardView(gameManager, portfolioController, weekBar, this::showExchangeOnStocksTab)));
     }
 
     /**
@@ -75,6 +76,12 @@ public class MainView {
      */
     private void showExchange() {
         root.setCenter(wrapScrollable(new ExchangeView(gameManager, weekBar)));
+    }
+
+    private void showExchangeOnStocksTab() {
+        ExchangeView exchangeView = new ExchangeView(gameManager, weekBar);
+        exchangeView.selectStocksTab();
+        root.setCenter(wrapScrollable(exchangeView));
     }
 
     /**

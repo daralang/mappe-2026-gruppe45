@@ -30,7 +30,8 @@ public class WeeklyChangeCard extends WidgetCard {
      * Shows a dash if no week has been advanced yet. Reads derived values from
      * {@link GameManager} via facade methods.
      */
-    private void updateDisplay() {
+    @Override
+    protected void refreshDisplay() {
         BigDecimal change = gameManager.getPlayerWeeklyNetWorthChange();
         if (change == null) {
             changeLabel.setText("–");
