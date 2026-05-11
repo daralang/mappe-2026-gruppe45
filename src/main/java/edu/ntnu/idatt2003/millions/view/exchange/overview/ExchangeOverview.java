@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.exchange;
+package edu.ntnu.idatt2003.millions.view.exchange.overview;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
