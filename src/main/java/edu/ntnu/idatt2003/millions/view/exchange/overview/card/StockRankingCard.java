@@ -70,8 +70,8 @@ public class StockRankingCard extends VBox {
      */
     private HBox addHeader() {
         Label symbol = addHeaderLabel(LanguageManager.get("exchange.overview.columnSymbol"));
-        Label stock  = addHeaderLabel(LanguageManager.get("exchange.overview.columnStock"));
-        Label price  = addHeaderLabel(LanguageManager.get("exchange.overview.columnPrice"));
+        Label stock = addHeaderLabel(LanguageManager.get("exchange.overview.columnStock"));
+        Label price = addHeaderLabel(LanguageManager.get("exchange.overview.columnPrice"));
         Label change = addHeaderLabel(LanguageManager.get("exchange.overview.columnChange"));
 
         symbol.setMinWidth(SYMBOL_WIDTH);
@@ -105,8 +105,8 @@ public class StockRankingCard extends VBox {
      */
     private HBox addRow(Stock stock) {
         Label symbolLabel = StyledText.detailValue(stock.getSymbol());
-        Label nameLabel   = StyledText.detailLabel(stock.getCompany());
-        Label priceLabel  = StyledText.detailValue(stock.getSalesPrice().toPlainString());
+        Label nameLabel = StyledText.detailLabel(stock.getCompany());
+        Label priceLabel = StyledText.detailValue(stock.getSalesPrice().toPlainString());
         Label changeLabel = StyledText.detailValue(formatChange(stock));
 
         nameLabel.setMinWidth(NAME_WIDTH);
