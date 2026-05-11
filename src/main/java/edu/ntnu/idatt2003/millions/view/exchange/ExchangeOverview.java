@@ -4,8 +4,8 @@ import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.StockRankingTable;
-import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -19,9 +19,9 @@ public class ExchangeOverview extends VBox implements GameObserver {
 
     private final GameManager gameManager;
 
-    private final Label totalStocksValue;
-    private final Label rosedValue;
-    private final Label fellValue;
+    private final StyledText totalStocksValue;
+    private final StyledText rosedValue;
+    private final StyledText fellValue;
 
     private final StockRankingTable winnersTable;
     private final StockRankingTable losersTable;
@@ -40,9 +40,9 @@ public class ExchangeOverview extends VBox implements GameObserver {
         setSpacing(16);
         getStyleClass().add("content-area");
 
-        totalStocksValue = new Label();
-        rosedValue       = new Label();
-        fellValue        = new Label();
+        totalStocksValue = StyledText.widgetValue();
+        rosedValue       = StyledText.widgetValue();
+        fellValue        = StyledText.widgetValue();
 
         HBox statCards = new HBox(16,
                 buildStatCard("exchange.overview.totalStocks", totalStocksValue),
@@ -70,16 +70,14 @@ public class ExchangeOverview extends VBox implements GameObserver {
     }
 
     /**
-     * Builds a single stat card with a label and a value label.
+     * Builds a single stat card with a title and a value label.
      *
      * @param titleKey   the i18n key for the card title
-     * @param valueLabel the label to display the value in
+     * @param valueLabel the {@link StyledText} to display the value in
      * @return a VBox styled as a card
      */
-    private VBox buildStatCard(String titleKey, Label valueLabel) {
-        Label title = new Label(LanguageManager.get(titleKey));
-        title.getStyleClass().add("card-label");
-        valueLabel.getStyleClass().add("card-value");
+    private VBox buildStatCard(String titleKey, StyledText valueLabel) {
+        StyledText title = StyledText.widgetLabel(LanguageManager.get(titleKey));
 
         VBox card = new VBox(4, title, valueLabel);
         card.getStyleClass().add("card");
