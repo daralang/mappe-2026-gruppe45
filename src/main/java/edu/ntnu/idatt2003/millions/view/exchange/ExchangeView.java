@@ -1,8 +1,11 @@
 package edu.ntnu.idatt2003.millions.view.exchange;
 
+import edu.ntnu.idatt2003.millions.controller.MainController;
+import edu.ntnu.idatt2003.millions.controller.StartController;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
+import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.PortfolioView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
@@ -61,8 +64,7 @@ public class ExchangeView extends VBox {
     }
 
     private void showOverview() {
-        contentArea.getChildren().clear(); // remove this when implementing setAll
-        // contentArea.getChildren().setAll(new OverviewView(gameManager));
+        contentArea.getChildren().setAll(new ExchangeOverview(gameManager));
     }
 
     private void showStocks() {
