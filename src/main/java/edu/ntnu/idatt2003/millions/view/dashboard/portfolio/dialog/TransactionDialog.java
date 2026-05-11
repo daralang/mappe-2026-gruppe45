@@ -135,7 +135,6 @@ public abstract class TransactionDialog extends Modal {
         availableRow.getStyleClass().add("modal-balance-row");
 
         StyledText afterLabel = StyledText.detailLabel(getBalanceAfterLabel());
-        balanceAfterValue.getStyleClass().add("positive");
         Region spacer2 = new Region();
         HBox.setHgrow(spacer2, Priority.ALWAYS);
         HBox afterRow = new HBox(afterLabel, spacer2, balanceAfterValue);
@@ -161,6 +160,14 @@ public abstract class TransactionDialog extends Modal {
         HBox actions = new HBox(cancel, confirmButton);
         actions.getStyleClass().add("modal-actions");
         return actions;
+    }
+
+    /**
+     * Returns the ISO currency code for the stock in this dialog (e.g. "USD", "EUR").
+     * Used to label summary values in their native trading currency.
+     */
+    protected String currencyCode() {
+        return stock.getCurrency().getCurrencyCode();
     }
 
     /**

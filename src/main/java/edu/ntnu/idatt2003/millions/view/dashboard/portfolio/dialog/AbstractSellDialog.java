@@ -41,7 +41,8 @@ public abstract class AbstractSellDialog extends TransactionDialog {
     @Override
     protected String getStockHint() {
         return MessageFormat.format(LanguageManager.get("dialog.stock.salesPriceHint"),
-                NUMBER_FORMAT.format(stock.getSalesPrice()));
+                NUMBER_FORMAT.format(stock.getSalesPrice()),
+                stock.getCurrency().getCurrencyCode());
     }
 
     @Override
@@ -75,13 +76,13 @@ public abstract class AbstractSellDialog extends TransactionDialog {
         TransactionPreview preview = controller.previewSell(share, quantity);
 
         summaryBox.addRow(LanguageManager.get("dialog.summary.gross"),
-                NUMBER_FORMAT.format(preview.gross()) + " NOK");
+                NUMBER_FORMAT.format(preview.gross()) + " " + currencyCode());
         summaryBox.addRow(LanguageManager.get("dialog.summary.commissionSell"),
-                "\u2212" + NUMBER_FORMAT.format(preview.commission()) + " NOK");
+                "\u2212" + NUMBER_FORMAT.format(preview.commission()) + " " + currencyCode());
         summaryBox.addRow(LanguageManager.get("dialog.summary.tax"),
-                "\u2212" + NUMBER_FORMAT.format(preview.tax()) + " NOK");
+                "\u2212" + NUMBER_FORMAT.format(preview.tax()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("dialog.summary.totalReceived"),
-                NUMBER_FORMAT.format(preview.total()) + " NOK");
+                NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
 
         renderProfitLoss(preview);
         renderBalanceAfter(preview);
@@ -93,7 +94,7 @@ public abstract class AbstractSellDialog extends TransactionDialog {
         boolean positive = preview.profit().signum() >= 0;
         String sign = positive ? "+" : "\u2212";
         String pctSign = positive ? "+" : "";
-        String suffix = sign + NUMBER_FORMAT.format(preview.profit().abs()) + " NOK ("
+        String suffix = sign + NUMBER_FORMAT.format(preview.profit().abs()) + " " + currencyCode() + " ("
                 + pctSign + preview.profitPercent().toPlainString() + "%)";
         String key = positive ? "dialog.profit.gain" : "dialog.profit.loss";
         String message = MessageFormat.format(LanguageManager.get(key), suffix);
@@ -104,7 +105,6 @@ public abstract class AbstractSellDialog extends TransactionDialog {
         balanceAfterValue.setText(
                 NUMBER_FORMAT.format(preview.balanceAfter()) + " NOK");
         balanceAfterValue.getStyleClass().removeAll("positive", "negative");
-        balanceAfterValue.getStyleClass().add("positive");
     }
 
     @Override

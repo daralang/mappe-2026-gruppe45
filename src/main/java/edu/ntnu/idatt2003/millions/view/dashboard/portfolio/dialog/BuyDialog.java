@@ -28,7 +28,8 @@ public class BuyDialog extends TransactionDialog {
     @Override
     protected String getStockHint() {
         return MessageFormat.format(LanguageManager.get("dialog.stock.priceHint"),
-                NUMBER_FORMAT.format(stock.getSalesPrice()));
+                NUMBER_FORMAT.format(stock.getSalesPrice()),
+                stock.getCurrency().getCurrencyCode());
     }
 
     @Override
@@ -66,11 +67,11 @@ public class BuyDialog extends TransactionDialog {
         TransactionPreview preview = controller.previewBuy(stock, quantity);
 
         summaryBox.addRow(LanguageManager.get("dialog.summary.gross"),
-                NUMBER_FORMAT.format(preview.gross()) + " NOK");
+                NUMBER_FORMAT.format(preview.gross()) + " " + currencyCode());
         summaryBox.addRow(LanguageManager.get("dialog.summary.commissionBuy"),
-                NUMBER_FORMAT.format(preview.commission()) + " NOK");
+                NUMBER_FORMAT.format(preview.commission()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("dialog.summary.totalCost"),
-                NUMBER_FORMAT.format(preview.total()) + " NOK");
+                NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
 
         balanceAfterValue.setText(
                 NUMBER_FORMAT.format(preview.balanceAfter()) + " NOK");
@@ -82,7 +83,6 @@ public class BuyDialog extends TransactionDialog {
             setConfirmEnabled(false);
         } else {
             balanceAfterValue.getStyleClass().removeAll("positive", "negative");
-            balanceAfterValue.getStyleClass().add("positive");
             setConfirmEnabled(true);
         }
     }
