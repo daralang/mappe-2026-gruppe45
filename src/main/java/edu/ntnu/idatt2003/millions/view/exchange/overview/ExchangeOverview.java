@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.exchange.overview;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.card.GainersCard;
@@ -23,7 +23,7 @@ import javafx.scene.layout.VBox;
  */
 public class ExchangeOverview extends VBox implements GameObserver {
 
-    private final GameManager gameManager;
+    private final GameService gameService;
     private final StockRankingCard winnersTable;
     private final StockRankingCard losersTable;
 
@@ -32,22 +32,22 @@ public class ExchangeOverview extends VBox implements GameObserver {
     /**
      * Constructs a new ExchangeOverview.
      *
-     * @param gameManager the game manager containing player and exchange
-     * @throws NullPointerException if gameManager is null
+     * @param gameService the game manager containing player and exchange
+     * @throws NullPointerException if gameService is null
      */
-    public ExchangeOverview(GameManager gameManager) {
-        this.gameManager = gameManager;
-        gameManager.addObserver(this);
+    public ExchangeOverview(GameService gameService) {
+        this.gameService = gameService;
+        gameService.addObserver(this);
         setSpacing(16);
         getStyleClass().add("content-area");
 
         HBox statCards = new HBox(16,
-                withGrow(new TotalStocksCard(gameManager)),
-                withGrow(new GainersCard(gameManager)),
-                withGrow(new LosersCard(gameManager))
+                withGrow(new TotalStocksCard(gameService)),
+                withGrow(new GainersCard(gameService)),
+                withGrow(new LosersCard(gameService))
         );
 
-        Exchange exchange = gameManager.getExchange();
+        Exchange exchange = gameService.getExchange();
         winnersTable = new StockRankingCard(
                 "exchange.overview.weeklyWinners",
                 exchange.getGainers(RANKING_LIMIT)
@@ -97,7 +97,7 @@ public class ExchangeOverview extends VBox implements GameObserver {
      */
     @Override
     public void onGameUpdated() {
-        Exchange exchange = gameManager.getExchange();
+        Exchange exchange = gameService.getExchange();
         winnersTable.update(exchange.getGainers(RANKING_LIMIT));
         losersTable.update(exchange.getLosers(RANKING_LIMIT));
     }

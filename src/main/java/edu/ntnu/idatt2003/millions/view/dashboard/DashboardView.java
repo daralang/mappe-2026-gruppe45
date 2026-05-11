@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.PortfolioView;
@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class DashboardView extends VBox {
 
-    private final GameManager gameManager;
+    private final GameService gameService;
     private final PortfolioController portfolioController;
     private final Runnable onExploreStocks;
     private final VBox contentArea;
@@ -26,14 +26,14 @@ public class DashboardView extends VBox {
     /**
      * Constructs a new DashboardView with a tab bar.
      *
-     * @param gameManager the game manager containing player and exchange
+     * @param gameService the game manager containing player and exchange
      * @param weekBar     the week bar shared with the rest of the application
      */
-    public DashboardView(GameManager gameManager,
+    public DashboardView(GameService gameService,
                          PortfolioController portfolioController,
                          WeekBar weekBar,
                          Runnable onExploreStocks) {
-        this.gameManager = gameManager;
+        this.gameService = gameService;
         this.portfolioController = portfolioController;
         this.onExploreStocks = onExploreStocks;
         getStyleClass().add("content-area");
@@ -63,21 +63,21 @@ public class DashboardView extends VBox {
 
     private void showPortfolio() {
         contentArea.getChildren().setAll(
-                new PortfolioView(gameManager, portfolioController, onExploreStocks));
+                new PortfolioView(gameService, portfolioController, onExploreStocks));
     }
 
     private void showTransactions() {
         contentArea.getChildren().clear(); // remove this when implementing setAll
-        // contentArea.getChildren().setAll(new TransactionsView(gameManager));
+        // contentArea.getChildren().setAll(new TransactionsView(gameService));
     }
 
     private void showWatchlist() {
         contentArea.getChildren().clear(); // remove this when implementing setAll
-        // contentArea.getChildren().setAll(new WatchlistView(gameManager));
+        // contentArea.getChildren().setAll(new WatchlistView(gameService));
     }
 
     private void showLoans() {
         contentArea.getChildren().clear(); // remove this when implementing setAll
-        // contentArea.getChildren().setAll(new LoansView(gameManager));
+        // contentArea.getChildren().setAll(new LoansView(gameService));
     }
 }

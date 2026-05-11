@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.exchange.overview.card;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
 
@@ -10,17 +10,17 @@ import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
  */
 public class LosersCard extends WidgetCard {
 
-    private final GameManager gameManager;
+    private final GameService gameService;
     private final StyledText valueLabel = StyledText.widgetValue();
 
     /**
      * Constructs a new LosersCard.
      *
-     * @param gameManager the game manager containing the exchange
+     * @param gameService the game manager containing the exchange
      */
-    public LosersCard(GameManager gameManager) {
-        super(gameManager, "exchange.overview.fellThisWeek");
-        this.gameManager = gameManager;
+    public LosersCard(GameService gameService) {
+        super(gameService, "exchange.overview.fellThisWeek");
+        this.gameService = gameService;
         getChildren().addAll(titleLabel, valueLabel);
         refreshDisplay();
     }
@@ -30,6 +30,6 @@ public class LosersCard extends WidgetCard {
      */
     @Override
     protected void refreshDisplay() {
-        valueLabel.setText(String.valueOf(gameManager.getExchange().countLosers()));
+        valueLabel.setText(String.valueOf(gameService.getExchange().countLosers()));
     }
 }

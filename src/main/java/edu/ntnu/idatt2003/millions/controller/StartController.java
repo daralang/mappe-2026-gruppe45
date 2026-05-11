@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.controller;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import edu.ntnu.idatt2003.millions.view.StartView;
 import java.io.File;
@@ -34,38 +34,38 @@ public class StartController {
     private final Stage stage;
     private final StartView view;
     private final StartScreenInputs inputs;
-    private final GameManager gameManager;
+    private final GameService gameService;
     private final Runnable showMainViewAction;
     private final Consumer<String> errorSink;
 
     /**
-     * Constructs a new StartController with a default {@link GameManager}.
+     * Constructs a new StartController with a default {@link GameService}.
      *
      * <p>This constructor is used by the application startup flow. It delegates
-     * to {@link #StartController(Stage, GameManager)} so alternate startup paths
+     * to {@link #StartController(Stage, GameService)} so alternate startup paths
      * can inject their own game manager.</p>
      *
      * @param stage the primary application stage
      * @throws NullPointerException if stage is null
      */
     public StartController(Stage stage) {
-        this(stage, new GameManager());
+        this(stage, new GameService());
     }
 
     /**
-     * Constructs a new StartController with the given {@link GameManager}.
+     * Constructs a new StartController with the given {@link GameService}.
      *
      * <p>Injecting the manager keeps the controller flexible while preserving
      * the normal production flow through {@link #StartController(Stage)}.
      * Event bindings are deferred to {@link #show()}.</p>
      *
      * @param stage       the primary application stage
-     * @param gameManager the game manager used to create or load game state
+     * @param gameService the game manager used to create or load game state
      * @throws NullPointerException if stage or game manager is null
      */
-    public StartController(Stage stage, GameManager gameManager) {
-        this(stage, gameManager, new StartView(),
-                () -> new MainController(stage, gameManager).show(),
+    public StartController(Stage stage, GameService gameService) {
+        this(stage, gameService, new StartView(),
+                () -> new MainController(stage, gameService).show(),
                 StartController::showAlert);
     }
 
@@ -75,19 +75,19 @@ public class StartController {
      * Event bindings are deferred to {@link #show()}.
      *
      * @param stage              the primary application stage
-     * @param gameManager        the game manager used to create or load game state
+     * @param gameService        the game manager used to create or load game state
      * @param view               the start view that exposes user input and controls
      * @param showMainViewAction the action used to navigate to the main view
      * @param errorSink          the consumer that displays user-facing error messages
      * @throws NullPointerException if any argument is null
      */
     StartController(Stage stage,
-                    GameManager gameManager,
+                    GameService gameService,
                     StartView view,
                     Runnable showMainViewAction,
                     Consumer<String> errorSink) {
         this.stage = Objects.requireNonNull(stage, "Stage cannot be null");
-        this.gameManager = Objects.requireNonNull(gameManager, "GameManager cannot be null");
+        this.gameService = Objects.requireNonNull(gameService, "GameService cannot be null");
         this.view = Objects.requireNonNull(view, "StartView cannot be null");
         this.inputs = view;
         this.showMainViewAction = Objects.requireNonNull(showMainViewAction, "Show main view action cannot be null");
@@ -102,19 +102,19 @@ public class StartController {
      * {@link #show()} and the file-chooser handlers are not safe to call
      * on instances created through this constructor.
      *
-     * @param gameManager        the game manager used to create or load game state
+     * @param gameService        the game manager used to create or load game state
      * @param inputs             the input seam the start flow reads from
      * @param showMainViewAction the action used to navigate to the main view
      * @param errorSink          the consumer that receives user-facing error messages
      * @throws NullPointerException if any argument is null
      */
-    StartController(GameManager gameManager,
+    StartController(GameService gameService,
                     StartScreenInputs inputs,
                     Runnable showMainViewAction,
                     Consumer<String> errorSink) {
         this.stage = null;
         this.view = null;
-        this.gameManager = Objects.requireNonNull(gameManager, "GameManager cannot be null");
+        this.gameService = Objects.requireNonNull(gameService, "GameService cannot be null");
         this.inputs = Objects.requireNonNull(inputs, "Inputs cannot be null");
         this.showMainViewAction = Objects.requireNonNull(showMainViewAction, "Show main view action cannot be null");
         this.errorSink = Objects.requireNonNull(errorSink, "Error sink cannot be null");
@@ -169,7 +169,7 @@ public class StartController {
     }
 
     /**
-     * Validates input, starts a new game session through {@link GameManager},
+     * Validates input, starts a new game session through {@link GameService},
      * and shows the main view. A custom stock file is optional; if none is
      * selected, the default stock data is used.
      *
@@ -183,18 +183,18 @@ public class StartController {
             String stockFilePath = inputs.getStockFilePath();
 
             if (stockFilePath.isBlank()) {
-                gameManager.createNewGame(name, parsedCapital);
+                gameService.createNewGame(name, parsedCapital);
             } else {
                 File stockFile = StartInputValidator.requireCsvFilePath(stockFilePath);
                 Currency currency = StartInputValidator.requireCurrency(inputs.getSelectedCurrency());
-                gameManager.createNewGame(name, parsedCapital, stockFile, currency);
+                gameService.createNewGame(name, parsedCapital, stockFile, currency);
             }
             showMainView();
         });
     }
 
     /**
-     * Validates input, loads an existing saved game through {@link GameManager},
+     * Validates input, loads an existing saved game through {@link GameService},
      * and shows the main view.
      *
      * <p>Package-private visibility allows controller tests in this package
@@ -204,7 +204,7 @@ public class StartController {
         runOrShowError(() -> {
             String saveFilePath = inputs.getSaveFilePath();
             File saveFile = StartInputValidator.requireFilePath(saveFilePath, "Save file must be selected");
-            gameManager.loadGame(saveFile);
+            gameService.loadGame(saveFile);
             showMainView();
         });
     }
@@ -227,7 +227,7 @@ public class StartController {
     }
 
     /**
-     * Shows the main view using the active {@link GameManager}.
+     * Shows the main view using the active {@link GameService}.
      */
     private void showMainView() {
         showMainViewAction.run();
