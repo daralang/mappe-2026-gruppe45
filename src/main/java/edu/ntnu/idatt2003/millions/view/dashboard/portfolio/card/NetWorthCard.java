@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
@@ -96,10 +97,7 @@ public class NetWorthCard extends WidgetCard {
                 + "  " + sign + formattedPercent + "% "
                 + LanguageManager.get("dashboard.sinceStart"));
 
-        changeLabel.getStyleClass().removeAll("positive", "negative");
-        changeLabel.getStyleClass().add(
-                change.compareTo(BigDecimal.ZERO) >= 0 ? "positive" : "negative"
-        );
+        ColourChange.applyChangeStyle(changeLabel, change);
     }
 
     /**

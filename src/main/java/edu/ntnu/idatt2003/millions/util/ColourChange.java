@@ -4,7 +4,7 @@ import javafx.scene.control.Label;
 import java.math.BigDecimal;
 
 /**
- * Utility class for common JavaFX view operations.
+ * Utility class for colour change texts/labels based on values.
  */
 public class ColourChange {
 
@@ -18,11 +18,11 @@ public class ColourChange {
      * @param value the value determining the style
      */
     public static void applyChangeStyle(Label label, BigDecimal value) {
-        label.getStyleClass().removeAll("card-value-positive", "card-value-negative");
+        label.getStyleClass().removeAll("positive", "negative");
         label.getStyleClass().add(
                 value.compareTo(BigDecimal.ZERO) >= 0
-                        ? "card-value-positive"
-                        : "card-value-negative"
+                        ? "positive"
+                        : "negative"
         );
     }
 }

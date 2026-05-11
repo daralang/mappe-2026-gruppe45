@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.exchange.overview;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -104,8 +105,7 @@ public class StockRankingTable extends VBox {
         changeLabel.setMinWidth(CHANGE_WIDTH);
         changeLabel.setAlignment(Pos.CENTER_RIGHT);
 
-        boolean positive = stock.getLatestPriceChange().compareTo(BigDecimal.ZERO) >= 0;
-        changeLabel.getStyleClass().add(positive ? "card-value-positive" : "card-value-negative");
+        ColourChange.applyChangeStyle(changeLabel, stock.getLatestPriceChange());
 
         return buildRow(symbolLabel, nameLabel, priceLabel, changeLabel);
     }

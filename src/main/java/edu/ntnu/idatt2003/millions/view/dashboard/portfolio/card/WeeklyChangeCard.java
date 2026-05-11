@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
@@ -47,9 +48,7 @@ public class WeeklyChangeCard extends WidgetCard {
 
         changeLabel.setText(arrow + " " + sign + formattedPercent + "%  "
                 + sign + CurrencyFormatter.format(change.abs()));
-        changeLabel.getStyleClass().removeAll("positive", "negative");
-        changeLabel.getStyleClass().add(
-                change.compareTo(BigDecimal.ZERO) >= 0 ? "positive" : "negative"
-        );
+        ColourChange.applyChangeStyle(changeLabel, change);
+
     }
 }
