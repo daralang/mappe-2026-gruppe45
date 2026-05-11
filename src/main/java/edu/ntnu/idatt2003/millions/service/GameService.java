@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.manager;
+package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
 import edu.ntnu.idatt2003.millions.file.game.GameState;
@@ -39,7 +39,7 @@ import java.util.*;
  * portfolio value) so views can read derived values without composing
  * {@link Player} and {@link Exchange} through the converter themselves.</p>
  */
-public class GameManager {
+public class GameService {
 
     private static final String DEFAULT_EXCHANGE_NAME = "MainExchange";
     private static final String DEFAULT_STOCK_RESOURCE = "/data/sp500.csv";
@@ -51,10 +51,10 @@ public class GameManager {
     private final List<GameObserver> observers = new ArrayList<>();
 
     /**
-     * Constructs a new GameManager.
+     * Constructs a new GameService.
      * Initializes the file handler for JSON serialization.
      */
-    public GameManager() {
+    public GameService() {
         this.gameFileHandler = new JsonGameFileHandler();
     }
 
@@ -171,7 +171,7 @@ public class GameManager {
      */
     private List<Stock> loadDefaultStocks() {
         StockFileHandler stockFileHandler = new CsvStockFileHandler();
-        try (InputStream inputStream = GameManager.class.getResourceAsStream(DEFAULT_STOCK_RESOURCE)) {
+        try (InputStream inputStream = GameService.class.getResourceAsStream(DEFAULT_STOCK_RESOURCE)) {
             if (inputStream == null) {
                 throw new IllegalStateException("Default stock data not found: " + DEFAULT_STOCK_RESOURCE);
             }
