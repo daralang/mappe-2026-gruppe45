@@ -17,26 +17,11 @@ public class StatusCard extends WidgetCard {
         super(gameManager, "dashboard.status");
         this.gameManager = gameManager;
         getChildren().addAll(titleLabel, valueLabel);
-
-        valueLabel.setText(LanguageManager.get(gameManager.getPlayerStatus().getI18nKey()));
+        refreshDisplay();
     }
 
-    /**
-     * Updates all text elements to the current language.
-     * Reads the status from {@link GameManager} via the facade.
-     */
     @Override
-    protected void onLanguageChanged() {
-        titleLabel.setText(LanguageManager.get("dashboard.status"));
-        valueLabel.setText(LanguageManager.get(gameManager.getPlayerStatus().getI18nKey()));
-    }
-
-    /**
-     * Called when the game state has changed.
-     * Refreshes the displayed status level via the {@link GameManager} facade.
-     */
-    @Override
-    public void onGameUpdated() {
+    protected void refreshDisplay() {
         valueLabel.setText(LanguageManager.get(gameManager.getPlayerStatus().getI18nKey()));
     }
 }
