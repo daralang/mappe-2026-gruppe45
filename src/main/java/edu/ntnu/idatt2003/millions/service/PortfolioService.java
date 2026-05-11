@@ -1,6 +1,5 @@
 package edu.ntnu.idatt2003.millions.service;
 
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -46,8 +45,7 @@ public class PortfolioService {
      * sold now, converted to NOK at the current exchange rate.
      */
     public BigDecimal getLiquidationValueInNok(Share share, CurrencyConverter converter) {
-        BigDecimal totalNative = new SalesCalculator(share).calculateTotal();
-        return converter.convert(totalNative, share.getStock().getCurrency(), NOK);
+        return converter.convert(share.getLiquidationValue(), share.getStock().getCurrency(), NOK);
     }
 
     /** Returns the total unrealized return across all portfolio positions in NOK. */
