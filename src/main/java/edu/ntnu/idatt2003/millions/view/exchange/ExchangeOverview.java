@@ -5,7 +5,7 @@ import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.card.GainersCard;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.card.LosersCard;
-import edu.ntnu.idatt2003.millions.view.exchange.overview.StockRankingTable;
+import edu.ntnu.idatt2003.millions.view.exchange.overview.StockRankingCard;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.card.TotalStocksCard;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -16,7 +16,7 @@ import javafx.scene.layout.VBox;
 /**
  * View for the exchange overview tab.
  * Assembles market summary cards ({@link TotalStocksCard}, {@link GainersCard},
- * {@link LosersCard}) and ranked winner/loser tables ({@link StockRankingTable}).
+ * {@link LosersCard}) and ranked winner/loser tables ({@link StockRankingCard}).
  * Each card manages its own observer registration and updates.
  * This view registers itself as a {@link GameObserver} only to refresh the
  * ranking tables, which are not self-updating components.
@@ -24,8 +24,8 @@ import javafx.scene.layout.VBox;
 public class ExchangeOverview extends VBox implements GameObserver {
 
     private final GameManager gameManager;
-    private final StockRankingTable winnersTable;
-    private final StockRankingTable losersTable;
+    private final StockRankingCard winnersTable;
+    private final StockRankingCard losersTable;
 
     private static final int RANKING_LIMIT = 5;
 
@@ -48,11 +48,11 @@ public class ExchangeOverview extends VBox implements GameObserver {
         );
 
         Exchange exchange = gameManager.getExchange();
-        winnersTable = new StockRankingTable(
+        winnersTable = new StockRankingCard(
                 "exchange.overview.weeklyWinners",
                 exchange.getGainers(RANKING_LIMIT)
         );
-        losersTable = new StockRankingTable(
+        losersTable = new StockRankingCard(
                 "exchange.overview.weeklyLosers",
                 exchange.getLosers(RANKING_LIMIT)
         );
