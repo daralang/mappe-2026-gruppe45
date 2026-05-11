@@ -4,6 +4,8 @@ import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Modal;
+import edu.ntnu.idatt2003.millions.view.component.ModalActions;
+import edu.ntnu.idatt2003.millions.view.component.StockHeader;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.SummaryBox;
 import javafx.scene.control.Button;
@@ -100,15 +102,8 @@ public abstract class TransactionDialog extends Modal {
         return body;
     }
 
-    private VBox buildStockSection() {
-        StyledText label = StyledText.detailLabel(LanguageManager.get("dialog.stock.label"));
-
-        Label value = new Label(stock.getSymbol() + ", " + stock.getCompany());
-        value.getStyleClass().add("modal-section-value");
-
-        StyledText hint = StyledText.detailLabel(getStockHint());
-
-        return new VBox(4, label, value, hint);
+    private StockHeader buildStockSection() {
+        return new StockHeader(stock, getStockHint());
     }
 
     /**
@@ -152,14 +147,7 @@ public abstract class TransactionDialog extends Modal {
         confirmButton.getStyleClass().addAll("modal-button", getConfirmButtonStyleClass());
         confirmButton.setOnAction(e -> onConfirm());
 
-        HBox.setHgrow(cancel, Priority.ALWAYS);
-        HBox.setHgrow(confirmButton, Priority.ALWAYS);
-        cancel.setMaxWidth(Double.MAX_VALUE);
-        confirmButton.setMaxWidth(Double.MAX_VALUE);
-
-        HBox actions = new HBox(cancel, confirmButton);
-        actions.getStyleClass().add("modal-actions");
-        return actions;
+        return ModalActions.row(cancel, confirmButton);
     }
 
     /**

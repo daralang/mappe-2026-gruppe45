@@ -3,7 +3,6 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -69,40 +68,32 @@ public class SellReceipt extends TransactionReceipt {
         boolean positive = profit.signum() >= 0;
         String sign = positive ? "+" : "−";
         String pctSign = positive ? "+" : "";
+        String colorClass = positive ? "modal-info-positive" : "modal-info-negative";
+        String valueClass = positive ? "positive" : "negative";
 
-        StyledText label = StyledText.detailLabel(positive
-                ? LanguageManager.get("receipt.profit.gain")
-                : LanguageManager.get("receipt.profit.loss"));
+        Label labelNode = new Label(LanguageManager.get(
+                positive ? "receipt.profit.gain" : "receipt.profit.loss"));
+        Label primaryNode = new Label(
+                sign + NUMBER_FORMAT.format(profit.abs()) + " " + currencyCode()
+                + " (" + pctSign + profitPercent.toPlainString() + "%)");
+        primaryNode.getStyleClass().add(valueClass);
 
-        StyledText value = StyledText.detailValue(
-                sign + NUMBER_FORMAT.format(profit.abs()) + " " + currencyCode() + " ("
-                        + pctSign + profitPercent.toPlainString() + "%)");
-        value.getStyleClass().add(positive ? "positive" : "negative");
+        Region spacer1 = new Region();
+        HBox.setHgrow(spacer1, Priority.ALWAYS);
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox row = new HBox(label, spacer, value);
-        row.getStyleClass().addAll(
-                "modal-info",
-                positive ? "modal-info-positive" : "modal-info-negative"
-        );
-
-        VBox content = new VBox(row);
+        VBox infoBox = new VBox(2, new HBox(labelNode, spacer1, primaryNode));
+        infoBox.getStyleClass().addAll("modal-info", colorClass);
 
         if (!transaction.getShare().getStock().getCurrency().equals(NOK)
                 && preview.profitInNok() != null) {
-            Label conversionValue = new Label(
+            Label secondaryNode = new Label(
                     "= " + sign + NUMBER_FORMAT.format(preview.profitInNok().abs()) + " NOK");
-            conversionValue.getStyleClass().addAll("modal-summary-conversion-text",
-                    positive ? "positive" : "negative");
-            Region conversionSpacer = new Region();
-            HBox.setHgrow(conversionSpacer, Priority.ALWAYS);
-            HBox conversionRow = new HBox(conversionSpacer, conversionValue);
-            conversionRow.getStyleClass().add("modal-summary-conversion");
-            content.getChildren().add(conversionRow);
+            secondaryNode.getStyleClass().addAll("modal-summary-conversion-text", valueClass);
+            Region spacer2 = new Region();
+            HBox.setHgrow(spacer2, Priority.ALWAYS);
+            infoBox.getChildren().add(new HBox(spacer2, secondaryNode));
         }
 
-        return content;
+        return infoBox;
     }
 }

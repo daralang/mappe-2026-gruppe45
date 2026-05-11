@@ -12,7 +12,9 @@ import java.util.Objects;
 
 /**
  * Represents a portfolio that holds a player's share holdings.
- * A portfolio can contain multiple shares of the same stock purchased at different times.
+ * At most one {@link Share} per stock symbol is held at any time: adding a share
+ * for a stock that is already in the portfolio merges the two positions using a
+ * weighted-average purchase price (GAV = total cost / total quantity).
  */
 public class Portfolio {
     private final List<Share> shares;
@@ -27,17 +29,32 @@ public class Portfolio {
     /**
      * Adds a share to the portfolio.
      *
+     * <p>If a share for the same stock symbol already exists, the two positions are
+     * consolidated into one with a weighted-average purchase price
+     * (GAV = total cost / total quantity). The merged Share replaces the existing one.
+     *
+     * <p>If the exact same object reference is already in the portfolio, no change is
+     * made and {@code false} is returned.
+     *
      * @param share the share to add
-     * @return true if the share was added, false if it already exists
+     * @return true if the share was added or merged into an existing position,
+     *         false if the same object reference already existed in the portfolio
      * @throws NullPointerException if the share is null
      */
     public boolean addShare(Share share) {
         Objects.requireNonNull(share, "Share cannot be null");
-        if (!shares.contains(share)) {
-            shares.add(share);
-            return true;
+        if (shares.contains(share)) {
+            return false;
         }
-        return false;
+        String symbol = share.getStock().getSymbol();
+        for (int i = 0; i < shares.size(); i++) {
+            if (shares.get(i).getStock().getSymbol().equals(symbol)) {
+                shares.set(i, shares.get(i).mergedWith(share));
+                return true;
+            }
+        }
+        shares.add(share);
+        return true;
     }
 
     /**

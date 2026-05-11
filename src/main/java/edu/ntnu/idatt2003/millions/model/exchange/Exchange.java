@@ -260,9 +260,23 @@ public class Exchange {
         }
 
         boolean isFullSale = quantity.compareTo(share.getQuantity()) == 0;
-        Share soldPortion = isFullSale
-                ? share
-                : splitOffSoldPortion(share, quantity, player);
+
+        Share soldPortion;
+        Share remainder = null;
+        if (isFullSale) {
+            soldPortion = share;
+        } else {
+            soldPortion = new Share(share.getStock(), quantity, share.getPurchasePrice());
+            remainder = new Share(
+                    share.getStock(),
+                    share.getQuantity().subtract(quantity),
+                    share.getPurchasePrice());
+            // Remove original; soldPortion is added first (no other share of this stock
+            // in the portfolio now) so sale.commit() can remove it by reference.
+            // remainder is added after commit to avoid triggering the GAV merge.
+            player.getPortfolio().removeShare(share);
+            player.getPortfolio().addShare(soldPortion);
+        }
 
         Sale sale = (Sale) TransactionFactory.createSale(soldPortion, week);
         BigDecimal totalValueInNok = currencyConverter.convert(
@@ -270,32 +284,11 @@ public class Exchange {
         player.addMoney(totalValueInNok);
 
         sale.commit(player);
+
+        if (remainder != null) {
+            player.getPortfolio().addShare(remainder);
+        }
         return sale;
-    }
-
-    /**
-     * Splits the given share into a sold portion and a remainder. Removes the
-     * original share from the player's portfolio, adds the remainder, and adds
-     * the sold portion so {@link Sale#commit(Player)} can remove it as part of
-     * its normal flow.
-     *
-     * @param share    the original share being split
-     * @param quantity the quantity to sell
-     * @param player   the player whose portfolio is being updated
-     * @return the sold portion, briefly held in the portfolio until the sale commits
-     */
-    private Share splitOffSoldPortion(Share share, BigDecimal quantity, Player player) {
-        Share soldPortion = new Share(
-                share.getStock(), quantity, share.getPurchasePrice());
-        Share remainder = new Share(
-                share.getStock(),
-                share.getQuantity().subtract(quantity),
-                share.getPurchasePrice());
-
-        player.getPortfolio().removeShare(share);
-        player.getPortfolio().addShare(remainder);
-        player.getPortfolio().addShare(soldPortion);
-        return soldPortion;
     }
 
     /**

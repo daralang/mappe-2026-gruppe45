@@ -199,9 +199,7 @@ public class HoldingsCard extends Card {
     private Button buildDetailsButton(Share share) {
         Button details = new Button("❯");
         details.getStyleClass().add("holdings-details-chevron");
-        details.setOnAction(e -> {
-            // TODO: open Detaljer-popup with detailed share info
-        });
+        details.setOnAction(e -> controller.openDetailsModal(share));
         return details;
     }
 
