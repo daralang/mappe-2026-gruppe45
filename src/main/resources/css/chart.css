@@ -24,7 +24,7 @@
 }
 
 .area-chart .chart-series-area-line {
-    -fx-stroke: primary;
+    -fx-stroke: -primary;
     -fx-stroke-width: 2;
 }
 

@@ -1,9 +1,9 @@
 .positive {
-    -fx-text-fill: success;
+    -fx-text-fill: -success;
 }
 
 .negative {
-    -fx-text-fill: danger;
+    -fx-text-fill: -danger;
 }
 
 .bold {
