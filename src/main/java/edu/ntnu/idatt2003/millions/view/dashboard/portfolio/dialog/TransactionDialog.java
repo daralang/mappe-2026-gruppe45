@@ -244,7 +244,16 @@ public abstract class TransactionDialog extends Modal {
 
     protected abstract String getStockHint();
 
-    protected abstract BigDecimal getInitialQuantity();
+    /**
+     * Returns the quantity to pre-fill in the input field when the dialog opens.
+     * Defaults to zero so the user must enter a deliberate amount before Confirm
+     * activates. Subclasses may override when a different default makes sense.
+     *
+     * @return the initial quantity; zero by default
+     */
+    protected BigDecimal getInitialQuantity() {
+        return BigDecimal.ZERO;
+    }
 
     protected abstract String getBalanceAfterLabel();
 
