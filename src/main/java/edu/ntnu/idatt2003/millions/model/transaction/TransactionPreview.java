@@ -19,6 +19,7 @@ public record TransactionPreview(
         BigDecimal commission,
         BigDecimal tax,
         BigDecimal total,
+        BigDecimal totalInNok,
         BigDecimal balanceAfter,
         BigDecimal profit,
         BigDecimal profitPercent

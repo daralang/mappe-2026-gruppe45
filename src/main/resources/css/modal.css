@@ -78,6 +78,16 @@
     -fx-font-weight: bold;
 }
 
+.modal-summary-conversion {
+    -fx-alignment: center-right;
+    -fx-padding: 2 0 0 0;
+}
+
+.modal-summary-conversion-text {
+    -fx-font-size: 11;
+    -fx-text-fill: -text-secondary;
+}
+
 .modal-balance-row {
     -fx-alignment: center-left;
 }

@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.Currency;
 import java.util.function.Consumer;
 
 /**
@@ -19,6 +20,8 @@ import java.util.function.Consumer;
  * locks the quantity to the full position.</p>
  */
 public abstract class AbstractSellDialog extends TransactionDialog {
+
+    protected static final Currency NOK = Currency.getInstance("NOK");
 
     protected final Share share;
     protected Consumer<BigDecimal> onConfirmCallback;
@@ -78,6 +81,9 @@ public abstract class AbstractSellDialog extends TransactionDialog {
                 "\u2212" + NUMBER_FORMAT.format(preview.tax()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("dialog.summary.totalReceived"),
                 NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
+        if (!stock.getCurrency().equals(NOK)) {
+            summaryBox.addConversion("= " + NUMBER_FORMAT.format(preview.totalInNok()) + " NOK");
+        }
 
         renderProfitLoss(preview);
         renderBalanceAfter(preview);

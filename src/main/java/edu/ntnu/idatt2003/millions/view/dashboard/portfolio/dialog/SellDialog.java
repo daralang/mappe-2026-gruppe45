@@ -91,6 +91,9 @@ public class SellDialog extends AbstractSellDialog {
         summaryBox.addRow(LanguageManager.get("dialog.summary.commissionSell"), zero);
         summaryBox.addRow(LanguageManager.get("dialog.summary.tax"), zero);
         summaryBox.addTotal(LanguageManager.get("dialog.summary.totalReceived"), zero);
+        if (!stock.getCurrency().equals(NOK)) {
+            summaryBox.addConversion("= " + NUMBER_FORMAT.format(BigDecimal.ZERO) + " NOK");
+        }
         balanceAfterValue.getStyleClass().removeAll("positive", "negative");
         balanceAfterValue.setText(
                 NUMBER_FORMAT.format(controller.getCurrentBalance()) + " NOK");
