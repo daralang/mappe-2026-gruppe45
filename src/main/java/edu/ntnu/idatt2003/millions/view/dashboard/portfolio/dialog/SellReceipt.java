@@ -10,11 +10,14 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 
 /**
  * Receipt shown after a successful sale, including realized profit/loss info.
  */
 public class SellReceipt extends TransactionReceipt {
+
+    private static final Currency NOK = Currency.getInstance("NOK");
 
     private final TransactionPreview preview;
 
@@ -52,6 +55,9 @@ public class SellReceipt extends TransactionReceipt {
                 "−" + NUMBER_FORMAT.format(preview.tax()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("receipt.summary.totalReceived"),
                 NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
+        if (!transaction.getShare().getStock().getCurrency().equals(NOK)) {
+            summaryBox.addConversion("= " + NUMBER_FORMAT.format(preview.totalInNok()) + " NOK");
+        }
     }
 
     @Override

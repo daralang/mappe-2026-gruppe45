@@ -5,11 +5,14 @@ import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 
 /**
  * Receipt shown after a successful purchase.
  */
 public class BuyReceipt extends TransactionReceipt {
+
+    private static final Currency NOK = Currency.getInstance("NOK");
 
     private final TransactionPreview preview;
 
@@ -45,5 +48,8 @@ public class BuyReceipt extends TransactionReceipt {
                 NUMBER_FORMAT.format(preview.commission()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("receipt.summary.totalCost"),
                 NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
+        if (!transaction.getShare().getStock().getCurrency().equals(NOK)) {
+            summaryBox.addConversion("= " + NUMBER_FORMAT.format(preview.totalInNok()) + " NOK");
+        }
     }
 }
