@@ -130,7 +130,7 @@ public abstract class TransactionReceipt extends Modal {
                 buildMetaCell(LanguageManager.get("receipt.meta.quantity"),
                         NUMBER_FORMAT.format(transaction.getShare().getQuantity())),
                 buildMetaCell(getPriceLabel(),
-                        NUMBER_FORMAT.format(getPrice()) + " NOK"),
+                        NUMBER_FORMAT.format(getPrice()) + " " + currencyCode()),
                 buildMetaCell(LanguageManager.get("receipt.meta.week"),
                         String.valueOf(transaction.getWeek()))
         );
@@ -173,6 +173,10 @@ public abstract class TransactionReceipt extends Modal {
         HBox actions = new HBox(closeButton);
         actions.getStyleClass().add("modal-actions");
         return actions;
+    }
+
+    protected String currencyCode() {
+        return transaction.getShare().getStock().getCurrency().getCurrencyCode();
     }
 
     // ---- Subclass hooks ----

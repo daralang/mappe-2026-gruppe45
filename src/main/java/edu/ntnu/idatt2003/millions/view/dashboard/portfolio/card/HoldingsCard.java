@@ -152,9 +152,9 @@ public class HoldingsCard extends Card {
         grid.add(cell(stock.getSymbol() + ", " + stock.getCompany()), 1, row);
         grid.add(cell(NUMBER_FORMAT.format(share.getQuantity())), 2, row);
         grid.add(coloredPercentCell(stock.getWeeklyChangePercent()), 3, row);
-        grid.add(cell(NUMBER_FORMAT.format(share.getCurrentValue())), 4, row);
+        grid.add(cell(NUMBER_FORMAT.format(gameManager.getShareValueInNok(share))), 4, row);
         grid.add(coloredPercentCell(share.getReturnPercent()), 5, row);
-        grid.add(coloredAmountCell(share.getReturnNok()), 6, row);
+        grid.add(coloredAmountCell(gameManager.getShareReturnInNok(share)), 6, row);
         grid.add(buildDetailsButton(share), 7, row);
     }
 
@@ -170,12 +170,12 @@ public class HoldingsCard extends Card {
         totalLabel.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(totalLabel, 1, dataRow);
 
-        Label valueNok = new Label(NUMBER_FORMAT.format(portfolio.getTotalValue()));
+        Label valueNok = new Label(NUMBER_FORMAT.format(gameManager.getTotalPortfolioValueInNok()));
         valueNok.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(valueNok, 4, dataRow);
 
-        grid.add(coloredPercentCell(portfolio.getTotalReturnPercent()), 5, dataRow);
-        grid.add(coloredAmountCell(portfolio.getTotalReturnNok()), 6, dataRow);
+        grid.add(coloredPercentCell(gameManager.getTotalPortfolioReturnPercent()), 5, dataRow);
+        grid.add(coloredAmountCell(gameManager.getTotalPortfolioReturnInNok()), 6, dataRow);
     }
 
     private HBox buildActionButtons(Share share) {
