@@ -46,7 +46,7 @@ public abstract class Modal {
         card.getChildren().add(buildContent());
 
         StackPane root = new StackPane(card);
-        root.setStyle("-fx-background-color: transparent;");
+        root.getStyleClass().add("modal-root");
         root.setPadding(new Insets(20));
 
         Scene scene = new Scene(root);
