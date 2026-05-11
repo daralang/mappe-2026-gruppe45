@@ -154,7 +154,6 @@ public abstract class TransactionReceipt extends Modal {
 
         StyledText afterLabel = StyledText.detailLabel(LanguageManager.get("receipt.balance.after"));
         StyledText afterValue = StyledText.detailValue(NUMBER_FORMAT.format(balanceAfter) + " NOK");
-        afterValue.getStyleClass().add("positive");
         Region spacer2 = new Region();
         HBox.setHgrow(spacer2, Priority.ALWAYS);
         HBox afterRow = new HBox(afterLabel, spacer2, afterValue);
