@@ -48,6 +48,5 @@ public class WeeklyChangeCard extends WidgetCard {
         changeLabel.setText(arrow + " " + ChangeFormatter.formatSignedPercent(percentChange)
                 + "  " + sign + CurrencyFormatter.format(change.abs()));
         ColourChange.applyChangeStyle(changeLabel, change);
-
     }
 }
