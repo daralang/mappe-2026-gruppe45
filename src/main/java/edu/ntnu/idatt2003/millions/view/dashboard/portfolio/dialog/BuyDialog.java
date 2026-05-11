@@ -33,11 +33,6 @@ public class BuyDialog extends TransactionDialog {
     }
 
     @Override
-    protected BigDecimal getInitialQuantity() {
-        return BigDecimal.ONE;
-    }
-
-    @Override
     protected String getBalanceAfterLabel() {
         return LanguageManager.get("dialog.balance.afterBuy");
     }
@@ -59,8 +54,8 @@ public class BuyDialog extends TransactionDialog {
 
         BigDecimal quantity = getQuantity();
         if (quantity == null) {
+            renderEmptySummary();
             setConfirmEnabled(false);
-            balanceAfterValue.setText("");
             return;
         }
 
@@ -85,6 +80,16 @@ public class BuyDialog extends TransactionDialog {
             balanceAfterValue.getStyleClass().removeAll("positive", "negative");
             setConfirmEnabled(true);
         }
+    }
+
+    private void renderEmptySummary() {
+        String zero = NUMBER_FORMAT.format(BigDecimal.ZERO) + " " + currencyCode();
+        summaryBox.addRow(LanguageManager.get("dialog.summary.gross"), zero);
+        summaryBox.addRow(LanguageManager.get("dialog.summary.commissionBuy"), zero);
+        summaryBox.addTotal(LanguageManager.get("dialog.summary.totalCost"), zero);
+        balanceAfterValue.getStyleClass().removeAll("positive", "negative");
+        balanceAfterValue.setText(
+                NUMBER_FORMAT.format(controller.getCurrentBalance()) + " NOK");
     }
 
     /**

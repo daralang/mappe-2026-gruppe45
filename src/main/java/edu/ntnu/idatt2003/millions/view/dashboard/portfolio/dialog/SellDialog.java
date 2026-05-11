@@ -52,7 +52,7 @@ public class SellDialog extends AbstractSellDialog {
         Button sellAll = new Button(LanguageManager.get("dialog.button.sellAll"));
         sellAll.getStyleClass().add("modal-button");
         sellAll.setOnAction(e ->
-                quantityInput.setText(share.getQuantity().toPlainString()));
+                quantityInput.setText(share.getQuantity().stripTrailingZeros().toPlainString()));
 
         HBox inputRow = new HBox(8, quantityInput, sellAll);
 
@@ -66,15 +66,15 @@ public class SellDialog extends AbstractSellDialog {
 
         BigDecimal quantity = getQuantity();
         if (quantity == null) {
+            renderEmptySummary();
             setConfirmEnabled(false);
-            balanceAfterValue.setText("");
             setTransactionInfo(null, false);
             return;
         }
 
         if (quantity.compareTo(share.getQuantity()) > 0) {
+            renderEmptySummary();
             setConfirmEnabled(false);
-            balanceAfterValue.setText("");
             setTransactionInfo(null, false);
             showError(MessageFormat.format(
                     LanguageManager.get("dialog.quantity.notEnoughShares"),
@@ -83,5 +83,16 @@ public class SellDialog extends AbstractSellDialog {
         }
 
         renderSummary(quantity);
+    }
+
+    private void renderEmptySummary() {
+        String zero = NUMBER_FORMAT.format(BigDecimal.ZERO) + " " + currencyCode();
+        summaryBox.addRow(LanguageManager.get("dialog.summary.gross"), zero);
+        summaryBox.addRow(LanguageManager.get("dialog.summary.commissionSell"), zero);
+        summaryBox.addRow(LanguageManager.get("dialog.summary.tax"), zero);
+        summaryBox.addTotal(LanguageManager.get("dialog.summary.totalReceived"), zero);
+        balanceAfterValue.getStyleClass().removeAll("positive", "negative");
+        balanceAfterValue.setText(
+                NUMBER_FORMAT.format(controller.getCurrentBalance()) + " NOK");
     }
 }

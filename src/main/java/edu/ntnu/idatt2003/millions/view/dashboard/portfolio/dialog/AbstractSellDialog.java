@@ -46,11 +46,6 @@ public abstract class AbstractSellDialog extends TransactionDialog {
     }
 
     @Override
-    protected BigDecimal getInitialQuantity() {
-        return share.getQuantity();
-    }
-
-    @Override
     protected String getBalanceAfterLabel() {
         return LanguageManager.get("dialog.balance.afterSell");
     }
