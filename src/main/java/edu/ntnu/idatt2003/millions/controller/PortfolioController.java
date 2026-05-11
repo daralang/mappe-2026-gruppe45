@@ -135,12 +135,10 @@ public class PortfolioController {
     private void sell(Share share, BigDecimal quantity, AbstractSellDialog dialog) {
         BigDecimal balanceBefore = gameService.getPlayer().getMoney();
         TransactionPreview preview = previewService.previewSale(
-                share, share.getQuantity(), gameService.getPlayer(),
+                share, quantity, gameService.getPlayer(),
                 gameService.getCurrencyConverter());
         try {
-            // TODO: when partial sale is implemented, pass quantity through.
-            //  For now, the model only supports selling the full Share instance.
-            Transaction transaction = gameService.sell(share);
+            Transaction transaction = gameService.sell(share, quantity);
             dialog.close();
             BigDecimal balanceAfter = gameService.getPlayer().getMoney();
             Platform.runLater(() ->
