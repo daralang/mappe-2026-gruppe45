@@ -1,8 +1,9 @@
 package edu.ntnu.idatt2003.millions.model.transaction;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * Represents an archive of transactions.
@@ -95,5 +96,99 @@ public class TransactionArchive {
      */
     public int countDistinctWeeks() {
         return (int) transactions.stream().map(Transaction::getWeek).distinct().count();
+    }
+
+    /**
+     * Returns the total realized gain from all profitable sales, grouped by the
+     * stock's native currency. Each entry maps a currency to the sum of profits
+     * from sales in that currency. Sales with zero or negative profit are excluded.
+     *
+     * <p>The caller is responsible for converting to a display currency. This
+     * separation keeps the domain free of currency-conversion concerns.</p>
+     *
+     * @return profits per currency; empty map if no profitable sales exist
+     */
+    public Map<Currency, BigDecimal> getRealizedGainsByCurrency() {
+        return sumSalesByCurrency(profit -> profit.signum() > 0, profit -> profit);
+    }
+
+    /**
+     * Returns the total realized loss from all losing sales, grouped by the stock's
+     * native currency. Each entry maps a currency to the sum of absolute losses
+     * (positive numbers) in that currency. Sales with zero or positive profit are
+     * excluded.
+     *
+     * @return absolute losses per currency; empty map if no losing sales exist
+     */
+    public Map<Currency, BigDecimal> getRealizedLossesByCurrency() {
+        return sumSalesByCurrency(profit -> profit.signum() < 0, BigDecimal::abs);
+    }
+
+    /**
+     * Returns the total commission paid across all sales, grouped by the stock's
+     * native currency.
+     *
+     * @return commission totals per currency; empty map if no sales exist
+     */
+    public Map<Currency, BigDecimal> getTotalSaleCommissionByCurrency() {
+        return sumSalesAttribute(SalesCalculator::calculateCommission);
+    }
+
+    /**
+     * Returns the total tax paid across all sales, grouped by the stock's native
+     * currency.
+     *
+     * @return tax totals per currency; empty map if no sales exist
+     */
+    public Map<Currency, BigDecimal> getTotalSaleTaxByCurrency() {
+        return sumSalesAttribute(SalesCalculator::calculateTax);
+    }
+
+    /**
+     * Returns the total number of completed sales in the archive.
+     *
+     * @return the number of sales
+     */
+    public int getSalesCount() {
+        return (int) transactions.stream()
+                .filter(Sale.class::isInstance)
+                .count();
+    }
+
+    /**
+     * Aggregates per-sale profit values into a sum per currency, applying the
+     * given filter and mapping function. The mapping function is used to convert
+     * the profit value (e.g. take the absolute value for losses).
+     */
+    private Map<Currency, BigDecimal> sumSalesByCurrency(
+            java.util.function.Predicate<BigDecimal> filter,
+            java.util.function.UnaryOperator<BigDecimal> mapper) {
+        Map<Currency, BigDecimal> result = new HashMap<>();
+        for (Transaction transaction : transactions) {
+            if (!(transaction instanceof Sale)) continue;
+            SalesCalculator calculator = new SalesCalculator(transaction.getShare());
+            BigDecimal profit = calculator.calculateProfit();
+            if (!filter.test(profit)) continue;
+            Currency currency = transaction.getShare().getStock().getCurrency();
+            result.merge(currency, mapper.apply(profit), BigDecimal::add);
+        }
+        return result;
+    }
+
+    /**
+     * Aggregates a per-sale attribute (e.g. commission, tax) into a sum per
+     * currency. Used by {@link #getTotalSaleCommissionByCurrency()} and
+     * {@link #getTotalSaleTaxByCurrency()}.
+     */
+    private Map<Currency, BigDecimal> sumSalesAttribute(
+            java.util.function.Function<SalesCalculator, BigDecimal> extractor) {
+        Map<Currency, BigDecimal> result = new HashMap<>();
+        for (Transaction transaction : transactions) {
+            if (!(transaction instanceof Sale)) continue;
+            SalesCalculator calculator = new SalesCalculator(transaction.getShare());
+            Currency currency = transaction.getShare().getStock().getCurrency();
+            result.merge(currency, extractor.apply(calculator), BigDecimal::add);
+        }
+        return result;
     }
 }
