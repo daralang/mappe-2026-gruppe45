@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.exchange.overview;
+package edu.ntnu.idatt2003.millions.view.exchange.overview.card;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.ColourChange;
@@ -43,7 +43,7 @@ public class StockRankingCard extends VBox {
 
         StyledText title = StyledText.widgetValue(LanguageManager.get(titleKey));
 
-        HBox header = buildHeader();
+        HBox header = addHeader();
 
         rows = new VBox(4);
         getChildren().addAll(title, header, rows);
@@ -60,19 +60,19 @@ public class StockRankingCard extends VBox {
      */
     public void update(List<Stock> stocks) {
         rows.getChildren().clear();
-        stocks.forEach(stock -> rows.getChildren().add(buildRow(stock)));
+        stocks.forEach(stock -> rows.getChildren().add(addRow(stock)));
     }
 
     /**
-     * Builds the column header row.
+     * Builds the column header row using the holdings-header style.
      *
      * @return an HBox containing the header labels
      */
-    private HBox buildHeader() {
-        Label symbol = StyledText.detailValue(LanguageManager.get("exchange.overview.columnSymbol"));
-        Label stock  = StyledText.detailLabel(LanguageManager.get("exchange.overview.columnStock"));
-        Label price  = StyledText.detailLabel(LanguageManager.get("exchange.overview.columnPrice"));
-        Label change = StyledText.detailLabel(LanguageManager.get("exchange.overview.columnChange"));
+    private HBox addHeader() {
+        Label symbol = addHeaderLabel(LanguageManager.get("exchange.overview.columnSymbol"));
+        Label stock  = addHeaderLabel(LanguageManager.get("exchange.overview.columnStock"));
+        Label price  = addHeaderLabel(LanguageManager.get("exchange.overview.columnPrice"));
+        Label change = addHeaderLabel(LanguageManager.get("exchange.overview.columnChange"));
 
         symbol.setMinWidth(SYMBOL_WIDTH);
         stock.setMinWidth(NAME_WIDTH);
@@ -81,7 +81,20 @@ public class StockRankingCard extends VBox {
         change.setMinWidth(CHANGE_WIDTH);
         change.setAlignment(Pos.CENTER_RIGHT);
 
-        return buildRow(symbol, stock, price, change);
+        return addRow(symbol, stock, price, change);
+    }
+
+    /**
+     * Creates a header label styled with the {@code holdings-header} CSS class,
+     * consistent with {@link edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.HoldingsCard}.
+     *
+     * @param text the label text
+     * @return a styled header label
+     */
+    private Label addHeaderLabel(String text) {
+        Label label = new Label(text);
+        label.getStyleClass().add("holdings-header");
+        return label;
     }
 
     /**
@@ -90,7 +103,7 @@ public class StockRankingCard extends VBox {
      * @param stock the stock to display
      * @return an HBox representing one table row
      */
-    private HBox buildRow(Stock stock) {
+    private HBox addRow(Stock stock) {
         Label symbolLabel = StyledText.detailValue(stock.getSymbol());
         Label nameLabel   = StyledText.detailLabel(stock.getCompany());
         Label priceLabel  = StyledText.detailValue(stock.getSalesPrice().toPlainString());
@@ -105,7 +118,7 @@ public class StockRankingCard extends VBox {
 
         ColourChange.applyChangeStyle(changeLabel, stock.getLatestPriceChange());
 
-        return buildRow(symbolLabel, nameLabel, priceLabel, changeLabel);
+        return addRow(symbolLabel, nameLabel, priceLabel, changeLabel);
     }
 
     /**
@@ -117,7 +130,7 @@ public class StockRankingCard extends VBox {
      * @param right  label for the change column
      * @return a configured HBox
      */
-    private HBox buildRow(Label left, Label center, Label price, Label right) {
+    private HBox addRow(Label left, Label center, Label price, Label right) {
         center.setMinWidth(0);
         center.setMaxWidth(Double.MAX_VALUE);
         center.setTextOverrun(OverrunStyle.ELLIPSIS);

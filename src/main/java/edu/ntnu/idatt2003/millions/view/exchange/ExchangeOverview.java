@@ -5,7 +5,7 @@ import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.card.GainersCard;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.card.LosersCard;
-import edu.ntnu.idatt2003.millions.view.exchange.overview.StockRankingCard;
+import edu.ntnu.idatt2003.millions.view.exchange.overview.card.StockRankingCard;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.card.TotalStocksCard;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
