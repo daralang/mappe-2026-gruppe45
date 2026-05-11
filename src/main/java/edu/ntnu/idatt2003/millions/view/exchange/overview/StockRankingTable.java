@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.exchange.overview;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -39,8 +40,7 @@ public class StockRankingTable extends VBox {
         getStyleClass().add("card");
         setSpacing(12);
 
-        Label title = new Label(LanguageManager.get(titleKey));
-        title.getStyleClass().add("card-value");
+        StyledText title = StyledText.widgetValue(LanguageManager.get(titleKey));
 
         HBox header = buildHeader();
 
@@ -68,15 +68,10 @@ public class StockRankingTable extends VBox {
      * @return an HBox containing the header labels
      */
     private HBox buildHeader() {
-        Label symbol = new Label(LanguageManager.get("exchange.overview.columnSymbol"));
-        Label stock  = new Label(LanguageManager.get("exchange.overview.columnStock"));
-        Label price  = new Label(LanguageManager.get("exchange.overview.columnPrice"));
-        Label change = new Label(LanguageManager.get("exchange.overview.columnChange"));
-
-        symbol.getStyleClass().add("card-value");
-        stock.getStyleClass().add("card-label");
-        price.getStyleClass().add("card-label");
-        change.getStyleClass().add("card-label");
+        Label symbol = StyledText.detailValue(LanguageManager.get("exchange.overview.columnSymbol"));
+        Label stock  = StyledText.detailLabel(LanguageManager.get("exchange.overview.columnStock"));
+        Label price  = StyledText.detailLabel(LanguageManager.get("exchange.overview.columnPrice"));
+        Label change = StyledText.detailLabel(LanguageManager.get("exchange.overview.columnChange"));
 
         symbol.setMinWidth(SYMBOL_WIDTH);
         price.setMinWidth(PRICE_WIDTH);
@@ -94,10 +89,10 @@ public class StockRankingTable extends VBox {
      * @return an HBox representing one table row
      */
     private HBox buildRow(Stock stock) {
-        Label symbolLabel = new Label(stock.getSymbol());
-        Label nameLabel = new Label(stock.getCompany());
-        Label priceLabel = new Label(stock.getSalesPrice().toPlainString());
-        Label changeLabel = new Label(formatChange(stock));
+        Label symbolLabel = StyledText.detailValue(stock.getSymbol());
+        Label nameLabel   = StyledText.detailLabel(stock.getCompany());
+        Label priceLabel  = StyledText.detailValue(stock.getSalesPrice().toPlainString());
+        Label changeLabel = StyledText.detailValue(formatChange(stock));
 
         symbolLabel.setMinWidth(SYMBOL_WIDTH);
         priceLabel.setMinWidth(PRICE_WIDTH);
