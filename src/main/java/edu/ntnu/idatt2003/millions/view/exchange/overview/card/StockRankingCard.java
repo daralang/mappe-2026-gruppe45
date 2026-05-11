@@ -11,10 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * A table component displaying a ranked list of stocks with their
@@ -36,13 +33,6 @@ public class StockRankingCard extends VBox {
     private static final double PRICE_WIDTH  = 70;
     private static final double CHANGE_WIDTH = 70;
     private static final double NAME_WIDTH   = 70;
-
-    private static final DecimalFormat PRICE_FORMAT;
-
-    static {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("nb-NO"));
-        PRICE_FORMAT = new DecimalFormat("#,##0.00", symbols);
-    }
 
     /**
      * Constructs a StockRankingCard with a title and an initial list of stocks.
@@ -139,7 +129,7 @@ public class StockRankingCard extends VBox {
     private HBox addRow(Stock stock) {
         Label symbolLabel = StyledText.detailValue(stock.getSymbol());
         Label nameLabel   = StyledText.detailValue(stock.getCompany());
-        String formattedPrice = PRICE_FORMAT.format(stock.getSalesPrice())
+        String formattedPrice = ChangeFormatter.formatPlain(stock.getSalesPrice())
                 + " " + stock.getCurrency().getCurrencyCode();
         Label priceLabel  = StyledText.detailValue(formattedPrice);
         Label changeLabel = ChangeFormatter.styledPercent(
