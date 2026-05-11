@@ -533,6 +533,24 @@ class ExchangeTest {
             assertEquals(1, result.size());
             assertTrue(result.contains(loser));
         }
+
+        @Test
+        @DisplayName("Should order losers by most negative weekly percentage change first, not absolute change")
+        void ordersLosersByPercentageChangeAscending() {
+            // Arrange – highPct loses 20% (-2 absolute), highAbsolute loses 5% (-5 absolute)
+            Stock highPct = new Stock("HP", "High Percent Loss",
+                    new ArrayList<>(List.of(new BigDecimal("10.00"), new BigDecimal("8.00"))));
+            Stock highAbsolute = new Stock("HA", "High Absolute Loss",
+                    new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("95.00"))));
+            Exchange multiExchange = new Exchange("Test", new ArrayList<>(List.of(highPct, highAbsolute)), converter);
+
+            // Act
+            List<Stock> result = multiExchange.getLosers(2);
+
+            // Assert
+            assertEquals(highPct, result.get(0));
+            assertEquals(highAbsolute, result.get(1));
+        }
     }
 
     @Nested
@@ -603,6 +621,24 @@ class ExchangeTest {
             //Assert
             assertEquals(1, result.size());
             assertTrue(result.contains(gainer));
+        }
+
+        @Test
+        @DisplayName("Should order gainers by highest weekly percentage change first, not absolute change")
+        void ordersGainersByPercentageChangeDescending() {
+            // Arrange – highPct gains 50% (+5 absolute), highAbsolute gains 8% (+8 absolute)
+            Stock highPct = new Stock("HP", "High Percent",
+                    new ArrayList<>(List.of(new BigDecimal("10.00"), new BigDecimal("15.00"))));
+            Stock highAbsolute = new Stock("HA", "High Absolute",
+                    new ArrayList<>(List.of(new BigDecimal("100.00"), new BigDecimal("108.00"))));
+            Exchange multiExchange = new Exchange("Test", new ArrayList<>(List.of(highPct, highAbsolute)), converter);
+
+            // Act
+            List<Stock> result = multiExchange.getGainers(2);
+
+            // Assert
+            assertEquals(highPct, result.get(0));
+            assertEquals(highAbsolute, result.get(1));
         }
     }
 }
