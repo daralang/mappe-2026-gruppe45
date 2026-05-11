@@ -9,7 +9,6 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
-import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
@@ -35,9 +34,6 @@ import java.util.*;
  * {@link Exchange} can convert to NOK through its {@link CurrencyConverter};
  * the three-argument overload defaults to USD.</p>
  *
- * <p>Also exposes facade query methods (net worth, weekly change, status,
- * portfolio value) so views can read derived values without composing
- * {@link Player} and {@link Exchange} through the converter themselves.</p>
  */
 public class GameService {
 
@@ -264,6 +260,16 @@ public class GameService {
     }
 
     /**
+     * Returns the currency converter from the active exchange.
+     * Convenience shortcut for {@code getExchange().getCurrencyConverter()}.
+     *
+     * @return the active currency converter
+     */
+    public CurrencyConverter getCurrencyConverter() {
+        return exchange.getCurrencyConverter();
+    }
+
+    /**
      * Returns the player's net worth from before the last week advance.
      * Returns null if the week has not been advanced yet.
      *
@@ -271,202 +277,6 @@ public class GameService {
      */
     public BigDecimal getPreviousNetWorth() {
         return player.getPreviousNetWorth();
-    }
-
-    /**
-     * Returns the player's current net worth in NOK.
-     * Facade method that fetches the converter from the active {@link Exchange}
-     * and delegates to {@link Player}.
-     *
-     * @return the player's net worth in NOK
-     */
-    public BigDecimal getPlayerNetWorth() {
-        return player.getNetWorth(exchange.getCurrencyConverter());
-    }
-
-    /**
-     * Returns the absolute change in the player's net worth since the start of the game,
-     * in NOK. Facade method that delegates to {@link Player}.
-     *
-     * @return current net worth minus starting money, in NOK
-     */
-    public BigDecimal getPlayerNetWorthChangeSinceStart() {
-        return player.getNetWorthChangeSinceStart(exchange.getCurrencyConverter());
-    }
-
-    /**
-     * Returns the percentage change in the player's net worth since the start of the game.
-     * Facade method that delegates to {@link Player}.
-     *
-     * @return percent change since start, e.g. 12.5 means +12.5%
-     */
-    public BigDecimal getPlayerNetWorthChangePercentSinceStart() {
-        return player.getNetWorthChangePercentSinceStart(exchange.getCurrencyConverter());
-    }
-
-    /**
-     * Returns the absolute change in the player's net worth since the previous week, in NOK.
-     * Returns null if no week has been advanced yet. Facade method that delegates to {@link Player}.
-     *
-     * @return current net worth minus previous net worth, or null if not available
-     */
-    public BigDecimal getPlayerWeeklyNetWorthChange() {
-        return player.getWeeklyNetWorthChange(exchange.getCurrencyConverter());
-    }
-
-    /**
-     * Returns the percentage change in the player's net worth since the previous week.
-     * Returns null if no week has been advanced yet. Facade method that delegates to {@link Player}.
-     *
-     * @return percent change since last week, or null if not available
-     */
-    public BigDecimal getPlayerWeeklyNetWorthChangePercent() {
-        return player.getWeeklyNetWorthChangePercent(exchange.getCurrencyConverter());
-    }
-
-    /**
-     * Returns the player's current status level. Facade method that delegates to
-     * {@link Player#getStatus(CurrencyConverter)}.
-     *
-     * @return the player's status level
-     */
-    public PlayerStatusLevel getPlayerStatus() {
-        return player.getStatus(exchange.getCurrencyConverter());
-    }
-
-    /**
-     * Returns the total market value of the player's portfolio in NOK
-     * ({@code salesPrice × quantity} per share, converted to NOK).
-     * Sale commission and tax are not deducted.
-     * Facade method that delegates to {@link Player}.
-     *
-     * @return the portfolio market value in NOK
-     */
-    public BigDecimal getPortfolioValue() {
-        return player.getPortfolio().getNetWorth(exchange.getCurrencyConverter());
-    }
-
-    /**
-     * Returns the current market value of the given share position in NOK
-     * (salesPrice × quantity × exchange rate, no fees deducted).
-     *
-     * @param share the share to value
-     * @return the position's market value in NOK
-     */
-    public BigDecimal getShareValueInNok(Share share) {
-        CurrencyConverter converter = exchange.getCurrencyConverter();
-        return converter.convert(
-                share.getCurrentValue(), share.getStock().getCurrency(), Currency.getInstance("NOK"));
-    }
-
-    /**
-     * Returns the unrealized return on the given share position in NOK
-     * (currentValue − cost, converted to NOK at the current rate).
-     *
-     * @param share the share to evaluate
-     * @return the position's return in NOK
-     */
-    public BigDecimal getShareReturnInNok(Share share) {
-        CurrencyConverter converter = exchange.getCurrencyConverter();
-        return converter.convert(
-                share.getReturnNative(), share.getStock().getCurrency(), Currency.getInstance("NOK"));
-    }
-
-    /**
-     * Returns the total market value of all portfolio positions in NOK
-     * (no fees deducted). Used for the holdings table "Verdi NOK" total.
-     *
-     * @return total market value in NOK
-     */
-    public BigDecimal getTotalPortfolioValueInNok() {
-        return player.getPortfolio().getNetWorth(exchange.getCurrencyConverter());
-    }
-
-    /**
-     * Returns the total unrealized return across all portfolio positions in NOK.
-     *
-     * @return total return in NOK
-     */
-    public BigDecimal getTotalPortfolioReturnInNok() {
-        return player.getPortfolio().getTotalReturnInNok(exchange.getCurrencyConverter());
-    }
-
-    /**
-     * Returns the total portfolio return as a percentage of total cost,
-     * with all amounts converted to NOK before computing the ratio.
-     *
-     * @return total return percentage
-     */
-    public BigDecimal getTotalPortfolioReturnPercent() {
-        return player.getPortfolio().getTotalReturnPercent(exchange.getCurrencyConverter());
-    }
-
-    /**
-     * Returns the total realized gain across all profitable sales, converted to NOK.
-     *
-     * @return total realized gain in NOK; zero if no profitable sales exist
-     */
-    public BigDecimal getRealizedGainsInNok() {
-        return sumByCurrencyToNok(player.getTransactionArchive().getRealizedGainsByCurrency());
-    }
-
-    /**
-     * Returns the total realized loss across all losing sales, converted to NOK.
-     * The value is non-negative — losses are returned as a positive number for
-     * display purposes; the negative sign is applied by the view.
-     *
-     * @return total realized loss in NOK as a non-negative value
-     */
-    public BigDecimal getRealizedLossesInNok() {
-        return sumByCurrencyToNok(player.getTransactionArchive().getRealizedLossesByCurrency());
-    }
-
-    /**
-     * Returns the net realized result: realized gains minus realized losses,
-     * in NOK. Can be negative if losses exceed gains.
-     *
-     * @return net realized result in NOK
-     */
-    public BigDecimal getNetRealizedInNok() {
-        return getRealizedGainsInNok().subtract(getRealizedLossesInNok());
-    }
-
-    /**
-     * Returns the total tax paid across all sales, converted to NOK.
-     *
-     * @return total tax paid in NOK; zero if no sales exist
-     */
-    public BigDecimal getTotalTaxPaidInNok() {
-        return sumByCurrencyToNok(player.getTransactionArchive().getTotalSaleTaxByCurrency());
-    }
-
-    /**
-     * Returns the total commission paid across all sales, converted to NOK.
-     *
-     * @return total commission paid in NOK; zero if no sales exist
-     */
-    public BigDecimal getTotalSaleCommissionInNok() {
-        return sumByCurrencyToNok(player.getTransactionArchive().getTotalSaleCommissionByCurrency());
-    }
-
-    /**
-     * Returns the total number of completed sales.
-     *
-     * @return the number of sales
-     */
-    public int getSalesCount() {
-        return player.getTransactionArchive().getSalesCount();
-    }
-
-    /**
-     * Converts a per-currency map of amounts into a single sum in NOK.
-     */
-    private BigDecimal sumByCurrencyToNok(Map<Currency, BigDecimal> amountsByCurrency) {
-        CurrencyConverter converter = exchange.getCurrencyConverter();
-        Currency nok = Currency.getInstance("NOK");
-        return amountsByCurrency.entrySet().stream()
-                .map(entry -> converter.convert(entry.getValue(), entry.getKey(), nok))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**

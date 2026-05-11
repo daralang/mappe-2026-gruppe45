@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.PlayerStatsService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
@@ -22,6 +23,7 @@ import java.util.Locale;
 public class NetWorthCard extends WidgetCard {
 
     private final GameService gameService;
+    private final PlayerStatsService statsService = new PlayerStatsService();
     private final StyledText netWorthLabel = StyledText.widgetValue();
     private final StyledText changeLabel = StyledText.widgetChange();
     private final NumberAxis xAxis;
@@ -84,9 +86,9 @@ public class NetWorthCard extends WidgetCard {
      */
     @Override
     protected void refreshDisplay() {
-        BigDecimal netWorth = gameService.getPlayerNetWorth();
-        BigDecimal change = gameService.getPlayerNetWorthChangeSinceStart();
-        BigDecimal percentChange = gameService.getPlayerNetWorthChangePercentSinceStart();
+        BigDecimal netWorth = statsService.getNetWorth(gameService.getPlayer(), gameService.getCurrencyConverter());
+        BigDecimal change = statsService.getNetWorthChangeSinceStart(gameService.getPlayer(), gameService.getCurrencyConverter());
+        BigDecimal percentChange = statsService.getNetWorthChangePercentSinceStart(gameService.getPlayer(), gameService.getCurrencyConverter());
 
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
         String formattedPercent = String.format(Locale.of("no"), "%.1f", percentChange);
@@ -111,7 +113,7 @@ public class NetWorthCard extends WidgetCard {
     @Override
     public void onGameUpdated() {
         int nextPoint = series.getData().size() + 1;
-        double netWorth = gameService.getPlayerNetWorth().doubleValue();
+        double netWorth = statsService.getNetWorth(gameService.getPlayer(), gameService.getCurrencyConverter()).doubleValue();
         series.getData().add(new XYChart.Data<>(nextPoint, netWorth));
         xAxis.setUpperBound(nextPoint);
         xAxis.setTickUnit(Math.max(1, nextPoint / 8));

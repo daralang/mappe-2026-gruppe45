@@ -4,7 +4,6 @@ import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
-import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
@@ -45,8 +44,6 @@ class GameServiceTest {
     private static final BigDecimal QUANTITY = new BigDecimal("5");
     private static final BigDecimal PURCHASE_COMMISSION = new BigDecimal("2.50000");
     private static final BigDecimal SALE_COMMISSION = new BigDecimal("5.0000");
-    private static final BigDecimal EXPECTED_PORTFOLIO_VALUE = new BigDecimal("500.0000");
-    private static final BigDecimal EXPECTED_NET_WORTH_AFTER_PURCHASE = new BigDecimal("9997.50000");
 
     private GameService gameService;
 
@@ -402,148 +399,6 @@ class GameServiceTest {
             assertEquals(0, STARTING_MONEY.compareTo(gameService.getPreviousNetWorth()));
             assertEquals(2, gameService.getPlayer().getNetWorthHistory().size());
             assertEquals(1, observer.updateCount);
-        }
-    }
-
-    @Nested
-    @DisplayName("getPlayerNetWorth()")
-    class GetPlayerNetWorth {
-
-        @Test
-        @DisplayName("Should return starting money for fresh player with empty portfolio")
-        void returnsStartingMoneyForFreshPlayer() {
-            // Act
-            BigDecimal netWorth = gameService.getPlayerNetWorth();
-            // Assert
-            assertEquals(0, STARTING_MONEY.compareTo(netWorth));
-        }
-
-        @Test
-        @DisplayName("Should return same total when shares are bought at current price")
-        void returnsSameTotalAfterPurchaseAtCurrentPrice() {
-            // Arrange
-            gameService.buy("EQNR", QUANTITY);
-            // Act
-            BigDecimal netWorth = gameService.getPlayerNetWorth();
-            // Assert: cash after purchase plus portfolio market value (5 × 100 NOK)
-            assertEquals(0, EXPECTED_NET_WORTH_AFTER_PURCHASE.compareTo(netWorth));
-        }
-    }
-
-    @Nested
-    @DisplayName("getPlayerNetWorthChangeSinceStart()")
-    class GetPlayerNetWorthChangeSinceStart {
-
-        @Test
-        @DisplayName("Should return zero for fresh player")
-        void returnsZeroForFreshPlayer() {
-            // Act
-            BigDecimal change = gameService.getPlayerNetWorthChangeSinceStart();
-            // Assert
-            assertEquals(0, BigDecimal.ZERO.compareTo(change));
-        }
-    }
-
-    @Nested
-    @DisplayName("getPlayerNetWorthChangePercentSinceStart()")
-    class GetPlayerNetWorthChangePercentSinceStart {
-
-        @Test
-        @DisplayName("Should return zero for fresh player")
-        void returnsZeroForFreshPlayer() {
-            // Act
-            BigDecimal percent = gameService.getPlayerNetWorthChangePercentSinceStart();
-            // Assert
-            assertEquals(0, BigDecimal.ZERO.compareTo(percent));
-        }
-    }
-
-    @Nested
-    @DisplayName("getPlayerWeeklyNetWorthChange()")
-    class GetPlayerWeeklyNetWorthChange {
-
-        @Test
-        @DisplayName("Should return null before the first week advance")
-        void returnsNullBeforeFirstAdvance() {
-            // Act
-            BigDecimal change = gameService.getPlayerWeeklyNetWorthChange();
-            // Assert
-            assertNull(change);
-        }
-
-        @Test
-        @DisplayName("Should return non-null value after a week is advanced")
-        void returnsNonNullAfterAdvance() {
-            // Arrange
-            gameService.advanceWeek();
-            // Act
-            BigDecimal change = gameService.getPlayerWeeklyNetWorthChange();
-            // Assert
-            assertNotNull(change);
-        }
-    }
-
-    @Nested
-    @DisplayName("getPlayerWeeklyNetWorthChangePercent()")
-    class GetPlayerWeeklyNetWorthChangePercent {
-
-        @Test
-        @DisplayName("Should return null before the first week advance")
-        void returnsNullBeforeFirstAdvance() {
-            // Act
-            BigDecimal percent = gameService.getPlayerWeeklyNetWorthChangePercent();
-            // Assert
-            assertNull(percent);
-        }
-
-        @Test
-        @DisplayName("Should return non-null value after a week is advanced")
-        void returnsNonNullAfterAdvance() {
-            // Arrange
-            gameService.advanceWeek();
-            // Act
-            BigDecimal percent = gameService.getPlayerWeeklyNetWorthChangePercent();
-            // Assert
-            assertNotNull(percent);
-        }
-    }
-
-    @Nested
-    @DisplayName("getPlayerStatus()")
-    class GetPlayerStatus {
-
-        @Test
-        @DisplayName("Should return NOVICE for fresh player")
-        void returnsNoviceForFreshPlayer() {
-            // Act
-            PlayerStatusLevel status = gameService.getPlayerStatus();
-            // Assert
-            assertEquals(PlayerStatusLevel.NOVICE, status);
-        }
-    }
-
-    @Nested
-    @DisplayName("getPortfolioValue()")
-    class GetPortfolioValue {
-
-        @Test
-        @DisplayName("Should return zero for empty portfolio")
-        void returnsZeroForEmptyPortfolio() {
-            // Act
-            BigDecimal value = gameService.getPortfolioValue();
-            // Assert
-            assertEquals(0, BigDecimal.ZERO.compareTo(value));
-        }
-
-        @Test
-        @DisplayName("Should return shares times price after purchase")
-        void returnsSharesTimesPriceAfterPurchase() {
-            // Arrange
-            gameService.buy("EQNR", QUANTITY);
-            // Act
-            BigDecimal value = gameService.getPortfolioValue();
-            // Assert: 5 shares × 100 NOK = 500 NOK market value (no fees deducted)
-            assertEquals(0, EXPECTED_PORTFOLIO_VALUE.compareTo(value));
         }
     }
 

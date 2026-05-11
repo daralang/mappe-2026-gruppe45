@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
@@ -11,6 +12,7 @@ import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
 public class PortfolioValueCard extends WidgetCard {
 
     private final GameService gameService;
+    private final PortfolioService portfolioService = new PortfolioService();
     private final StyledText valueLabel = StyledText.widgetValue();
 
     public PortfolioValueCard(GameService gameService) {
@@ -22,6 +24,6 @@ public class PortfolioValueCard extends WidgetCard {
 
     @Override
     protected void refreshDisplay() {
-        valueLabel.setText(CurrencyFormatter.format(gameService.getPortfolioValue()));
+        valueLabel.setText(CurrencyFormatter.format(portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
     }
 }
