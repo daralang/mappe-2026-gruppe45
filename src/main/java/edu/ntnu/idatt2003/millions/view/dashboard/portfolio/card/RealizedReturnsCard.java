@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.RealizedReturnsService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Card;
@@ -24,6 +25,7 @@ import java.math.BigDecimal;
 public class RealizedReturnsCard extends Card {
 
     private final GameService gameService;
+    private final RealizedReturnsService realizedService = new RealizedReturnsService();
 
     private final StyledText title = StyledText.sectionTitle();
     private final StyledText emptyMessage = StyledText.detailLabel();
@@ -80,7 +82,7 @@ public class RealizedReturnsCard extends Card {
     }
 
     private void refresh() {
-        boolean hasSales = gameService.getSalesCount() > 0;
+        boolean hasSales = realizedService.getSalesCount(gameService.getPlayer()) > 0;
 
         emptyContainer.setVisible(!hasSales);
         emptyContainer.setManaged(!hasSales);
@@ -89,12 +91,12 @@ public class RealizedReturnsCard extends Card {
 
         if (!hasSales) return;
 
-        BigDecimal gains = gameService.getRealizedGainsInNok();
-        BigDecimal losses = gameService.getRealizedLossesInNok();
-        BigDecimal net = gameService.getNetRealizedInNok();
-        BigDecimal tax = gameService.getTotalTaxPaidInNok();
-        BigDecimal commission = gameService.getTotalSaleCommissionInNok();
-        int count = gameService.getSalesCount();
+        BigDecimal gains = realizedService.getGainsInNok(gameService.getPlayer(), gameService.getCurrencyConverter());
+        BigDecimal losses = realizedService.getLossesInNok(gameService.getPlayer(), gameService.getCurrencyConverter());
+        BigDecimal net = realizedService.getNetRealizedInNok(gameService.getPlayer(), gameService.getCurrencyConverter());
+        BigDecimal tax = realizedService.getTotalTaxPaidInNok(gameService.getPlayer(), gameService.getCurrencyConverter());
+        BigDecimal commission = realizedService.getTotalSaleCommissionInNok(gameService.getPlayer(), gameService.getCurrencyConverter());
+        int count = realizedService.getSalesCount(gameService.getPlayer());
 
         String gainSign = gains.signum() > 0 ? "+" : "";
         gainValue.setText(gainSign + CurrencyFormatter.format(gains));

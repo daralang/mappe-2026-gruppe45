@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.PlayerStatsService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
@@ -16,6 +17,7 @@ import java.util.Locale;
 public class WeeklyChangeCard extends WidgetCard {
 
     private final GameService gameService;
+    private final PlayerStatsService statsService = new PlayerStatsService();
     private final StyledText changeLabel = StyledText.widgetChange();
 
     public WeeklyChangeCard(GameService gameService) {
@@ -32,14 +34,14 @@ public class WeeklyChangeCard extends WidgetCard {
      */
     @Override
     protected void refreshDisplay() {
-        BigDecimal change = gameService.getPlayerWeeklyNetWorthChange();
+        BigDecimal change = statsService.getWeeklyNetWorthChange(gameService.getPlayer(), gameService.getCurrencyConverter());
         if (change == null) {
             changeLabel.setText("–");
             changeLabel.getStyleClass().removeAll("positive", "negative");
             return;
         }
 
-        BigDecimal percentChange = gameService.getPlayerWeeklyNetWorthChangePercent();
+        BigDecimal percentChange = statsService.getWeeklyNetWorthChangePercent(gameService.getPlayer(), gameService.getCurrencyConverter());
 
         String arrow = change.compareTo(BigDecimal.ZERO) >= 0 ? "↗" : "↘";
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
