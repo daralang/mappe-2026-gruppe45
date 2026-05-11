@@ -35,8 +35,9 @@ public class PortfolioView extends VBox {
         HBox topRow = buildTopRow();
         HoldingsCard holdingsCard = new HoldingsCard(gameManager, controller);
         ExploreStocksButton exploreButton = new ExploreStocksButton(onExploreStocks);
+        RealizedReturnsCard realizedReturnsCard = new RealizedReturnsCard(gameManager);
 
-        getChildren().addAll(topRow, holdingsCard, exploreButton);
+        getChildren().addAll(topRow, holdingsCard, exploreButton, realizedReturnsCard);
     }
 
     private HBox buildTopRow() {
