@@ -280,10 +280,10 @@ public class Exchange {
 
     /**
      * Returns the top ranking stocks since last week, sorted by the highest positive
-     * price change first.
+     * weekly percentage change first.
      *
      * @param limit the maximum number of stocks to return
-     * @return a list of top ranked stocks
+     * @return a list of top ranked stocks ordered by descending weekly percentage change
      * @throws IllegalArgumentException if limit is not greater than zero.
      */
     public List<Stock> getGainers(int limit) {
@@ -291,18 +291,18 @@ public class Exchange {
             throw new IllegalArgumentException("Limit must be greater than 0");
         }
         return stockMap.values().stream()
-                .filter(stock -> stock.getLatestPriceChange().compareTo(BigDecimal.ZERO) > 0)
-                .sorted((a, b)-> b.getLatestPriceChange().compareTo(a.getLatestPriceChange()))
+                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) > 0)
+                .sorted((a, b) -> b.getWeeklyChangePercent().compareTo(a.getWeeklyChangePercent()))
                 .limit(limit)
                 .toList();
     }
 
     /**
      * Returns the worst performing stocks since last week, sorted by the most negative
-     * price change first.
+     * weekly percentage change first.
      *
      * @param limit the maximum number of stocks to return
-     * @return a list of the worst performing stocks, capped at limit
+     * @return a list of the worst performing stocks ordered by ascending weekly percentage change
      * @throws IllegalArgumentException if limit is not greater than zero
      */
     public List<Stock> getLosers(int limit) {
@@ -310,8 +310,8 @@ public class Exchange {
             throw new IllegalArgumentException("Limit must be greater than 0");
         }
         return stockMap.values().stream()
-                .filter(stock -> stock.getLatestPriceChange().compareTo(BigDecimal.ZERO) < 0)
-                .sorted(Comparator.comparing(Stock::getLatestPriceChange))
+                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) < 0)
+                .sorted(Comparator.comparing(Stock::getWeeklyChangePercent))
                 .limit(limit)
                 .toList();
     }
