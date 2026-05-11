@@ -192,6 +192,7 @@ public abstract class TransactionDialog extends Modal {
     protected void hideError() {
         errorLabel.setVisible(false);
         errorLabel.setManaged(false);
+        sizeToContent();
     }
 
     /**
@@ -204,6 +205,7 @@ public abstract class TransactionDialog extends Modal {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);
+        sizeToContent();
     }
 
     protected void setConfirmEnabled(boolean enabled) {
@@ -223,6 +225,7 @@ public abstract class TransactionDialog extends Modal {
         if (label == null) {
             transactionInfoBox.setVisible(false);
             transactionInfoBox.setManaged(false);
+            sizeToContent();
             return;
         }
         String colorClass = positive ? "modal-info-positive" : "modal-info-negative";
@@ -249,6 +252,7 @@ public abstract class TransactionDialog extends Modal {
 
         transactionInfoBox.setVisible(true);
         transactionInfoBox.setManaged(true);
+        sizeToContent();
     }
 
     /**
