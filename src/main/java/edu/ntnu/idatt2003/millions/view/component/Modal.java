@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -62,7 +63,8 @@ public abstract class Modal {
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setScene(scene);
-        stage.setResizable(false);
+        card.heightProperty().addListener((obs, oldH, newH) ->
+                Platform.runLater(stage::sizeToScene));
 
         scene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ESCAPE) {
@@ -71,6 +73,7 @@ public abstract class Modal {
         });
 
         onBeforeShow();
+        stage.sizeToScene();
         showStage();
     }
 
