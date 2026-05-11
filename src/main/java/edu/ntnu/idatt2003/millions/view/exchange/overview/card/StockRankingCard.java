@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.exchange.overview.card;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.util.ColourChange;
+import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Pos;
@@ -11,10 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * A table component displaying a ranked list of stocks with their
@@ -70,17 +67,11 @@ public class StockRankingCard extends VBox {
      */
     private HBox addHeader() {
         Label symbol = addHeaderLabel(LanguageManager.get("exchange.overview.columnSymbol"));
-        Label stock = addHeaderLabel(LanguageManager.get("exchange.overview.columnStock"));
-        Label price = addHeaderLabel(LanguageManager.get("exchange.overview.columnPrice"));
+        Label stock  = addHeaderLabel(LanguageManager.get("exchange.overview.columnStock"));
+        Label price  = addHeaderLabel(LanguageManager.get("exchange.overview.columnPrice"));
         Label change = addHeaderLabel(LanguageManager.get("exchange.overview.columnChange"));
 
-        symbol.setMinWidth(SYMBOL_WIDTH);
-        stock.setMinWidth(NAME_WIDTH);
-        price.setMinWidth(PRICE_WIDTH);
-        price.setAlignment(Pos.CENTER_RIGHT);
-        change.setMinWidth(CHANGE_WIDTH);
-        change.setAlignment(Pos.CENTER_RIGHT);
-
+        applyColumnConstraints(symbol, stock, price, change);
         return addRow(symbol, stock, price, change);
     }
 
@@ -98,31 +89,43 @@ public class StockRankingCard extends VBox {
     }
 
     /**
+     * Applies fixed column widths and right-alignment to the price and change labels.
+     *
+     * @param symbol the symbol column label
+     * @param name   the company name column label
+     * @param price  the price column label
+     * @param change the change column label
+     */
+    private void applyColumnConstraints(Label symbol, Label name, Label price, Label change) {
+        symbol.setMinWidth(SYMBOL_WIDTH);
+        name.setMinWidth(NAME_WIDTH);
+        price.setMinWidth(PRICE_WIDTH);
+        price.setAlignment(Pos.CENTER_RIGHT);
+        change.setMinWidth(CHANGE_WIDTH);
+        change.setAlignment(Pos.CENTER_RIGHT);
+    }
+
+    /**
      * Builds a data row for the given stock.
+     * Uses {@link ChangeFormatter#styledPercent} for a coloured weekly change label.
      *
      * @param stock the stock to display
      * @return an HBox representing one table row
      */
     private HBox addRow(Stock stock) {
         Label symbolLabel = StyledText.detailValue(stock.getSymbol());
-        Label nameLabel = StyledText.detailLabel(stock.getCompany());
-        Label priceLabel = StyledText.detailValue(stock.getSalesPrice().toPlainString());
-        Label changeLabel = StyledText.detailValue(formatChange(stock));
+        Label nameLabel   = StyledText.detailValue(stock.getCompany());
+        Label priceLabel  = StyledText.detailValue(stock.getSalesPrice().toPlainString());
+        Label changeLabel = ChangeFormatter.styledPercent(
+                stock.getWeeklyChangePercent(), "detail-value");
 
-        nameLabel.setMinWidth(NAME_WIDTH);
-        symbolLabel.setMinWidth(SYMBOL_WIDTH);
-        priceLabel.setMinWidth(PRICE_WIDTH);
-        priceLabel.setAlignment(Pos.CENTER_RIGHT);
-        changeLabel.setMinWidth(CHANGE_WIDTH);
-        changeLabel.setAlignment(Pos.CENTER_RIGHT);
-
-        ColourChange.applyChangeStyle(changeLabel, stock.getLatestPriceChange());
-
+        applyColumnConstraints(symbolLabel, nameLabel, priceLabel, changeLabel);
         return addRow(symbolLabel, nameLabel, priceLabel, changeLabel);
     }
 
     /**
      * Lays out four labels in a fixed-width HBox row.
+     * The center column absorbs remaining space and truncates with an ellipsis.
      *
      * @param left   label for the symbol column
      * @param center label for the company name column
@@ -139,30 +142,5 @@ public class StockRankingCard extends VBox {
         HBox row = new HBox(8, left, center, price, right);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
-    }
-
-    /**
-     * Formats the weekly percentage change for a stock.
-     * Returns "–" if no previous price exists.
-     *
-     * @param stock the stock to compute the change for
-     * @return a formatted string such as "+6,6%" or "-4,6%"
-     */
-    private String formatChange(Stock stock) {
-        BigDecimal change = stock.getLatestPriceChange();
-        List<BigDecimal> prices = stock.getHistoricalPrices();
-
-        if (prices.size() < 2) return "–";
-
-        BigDecimal previous = prices.get(prices.size() - 2);
-        if (previous.compareTo(BigDecimal.ZERO) == 0) return "–";
-
-        BigDecimal percentage = change
-                .divide(previous, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100))
-                .setScale(1, RoundingMode.HALF_UP);
-
-        String sign = percentage.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
-        return sign + String.format(Locale.of("no"), "%.1f", percentage) + "%";
     }
 }
