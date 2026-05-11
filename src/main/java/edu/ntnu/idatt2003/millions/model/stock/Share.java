@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.model.stock;
 
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
@@ -103,5 +105,17 @@ public class Share {
         if (cost.signum() == 0) return BigDecimal.ZERO;
         return getReturnNative().multiply(BigDecimal.valueOf(100))
                 .divide(cost, 2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Returns the net amount the player would receive if the entire position
+     * were sold at the current price, after commission and tax.
+     * Delegates to {@link SalesCalculator} so the business rules for fees
+     * remain in the domain model.
+     *
+     * @return liquidation value in the stock's native currency
+     */
+    public BigDecimal getLiquidationValue() {
+        return new SalesCalculator(this).calculateTotal();
     }
 }
