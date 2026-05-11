@@ -20,10 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Currency;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Service-layer manager for the game lifecycle: creates new games, loads and
@@ -402,6 +399,74 @@ public class GameManager {
      */
     public BigDecimal getTotalPortfolioReturnPercent() {
         return player.getPortfolio().getTotalReturnPercent(exchange.getCurrencyConverter());
+    }
+
+    /**
+     * Returns the total realized gain across all profitable sales, converted to NOK.
+     *
+     * @return total realized gain in NOK; zero if no profitable sales exist
+     */
+    public BigDecimal getRealizedGainsInNok() {
+        return sumByCurrencyToNok(player.getTransactionArchive().getRealizedGainsByCurrency());
+    }
+
+    /**
+     * Returns the total realized loss across all losing sales, converted to NOK.
+     * The value is non-negative — losses are returned as a positive number for
+     * display purposes; the negative sign is applied by the view.
+     *
+     * @return total realized loss in NOK as a non-negative value
+     */
+    public BigDecimal getRealizedLossesInNok() {
+        return sumByCurrencyToNok(player.getTransactionArchive().getRealizedLossesByCurrency());
+    }
+
+    /**
+     * Returns the net realized result: realized gains minus realized losses,
+     * in NOK. Can be negative if losses exceed gains.
+     *
+     * @return net realized result in NOK
+     */
+    public BigDecimal getNetRealizedInNok() {
+        return getRealizedGainsInNok().subtract(getRealizedLossesInNok());
+    }
+
+    /**
+     * Returns the total tax paid across all sales, converted to NOK.
+     *
+     * @return total tax paid in NOK; zero if no sales exist
+     */
+    public BigDecimal getTotalTaxPaidInNok() {
+        return sumByCurrencyToNok(player.getTransactionArchive().getTotalSaleTaxByCurrency());
+    }
+
+    /**
+     * Returns the total commission paid across all sales, converted to NOK.
+     *
+     * @return total commission paid in NOK; zero if no sales exist
+     */
+    public BigDecimal getTotalSaleCommissionInNok() {
+        return sumByCurrencyToNok(player.getTransactionArchive().getTotalSaleCommissionByCurrency());
+    }
+
+    /**
+     * Returns the total number of completed sales.
+     *
+     * @return the number of sales
+     */
+    public int getSalesCount() {
+        return player.getTransactionArchive().getSalesCount();
+    }
+
+    /**
+     * Converts a per-currency map of amounts into a single sum in NOK.
+     */
+    private BigDecimal sumByCurrencyToNok(Map<Currency, BigDecimal> amountsByCurrency) {
+        CurrencyConverter converter = exchange.getCurrencyConverter();
+        Currency nok = Currency.getInstance("NOK");
+        return amountsByCurrency.entrySet().stream()
+                .map(entry -> converter.convert(entry.getValue(), entry.getKey(), nok))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
