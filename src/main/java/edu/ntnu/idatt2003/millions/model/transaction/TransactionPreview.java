@@ -10,9 +10,11 @@ import java.math.BigDecimal;
  * the view layer to display gross, commission, tax, total, and the
  * resulting balance without performing the transaction.</p>
  *
- * <p>For purchases, {@code tax} is zero and {@code profit} and
- * {@code profitPercent} are null. For sales, {@code profit} contains
- * the gain or loss on the sale.</p>
+ * <p>For purchases, {@code tax} is zero and {@code profit},
+ * {@code profitPercent}, and {@code profitInNok} are null. For sales,
+ * {@code profit} contains the gain or loss in the stock's native
+ * currency, and {@code profitInNok} contains the same value converted
+ * to NOK (null when the stock is already priced in NOK).</p>
  */
 public record TransactionPreview(
         BigDecimal gross,
@@ -22,5 +24,6 @@ public record TransactionPreview(
         BigDecimal totalInNok,
         BigDecimal balanceAfter,
         BigDecimal profit,
-        BigDecimal profitPercent
+        BigDecimal profitPercent,
+        BigDecimal profitInNok
 ) {}

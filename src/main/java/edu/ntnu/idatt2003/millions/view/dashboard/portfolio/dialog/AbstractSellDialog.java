@@ -95,11 +95,16 @@ public abstract class AbstractSellDialog extends TransactionDialog {
         boolean positive = preview.profit().signum() >= 0;
         String sign = positive ? "+" : "\u2212";
         String pctSign = positive ? "+" : "";
-        String suffix = sign + NUMBER_FORMAT.format(preview.profit().abs()) + " " + currencyCode() + " ("
-                + pctSign + preview.profitPercent().toPlainString() + "%)";
-        String key = positive ? "dialog.profit.gain" : "dialog.profit.loss";
-        String message = MessageFormat.format(LanguageManager.get(key), suffix);
-        setTransactionInfo(message, positive);
+
+        String label = LanguageManager.get(positive ? "dialog.profit.gain" : "dialog.profit.loss");
+        String primaryValue = sign + NUMBER_FORMAT.format(preview.profit().abs()) + " " + currencyCode()
+                + " (" + pctSign + preview.profitPercent().toPlainString() + "%)";
+
+        String secondaryValue = null;
+        if (!stock.getCurrency().equals(NOK) && preview.profitInNok() != null) {
+            secondaryValue = "= " + sign + NUMBER_FORMAT.format(preview.profitInNok().abs()) + " NOK";
+        }
+        setTransactionInfo(label, primaryValue, secondaryValue, positive);
     }
 
     private void renderBalanceAfter(TransactionPreview preview) {

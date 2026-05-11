@@ -68,14 +68,14 @@ public class SellDialog extends AbstractSellDialog {
         if (quantity == null) {
             renderEmptySummary();
             setConfirmEnabled(false);
-            setTransactionInfo(null, false);
+            setTransactionInfo(null, null, null, false);
             return;
         }
 
         if (quantity.compareTo(share.getQuantity()) > 0) {
             renderEmptySummary();
             setConfirmEnabled(false);
-            setTransactionInfo(null, false);
+            setTransactionInfo(null, null, null, false);
             showError(MessageFormat.format(
                     LanguageManager.get("dialog.quantity.notEnoughShares"),
                     NUMBER_FORMAT.format(share.getQuantity())));
