@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.stream.Stream;
 
 /**
  * Represents a stock exchange where players can buy and sell shares.
@@ -112,6 +113,15 @@ public class Exchange {
      */
     public int getWeek() {
         return week;
+    }
+
+    /**
+     * Return all stocks listed on this exchange
+     *
+     * @return an unmodifiable list of all stocks.
+     */
+    public List<Stock> getStocks() {
+        return List.copyOf(stockMap.values());
     }
 
     /**
@@ -341,40 +351,72 @@ public class Exchange {
 
     /**
      * Returns the top ranking stocks since last week, sorted by the highest positive
-     * price change first.
+     * weekly percentage change first.
      *
      * @param limit the maximum number of stocks to return
-     * @return a list of top ranked stocks
-     * @throws IllegalArgumentException if limit is not greater than zero.
+     * @return a list of top ranked stocks ordered by descending weekly percentage change
+     * @throws IllegalArgumentException if limit is not greater than zero
      */
     public List<Stock> getGainers(int limit) {
-        if (limit <= 0) {
-            throw new IllegalArgumentException("Limit must be greater than 0");
-        }
-        return stockMap.values().stream()
-                .filter(stock -> stock.getLatestPriceChange().compareTo(BigDecimal.ZERO) > 0)
-                .sorted((a, b)-> b.getLatestPriceChange().compareTo(a.getLatestPriceChange()))
+        if (limit <= 0) throw new IllegalArgumentException("Limit must be greater than 0");
+        return gainersStream()
+                .sorted((a, b) -> b.getWeeklyChangePercent().compareTo(a.getWeeklyChangePercent()))
                 .limit(limit)
                 .toList();
     }
 
     /**
      * Returns the worst performing stocks since last week, sorted by the most negative
-     * price change first.
+     * weekly percentage change first.
      *
      * @param limit the maximum number of stocks to return
-     * @return a list of the worst performing stocks, capped at limit
+     * @return a list of the worst performing stocks ordered by ascending weekly percentage change
      * @throws IllegalArgumentException if limit is not greater than zero
      */
     public List<Stock> getLosers(int limit) {
-        if (limit <= 0) {
-            throw new IllegalArgumentException("Limit must be greater than 0");
-        }
-        return stockMap.values().stream()
-                .filter(stock -> stock.getLatestPriceChange().compareTo(BigDecimal.ZERO) < 0)
-                .sorted(Comparator.comparing(Stock::getLatestPriceChange))
+        if (limit <= 0) throw new IllegalArgumentException("Limit must be greater than 0");
+        return losersStream()
+                .sorted(Comparator.comparing(Stock::getWeeklyChangePercent))
                 .limit(limit)
                 .toList();
+    }
+
+    /**
+     * Returns the number of stocks that had a positive weekly percentage change.
+     *
+     * @return the count of stocks with a weekly change above zero
+     */
+    public long countGainers() {
+        return gainersStream().count();
+    }
+
+    /**
+     * Returns the number of stocks that had a negative weekly percentage change.
+     *
+     * @return the count of stocks with a weekly change below zero
+     */
+    public long countLosers() {
+        return losersStream().count();
+    }
+
+    /**
+     * Returns a stream of stocks with a positive weekly percentage change.
+     *
+     * @return a stream of gaining stocks
+     */
+    private Stream<Stock> gainersStream() {
+        return stockMap.values().stream()
+                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) > 0);
+    }
+
+    /**
+     * Returns a stream of stocks with a negative weekly percentage change.
+     *
+     * @return a stream of losing stocks
+     */
+    private Stream<Stock> losersStream() {
+        return stockMap.values().stream()
+                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) < 0);
     }
 
     /**

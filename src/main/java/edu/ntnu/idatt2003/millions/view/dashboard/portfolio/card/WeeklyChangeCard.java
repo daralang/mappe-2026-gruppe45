@@ -2,12 +2,13 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.PlayerStatsService;
+import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
+import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
 
 import java.math.BigDecimal;
-import java.util.Locale;
 
 /**
  * Widget card displaying the player's net worth change for the current week.
@@ -45,13 +46,9 @@ public class WeeklyChangeCard extends WidgetCard {
 
         String arrow = change.compareTo(BigDecimal.ZERO) >= 0 ? "↗" : "↘";
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
-        String formattedPercent = String.format(Locale.of("no"), "%.1f", percentChange);
 
-        changeLabel.setText(arrow + " " + sign + formattedPercent + "%  "
-                + sign + CurrencyFormatter.format(change.abs()));
-        changeLabel.getStyleClass().removeAll("positive", "negative");
-        changeLabel.getStyleClass().add(
-                change.compareTo(BigDecimal.ZERO) >= 0 ? "positive" : "negative"
-        );
+        changeLabel.setText(arrow + " " + ChangeFormatter.formatSignedPercent(percentChange)
+                + "  " + sign + CurrencyFormatter.format(change.abs()));
+        ColourChange.applyChangeStyle(changeLabel, change);
     }
 }
