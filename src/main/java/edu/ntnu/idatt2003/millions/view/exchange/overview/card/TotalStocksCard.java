@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.exchange.overview;
+package edu.ntnu.idatt2003.millions.view.exchange.overview.card;
 
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
