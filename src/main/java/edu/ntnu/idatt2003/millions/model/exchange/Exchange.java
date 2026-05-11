@@ -9,6 +9,7 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Currency;
 import java.util.List;
@@ -106,6 +107,15 @@ public class Exchange {
      */
     public int getWeek() {
         return week;
+    }
+
+    /**
+     * Return all stocks listed on this exchange
+     *
+     * @return an unmodifiable list of all stocks.
+     */
+    public List<Stock> getStocks() {
+        return List.copyOf(stockMap.values());
     }
 
     /**
