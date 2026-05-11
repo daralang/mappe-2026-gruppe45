@@ -3,33 +3,32 @@ package edu.ntnu.idatt2003.millions.view.exchange;
 import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.exchange.overview.GainersCard;
+import edu.ntnu.idatt2003.millions.view.exchange.overview.LosersCard;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.StockRankingTable;
+import edu.ntnu.idatt2003.millions.view.exchange.overview.TotalStocksCard;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 /**
  * View for the exchange overview tab.
- * Displays weekly market summary cards and ranked winner/loser tables.
- * Updates once per week advance via {@link GameObserver}.
+ * Assembles market summary cards ({@link TotalStocksCard}, {@link GainersCard},
+ * {@link LosersCard}) and ranked winner/loser tables ({@link StockRankingTable}).
+ * Each card manages its own observer registration and updates.
+ * This view registers itself as a {@link GameObserver} only to refresh the
+ * ranking tables, which are not self-updating components.
  */
 public class ExchangeOverview extends VBox implements GameObserver {
 
     private final GameManager gameManager;
-
-    private final StyledText totalStocksValue;
-    private final StyledText rosedValue;
-    private final StyledText fellValue;
-
     private final StockRankingTable winnersTable;
     private final StockRankingTable losersTable;
 
     private static final int RANKING_LIMIT = 5;
 
     /**
-     * Constructs a new ExchangeOverviewView and registers itself as a game observer.
+     * Constructs a new ExchangeOverview.
      *
      * @param gameManager the game manager containing player and exchange
      * @throws NullPointerException if gameManager is null
@@ -40,14 +39,10 @@ public class ExchangeOverview extends VBox implements GameObserver {
         setSpacing(16);
         getStyleClass().add("content-area");
 
-        totalStocksValue = StyledText.widgetValue();
-        rosedValue = StyledText.widgetValue();
-        fellValue  = StyledText.widgetValue();
-
         HBox statCards = new HBox(16,
-                buildStatCard("exchange.overview.totalStocks", totalStocksValue),
-                buildStatCard("exchange.overview.roseThisWeek", rosedValue),
-                buildStatCard("exchange.overview.fellThisWeek", fellValue)
+                withGrow(new TotalStocksCard(gameManager)),
+                withGrow(new GainersCard(gameManager)),
+                withGrow(new LosersCard(gameManager))
         );
 
         Exchange exchange = gameManager.getExchange();
@@ -65,44 +60,29 @@ public class ExchangeOverview extends VBox implements GameObserver {
         HBox tables = new HBox(16, winnersTable, losersTable);
 
         getChildren().addAll(statCards, tables);
-
-        updateStats();
     }
 
     /**
-     * Builds a single stat card with a title and a value label.
+     * Sets horizontal grow priority to ALWAYS for the given card and returns it.
+     * Used to make stat cards fill the available width equally.
      *
-     * @param titleKey   the i18n key for the card title
-     * @param valueLabel the {@link StyledText} to display the value in
-     * @return a VBox styled as a card
+     * @param card the card to configure
+     * @return the same card with grow priority set
      */
-    private VBox buildStatCard(String titleKey, StyledText valueLabel) {
-        StyledText title = StyledText.widgetLabel(LanguageManager.get(titleKey));
-
-        VBox card = new VBox(4, title, valueLabel);
-        card.getStyleClass().add("card");
+    private VBox withGrow(VBox card) {
         HBox.setHgrow(card, Priority.ALWAYS);
         return card;
     }
 
     /**
-     * Updates the stat cards with current exchange data.
-     */
-    private void updateStats() {
-        Exchange exchange = gameManager.getExchange();
-        totalStocksValue.setText(String.valueOf(exchange.getStocks().size()));
-        rosedValue.setText(String.valueOf(exchange.getGainers(Integer.MAX_VALUE).size()));
-        fellValue.setText(String.valueOf(exchange.getLosers(Integer.MAX_VALUE).size()));
-    }
-
-    /**
      * Called when the game state has changed.
-     * Refreshes stat cards and ranking tables.
+     * Refreshes the ranking tables with updated gainers and losers.
+     * Stat cards ({@link TotalStocksCard}, {@link GainersCard}, {@link LosersCard})
+     * update themselves via their own {@link GameObserver} registration.
      */
     @Override
     public void onGameUpdated() {
         Exchange exchange = gameManager.getExchange();
-        updateStats();
         winnersTable.update(exchange.getGainers(RANKING_LIMIT));
         losersTable.update(exchange.getLosers(RANKING_LIMIT));
     }
