@@ -41,8 +41,8 @@ public class ExchangeOverview extends VBox implements GameObserver {
         getStyleClass().add("content-area");
 
         totalStocksValue = StyledText.widgetValue();
-        rosedValue       = StyledText.widgetValue();
-        fellValue        = StyledText.widgetValue();
+        rosedValue = StyledText.widgetValue();
+        fellValue  = StyledText.widgetValue();
 
         HBox statCards = new HBox(16,
                 buildStatCard("exchange.overview.totalStocks", totalStocksValue),
