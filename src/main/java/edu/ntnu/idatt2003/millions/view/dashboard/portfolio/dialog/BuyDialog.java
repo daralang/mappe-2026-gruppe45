@@ -7,12 +7,15 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.Currency;
 import java.util.function.Consumer;
 
 /**
  * Dialog for buying shares of a stock.
  */
 public class BuyDialog extends TransactionDialog {
+
+    private static final Currency NOK = Currency.getInstance("NOK");
 
     private Consumer<BigDecimal> onConfirmCallback;
 
@@ -30,11 +33,6 @@ public class BuyDialog extends TransactionDialog {
         return MessageFormat.format(LanguageManager.get("dialog.stock.priceHint"),
                 NUMBER_FORMAT.format(stock.getSalesPrice()),
                 stock.getCurrency().getCurrencyCode());
-    }
-
-    @Override
-    protected BigDecimal getInitialQuantity() {
-        return BigDecimal.ONE;
     }
 
     @Override
@@ -59,8 +57,8 @@ public class BuyDialog extends TransactionDialog {
 
         BigDecimal quantity = getQuantity();
         if (quantity == null) {
+            renderEmptySummary();
             setConfirmEnabled(false);
-            balanceAfterValue.setText("");
             return;
         }
 
@@ -72,6 +70,9 @@ public class BuyDialog extends TransactionDialog {
                 NUMBER_FORMAT.format(preview.commission()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("dialog.summary.totalCost"),
                 NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
+        if (!stock.getCurrency().equals(NOK)) {
+            summaryBox.addConversion("= " + NUMBER_FORMAT.format(preview.totalInNok()) + " NOK");
+        }
 
         balanceAfterValue.setText(
                 NUMBER_FORMAT.format(preview.balanceAfter()) + " NOK");
@@ -85,6 +86,19 @@ public class BuyDialog extends TransactionDialog {
             balanceAfterValue.getStyleClass().removeAll("positive", "negative");
             setConfirmEnabled(true);
         }
+    }
+
+    private void renderEmptySummary() {
+        String zero = NUMBER_FORMAT.format(BigDecimal.ZERO) + " " + currencyCode();
+        summaryBox.addRow(LanguageManager.get("dialog.summary.gross"), zero);
+        summaryBox.addRow(LanguageManager.get("dialog.summary.commissionBuy"), zero);
+        summaryBox.addTotal(LanguageManager.get("dialog.summary.totalCost"), zero);
+        if (!stock.getCurrency().equals(NOK)) {
+            summaryBox.addConversion("= " + NUMBER_FORMAT.format(BigDecimal.ZERO) + " NOK");
+        }
+        balanceAfterValue.getStyleClass().removeAll("positive", "negative");
+        balanceAfterValue.setText(
+                NUMBER_FORMAT.format(controller.getCurrentBalance()) + " NOK");
     }
 
     /**

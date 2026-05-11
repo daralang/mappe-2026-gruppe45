@@ -42,7 +42,7 @@ public abstract class TransactionDialog extends Modal {
     protected final StyledText balanceAfterValue = StyledText.detailValue();
     protected final Label errorLabel = new Label();
     protected final Button confirmButton = new Button();
-    protected final Label transactionInfoLabel = new Label();
+    private final VBox transactionInfoBox = new VBox(2);
 
     /**
      * Constructs a new TransactionDialog.
@@ -83,15 +83,15 @@ public abstract class TransactionDialog extends Modal {
                 buildStockSection(),
                 buildQuantitySection(),
                 summaryBox,
-                transactionInfoLabel,
+                transactionInfoBox,
                 buildBalanceSection(),
                 errorLabel,
                 buildActions()
         );
 
-        transactionInfoLabel.getStyleClass().add("modal-info");
-        transactionInfoLabel.setVisible(false);
-        transactionInfoLabel.setManaged(false);
+        transactionInfoBox.getStyleClass().add("modal-info");
+        transactionInfoBox.setVisible(false);
+        transactionInfoBox.setManaged(false);
 
         errorLabel.getStyleClass().add("modal-error");
         errorLabel.setVisible(false);
@@ -192,6 +192,7 @@ public abstract class TransactionDialog extends Modal {
     protected void hideError() {
         errorLabel.setVisible(false);
         errorLabel.setManaged(false);
+        sizeToContent();
     }
 
     /**
@@ -204,6 +205,7 @@ public abstract class TransactionDialog extends Modal {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);
+        sizeToContent();
     }
 
     protected void setConfirmEnabled(boolean enabled) {
@@ -211,27 +213,46 @@ public abstract class TransactionDialog extends Modal {
     }
 
     /**
-     * Sets an informational message shown between the summary box and
-     * the balance section. Pass null or empty to hide.
+     * Shows a profit/loss info box with label on the left and value(s) right-aligned.
+     * Pass null for label to hide the box.
      *
-     * @param message  the message text, or null/empty to hide
-     * @param positive true for green styling, false for red
+     * @param label          leading text (left-aligned), or null to hide the box
+     * @param primaryValue   main right-aligned value (e.g. "−22,28 USD (-8.0%)")
+     * @param secondaryValue optional smaller right-aligned line (e.g. "= −205,23 NOK"); null omits it
+     * @param positive       true for green coloring, false for red
      */
-    protected void setTransactionInfo(String message, boolean positive) {
-        if (message == null || message.isEmpty()) {
-            transactionInfoLabel.setVisible(false);
-            transactionInfoLabel.setManaged(false);
+    protected void setTransactionInfo(String label, String primaryValue, String secondaryValue, boolean positive) {
+        if (label == null) {
+            transactionInfoBox.setVisible(false);
+            transactionInfoBox.setManaged(false);
+            sizeToContent();
             return;
         }
-        transactionInfoLabel.setText(message);
-        transactionInfoLabel.getStyleClass().removeAll(
-                "modal-info-positive", "modal-info-negative"
-        );
-        transactionInfoLabel.getStyleClass().add(
-                positive ? "modal-info-positive" : "modal-info-negative"
-        );
-        transactionInfoLabel.setVisible(true);
-        transactionInfoLabel.setManaged(true);
+        String colorClass = positive ? "modal-info-positive" : "modal-info-negative";
+        String valueClass = positive ? "positive" : "negative";
+
+        transactionInfoBox.getStyleClass().removeAll("modal-info-positive", "modal-info-negative");
+        transactionInfoBox.getStyleClass().add(colorClass);
+        transactionInfoBox.getChildren().clear();
+
+        Label labelNode = new Label(label);
+        Label primaryNode = new Label(primaryValue);
+        primaryNode.getStyleClass().add(valueClass);
+        Region spacer1 = new Region();
+        HBox.setHgrow(spacer1, Priority.ALWAYS);
+        transactionInfoBox.getChildren().add(new HBox(labelNode, spacer1, primaryNode));
+
+        if (secondaryValue != null && !secondaryValue.isEmpty()) {
+            Label secondaryNode = new Label(secondaryValue);
+            secondaryNode.getStyleClass().addAll("modal-summary-conversion-text", valueClass);
+            Region spacer2 = new Region();
+            HBox.setHgrow(spacer2, Priority.ALWAYS);
+            transactionInfoBox.getChildren().add(new HBox(spacer2, secondaryNode));
+        }
+
+        transactionInfoBox.setVisible(true);
+        transactionInfoBox.setManaged(true);
+        sizeToContent();
     }
 
     /**
@@ -244,7 +265,16 @@ public abstract class TransactionDialog extends Modal {
 
     protected abstract String getStockHint();
 
-    protected abstract BigDecimal getInitialQuantity();
+    /**
+     * Returns the quantity to pre-fill in the input field when the dialog opens.
+     * Defaults to zero so the user must enter a deliberate amount before Confirm
+     * activates. Subclasses may override when a different default makes sense.
+     *
+     * @return the initial quantity; zero by default
+     */
+    protected BigDecimal getInitialQuantity() {
+        return BigDecimal.ZERO;
+    }
 
     protected abstract String getBalanceAfterLabel();
 

@@ -41,6 +41,24 @@ public class SummaryBox extends VBox {
     }
 
     /**
+     * Adds a right-aligned conversion line in small, muted text.
+     * Use for displaying the NOK equivalent of a foreign-currency total.
+     *
+     * @param value the formatted conversion string (e.g. "= 9 210,00 NOK")
+     */
+    public void addConversion(String value) {
+        Label valueNode = new Label(value);
+        valueNode.getStyleClass().add("modal-summary-conversion-text");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox row = new HBox(spacer, valueNode);
+        row.getStyleClass().add("modal-summary-conversion");
+        getChildren().add(row);
+    }
+
+    /**
      * Removes all rows from the summary.
      */
     public void clear() {

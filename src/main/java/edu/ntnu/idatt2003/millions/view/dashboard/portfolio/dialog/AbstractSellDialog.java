@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.Currency;
 import java.util.function.Consumer;
 
 /**
@@ -19,6 +20,8 @@ import java.util.function.Consumer;
  * locks the quantity to the full position.</p>
  */
 public abstract class AbstractSellDialog extends TransactionDialog {
+
+    protected static final Currency NOK = Currency.getInstance("NOK");
 
     protected final Share share;
     protected Consumer<BigDecimal> onConfirmCallback;
@@ -43,11 +46,6 @@ public abstract class AbstractSellDialog extends TransactionDialog {
         return MessageFormat.format(LanguageManager.get("dialog.stock.salesPriceHint"),
                 NUMBER_FORMAT.format(stock.getSalesPrice()),
                 stock.getCurrency().getCurrencyCode());
-    }
-
-    @Override
-    protected BigDecimal getInitialQuantity() {
-        return share.getQuantity();
     }
 
     @Override
@@ -83,6 +81,9 @@ public abstract class AbstractSellDialog extends TransactionDialog {
                 "\u2212" + NUMBER_FORMAT.format(preview.tax()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("dialog.summary.totalReceived"),
                 NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
+        if (!stock.getCurrency().equals(NOK)) {
+            summaryBox.addConversion("= " + NUMBER_FORMAT.format(preview.totalInNok()) + " NOK");
+        }
 
         renderProfitLoss(preview);
         renderBalanceAfter(preview);
@@ -94,11 +95,16 @@ public abstract class AbstractSellDialog extends TransactionDialog {
         boolean positive = preview.profit().signum() >= 0;
         String sign = positive ? "+" : "\u2212";
         String pctSign = positive ? "+" : "";
-        String suffix = sign + NUMBER_FORMAT.format(preview.profit().abs()) + " " + currencyCode() + " ("
-                + pctSign + preview.profitPercent().toPlainString() + "%)";
-        String key = positive ? "dialog.profit.gain" : "dialog.profit.loss";
-        String message = MessageFormat.format(LanguageManager.get(key), suffix);
-        setTransactionInfo(message, positive);
+
+        String label = LanguageManager.get(positive ? "dialog.profit.gain" : "dialog.profit.loss");
+        String primaryValue = sign + NUMBER_FORMAT.format(preview.profit().abs()) + " " + currencyCode()
+                + " (" + pctSign + preview.profitPercent().toPlainString() + "%)";
+
+        String secondaryValue = null;
+        if (!stock.getCurrency().equals(NOK) && preview.profitInNok() != null) {
+            secondaryValue = "= " + sign + NUMBER_FORMAT.format(preview.profitInNok().abs()) + " NOK";
+        }
+        setTransactionInfo(label, primaryValue, secondaryValue, positive);
     }
 
     private void renderBalanceAfter(TransactionPreview preview) {
