@@ -3,7 +3,7 @@
 }
 
 .modal-card {
-    -fx-background-color: surface;
+    -fx-background-color: -surface;
     -fx-background-radius: 12;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 24, 0, 0, 4);
     -fx-min-width: 460;
@@ -12,7 +12,7 @@
 
 .modal-header {
     -fx-padding: 20 24 16 24;
-    -fx-border-color: border-light;
+    -fx-border-color: -border-light;
     -fx-border-width: 0 0 1 0;
     -fx-alignment: center-left;
 }
@@ -24,7 +24,7 @@
 
 .modal-close {
     -fx-font-size: 18;
-    -fx-text-fill: text-secondary;
+    -fx-text-fill: -text-secondary;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-padding: 0 4 0 4;
@@ -47,17 +47,17 @@
 .modal-input {
     -fx-font-size: 14;
     -fx-padding: 8 12 8 12;
-    -fx-background-color: surface;
-    -fx-border-color: border;
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
 }
 .modal-input:focused {
-    -fx-border-color: primary;
+    -fx-border-color: -primary;
 }
 
 .modal-summary {
-    -fx-background-color: surface-alt;
+    -fx-background-color: -surface-alt;
     -fx-background-radius: 8;
     -fx-padding: 14 16 14 16;
     -fx-spacing: 6;
@@ -68,7 +68,7 @@
 }
 
 .modal-summary-total {
-    -fx-border-color: border;
+    -fx-border-color: -border;
     -fx-border-width: 1 0 0 0;
     -fx-padding: 8 0 0 0;
 }
@@ -92,32 +92,32 @@
     -fx-padding: 10 20 10 20;
     -fx-background-radius: 8;
     -fx-cursor: hand;
-    -fx-background-color: surface;
-    -fx-border-color: border;
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
     -fx-border-radius: 8;
 }
 .modal-button:hover {
-    -fx-background-color: surface-alt;
+    -fx-background-color: -surface-alt;
 }
 
 .modal-button-primary {
-    -fx-background-color: primary;
+    -fx-background-color: -primary;
     -fx-text-fill: white;
-    -fx-border-color: primary;
+    -fx-border-color: -primary;
 }
 .modal-button-primary:hover {
-    -fx-background-color: primary-dark;
-    -fx-border-color: primary-dark;
+    -fx-background-color: -primary-dark;
+    -fx-border-color: -primary-dark;
 }
 
 .modal-button-danger {
-    -fx-background-color: danger;
+    -fx-background-color: -danger;
     -fx-text-fill: white;
-    -fx-border-color: danger;
+    -fx-border-color: -danger;
 }
 .modal-button-danger:hover {
-    -fx-background-color: danger-dark;
-    -fx-border-color: danger-dark;
+    -fx-background-color: -danger-dark;
+    -fx-border-color: -danger-dark;
 }
 
 .modal-button:disabled {
@@ -127,7 +127,7 @@
 
 .modal-error {
     -fx-font-size: 12;
-    -fx-text-fill: danger;
+    -fx-text-fill: -danger;
 }
 
 .modal-info {
@@ -137,18 +137,18 @@
 }
 
 .modal-info-positive {
-    -fx-background-color: success-bg;
-    -fx-text-fill: success-text;
+    -fx-background-color: -success-bg;
+    -fx-text-fill: -success-text;
 }
 
 .modal-info-negative {
-    -fx-background-color: danger-bg;
-    -fx-text-fill: danger-text;
+    -fx-background-color: -danger-bg;
+    -fx-text-fill: -danger-text;
 }
 
 .modal-success-icon {
-    -fx-background-color: success-bg;
-    -fx-text-fill: success-text;
+    -fx-background-color: -success-bg;
+    -fx-text-fill: -success-text;
     -fx-min-width: 32px;
     -fx-min-height: 32px;
     -fx-max-width: 32px;
@@ -160,13 +160,13 @@
 }
 
 .modal-header-success {
-    -fx-background-color: success-bg;
+    -fx-background-color: -success-bg;
     -fx-background-radius: 12 12 0 0;
     -fx-padding: 16 20;
-    -fx-border-color: success-border;
+    -fx-border-color: -success-border;
     -fx-border-width: 0 0 1 0;
 }
 
 .modal-header-success .modal-title {
-    -fx-text-fill: success-text;
+    -fx-text-fill: -success-text;
 }

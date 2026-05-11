@@ -5,7 +5,7 @@
 
 .advance-button {
     -fx-background-color: transparent;
-    -fx-border-color: border;
+    -fx-border-color: -border;
     -fx-border-radius: 20;
     -fx-background-radius: 20;
     -fx-cursor: hand;
@@ -14,12 +14,12 @@
 }
 
 .advance-button:hover {
-    -fx-background-color: surface-alt;
+    -fx-background-color: -surface-alt;
 }
 
 /* === Card === */
 .card {
-    -fx-background-color: surface;
+    -fx-background-color: -surface;
     -fx-background-radius: 12;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 12, 0, 0, 2);
     -fx-padding: 16;
@@ -48,17 +48,17 @@
 }
 
 .content-scroll .scroll-bar:vertical .thumb {
-    -fx-background-color: border;
+    -fx-background-color: -border;
     -fx-background-radius: 6;
     -fx-background-insets: 0;
 }
 
 .content-scroll .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: border-strong;
+    -fx-background-color: -border-strong;
 }
 
 .content-scroll .scroll-bar:vertical .thumb:pressed {
-    -fx-background-color: text-secondary;
+    -fx-background-color: -text-secondary;
 }
 
 .content-scroll .scroll-bar:vertical .increment-button,
