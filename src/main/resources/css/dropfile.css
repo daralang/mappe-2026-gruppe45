@@ -1,10 +1,10 @@
 .drop-zone {
-    -fx-border-color: border-strong;
+    -fx-border-color: -border-strong;
     -fx-border-style: dashed;
     -fx-border-width: 2;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
-    -fx-background-color: surface-alt;
+    -fx-background-color: -surface-alt;
 }
 
 /* Highlight on drag over */
@@ -13,16 +13,16 @@
     -fx-border-width: 2;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
-    -fx-background-color: border-light;
+    -fx-background-color: -border-light;
 }
 .drop-zone-hint {
     -fx-font-size: 24;
     -fx-font-family: "Sans-Serif";
-    -fx-text-fill: text-muted;
+    -fx-text-fill: -text-muted;
 }
 
 .drop-zone-or {
     -fx-font-size: 16;
     -fx-font-family: "Sans-Serif";
-    -fx-text-fill: text-muted;
+    -fx-text-fill: -text-muted;
 }
