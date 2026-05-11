@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
@@ -13,7 +15,9 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -278,5 +282,129 @@ class TransactionArchiveTest {
             // Act & Assert
             assertEquals(1, archive.countDistinctWeeks());
         }
+    }
+
+    @Nested
+    @DisplayName("getRealizedGainsByCurrency()")
+    class GetRealizedGainsByCurrency {
+
+        @Test
+        @DisplayName("Should return empty map when archive is empty")
+        void returnsEmptyMapWhenArchiveIsEmpty() {
+            // Act & Assert
+            assertTrue(archive.getRealizedGainsByCurrency().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should include profitable sale and exclude losing sale")
+        void includesOnlyProfitableSales() {
+            // Arrange
+            Player player = new Player("Alva", new BigDecimal("100000.00"));
+            Share gainShare = makeShare("DIS", new BigDecimal("200.00"), new BigDecimal("100.00"));
+            Share lossShare = makeShare("NKE", new BigDecimal("50.00"), new BigDecimal("100.00"));
+            player.getPortfolio().addShare(gainShare);
+            player.getPortfolio().addShare(lossShare);
+            Sale gainSale = new Sale(gainShare, 1);
+            Sale lossSale = new Sale(lossShare, 1);
+            gainSale.commit(player);
+            lossSale.commit(player);
+            archive.add(gainSale);
+            archive.add(lossSale);
+            // Act
+            Map<Currency, BigDecimal> result = archive.getRealizedGainsByCurrency();
+            // Assert
+            assertEquals(1, result.size());
+            assertTrue(result.containsKey(Currency.getInstance("USD")));
+        }
+
+        @Test
+        @DisplayName("Realized gain reflects sale-time price, not current price")
+        void usesConstructionTimePriceNotCurrentPrice() {
+            // Arrange — sale at price 200.00
+            Player player = new Player("Alva", new BigDecimal("100000.00"));
+            Share gainShare = makeShare("DIS", new BigDecimal("200.00"), new BigDecimal("100.00"));
+            player.getPortfolio().addShare(gainShare);
+            Sale sale = new Sale(gainShare, 1);
+            BigDecimal profitAtSaleTime = sale.getProfit();
+            sale.commit(player);
+            archive.add(sale);
+
+            // Stock price advances to a much higher value after the sale
+            gainShare.getStock().addNewSalesPrice(new BigDecimal("999.00"));
+
+            // A live SalesCalculator would now compute a higher profit
+            BigDecimal liveProfit = new SalesCalculator(gainShare).calculateProfit();
+            assertNotEquals(0, profitAtSaleTime.compareTo(liveProfit),
+                    "Pre-condition: live price should produce a different profit");
+
+            // Act
+            Map<Currency, BigDecimal> result = archive.getRealizedGainsByCurrency();
+
+            // Assert — archive must reflect the frozen sale-time value, not the live price
+            assertEquals(0, profitAtSaleTime.compareTo(result.get(Currency.getInstance("USD"))));
+        }
+    }
+
+    @Nested
+    @DisplayName("getRealizedLossesByCurrency()")
+    class GetRealizedLossesByCurrency {
+
+        @Test
+        @DisplayName("Should return absolute loss as a positive number")
+        void returnsLossAsPositive() {
+            // Arrange
+            Player player = new Player("Alva", new BigDecimal("100000.00"));
+            Share lossShare = makeShare("NKE", new BigDecimal("50.00"), new BigDecimal("100.00"));
+            player.getPortfolio().addShare(lossShare);
+            Sale sale = new Sale(lossShare, 1);
+            sale.commit(player);
+            archive.add(sale);
+            // Act
+            Map<Currency, BigDecimal> result = archive.getRealizedLossesByCurrency();
+            // Assert
+            assertFalse(result.isEmpty());
+            assertTrue(result.get(Currency.getInstance("USD")).signum() > 0);
+        }
+    }
+
+    @Nested
+    @DisplayName("getSalesCount()")
+    class GetSalesCount {
+
+        @Test
+        @DisplayName("Should return zero when archive has no sales")
+        void returnsZeroWhenNoSales() {
+            // Arrange
+            archive.add(new Purchase(share, 1));
+            // Act & Assert
+            assertEquals(0, archive.getSalesCount());
+        }
+
+        @Test
+        @DisplayName("Should count only sales, not purchases")
+        void countsOnlySales() {
+            // Arrange
+            Player player = new Player("Alva", new BigDecimal("100000.00"));
+            Share shareA = makeShare("DIS", new BigDecimal("150.00"), new BigDecimal("100.00"));
+            Share shareB = makeShare("NKE", new BigDecimal("150.00"), new BigDecimal("100.00"));
+            player.getPortfolio().addShare(shareA);
+            player.getPortfolio().addShare(shareB);
+            Sale sale1 = new Sale(shareA, 1);
+            Sale sale2 = new Sale(shareB, 1);
+            sale1.commit(player);
+            sale2.commit(player);
+            archive.add(new Purchase(share, 1));
+            archive.add(sale1);
+            archive.add(sale2);
+            // Act & Assert
+            assertEquals(2, archive.getSalesCount());
+        }
+    }
+
+    private static Share makeShare(String symbol, BigDecimal salesPrice, BigDecimal purchasePrice) {
+        return new Share(
+                new Stock(symbol, "Test Co",
+                        new ArrayList<>(List.of(salesPrice))),
+                new BigDecimal("10"), purchasePrice);
     }
 }
