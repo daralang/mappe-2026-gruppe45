@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.manager;
+package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
@@ -27,18 +27,18 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for the facade methods on {@link GameManager}.
+ * Unit tests for the facade methods on {@link GameService}.
  * <p>
- * This test class verifies that the facade methods on GameManager correctly
+ * This test class verifies that the facade methods on GameService correctly
  * delegate to the underlying domain objects ({@link Player}, Portfolio,
  * {@link Exchange}) and return the expected derived values.
  * </p>
  * <p>
  * Game state is set up by saving a known {@link Player} and {@link Exchange}
- * to a temporary file, then loading it via {@link GameManager#loadGame}.
+ * to a temporary file, then loading it via {@link GameService#loadGame}.
  * </p>
  */
-class GameManagerTest {
+class GameServiceTest {
 
     private static final BigDecimal STARTING_MONEY = new BigDecimal("10000.00");
     private static final BigDecimal STOCK_PRICE = new BigDecimal("100.00");
@@ -48,7 +48,7 @@ class GameManagerTest {
     private static final BigDecimal EXPECTED_PORTFOLIO_VALUE = new BigDecimal("500.0000");
     private static final BigDecimal EXPECTED_NET_WORTH_AFTER_PURCHASE = new BigDecimal("9997.50000");
 
-    private GameManager gameManager;
+    private GameService gameService;
 
     @TempDir
     Path tempDir;
@@ -66,8 +66,8 @@ class GameManagerTest {
         Path file = tempDir.resolve("save.json");
         new JsonGameFileHandler().saveGame(player, exchange, file.toFile());
 
-        gameManager = new GameManager();
-        gameManager.loadGame(file.toFile());
+        gameService = new GameService();
+        gameService.loadGame(file.toFile());
     }
 
     @Nested
@@ -79,7 +79,7 @@ class GameManagerTest {
         void throwsExceptionWhenObserverIsNull() {
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    gameManager.addObserver(null));
+                    gameService.addObserver(null));
         }
     }
 
@@ -92,18 +92,18 @@ class GameManagerTest {
         void throwsExceptionWhenFileIsNull() {
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    gameManager.saveGame(null));
+                    gameService.saveGame(null));
         }
 
         @Test
         @DisplayName("Should throw exception when no active game exists")
         void throwsExceptionWhenNoActiveGameExists() {
             // Arrange
-            GameManager emptyGameManager = new GameManager();
+            GameService emptyGameService = new GameService();
             File file = tempDir.resolve("empty-save.json").toFile();
             // Act & Assert
             assertThrows(IllegalStateException.class, () ->
-                    emptyGameManager.saveGame(file));
+                    emptyGameService.saveGame(file));
         }
 
         @Test
@@ -112,7 +112,7 @@ class GameManagerTest {
             // Arrange
             File file = tempDir.resolve("saved-game.json").toFile();
             // Act
-            gameManager.saveGame(file);
+            gameService.saveGame(file);
             // Assert
             assertTrue(file.isFile());
             assertTrue(file.length() > 0);
@@ -128,17 +128,17 @@ class GameManagerTest {
         void throwsExceptionWhenFileIsNull() {
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    gameManager.loadGame(null));
+                    gameService.loadGame(null));
         }
 
         @Test
         @DisplayName("Should load player and exchange from file")
         void loadsPlayerAndExchangeFromFile() {
             // Act & Assert
-            assertEquals("Dara", gameManager.getPlayer().getName());
-            assertEquals("NYSE", gameManager.getExchange().getName());
-            assertTrue(gameManager.getExchange().hasStock("EQNR"));
-            assertNotNull(gameManager.getExchange().getCurrencyConverter());
+            assertEquals("Dara", gameService.getPlayer().getName());
+            assertEquals("NYSE", gameService.getExchange().getName());
+            assertTrue(gameService.getExchange().hasStock("EQNR"));
+            assertNotNull(gameService.getExchange().getCurrencyConverter());
         }
     }
 
@@ -152,17 +152,17 @@ class GameManagerTest {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,276.43\nMSFT,Microsoft,404.68\n");
             CountingObserver observer = new CountingObserver();
-            GameManager newGameManager = new GameManager();
-            newGameManager.addObserver(observer);
+            GameService newGameService = new GameService();
+            newGameService.addObserver(observer);
             // Act
-            newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile);
+            newGameService.createNewGame("Dara", STARTING_MONEY, stockFile);
             // Assert
-            assertEquals("Dara", newGameManager.getPlayer().getName());
-            assertEquals(0, STARTING_MONEY.compareTo(newGameManager.getPlayer().getMoney()));
-            assertEquals("MainExchange", newGameManager.getExchange().getName());
-            assertTrue(newGameManager.getExchange().hasStock("AAPL"));
-            assertTrue(newGameManager.getExchange().hasStock("MSFT"));
-            assertNotNull(newGameManager.getExchange().getCurrencyConverter());
+            assertEquals("Dara", newGameService.getPlayer().getName());
+            assertEquals(0, STARTING_MONEY.compareTo(newGameService.getPlayer().getMoney()));
+            assertEquals("MainExchange", newGameService.getExchange().getName());
+            assertTrue(newGameService.getExchange().hasStock("AAPL"));
+            assertTrue(newGameService.getExchange().hasStock("MSFT"));
+            assertNotNull(newGameService.getExchange().getCurrencyConverter());
             assertEquals(1, observer.updateCount);
         }
 
@@ -171,17 +171,17 @@ class GameManagerTest {
         void createsPlayerAndExchangeFromDefaultStockData() {
             // Arrange
             CountingObserver observer = new CountingObserver();
-            GameManager newGameManager = new GameManager();
-            newGameManager.addObserver(observer);
+            GameService newGameService = new GameService();
+            newGameService.addObserver(observer);
             // Act
-            newGameManager.createNewGame("Dara", STARTING_MONEY);
+            newGameService.createNewGame("Dara", STARTING_MONEY);
             // Assert
-            assertEquals("Dara", newGameManager.getPlayer().getName());
-            assertEquals(0, STARTING_MONEY.compareTo(newGameManager.getPlayer().getMoney()));
-            assertEquals("MainExchange", newGameManager.getExchange().getName());
-            assertTrue(newGameManager.getExchange().hasStock("NVDA"));
-            assertTrue(newGameManager.getExchange().hasStock("AAPL"));
-            assertNotNull(newGameManager.getExchange().getCurrencyConverter());
+            assertEquals("Dara", newGameService.getPlayer().getName());
+            assertEquals(0, STARTING_MONEY.compareTo(newGameService.getPlayer().getMoney()));
+            assertEquals("MainExchange", newGameService.getExchange().getName());
+            assertTrue(newGameService.getExchange().hasStock("NVDA"));
+            assertTrue(newGameService.getExchange().hasStock("AAPL"));
+            assertNotNull(newGameService.getExchange().getCurrencyConverter());
             assertEquals(1, observer.updateCount);
         }
 
@@ -189,10 +189,10 @@ class GameManagerTest {
         @DisplayName("Should throw exception when stock file is null")
         void throwsExceptionWhenStockFileIsNull() {
             // Arrange
-            GameManager newGameManager = new GameManager();
+            GameService newGameService = new GameService();
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    newGameManager.createNewGame("Dara", STARTING_MONEY, null));
+                    newGameService.createNewGame("Dara", STARTING_MONEY, null));
         }
 
         @Test
@@ -200,10 +200,10 @@ class GameManagerTest {
         void throwsExceptionWhenPlayerNameIsBlank() throws IOException {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,276.43\n");
-            GameManager newGameManager = new GameManager();
+            GameService newGameService = new GameService();
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    newGameManager.createNewGame("", STARTING_MONEY, stockFile));
+                    newGameService.createNewGame("", STARTING_MONEY, stockFile));
         }
 
         @Test
@@ -211,10 +211,10 @@ class GameManagerTest {
         void throwsExceptionWhenCapitalIsNotPositive() throws IOException {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,276.43\n");
-            GameManager newGameManager = new GameManager();
+            GameService newGameService = new GameService();
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    newGameManager.createNewGame("Dara", new BigDecimal("-1.00"), stockFile));
+                    newGameService.createNewGame("Dara", new BigDecimal("-1.00"), stockFile));
         }
 
         @Test
@@ -222,10 +222,10 @@ class GameManagerTest {
         void throwsExceptionWhenCapitalIsZero() throws IOException {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,276.43\n");
-            GameManager newGameManager = new GameManager();
+            GameService newGameService = new GameService();
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    newGameManager.createNewGame("Dara", BigDecimal.ZERO, stockFile));
+                    newGameService.createNewGame("Dara", BigDecimal.ZERO, stockFile));
         }
 
         @Test
@@ -233,10 +233,10 @@ class GameManagerTest {
         void throwsExceptionWhenStockFileIsEmpty() throws IOException {
             // Arrange
             File stockFile = createStockFile("");
-            GameManager newGameManager = new GameManager();
+            GameService newGameService = new GameService();
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
-                    newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile));
+                    newGameService.createNewGame("Dara", STARTING_MONEY, stockFile));
         }
 
         @Test
@@ -245,12 +245,12 @@ class GameManagerTest {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
             Currency selectedCurrency = Currency.getInstance("EUR");
-            GameManager newGameManager = new GameManager();
+            GameService newGameService = new GameService();
             // Act
-            newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile, selectedCurrency);
+            newGameService.createNewGame("Dara", STARTING_MONEY, stockFile, selectedCurrency);
             // Assert
             assertEquals(selectedCurrency,
-                    newGameManager.getExchange().getStock("AAPL").getCurrency());
+                    newGameService.getExchange().getStock("AAPL").getCurrency());
         }
 
         @Test
@@ -259,16 +259,16 @@ class GameManagerTest {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
             Currency usd = Currency.getInstance("USD");
-            GameManager newGameManager = new GameManager();
-            newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile, usd);
+            GameService newGameService = new GameService();
+            newGameService.createNewGame("Dara", STARTING_MONEY, stockFile, usd);
             // Act
-            newGameManager.buy("AAPL", QUANTITY);
+            newGameService.buy("AAPL", QUANTITY);
             // Assert: 5 * 100 USD * 1.005 commission = 502.50 USD; * 9.21 NOK/USD = 4628.0250 NOK
             BigDecimal expectedRemaining = STARTING_MONEY.subtract(new BigDecimal("4628.0250"));
             assertEquals(0,
-                    expectedRemaining.compareTo(newGameManager.getPlayer().getMoney()));
+                    expectedRemaining.compareTo(newGameService.getPlayer().getMoney()));
             assertEquals(usd,
-                    newGameManager.getExchange().getStock("AAPL").getCurrency());
+                    newGameService.getExchange().getStock("AAPL").getCurrency());
         }
 
         @Test
@@ -276,10 +276,10 @@ class GameManagerTest {
         void throwsExceptionWhenCurrencyIsNull() throws IOException {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
-            GameManager newGameManager = new GameManager();
+            GameService newGameService = new GameService();
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile, null));
+                    newGameService.createNewGame("Dara", STARTING_MONEY, stockFile, null));
         }
 
         @Test
@@ -287,24 +287,24 @@ class GameManagerTest {
         void defaultsStockCurrencyToUsdForCustomFile() throws IOException {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
-            GameManager newGameManager = new GameManager();
+            GameService newGameService = new GameService();
             // Act
-            newGameManager.createNewGame("Dara", STARTING_MONEY, stockFile);
+            newGameService.createNewGame("Dara", STARTING_MONEY, stockFile);
             // Assert
             assertEquals(Currency.getInstance("USD"),
-                    newGameManager.getExchange().getStock("AAPL").getCurrency());
+                    newGameService.getExchange().getStock("AAPL").getCurrency());
         }
 
         @Test
         @DisplayName("Should tag default stock data with USD")
         void tagsDefaultStockDataWithUsd() {
             // Arrange
-            GameManager newGameManager = new GameManager();
+            GameService newGameService = new GameService();
             // Act
-            newGameManager.createNewGame("Dara", STARTING_MONEY);
+            newGameService.createNewGame("Dara", STARTING_MONEY);
             // Assert
             assertEquals(Currency.getInstance("USD"),
-                    newGameManager.getExchange().getStock("AAPL").getCurrency());
+                    newGameService.getExchange().getStock("AAPL").getCurrency());
         }
 
         @Test
@@ -312,16 +312,16 @@ class GameManagerTest {
         void leavesPreviousStateIntactOnFailure() throws IOException {
             // Arrange: an already-active game from setUp() loaded "NYSE" with EQNR
             CountingObserver observer = new CountingObserver();
-            gameManager.addObserver(observer);
+            gameService.addObserver(observer);
             File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
             // Act: a failed createNewGame must not mutate the active state
             assertThrows(IllegalArgumentException.class, () ->
-                    gameManager.createNewGame("", STARTING_MONEY, stockFile));
+                    gameService.createNewGame("", STARTING_MONEY, stockFile));
             // Assert: previous player and exchange remain
-            assertEquals("Dara", gameManager.getPlayer().getName());
-            assertEquals("NYSE", gameManager.getExchange().getName());
-            assertTrue(gameManager.getExchange().hasStock("EQNR"));
-            assertFalse(gameManager.getExchange().hasStock("AAPL"));
+            assertEquals("Dara", gameService.getPlayer().getName());
+            assertEquals("NYSE", gameService.getExchange().getName());
+            assertTrue(gameService.getExchange().hasStock("EQNR"));
+            assertFalse(gameService.getExchange().hasStock("AAPL"));
             assertEquals(0, observer.updateCount);
         }
 
@@ -330,11 +330,11 @@ class GameManagerTest {
         void doesNotNotifyObserversWhenStockFileIsNull() {
             // Arrange
             CountingObserver observer = new CountingObserver();
-            GameManager newGameManager = new GameManager();
-            newGameManager.addObserver(observer);
+            GameService newGameService = new GameService();
+            newGameService.addObserver(observer);
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    newGameManager.createNewGame("Dara", STARTING_MONEY, null));
+                    newGameService.createNewGame("Dara", STARTING_MONEY, null));
             assertEquals(0, observer.updateCount);
         }
     }
@@ -348,16 +348,16 @@ class GameManagerTest {
         void buysSharesAndNotifiesObservers() {
             // Arrange
             CountingObserver observer = new CountingObserver();
-            gameManager.addObserver(observer);
+            gameService.addObserver(observer);
             // Act
-            Transaction transaction = gameManager.buy("EQNR", QUANTITY);
+            Transaction transaction = gameService.buy("EQNR", QUANTITY);
             // Assert
             assertNotNull(transaction);
-            assertEquals(1, gameManager.getPlayer().getPortfolio().getShares("EQNR").size());
+            assertEquals(1, gameService.getPlayer().getPortfolio().getShares("EQNR").size());
             assertEquals(1, observer.updateCount);
             assertEquals(0, STARTING_MONEY.subtract(STOCK_PRICE.multiply(QUANTITY))
                     .subtract(PURCHASE_COMMISSION)
-                    .compareTo(gameManager.getPlayer().getMoney()));
+                    .compareTo(gameService.getPlayer().getMoney()));
         }
     }
 
@@ -369,19 +369,19 @@ class GameManagerTest {
         @DisplayName("Should sell share and notify observers")
         void sellsShareAndNotifiesObservers() {
             // Arrange
-            gameManager.buy("EQNR", QUANTITY);
-            Share share = gameManager.getPlayer().getPortfolio().getShares("EQNR").getFirst();
+            gameService.buy("EQNR", QUANTITY);
+            Share share = gameService.getPlayer().getPortfolio().getShares("EQNR").getFirst();
             CountingObserver observer = new CountingObserver();
-            gameManager.addObserver(observer);
+            gameService.addObserver(observer);
             // Act
-            Transaction transaction = gameManager.sell(share);
+            Transaction transaction = gameService.sell(share);
             // Assert
             assertNotNull(transaction);
-            assertTrue(gameManager.getPlayer().getPortfolio().getShares("EQNR").isEmpty());
+            assertTrue(gameService.getPlayer().getPortfolio().getShares("EQNR").isEmpty());
             assertEquals(1, observer.updateCount);
             assertEquals(0, STARTING_MONEY.subtract(PURCHASE_COMMISSION)
                     .subtract(SALE_COMMISSION)
-                    .compareTo(gameManager.getPlayer().getMoney()));
+                    .compareTo(gameService.getPlayer().getMoney()));
         }
     }
 
@@ -394,13 +394,13 @@ class GameManagerTest {
         void advancesWeekRecordsPreviousNetWorthAndNotifiesObservers() {
             // Arrange
             CountingObserver observer = new CountingObserver();
-            gameManager.addObserver(observer);
+            gameService.addObserver(observer);
             // Act
-            gameManager.advanceWeek();
+            gameService.advanceWeek();
             // Assert
-            assertEquals(2, gameManager.getExchange().getWeek());
-            assertEquals(0, STARTING_MONEY.compareTo(gameManager.getPreviousNetWorth()));
-            assertEquals(2, gameManager.getPlayer().getNetWorthHistory().size());
+            assertEquals(2, gameService.getExchange().getWeek());
+            assertEquals(0, STARTING_MONEY.compareTo(gameService.getPreviousNetWorth()));
+            assertEquals(2, gameService.getPlayer().getNetWorthHistory().size());
             assertEquals(1, observer.updateCount);
         }
     }
@@ -413,7 +413,7 @@ class GameManagerTest {
         @DisplayName("Should return starting money for fresh player with empty portfolio")
         void returnsStartingMoneyForFreshPlayer() {
             // Act
-            BigDecimal netWorth = gameManager.getPlayerNetWorth();
+            BigDecimal netWorth = gameService.getPlayerNetWorth();
             // Assert
             assertEquals(0, STARTING_MONEY.compareTo(netWorth));
         }
@@ -422,9 +422,9 @@ class GameManagerTest {
         @DisplayName("Should return same total when shares are bought at current price")
         void returnsSameTotalAfterPurchaseAtCurrentPrice() {
             // Arrange
-            gameManager.buy("EQNR", QUANTITY);
+            gameService.buy("EQNR", QUANTITY);
             // Act
-            BigDecimal netWorth = gameManager.getPlayerNetWorth();
+            BigDecimal netWorth = gameService.getPlayerNetWorth();
             // Assert: cash after purchase plus portfolio market value (5 × 100 NOK)
             assertEquals(0, EXPECTED_NET_WORTH_AFTER_PURCHASE.compareTo(netWorth));
         }
@@ -438,7 +438,7 @@ class GameManagerTest {
         @DisplayName("Should return zero for fresh player")
         void returnsZeroForFreshPlayer() {
             // Act
-            BigDecimal change = gameManager.getPlayerNetWorthChangeSinceStart();
+            BigDecimal change = gameService.getPlayerNetWorthChangeSinceStart();
             // Assert
             assertEquals(0, BigDecimal.ZERO.compareTo(change));
         }
@@ -452,7 +452,7 @@ class GameManagerTest {
         @DisplayName("Should return zero for fresh player")
         void returnsZeroForFreshPlayer() {
             // Act
-            BigDecimal percent = gameManager.getPlayerNetWorthChangePercentSinceStart();
+            BigDecimal percent = gameService.getPlayerNetWorthChangePercentSinceStart();
             // Assert
             assertEquals(0, BigDecimal.ZERO.compareTo(percent));
         }
@@ -466,7 +466,7 @@ class GameManagerTest {
         @DisplayName("Should return null before the first week advance")
         void returnsNullBeforeFirstAdvance() {
             // Act
-            BigDecimal change = gameManager.getPlayerWeeklyNetWorthChange();
+            BigDecimal change = gameService.getPlayerWeeklyNetWorthChange();
             // Assert
             assertNull(change);
         }
@@ -475,9 +475,9 @@ class GameManagerTest {
         @DisplayName("Should return non-null value after a week is advanced")
         void returnsNonNullAfterAdvance() {
             // Arrange
-            gameManager.advanceWeek();
+            gameService.advanceWeek();
             // Act
-            BigDecimal change = gameManager.getPlayerWeeklyNetWorthChange();
+            BigDecimal change = gameService.getPlayerWeeklyNetWorthChange();
             // Assert
             assertNotNull(change);
         }
@@ -491,7 +491,7 @@ class GameManagerTest {
         @DisplayName("Should return null before the first week advance")
         void returnsNullBeforeFirstAdvance() {
             // Act
-            BigDecimal percent = gameManager.getPlayerWeeklyNetWorthChangePercent();
+            BigDecimal percent = gameService.getPlayerWeeklyNetWorthChangePercent();
             // Assert
             assertNull(percent);
         }
@@ -500,9 +500,9 @@ class GameManagerTest {
         @DisplayName("Should return non-null value after a week is advanced")
         void returnsNonNullAfterAdvance() {
             // Arrange
-            gameManager.advanceWeek();
+            gameService.advanceWeek();
             // Act
-            BigDecimal percent = gameManager.getPlayerWeeklyNetWorthChangePercent();
+            BigDecimal percent = gameService.getPlayerWeeklyNetWorthChangePercent();
             // Assert
             assertNotNull(percent);
         }
@@ -516,7 +516,7 @@ class GameManagerTest {
         @DisplayName("Should return NOVICE for fresh player")
         void returnsNoviceForFreshPlayer() {
             // Act
-            PlayerStatusLevel status = gameManager.getPlayerStatus();
+            PlayerStatusLevel status = gameService.getPlayerStatus();
             // Assert
             assertEquals(PlayerStatusLevel.NOVICE, status);
         }
@@ -530,7 +530,7 @@ class GameManagerTest {
         @DisplayName("Should return zero for empty portfolio")
         void returnsZeroForEmptyPortfolio() {
             // Act
-            BigDecimal value = gameManager.getPortfolioValue();
+            BigDecimal value = gameService.getPortfolioValue();
             // Assert
             assertEquals(0, BigDecimal.ZERO.compareTo(value));
         }
@@ -539,9 +539,9 @@ class GameManagerTest {
         @DisplayName("Should return shares times price after purchase")
         void returnsSharesTimesPriceAfterPurchase() {
             // Arrange
-            gameManager.buy("EQNR", QUANTITY);
+            gameService.buy("EQNR", QUANTITY);
             // Act
-            BigDecimal value = gameManager.getPortfolioValue();
+            BigDecimal value = gameService.getPortfolioValue();
             // Assert: 5 shares × 100 NOK = 500 NOK market value (no fees deducted)
             assertEquals(0, EXPECTED_PORTFOLIO_VALUE.compareTo(value));
         }

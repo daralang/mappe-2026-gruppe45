@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Card;
@@ -23,7 +23,7 @@ import java.math.BigDecimal;
  */
 public class RealizedReturnsCard extends Card {
 
-    private final GameManager gameManager;
+    private final GameService gameService;
 
     private final StyledText title = StyledText.sectionTitle();
     private final StyledText emptyMessage = StyledText.detailLabel();
@@ -47,11 +47,11 @@ public class RealizedReturnsCard extends Card {
     /**
      * Constructs a new RealizedReturnsCard.
      *
-     * @param gameManager the game manager containing player and exchange
+     * @param gameService the game manager containing player and exchange
      */
-    public RealizedReturnsCard(GameManager gameManager) {
-        super(gameManager);
-        this.gameManager = gameManager;
+    public RealizedReturnsCard(GameService gameService) {
+        super(gameService);
+        this.gameService = gameService;
         setSpacing(16);
 
         emptyContainer.setAlignment(Pos.CENTER);
@@ -80,7 +80,7 @@ public class RealizedReturnsCard extends Card {
     }
 
     private void refresh() {
-        boolean hasSales = gameManager.getSalesCount() > 0;
+        boolean hasSales = gameService.getSalesCount() > 0;
 
         emptyContainer.setVisible(!hasSales);
         emptyContainer.setManaged(!hasSales);
@@ -89,12 +89,12 @@ public class RealizedReturnsCard extends Card {
 
         if (!hasSales) return;
 
-        BigDecimal gains = gameManager.getRealizedGainsInNok();
-        BigDecimal losses = gameManager.getRealizedLossesInNok();
-        BigDecimal net = gameManager.getNetRealizedInNok();
-        BigDecimal tax = gameManager.getTotalTaxPaidInNok();
-        BigDecimal commission = gameManager.getTotalSaleCommissionInNok();
-        int count = gameManager.getSalesCount();
+        BigDecimal gains = gameService.getRealizedGainsInNok();
+        BigDecimal losses = gameService.getRealizedLossesInNok();
+        BigDecimal net = gameService.getNetRealizedInNok();
+        BigDecimal tax = gameService.getTotalTaxPaidInNok();
+        BigDecimal commission = gameService.getTotalSaleCommissionInNok();
+        int count = gameService.getSalesCount();
 
         String gainSign = gains.signum() > 0 ? "+" : "";
         gainValue.setText(gainSign + CurrencyFormatter.format(gains));
