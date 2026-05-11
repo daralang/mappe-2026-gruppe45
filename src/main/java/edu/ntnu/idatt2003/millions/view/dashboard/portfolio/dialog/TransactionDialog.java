@@ -135,7 +135,6 @@ public abstract class TransactionDialog extends Modal {
         availableRow.getStyleClass().add("modal-balance-row");
 
         StyledText afterLabel = StyledText.detailLabel(getBalanceAfterLabel());
-        balanceAfterValue.getStyleClass().add("positive");
         Region spacer2 = new Region();
         HBox.setHgrow(spacer2, Priority.ALWAYS);
         HBox afterRow = new HBox(afterLabel, spacer2, balanceAfterValue);
