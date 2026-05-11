@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.component;
 
 import edu.ntnu.idatt2003.millions.util.Language;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import javafx.application.Platform;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.image.ImageView;
@@ -20,7 +21,14 @@ public class LanguagePicker extends ComboBox<Language> {
         setCellFactory(list -> createCell());
         setButtonCell(createCell());
 
-        setOnAction(e -> LanguageManager.setLanguage(getValue()));
+        setOnAction(e -> {
+            LanguageManager.setLanguage(getValue());
+            Platform.runLater(() -> {
+                if (getScene() != null) {
+                    getScene().getRoot().requestFocus();
+                }
+            });
+        });
     }
 
     private ListCell<Language> createCell() {
