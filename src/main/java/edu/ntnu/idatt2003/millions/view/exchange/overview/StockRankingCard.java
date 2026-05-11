@@ -21,7 +21,7 @@ import java.util.Locale;
  * current price and weekly percentage change.
  * Used for both winners and losers in the exchange overview.
  */
-public class StockRankingTable extends VBox {
+public class StockRankingCard extends VBox {
 
     private final VBox rows;
 
@@ -37,7 +37,7 @@ public class StockRankingTable extends VBox {
      * @param stocks   the initial list of stocks to display
      * @throws NullPointerException if titleKey or stocks is null
      */
-    public StockRankingTable(String titleKey, List<Stock> stocks) {
+    public StockRankingCard(String titleKey, List<Stock> stocks) {
         getStyleClass().add("card");
         setSpacing(12);
 
