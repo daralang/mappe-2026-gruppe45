@@ -279,6 +279,23 @@ class JsonGameFileHandlerTest {
         }
 
         @Test
+        @DisplayName("Should merge shares with the same stock symbol from a legacy save on load")
+        void mergesSharesWithSameSymbolFromLegacySaveOnLoad() {
+            // Arrange: bypass addShare to simulate a legacy file with two entries for same stock
+            Path file = tempDir.resolve("legacy_save.json");
+            Share share1 = new Share(stock, new BigDecimal("5"), new BigDecimal("276.43"));
+            Share share2 = new Share(stock, new BigDecimal("3"), new BigDecimal("300.00"));
+            player.getPortfolio().setShares(List.of(share1, share2));
+            handler.saveGame(player, exchange, file.toFile());
+            // Act
+            GameState state = handler.loadGame(file.toFile());
+            // Assert
+            assertEquals(1, state.player().getPortfolio().getShares().size());
+            Share merged = state.player().getPortfolio().getShares().getFirst();
+            assertEquals(0, new BigDecimal("8").compareTo(merged.getQuantity()));
+        }
+
+        @Test
         @DisplayName("Should throw exception when file does not exist")
         void throwsExceptionWhenFileDoesNotExist() {
             // Arrange
