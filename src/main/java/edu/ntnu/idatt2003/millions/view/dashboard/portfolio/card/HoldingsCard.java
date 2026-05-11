@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.manager.GameManager;
 import edu.ntnu.idatt2003.millions.model.player.Portfolio;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
@@ -35,12 +36,10 @@ import java.util.Locale;
 public class HoldingsCard extends Card {
 
     private static final DecimalFormat NUMBER_FORMAT;
-    private static final DecimalFormat PERCENT_FORMAT;
 
     static {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("nb-NO"));
         NUMBER_FORMAT = new DecimalFormat("#,##0.00", symbols);
-        PERCENT_FORMAT = new DecimalFormat("+#,##0.0;-#,##0.0", symbols);
     }
 
     private final GameManager gameManager;
@@ -217,15 +216,10 @@ public class HoldingsCard extends Card {
     }
 
     private Label coloredPercentCell(BigDecimal value) {
-        Label label = new Label(PERCENT_FORMAT.format(value) + "%");
-        label.getStyleClass().addAll("holdings-cell", value.signum() < 0 ? "negative" : "positive");
-        return label;
+        return ChangeFormatter.styledPercent(value, "holdings-cell");
     }
 
     private Label coloredAmountCell(BigDecimal value) {
-        String formatted = (value.signum() >= 0 ? "+" : "") + NUMBER_FORMAT.format(value);
-        Label label = new Label(formatted);
-        label.getStyleClass().addAll("holdings-cell", value.signum() < 0 ? "negative" : "positive");
-        return label;
+        return ChangeFormatter.styledAmount(value, "holdings-cell");
     }
 }
