@@ -26,6 +26,11 @@ import java.util.Random;
  * <p>Buy and sell transactions are denominated in each stock's native currency
  * but converted to NOK via a {@link CurrencyConverter} before the player's
  * balance is adjusted.
+ *
+ * <p>Sales support both full and partial quantities. When a player sells less
+ * than the full position, the original {@link Share} is split into a sold
+ * portion (settled as a {@link Sale}) and a remainder that stays in the
+ * portfolio with the original purchase price preserved.
  */
 public class Exchange {
     private final String name;
@@ -194,10 +199,9 @@ public class Exchange {
     }
 
     /**
-     * Sells a share for a player.
-     * The net payout is computed in the stock's native currency, converted to NOK
-     * via the active {@link CurrencyConverter}, and added to the player's balance.
-     * The sale is then committed and returned.
+     * Sells the full quantity of a share for a player. Convenience overload that
+     * delegates to {@link #sell(Share, BigDecimal, Player)} with the share's full
+     * quantity.
      *
      * @param share  the share to sell
      * @param player the player selling the share
@@ -207,15 +211,81 @@ public class Exchange {
      */
     public Transaction sell(Share share, Player player) {
         Objects.requireNonNull(share, "Share cannot be null");
-        validatePlayer(player);
+        return sell(share, share.getQuantity(), player);
+    }
 
-        Sale sale = (Sale) TransactionFactory.createSale(share, week);
-        BigDecimal totalValue = sale.getTotal();
-        BigDecimal totalValueInNok = currencyConverter.convert(totalValue, share.getStock().getCurrency(), NOK);
+    /**
+     * Sells a given quantity of a share for a player. The sold portion is settled
+     * as a {@link Sale}; if the requested quantity is less than the full position,
+     * the remainder stays in the player's portfolio with the original purchase
+     * price preserved so per-share return is unchanged on the remaining position.
+     *
+     * <p>The net payout is computed in the stock's native currency, converted to
+     * NOK via the active {@link CurrencyConverter}, and added to the player's
+     * balance.</p>
+     *
+     * @param share    the share to sell from
+     * @param quantity the quantity to sell (must be greater than zero and no more
+     *                 than the share's current quantity)
+     * @param player   the player selling the share
+     * @return the completed sale transaction
+     * @throws NullPointerException     if share, quantity or player is null
+     * @throws IllegalArgumentException if quantity is not greater than zero or
+     *                                  exceeds the share's quantity
+     * @throws IllegalStateException    if the share is not in the player's portfolio
+     */
+    public Transaction sell(Share share, BigDecimal quantity, Player player) {
+        Objects.requireNonNull(share, "Share cannot be null");
+        Objects.requireNonNull(quantity, "Quantity cannot be null");
+        validatePlayer(player);
+        if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than zero");
+        }
+        if (quantity.compareTo(share.getQuantity()) > 0) {
+            throw new IllegalArgumentException(
+                    "Cannot sell more shares than the player owns");
+        }
+        if (!player.getPortfolio().contains(share)) {
+            throw new IllegalStateException("Share is not in portfolio");
+        }
+
+        boolean isFullSale = quantity.compareTo(share.getQuantity()) == 0;
+        Share soldPortion = isFullSale
+                ? share
+                : splitOffSoldPortion(share, quantity, player);
+
+        Sale sale = (Sale) TransactionFactory.createSale(soldPortion, week);
+        BigDecimal totalValueInNok = currencyConverter.convert(
+                sale.getTotal(), share.getStock().getCurrency(), NOK);
         player.addMoney(totalValueInNok);
 
         sale.commit(player);
         return sale;
+    }
+
+    /**
+     * Splits the given share into a sold portion and a remainder. Removes the
+     * original share from the player's portfolio, adds the remainder, and adds
+     * the sold portion so {@link Sale#commit(Player)} can remove it as part of
+     * its normal flow.
+     *
+     * @param share    the original share being split
+     * @param quantity the quantity to sell
+     * @param player   the player whose portfolio is being updated
+     * @return the sold portion, briefly held in the portfolio until the sale commits
+     */
+    private Share splitOffSoldPortion(Share share, BigDecimal quantity, Player player) {
+        Share soldPortion = new Share(
+                share.getStock(), quantity, share.getPurchasePrice());
+        Share remainder = new Share(
+                share.getStock(),
+                share.getQuantity().subtract(quantity),
+                share.getPurchasePrice());
+
+        player.getPortfolio().removeShare(share);
+        player.getPortfolio().addShare(remainder);
+        player.getPortfolio().addShare(soldPortion);
+        return soldPortion;
     }
 
     /**
