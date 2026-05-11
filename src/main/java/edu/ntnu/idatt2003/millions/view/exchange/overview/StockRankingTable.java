@@ -23,6 +23,10 @@ public class StockRankingTable extends VBox {
 
     private final VBox rows;
 
+    private static final double SYMBOL_WIDTH = 60;
+    private static final double PRICE_WIDTH  = 70;
+    private static final double CHANGE_WIDTH = 70;
+
     /**
      * Constructs a StockRankingTable with a title and an initial list of stocks.
      *
@@ -63,15 +67,23 @@ public class StockRankingTable extends VBox {
      * @return an HBox containing the header labels
      */
     private HBox buildHeader() {
+        Label symbol = new Label(LanguageManager.get("exchange.overview.columnSymbol"));
         Label stock  = new Label(LanguageManager.get("exchange.overview.columnStock"));
         Label price  = new Label(LanguageManager.get("exchange.overview.columnPrice"));
         Label change = new Label(LanguageManager.get("exchange.overview.columnChange"));
 
+        symbol.getStyleClass().add("card-value");
         stock.getStyleClass().add("card-label");
         price.getStyleClass().add("card-label");
         change.getStyleClass().add("card-label");
 
-        return buildRow(stock, price, change);
+        symbol.setMinWidth(SYMBOL_WIDTH);
+        price.setMinWidth(PRICE_WIDTH);
+        price.setAlignment(Pos.CENTER_RIGHT);
+        change.setMinWidth(CHANGE_WIDTH);
+        change.setAlignment(Pos.CENTER_RIGHT);
+
+        return buildRow(symbol, stock, price, change);
     }
 
     /**
@@ -81,15 +93,21 @@ public class StockRankingTable extends VBox {
      * @return an HBox representing one table row
      */
     private HBox buildRow(Stock stock) {
-        String name = stock.getSymbol() + ", " + stock.getCompany();
-        Label nameLabel = new Label(name);
+        Label symbolLabel = new Label(stock.getSymbol());
+        Label nameLabel = new Label(stock.getCompany());
         Label priceLabel = new Label(stock.getSalesPrice().toPlainString());
         Label changeLabel = new Label(formatChange(stock));
+
+        symbolLabel.setMinWidth(SYMBOL_WIDTH);
+        priceLabel.setMinWidth(PRICE_WIDTH);
+        priceLabel.setAlignment(Pos.CENTER_RIGHT);
+        changeLabel.setMinWidth(CHANGE_WIDTH);
+        changeLabel.setAlignment(Pos.CENTER_RIGHT);
 
         boolean positive = stock.getLatestPriceChange().compareTo(BigDecimal.ZERO) >= 0;
         changeLabel.getStyleClass().add(positive ? "card-value-positive" : "card-value-negative");
 
-        return buildRow(nameLabel, priceLabel, changeLabel);
+        return buildRow(symbolLabel, nameLabel, priceLabel, changeLabel);
     }
 
     /**
@@ -100,11 +118,11 @@ public class StockRankingTable extends VBox {
      * @param right  label for the right column
      * @return a configured HBox
      */
-    private HBox buildRow(Label left, Label center, Label right) {
+    private HBox buildRow(Label left, Label center, Label price, Label right) {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox row = new HBox(left, spacer, center, new Region(), right);
+        HBox row = new HBox(8, left, center, spacer, price, right);
         row.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(row.getChildren().get(3), Priority.NEVER);
         right.setMinWidth(60);
