@@ -12,8 +12,8 @@ import java.util.Locale;
  * Utility class for formatting and styling change values as JavaFX labels.
  *
  * <p>Provides factory methods for percentage and amount change labels that
- * combine formatted text with colour styling via {@link ColourChange}.
- *
+ * combine formatted text with colour styling via {@link ColourChange},
+ * as well as plain string formatting helpers such as {@link #formatSignedPercent}.
  */
 public class ChangeFormatter {
 
@@ -46,6 +46,23 @@ public class ChangeFormatter {
         label.getStyleClass().addAll(List.of(cssClasses));
         ColourChange.applyChangeStyle(label, value);
         return label;
+    }
+
+    /**
+     * Returns the given percentage value as a signed, formatted string using Norwegian locale.
+     *
+     * <p>Example output: {@code +6,5%} or {@code -3,2%}
+     *
+     * <p>Useful when the text needs to be embedded inside a larger string,
+     * such as in {@link edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.WeeklyChangeCard}
+     * and {@link edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.NetWorthCard}.
+     *
+     * @param value the percentage value to format (e.g. {@code 6.5} for 6.5%)
+     * @return a formatted signed percentage string
+     * @throws NullPointerException if value is null
+     */
+    public static String formatSignedPercent(BigDecimal value) {
+        return PERCENT_FORMAT.format(value) + "%";
     }
 
     /**
