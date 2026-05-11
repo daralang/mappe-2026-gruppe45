@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -14,42 +14,43 @@ import javafx.scene.layout.VBox;
  */
 public class PortfolioView extends VBox {
 
-    private final GameManager gameManager;
+    private final GameService gameService;
     private final PortfolioController controller;
     private final Runnable onExploreStocks;
 
     /**
      * Constructs a new PortfolioView.
      *
-     * @param gameManager the game manager containing player and exchange
+     * @param gameService the game manager containing player and exchange
      * @param controller  the controller handling portfolio actions
      */
-    public PortfolioView(GameManager gameManager,
+    public PortfolioView(GameService gameService,
                          PortfolioController controller,
                          Runnable onExploreStocks) {
-        this.gameManager = gameManager;
+        this.gameService = gameService;
         this.controller = controller;
         this.onExploreStocks = onExploreStocks;
         setSpacing(16);
 
         HBox topRow = buildTopRow();
-        HoldingsCard holdingsCard = new HoldingsCard(gameManager, controller);
+        HoldingsCard holdingsCard = new HoldingsCard(gameService, controller);
         ExploreStocksButton exploreButton = new ExploreStocksButton(onExploreStocks);
+        RealizedReturnsCard realizedReturnsCard = new RealizedReturnsCard(gameService);
 
-        getChildren().addAll(topRow, holdingsCard, exploreButton);
+        getChildren().addAll(topRow, holdingsCard, exploreButton, realizedReturnsCard);
     }
 
     private HBox buildTopRow() {
         HBox row = new HBox(16);
 
-        NetWorthCard netWorthCard = new NetWorthCard(gameManager);
+        NetWorthCard netWorthCard = new NetWorthCard(gameService);
         HBox.setHgrow(netWorthCard, Priority.ALWAYS);
 
         VBox rightCards = new VBox(12,
-                new WeeklyChangeCard(gameManager),
-                new AvailableFundsCard(gameManager),
-                new PortfolioValueCard(gameManager),
-                new StatusCard(gameManager)
+                new WeeklyChangeCard(gameService),
+                new AvailableFundsCard(gameService),
+                new PortfolioValueCard(gameService),
+                new StatusCard(gameService)
         );
         rightCards.setMinWidth(220);
         rightCards.setMaxWidth(260);

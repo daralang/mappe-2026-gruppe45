@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.exchange;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.ExchangeOverview;
@@ -16,18 +16,18 @@ import java.util.List;
  */
 public class ExchangeView extends VBox {
 
-    private final GameManager gameManager;
+    private final GameService gameService;
     private final ViewHeader viewHeader;
     private final VBox contentArea;
 
     /**
      * Constructs a new ExchangeView with the overview tab active.
      *
-     * @param gameManager the game manager containing player and exchange
+     * @param gameService the game manager containing player and exchange
      * @param weekBar     the week bar shared with the rest of the application
      */
-    public ExchangeView(GameManager gameManager, WeekBar weekBar) {
-        this.gameManager = gameManager;
+    public ExchangeView(GameService gameService, WeekBar weekBar) {
+        this.gameService = gameService;
         getStyleClass().add("content-area");
 
         viewHeader = new ViewHeader(
@@ -62,16 +62,16 @@ public class ExchangeView extends VBox {
     }
 
     private void showOverview() {
-        contentArea.getChildren().setAll(new ExchangeOverview(gameManager));
+        contentArea.getChildren().setAll(new ExchangeOverview(gameService));
     }
 
     private void showStocks() {
         contentArea.getChildren().clear(); // remove this when implementing setAll
-        // contentArea.getChildren().setAll(new StocksView(gameManager));
+        // contentArea.getChildren().setAll(new StocksView(gameService));
     }
 
     private void showAnalysis() {
         contentArea.getChildren().clear(); // remove this when implementing setAll
-        // contentArea.getChildren().setAll(new AnalysisView(gameManager));
+        // contentArea.getChildren().setAll(new AnalysisView(gameService));
     }
 }

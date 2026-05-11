@@ -1,7 +1,8 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.model.player.Portfolio;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -42,19 +43,20 @@ public class HoldingsCard extends Card {
         NUMBER_FORMAT = new DecimalFormat("#,##0.00", symbols);
     }
 
-    private final GameManager gameManager;
+    private final GameService gameService;
+    private final PortfolioService portfolioService = new PortfolioService();
     private final PortfolioController controller;
     private final GridPane grid = new GridPane();
 
     /**
      * Constructs a new HoldingsCard.
      *
-     * @param gameManager the game manager containing player and exchange
+     * @param gameService the game manager containing player and exchange
      * @param controller the controller handling portfolio actions
      */
-    public HoldingsCard(GameManager gameManager, PortfolioController controller) {
-        super(gameManager);
-        this.gameManager = gameManager;
+    public HoldingsCard(GameService gameService, PortfolioController controller) {
+        super(gameService);
+        this.gameService = gameService;
         this.controller = controller;
 
         StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
@@ -105,7 +107,7 @@ public class HoldingsCard extends Card {
     private void refresh() {
         grid.getChildren().clear();
 
-        Portfolio portfolio = gameManager.getPlayer().getPortfolio();
+        Portfolio portfolio = gameService.getPlayer().getPortfolio();
         List<Share> shares = portfolio.getShares();
 
         addHeaderRow();
@@ -151,9 +153,9 @@ public class HoldingsCard extends Card {
         grid.add(cell(stock.getSymbol() + ", " + stock.getCompany()), 1, row);
         grid.add(cell(NUMBER_FORMAT.format(share.getQuantity())), 2, row);
         grid.add(coloredPercentCell(stock.getWeeklyChangePercent()), 3, row);
-        grid.add(cell(NUMBER_FORMAT.format(gameManager.getShareValueInNok(share))), 4, row);
+        grid.add(cell(NUMBER_FORMAT.format(portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))), 4, row);
         grid.add(coloredPercentCell(share.getReturnPercent()), 5, row);
-        grid.add(coloredAmountCell(gameManager.getShareReturnInNok(share)), 6, row);
+        grid.add(coloredAmountCell(portfolioService.getShareReturnInNok(share, gameService.getCurrencyConverter())), 6, row);
         grid.add(buildDetailsButton(share), 7, row);
     }
 
@@ -169,12 +171,12 @@ public class HoldingsCard extends Card {
         totalLabel.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(totalLabel, 1, dataRow);
 
-        Label valueNok = new Label(NUMBER_FORMAT.format(gameManager.getTotalPortfolioValueInNok()));
+        Label valueNok = new Label(NUMBER_FORMAT.format(portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
         valueNok.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(valueNok, 4, dataRow);
 
-        grid.add(coloredPercentCell(gameManager.getTotalPortfolioReturnPercent()), 5, dataRow);
-        grid.add(coloredAmountCell(gameManager.getTotalPortfolioReturnInNok()), 6, dataRow);
+        grid.add(coloredPercentCell(portfolioService.getTotalReturnPercent(gameService.getPlayer(), gameService.getCurrencyConverter())), 5, dataRow);
+        grid.add(coloredAmountCell(portfolioService.getTotalReturnInNok(gameService.getPlayer(), gameService.getCurrencyConverter())), 6, dataRow);
     }
 
     private HBox buildActionButtons(Share share) {

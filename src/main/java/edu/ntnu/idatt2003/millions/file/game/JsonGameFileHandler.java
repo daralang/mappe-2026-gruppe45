@@ -24,7 +24,7 @@ import java.util.Objects;
  * <p>This class is pure infrastructure: it does not own domain decisions,
  * such as which {@link edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter}
  * implementation to use. Callers (typically
- * {@link edu.ntnu.idatt2003.millions.manager.GameManager}) are responsible for
+ * {@link edu.ntnu.idatt2003.millions.service.GameService}) are responsible for
  * reinitializing the loaded {@link Exchange} with a converter via
  * {@link Exchange#reinitialize} before it is used.
  */

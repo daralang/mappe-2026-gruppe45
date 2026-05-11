@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.controller;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.MainView;
@@ -15,27 +15,27 @@ import java.io.File;
 /**
  * Controller for the main view of the application.
  * Handles save, exit and advance-week actions and delegates them to
- * {@link GameManager}. Navigation between Dashboard and Exchange is
+ * {@link GameService}. Navigation between Dashboard and Exchange is
  * purely visual state and handled inside the view.
  */
 public class MainController {
 
     private final Stage stage;
     private final MainView view;
-    private final GameManager gameManager;
+    private final GameService gameService;
 
     /**
      * Constructs a new MainController and creates the main view.
      *
      * @param stage       the primary stage
-     * @param gameManager the game manager containing player and exchange
+     * @param gameService the game manager containing player and exchange
      */
-    public MainController(Stage stage, GameManager gameManager) {
+    public MainController(Stage stage, GameService gameService) {
         this.stage = stage;
-        this.gameManager = gameManager;
-        PortfolioController portfolioController = new PortfolioController(gameManager);
+        this.gameService = gameService;
+        PortfolioController portfolioController = new PortfolioController(gameService);
         this.view = new MainView(
-                gameManager,
+                gameService,
                 portfolioController,
                 this::handleSaveGame,
                 this::handleExitGame,
@@ -46,10 +46,10 @@ public class MainController {
     /**
      * Advances the game by one week.
      * Registered {@link GameObserver}s are notified automatically by
-     * {@link GameManager}.
+     * {@link GameService}.
      */
     private void handleAdvanceWeek() {
-        gameManager.advanceWeek();
+        gameService.advanceWeek();
     }
 
     /**
@@ -68,7 +68,7 @@ public class MainController {
         File file = fileChooser.showSaveDialog(stage);
 
         if (file != null) {
-            gameManager.saveGame(file);
+            gameService.saveGame(file);
             return true;
         }
         return false;
