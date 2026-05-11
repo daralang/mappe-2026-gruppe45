@@ -7,10 +7,13 @@
 Builds the JavaFX user interface and captures user input. Reads from the model, observes state changes, and delegates user actions to controllers via callbacks. Contains no business logic and never mutates the model directly.
 
 **Controller** (`controller/`)
-Translates user input into calls on `GameManager` for actions that change game state, and reads from the model directly when only displaying or previewing data. Validates UI input and orchestrates dialogs. Contains no business logic itself.
+Translates user input into calls on `GameService` for actions that change game state, and reads from the model directly when only displaying or previewing data. Validates UI input and orchestrates dialogs. Contains no business logic itself.
 
-**GameManager** (`manager/`)
-Service Layer. Owns the game state (`Player`, `Exchange`), coordinates operations that span multiple domain objects, and notifies observers after each change. Provides controllers with a stable API for performing actions.
+**GameService** (`service/`)
+Owns the live game state (`Player`, `Exchange`), coordinates operations that span multiple domain objects, and notifies observers after each change. Provides controllers and views with a stable API for performing actions (buy, sell, advance week, save/load).
+
+**Application read services** (`service/`)
+Stateless query services — `PlayerStatsService`, `PortfolioService`, `RealizedReturnsService` — that compute derived values from `Player` and `CurrencyConverter` without holding any state themselves. Views call these directly instead of asking `GameService` to re-expose every query as a facade method.
 
 **Domain model** (`model/`)
 Holds all business logic and business rules. The domain objects own their own state and validation. Operations that do not naturally belong to a single domain object are placed in dedicated Domain Services, such as `TransactionPreviewService`, which coordinates calculations across multiple domain objects without mutating anything.
@@ -19,7 +22,7 @@ Holds all business logic and business rules. The domain objects own their own st
 Centralised creation of `Transaction` objects. Used by `Exchange` and controllers to avoid direct instantiation of concrete subclasses.
 
 **File layer** (`file/`)
-Infrastructure for reading and writing game data. Called from `GameManager` or controllers; never directly from the view or the domain.
+Infrastructure for reading and writing game data. Called from `GameService` or controllers; never directly from the view or the domain.
 
 ## Read/write access matrix
 
@@ -28,13 +31,14 @@ The following table summarises which layers may read from and write to the domai
 | Layer | Read from model? | Mutate model? |
 |---|---|---|
 | **View** | Yes (getters, derived values) | No |
-| **Controller** | Yes (getters, Domain Services such as `TransactionPreviewService`) | No (delegates to `GameManager`) |
-| **GameManager** | Yes | Yes (performs mutations and notifies observers) |
+| **Controller** | Yes (getters, Domain Services such as `TransactionPreviewService`) | No (delegates to `GameService`) |
+| **GameService** | Yes | Yes (performs mutations and notifies observers) |
+| **Application read service** | Yes | No (stateless, read-only operations) |
 | **Domain Service** | Yes | No (stateless, read-only operations) |
 | **Factory** | No (constructs new objects, does not read state) | No |
 | **File layer** | Yes (serialises domain state to disk) | Yes (deserialises saved state into the domain on load) |
 
-The rule is: **read freely, mutate via `GameManager`.** Reading derived values from the model is safe at any layer, but every state change passes through `GameManager` so observers can be notified consistently.
+The rule is: **read freely, mutate via `GameService`.** Reading derived values from the model is safe at any layer, but every state change passes through `GameService` so observers can be notified consistently.
 
 ## Details
 
@@ -49,20 +53,27 @@ The rule is: **read freely, mutate via `GameManager`.** Reading derived values f
 ### Controller
 - Receives user actions from the view through callbacks (e.g. `onBuyClick`, `onConfirm`) and decides which operation to perform
 - Validates UI input before delegating (e.g. that a quantity field is filled in and contains a valid number)
-- Reads from the model directly for any non-mutating operation (e.g. `gameManager.getPlayer().getMoney()`, `previewService.previewPurchase(...)`)
-- Calls `GameManager` for any action that changes game state (`gameManager.buy(...)`, `gameManager.sell(...)`, `gameManager.advanceWeek()`)
+- Reads from the model directly for any non-mutating operation (e.g. `gameService.getPlayer().getMoney()`, `previewService.previewPurchase(...)`)
+- Calls `GameService` for any action that changes game state (`gameService.buy(...)`, `gameService.sell(...)`, `gameService.advanceWeek()`)
 - Decides which dialog or view to show in response to a user action, and supplies it with the data it needs (e.g. opens a `BuyDialog` for the selected stock and provides a confirmation callback)
 - Surfaces errors from the model back to the view (catches domain exceptions and forwards readable messages)
 - Supplies the view with action callbacks via constructor parameters or setters
 
-### GameManager
-- Owns the live game state (`Player`, `Exchange`) and exposes it for reading
-- Performs all state-changing operations on the game (e.g. `buy(...)`, `sell(...)`, `advanceWeek(...)`, `startNewGame(...)`, `loadGame(...)`)
+### GameService
+- Owns the live game state (`Player`, `Exchange`) and exposes it for reading via `getPlayer()`, `getExchange()`, and `getCurrencyConverter()`
+- Performs all state-changing operations on the game (e.g. `buy(...)`, `sell(...)`, `advanceWeek(...)`, `createNewGame(...)`, `loadGame(...)`)
 - Coordinates operations that span multiple domain objects, ensuring they happen in the correct order (e.g. a buy involves `Exchange`, the `TransactionFactory`, the `Player`'s portfolio, and the transaction archive)
 - Notifies registered observers (`GameObserver`) after each state change, so views can react and refresh
 - Provides controllers with a stable, high-level API so that the same operation can be invoked from different parts of the UI without duplicating coordination logic
 - Delegates infrastructure work to the file layer for saving and loading game data, without exposing file handling to controllers or views
-- Holds no business rules itself; the rules live in the domain model, and `GameManager` only orchestrates calls to them
+- Holds no business rules itself; the rules live in the domain model, and `GameService` only orchestrates calls to them
+
+### Application read services
+- `PlayerStatsService` — net worth, weekly change, percent change since start, player status
+- `PortfolioService` — portfolio market value, share value and return in NOK, total return in NOK and as a percentage
+- `RealizedReturnsService` — realized gains, losses, net result, tax, commission, and sale count
+
+All three are stateless: they hold no fields and accept `Player` and `CurrencyConverter` as method parameters on every call. Views instantiate the relevant service as a field and call it from their `refreshDisplay()` / `onGameUpdated()` methods, passing `gameService.getPlayer()` and `gameService.getCurrencyConverter()`. This keeps computed-value logic out of both `GameService` (which would grow unbounded) and the views (which would contain business logic).
 
 ### Domain model
 - Represents the core concepts of the game as objects (`Player`, `Stock`, `Share`, `Portfolio`, `Exchange`, `Transaction` and its subclasses)
@@ -91,8 +102,8 @@ buyButton.setOnAction(e -> onBuyClick.accept(stock));
 ```java
 // In PortfolioController
 public void openBuyDialog(Stock stock) {
-    BuyDialog dialog = new BuyDialog(stock, gameManager.getPlayer().getMoney());
-    dialog.setOnPreview(quantity -> previewService.previewPurchase(stock, quantity, gameManager.getPlayer()));
+    BuyDialog dialog = new BuyDialog(stock, gameService.getPlayer().getMoney());
+    dialog.setOnPreview(quantity -> previewService.previewPurchase(stock, quantity, gameService.getPlayer(), gameService.getCurrencyConverter()));
     dialog.setOnConfirm(quantity -> confirmBuy(stock, quantity, dialog));
     dialog.show();
 }
@@ -108,7 +119,7 @@ The dialog's confirm handler invokes the callback the controller registered. Con
 // In PortfolioController
 private void confirmBuy(Stock stock, BigDecimal quantity, BuyDialog dialog) {
     try {
-        Transaction t = gameManager.buy(stock.getSymbol(), quantity);
+        Transaction t = gameService.buy(stock.getSymbol(), quantity);
         dialog.close();
         showReceipt(t);
     } catch (InsufficientFundsException e) {
@@ -118,10 +129,10 @@ private void confirmBuy(Stock stock, BigDecimal quantity, BuyDialog dialog) {
 ```
 
 **5. The manager performs the operation and notifies observers.**
-`GameManager.buy(...)` coordinates the actual purchase: it asks `Exchange` to create the transaction (via `TransactionFactory`), commits it on the player, and finally notifies all registered observers:
+`GameService.buy(...)` coordinates the actual purchase: it asks `Exchange` to create the transaction (via `TransactionFactory`), commits it on the player, and finally notifies all registered observers:
 
 ```java
-// In GameManager
+// In GameService
 public Transaction buy(String symbol, BigDecimal quantity) {
     Transaction t = exchange.buy(symbol, quantity, player);
     notifyObservers();
