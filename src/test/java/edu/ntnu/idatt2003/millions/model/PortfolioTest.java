@@ -1,6 +1,5 @@
 package edu.ntnu.idatt2003.millions.model;
 
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.player.Portfolio;
@@ -271,17 +270,17 @@ class PortfolioTest {
         }
 
         @Test
-        @DisplayName("Should return total sale value of a single NOK share without conversion")
+        @DisplayName("Should return market value (salesPrice × quantity) of a single NOK share")
         void returnsTotalSalesValueOfSingleNokShare() {
             // Arrange
             portfolio.addShare(share);
-            BigDecimal expected = new SalesCalculator(share).calculateTotal();
+            BigDecimal expected = share.getCurrentValue(); // 100 × 10 = 1000 NOK
             // Act & Assert
             assertEquals(0, expected.compareTo(portfolio.getNetWorth(converter)));
         }
 
         @Test
-        @DisplayName("Should sum sale value of multiple NOK shares in portfolio")
+        @DisplayName("Should sum market values of multiple NOK shares in portfolio")
         void sumsValueOfMultipleNokShares() {
             // Arrange
             Share share2 = new Share(
@@ -290,8 +289,8 @@ class PortfolioTest {
                     new BigDecimal("10"), new BigDecimal("50.00"));
             portfolio.addShare(share);
             portfolio.addShare(share2);
-            BigDecimal expected = new SalesCalculator(share).calculateTotal()
-                    .add(new SalesCalculator(share2).calculateTotal());
+            BigDecimal expected = share.getCurrentValue()    // 100 × 10 = 1000
+                    .add(share2.getCurrentValue());           // 50 × 10  =  500
             // Act & Assert
             assertEquals(0, expected.compareTo(portfolio.getNetWorth(converter)));
         }
@@ -320,19 +319,19 @@ class PortfolioTest {
         }
 
         @Test
-        @DisplayName("Should not return a value higher than total gross value for NOK shares")
-        void returnsNotValueHigherThanGrossValue() {
+        @DisplayName("Should equal market value (salesPrice × quantity) for NOK shares — no fees deducted")
+        void returnsGrossMarketValueForNokShares() {
             // Arrange
             portfolio.addShare(share);
-            BigDecimal gross = new SalesCalculator(share).calculateGross();
+            BigDecimal expected = share.getCurrentValue(); // 100 × 10 = 1000 NOK
             // Act
             BigDecimal result = portfolio.getNetWorth(converter);
             // Assert
-            assertTrue(result.compareTo(gross) <= 0);
+            assertEquals(0, expected.compareTo(result));
         }
 
         @Test
-        @DisplayName("Should convert USD share value to NOK using the converter")
+        @DisplayName("Should convert USD share market value to NOK using the converter")
         void convertsUsdShareValueToNok() {
             // Arrange
             Share usdShare = new Share(
@@ -340,8 +339,7 @@ class PortfolioTest {
                             new ArrayList<>(List.of(new BigDecimal("100.00"))), USD),
                     new BigDecimal("10"), new BigDecimal("50.00"));
             portfolio.addShare(usdShare);
-            BigDecimal saleValueUsd = new SalesCalculator(usdShare).calculateTotal();
-            BigDecimal expected = converter.convert(saleValueUsd, USD, NOK);
+            BigDecimal expected = converter.convert(usdShare.getCurrentValue(), USD, NOK);
             // Act
             BigDecimal actual = portfolio.getNetWorth(converter);
             // Assert
@@ -349,7 +347,7 @@ class PortfolioTest {
         }
 
         @Test
-        @DisplayName("Should sum converted values when shares have different currencies")
+        @DisplayName("Should sum converted market values when shares have different currencies")
         void sumsConvertedValuesAcrossCurrencies() {
             // Arrange
             Share usdShare = new Share(
@@ -363,10 +361,8 @@ class PortfolioTest {
             portfolio.addShare(usdShare);
             portfolio.addShare(eurShare);
 
-            BigDecimal usdInNok = converter.convert(
-                    new SalesCalculator(usdShare).calculateTotal(), USD, NOK);
-            BigDecimal eurInNok = converter.convert(
-                    new SalesCalculator(eurShare).calculateTotal(), EUR, NOK);
+            BigDecimal usdInNok = converter.convert(usdShare.getCurrentValue(), USD, NOK);
+            BigDecimal eurInNok = converter.convert(eurShare.getCurrentValue(), EUR, NOK);
             BigDecimal expected = usdInNok.add(eurInNok);
             // Act
             BigDecimal actual = portfolio.getNetWorth(converter);
@@ -375,15 +371,15 @@ class PortfolioTest {
         }
 
         @Test
-        @DisplayName("Should return same value when all shares are already in NOK")
+        @DisplayName("Should return market value directly when all shares are already in NOK")
         void returnsIdenticalValueForNokShares() {
             // Arrange
             portfolio.addShare(share);
-            BigDecimal saleValue = new SalesCalculator(share).calculateTotal();
+            BigDecimal expected = share.getCurrentValue(); // 100 × 10 = 1000 NOK
             // Act
             BigDecimal actual = portfolio.getNetWorth(converter);
             // Assert
-            assertEquals(0, saleValue.compareTo(actual));
+            assertEquals(0, expected.compareTo(actual));
         }
 
         @Test

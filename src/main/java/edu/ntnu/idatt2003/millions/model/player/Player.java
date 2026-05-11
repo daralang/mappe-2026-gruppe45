@@ -123,14 +123,15 @@ public class Player {
     }
 
     /**
-     * Returns the player's total net worth in NOK.
+     * Returns the player's total net worth in NOK: cash balance plus the market
+     * value of all portfolio positions.
      *
-     * <p>Net worth is the sum of the current balance (already in NOK) and the
-     * portfolio's value, where each share's value is converted from the stock's
-     * native currency to NOK via the given {@link CurrencyConverter}.
+     * <p>Market value is {@code salesPrice × quantity} per share, converted to
+     * NOK via the given {@link CurrencyConverter}. Sale commission and tax are
+     * NOT deducted — this is the gross market value, not a liquidation estimate.
      *
      * @param converter the currency converter used to translate share values to NOK
-     * @return the sum of the player's money and portfolio net worth, in NOK
+     * @return cash plus market value of holdings, in NOK
      * @throws NullPointerException if converter is null
      */
     public BigDecimal getNetWorth(CurrencyConverter converter) {
