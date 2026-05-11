@@ -212,15 +212,31 @@ public class GameService {
     }
 
     /**
-     * Sells the given share for the current player.
-     * Delegates the actual transaction to {@link Exchange} and notifies
-     * observers on success.
+     * Sells the full quantity of a share for the current player. Convenience
+     * overload that delegates to {@link #sell(Share, BigDecimal)} with the
+     * share's full quantity.
      *
      * @param share the share to sell
      * @return the completed sale transaction
      */
     public Transaction sell(Share share) {
-        Transaction transaction = exchange.sell(share, player);
+        Objects.requireNonNull(share, "Share cannot be null");
+        return sell(share, share.getQuantity());
+    }
+
+    /**
+     * Sells the given quantity of a share for the current player. When the
+     * quantity is less than the share's full position, the remainder stays
+     * in the player's portfolio with the original purchase price preserved.
+     * Delegates the actual transaction to {@link Exchange} and notifies
+     * observers on success.
+     *
+     * @param share    the share to sell from
+     * @param quantity the quantity to sell
+     * @return the completed sale transaction
+     */
+    public Transaction sell(Share share, BigDecimal quantity) {
+        Transaction transaction = exchange.sell(share, quantity, player);
         notifyObservers();
         return transaction;
     }

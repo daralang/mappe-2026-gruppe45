@@ -4,17 +4,21 @@ import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 
 /**
  * Receipt shown after a successful sale, including realized profit/loss info.
  */
 public class SellReceipt extends TransactionReceipt {
+
+    private static final Currency NOK = Currency.getInstance("NOK");
 
     private final TransactionPreview preview;
 
@@ -52,6 +56,9 @@ public class SellReceipt extends TransactionReceipt {
                 "−" + NUMBER_FORMAT.format(preview.tax()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("receipt.summary.totalReceived"),
                 NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
+        if (!transaction.getShare().getStock().getCurrency().equals(NOK)) {
+            summaryBox.addConversion("= " + NUMBER_FORMAT.format(preview.totalInNok()) + " NOK");
+        }
     }
 
     @Override
@@ -70,6 +77,7 @@ public class SellReceipt extends TransactionReceipt {
         StyledText value = StyledText.detailValue(
                 sign + NUMBER_FORMAT.format(profit.abs()) + " " + currencyCode() + " ("
                         + pctSign + profitPercent.toPlainString() + "%)");
+        value.getStyleClass().add(positive ? "positive" : "negative");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -80,6 +88,21 @@ public class SellReceipt extends TransactionReceipt {
                 positive ? "modal-info-positive" : "modal-info-negative"
         );
 
-        return new VBox(row);
+        VBox content = new VBox(row);
+
+        if (!transaction.getShare().getStock().getCurrency().equals(NOK)
+                && preview.profitInNok() != null) {
+            Label conversionValue = new Label(
+                    "= " + sign + NUMBER_FORMAT.format(preview.profitInNok().abs()) + " NOK");
+            conversionValue.getStyleClass().addAll("modal-summary-conversion-text",
+                    positive ? "positive" : "negative");
+            Region conversionSpacer = new Region();
+            HBox.setHgrow(conversionSpacer, Priority.ALWAYS);
+            HBox conversionRow = new HBox(conversionSpacer, conversionValue);
+            conversionRow.getStyleClass().add("modal-summary-conversion");
+            content.getChildren().add(conversionRow);
+        }
+
+        return content;
     }
 }
