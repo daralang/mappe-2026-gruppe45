@@ -1,0 +1,14 @@
+.explore-stocks-button {
+    -fx-background-color: surface;
+    -fx-border-color: border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 14 0 14 0;
+    -fx-font-size: 14;
+    -fx-text-fill: text-primary;
+    -fx-cursor: hand;
+}
+
+.explore-stocks-button:hover {
+    -fx-background-color: surface-alt;
+}
