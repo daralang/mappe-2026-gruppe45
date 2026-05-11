@@ -137,11 +137,10 @@ public class RealizedReturnsCard extends Card {
                           StyledText l2, StyledText v2,
                           StyledText l3, StyledText v3) {
         HBox row = new HBox(20);
-        row.getChildren().addAll(
-                buildCell(l1, v1),
-                buildCell(l2, v2),
-                buildCell(l3, v3)
-        );
+        VBox c1 = buildCell(l1, v1);
+        VBox c2 = buildCell(l2, v2);
+        VBox c3 = buildCell(l3, v3);
+        row.getChildren().addAll(c1, c2, c3);
         return row;
     }
 
@@ -149,6 +148,8 @@ public class RealizedReturnsCard extends Card {
         VBox cell = new VBox(4, label, value);
         HBox.setHgrow(cell, Priority.ALWAYS);
         cell.setMaxWidth(Double.MAX_VALUE);
+        cell.setMinWidth(0);
+        cell.setPrefWidth(1);
         return cell;
     }
 
