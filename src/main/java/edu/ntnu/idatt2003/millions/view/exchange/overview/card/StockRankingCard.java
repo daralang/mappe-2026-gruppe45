@@ -139,7 +139,7 @@ public class StockRankingCard extends VBox {
         center.setTextOverrun(OverrunStyle.ELLIPSIS);
         HBox.setHgrow(center, Priority.ALWAYS);
 
-        HBox row = new HBox(8, left, center, price, right);
+        HBox row = new HBox(10, left, center, price, right);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
