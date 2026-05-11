@@ -125,6 +125,7 @@ public class StartView implements StartScreenInputs {
 
         scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
         StylesheetLoader.load(scene,
+                StylesheetLoader.Stylesheet.TOKENS,
                 StylesheetLoader.Stylesheet.TITLE,
                 StylesheetLoader.Stylesheet.DROP_ZONE,
                 StylesheetLoader.Stylesheet.OTHER);
