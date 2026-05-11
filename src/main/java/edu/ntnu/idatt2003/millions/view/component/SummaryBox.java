@@ -21,13 +21,37 @@ public class SummaryBox extends VBox {
     }
 
     /**
+     * Inserts a small uppercase title at the top of the summary box.
+     * Call before any {@link #addRow} calls.
+     *
+     * @param title the section title text
+     */
+    public void setSectionTitle(String title) {
+        Label titleLabel = new Label(title);
+        titleLabel.getStyleClass().add("modal-summary-section-title");
+        getChildren().add(0, titleLabel);
+    }
+
+    /**
      * Adds a regular row to the summary.
      *
      * @param label the row label
      * @param value the row value
      */
     public void addRow(String label, String value) {
-        getChildren().add(buildRow(label, value, false));
+        getChildren().add(buildRow(label, value, false, null));
+    }
+
+    /**
+     * Adds a regular row and applies an extra CSS class to the value node.
+     * Use this to layer {@code positive} or {@code negative} on a value.
+     *
+     * @param label           the row label
+     * @param value           the row value
+     * @param extraValueClass additional style class for the value label, or null
+     */
+    public void addRow(String label, String value, String extraValueClass) {
+        getChildren().add(buildRow(label, value, false, extraValueClass));
     }
 
     /**
@@ -37,7 +61,7 @@ public class SummaryBox extends VBox {
      * @param value the total value
      */
     public void addTotal(String label, String value) {
-        getChildren().add(buildRow(label, value, true));
+        getChildren().add(buildRow(label, value, true, null));
     }
 
     /**
@@ -65,7 +89,7 @@ public class SummaryBox extends VBox {
         getChildren().clear();
     }
 
-    private HBox buildRow(String label, String value, boolean total) {
+    private HBox buildRow(String label, String value, boolean total, String extraValueClass) {
         Label labelNode;
         Label valueNode;
         if (total) {
@@ -76,6 +100,10 @@ public class SummaryBox extends VBox {
         } else {
             labelNode = StyledText.detailLabel(label);
             valueNode = StyledText.detailValue(value);
+        }
+
+        if (extraValueClass != null) {
+            valueNode.getStyleClass().add(extraValueClass);
         }
 
         Region spacer = new Region();

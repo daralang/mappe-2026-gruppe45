@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.controller;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -44,6 +45,16 @@ public class PortfolioController {
      */
     public BigDecimal getCurrentBalance() {
         return gameService.getPlayer().getMoney();
+    }
+
+    /**
+     * Returns the current currency converter, used by views that call
+     * read services directly with a currency converter argument.
+     *
+     * @return the active currency converter
+     */
+    public CurrencyConverter getCurrencyConverter() {
+        return gameService.getCurrencyConverter();
     }
 
     /**
@@ -152,5 +163,13 @@ public class PortfolioController {
         }
     }
 
-    // TODO: openDetailsDialog(Share share)
+    /**
+     * Opens the share details modal for the given share position.
+     *
+     * @param share the share to show details for
+     */
+    public void openDetailsModal(Share share) {
+        ShareDetailsModal modal = new ShareDetailsModal(share, this);
+        modal.show();
+    }
 }

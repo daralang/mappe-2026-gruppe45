@@ -67,8 +67,15 @@
     -fx-spacing: 6;
 }
 
-.modal-summary-row {
-    -fx-alignment: center-left;
+.modal-summary-section-title {
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-primary;
+    -fx-padding: 0 0 8 0;
+}
+
+.modal-summary-row .detail-label {
+    -fx-text-fill: -text-primary;
 }
 
 .modal-summary-total {
