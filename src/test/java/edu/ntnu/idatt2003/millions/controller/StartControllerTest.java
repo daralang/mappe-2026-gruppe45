@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.controller;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class StartControllerTest {
 
     private StubInputs inputs;
-    private RecordingGameManager gameManager;
+    private RecordingGameService gameService;
     private List<String> errors;
     private boolean showMainCalled;
     private StartController controller;
@@ -36,11 +36,11 @@ class StartControllerTest {
     @BeforeEach
     void setUp() {
         inputs = new StubInputs();
-        gameManager = new RecordingGameManager();
+        gameService = new RecordingGameService();
         errors = new ArrayList<>();
         showMainCalled = false;
         controller = new StartController(
-                gameManager,
+                gameService,
                 inputs,
                 () -> showMainCalled = true,
                 errors::add);
@@ -60,10 +60,10 @@ class StartControllerTest {
             // Act
             controller.handleStartGame();
             // Assert
-            assertEquals("Dara", gameManager.lastName);
-            assertEquals(0, new BigDecimal("10000.00").compareTo(gameManager.lastCapital));
-            assertNull(gameManager.lastStockFile);
-            assertNull(gameManager.lastCurrency);
+            assertEquals("Dara", gameService.lastName);
+            assertEquals(0, new BigDecimal("10000.00").compareTo(gameService.lastCapital));
+            assertNull(gameService.lastStockFile);
+            assertNull(gameService.lastCurrency);
             assertTrue(showMainCalled);
             assertTrue(errors.isEmpty());
         }
@@ -79,10 +79,10 @@ class StartControllerTest {
             // Act
             controller.handleStartGame();
             // Assert
-            assertEquals("Dara", gameManager.lastName);
-            assertEquals(0, new BigDecimal("10000.00").compareTo(gameManager.lastCapital));
-            assertEquals(Path.of("/tmp/stocks.csv"), gameManager.lastStockFile.toPath());
-            assertEquals(Currency.getInstance("EUR"), gameManager.lastCurrency);
+            assertEquals("Dara", gameService.lastName);
+            assertEquals(0, new BigDecimal("10000.00").compareTo(gameService.lastCapital));
+            assertEquals(Path.of("/tmp/stocks.csv"), gameService.lastStockFile.toPath());
+            assertEquals(Currency.getInstance("EUR"), gameService.lastCurrency);
             assertTrue(showMainCalled);
             assertTrue(errors.isEmpty());
         }
@@ -97,7 +97,7 @@ class StartControllerTest {
             controller.handleStartGame();
             // Assert
             assertEquals(1, errors.size());
-            assertEquals(0, gameManager.createNewGameCalls);
+            assertEquals(0, gameService.createNewGameCalls);
             assertFalse(showMainCalled);
         }
 
@@ -112,7 +112,7 @@ class StartControllerTest {
             controller.handleStartGame();
             // Assert
             assertEquals(1, errors.size());
-            assertEquals(0, gameManager.createNewGameCalls);
+            assertEquals(0, gameService.createNewGameCalls);
             assertFalse(showMainCalled);
         }
 
@@ -128,7 +128,7 @@ class StartControllerTest {
             controller.handleStartGame();
             // Assert
             assertEquals(1, errors.size());
-            assertEquals(0, gameManager.createNewGameCalls);
+            assertEquals(0, gameService.createNewGameCalls);
             assertFalse(showMainCalled);
         }
 
@@ -144,18 +144,18 @@ class StartControllerTest {
             controller.handleStartGame();
             // Assert
             assertEquals(1, errors.size());
-            assertEquals(0, gameManager.createNewGameCalls);
+            assertEquals(0, gameService.createNewGameCalls);
             assertFalse(showMainCalled);
         }
 
         @Test
         @DisplayName("Should report error and not navigate when game manager fails")
-        void reportsErrorWhenGameManagerFails() {
+        void reportsErrorWhenGameServiceFails() {
             // Arrange
             inputs.name = "Dara";
             inputs.capital = "10000.00";
             inputs.stockFilePath = "";
-            gameManager.failNextCreate = new IllegalStateException("default stock data missing");
+            gameService.failNextCreate = new IllegalStateException("default stock data missing");
             // Act
             controller.handleStartGame();
             // Assert
@@ -166,12 +166,12 @@ class StartControllerTest {
 
         @Test
         @DisplayName("Should report error and not navigate when game manager throws UncheckedIOException")
-        void reportsErrorWhenGameManagerThrowsIoException() {
+        void reportsErrorWhenGameServiceThrowsIoException() {
             // Arrange
             inputs.name = "Dara";
             inputs.capital = "10000.00";
             inputs.stockFilePath = "";
-            gameManager.failNextCreate =
+            gameService.failNextCreate =
                     new UncheckedIOException("read failed", new java.io.IOException("disk error"));
             // Act
             controller.handleStartGame();
@@ -193,7 +193,7 @@ class StartControllerTest {
             // Act
             controller.handleLoadGame();
             // Assert
-            assertEquals(Path.of("/tmp/save.json"), gameManager.lastLoadedFile.toPath());
+            assertEquals(Path.of("/tmp/save.json"), gameService.lastLoadedFile.toPath());
             assertTrue(showMainCalled);
             assertTrue(errors.isEmpty());
         }
@@ -207,16 +207,16 @@ class StartControllerTest {
             controller.handleLoadGame();
             // Assert
             assertEquals(1, errors.size());
-            assertEquals(0, gameManager.loadGameCalls);
+            assertEquals(0, gameService.loadGameCalls);
             assertFalse(showMainCalled);
         }
 
         @Test
         @DisplayName("Should report error and not navigate when game manager fails to load")
-        void reportsErrorWhenGameManagerFailsToLoad() {
+        void reportsErrorWhenGameServiceFailsToLoad() {
             // Arrange
             inputs.saveFilePath = "/tmp/save.json";
-            gameManager.failNextLoad = new IllegalArgumentException("corrupt save file");
+            gameService.failNextLoad = new IllegalArgumentException("corrupt save file");
             // Act
             controller.handleLoadGame();
             // Assert
@@ -247,10 +247,10 @@ class StartControllerTest {
     }
 
     /**
-     * Test double for {@link GameManager} that records the arguments passed
+     * Test double for {@link GameService} that records the arguments passed
      * to its mutating methods and lets tests trigger controlled failures.
      */
-    private static class RecordingGameManager extends GameManager {
+    private static class RecordingGameService extends GameService {
         String lastName;
         BigDecimal lastCapital;
         File lastStockFile;

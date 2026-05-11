@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.PlayerStatsService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
@@ -15,12 +16,13 @@ import java.util.Locale;
  */
 public class WeeklyChangeCard extends WidgetCard {
 
-    private final GameManager gameManager;
+    private final GameService gameService;
+    private final PlayerStatsService statsService = new PlayerStatsService();
     private final StyledText changeLabel = StyledText.widgetChange();
 
-    public WeeklyChangeCard(GameManager gameManager) {
-        super(gameManager, "dashboard.weeklyChange");
-        this.gameManager = gameManager;
+    public WeeklyChangeCard(GameService gameService) {
+        super(gameService, "dashboard.weeklyChange");
+        this.gameService = gameService;
         getChildren().addAll(titleLabel, changeLabel);
         refreshDisplay();
     }
@@ -28,18 +30,18 @@ public class WeeklyChangeCard extends WidgetCard {
     /**
      * Updates the displayed week change based on the current and previous net worth.
      * Shows a dash if no week has been advanced yet. Reads derived values from
-     * {@link GameManager} via facade methods.
+     * {@link GameService} via facade methods.
      */
     @Override
     protected void refreshDisplay() {
-        BigDecimal change = gameManager.getPlayerWeeklyNetWorthChange();
+        BigDecimal change = statsService.getWeeklyNetWorthChange(gameService.getPlayer(), gameService.getCurrencyConverter());
         if (change == null) {
             changeLabel.setText("–");
             changeLabel.getStyleClass().removeAll("positive", "negative");
             return;
         }
 
-        BigDecimal percentChange = gameManager.getPlayerWeeklyNetWorthChangePercent();
+        BigDecimal percentChange = statsService.getWeeklyNetWorthChangePercent(gameService.getPlayer(), gameService.getCurrencyConverter());
 
         String arrow = change.compareTo(BigDecimal.ZERO) >= 0 ? "↗" : "↘";
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";

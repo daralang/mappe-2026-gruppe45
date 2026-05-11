@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.geometry.Pos;
@@ -14,25 +14,25 @@ import javafx.scene.layout.HBox;
  */
 public class WeekBar extends HBox implements GameObserver {
 
-    private final GameManager gameManager;
+    private final GameService gameService;
     private final StyledText weekLabel;
     private final Button advanceButton;
 
     /**
      * Constructs a new WeekBar and registers itself as a game observer.
      *
-     * @param gameManager    the game manager to observe
+     * @param gameService    the game manager to observe
      * @param onAdvanceWeek  callback invoked when the user clicks "Advance week"
      */
-    public WeekBar(GameManager gameManager, Runnable onAdvanceWeek) {
-        this.gameManager = gameManager;
-        gameManager.addObserver(this);
+    public WeekBar(GameService gameService, Runnable onAdvanceWeek) {
+        this.gameService = gameService;
+        gameService.addObserver(this);
 
         setSpacing(24);
         setAlignment(Pos.CENTER_RIGHT);
 
         weekLabel = StyledText.weekLabel(LanguageManager.get("app.week") + " "
-                + gameManager.getExchange().getWeek());
+                + gameService.getExchange().getWeek());
 
         advanceButton = new Button(LanguageManager.get("app.advanceWeek"));
         advanceButton.getStyleClass().add("advance-button");
@@ -50,7 +50,7 @@ public class WeekBar extends HBox implements GameObserver {
     private void onLanguageChanged() {
         advanceButton.setText(LanguageManager.get("app.advanceWeek"));
         weekLabel.setText(LanguageManager.get("app.week") + " "
-                + gameManager.getExchange().getWeek());
+                + gameService.getExchange().getWeek());
     }
 
     /**
@@ -59,6 +59,6 @@ public class WeekBar extends HBox implements GameObserver {
     @Override
     public void onGameUpdated() {
         weekLabel.setText(LanguageManager.get("app.week") + " "
-                + gameManager.getExchange().getWeek());
+                + gameService.getExchange().getWeek());
     }
 }

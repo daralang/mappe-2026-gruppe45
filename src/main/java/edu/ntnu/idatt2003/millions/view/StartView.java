@@ -349,7 +349,7 @@ public class StartView implements StartScreenInputs {
     /**
      * Returns the currency currently selected in the currency selector.
      * Used when uploading custom stock data so the controller can pass the
-     * chosen currency to the {@code GameManager}.
+     * chosen currency to the {@code GameService}.
      *
      * @return the selected currency, or {@code null} if none is selected
      */

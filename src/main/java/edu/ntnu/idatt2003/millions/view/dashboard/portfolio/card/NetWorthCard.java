@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.PlayerStatsService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
@@ -21,17 +22,18 @@ import java.util.Locale;
  */
 public class NetWorthCard extends WidgetCard {
 
-    private final GameManager gameManager;
+    private final GameService gameService;
+    private final PlayerStatsService statsService = new PlayerStatsService();
     private final StyledText netWorthLabel = StyledText.widgetValue();
     private final StyledText changeLabel = StyledText.widgetChange();
     private final NumberAxis xAxis;
     private final XYChart.Series<Number, Number> series;
 
-    public NetWorthCard(GameManager gameManager) {
-        super(gameManager, "dashboard.netWorth");
-        this.gameManager = gameManager;
+    public NetWorthCard(GameService gameService) {
+        super(gameService, "dashboard.netWorth");
+        this.gameService = gameService;
 
-        List<BigDecimal> history = gameManager.getPlayer().getNetWorthHistory();
+        List<BigDecimal> history = gameService.getPlayer().getNetWorthHistory();
         int historySize = history.size();
 
         xAxis = new NumberAxis(1, Math.max(historySize, 1), Math.max(1, historySize / 8));
@@ -72,7 +74,7 @@ public class NetWorthCard extends WidgetCard {
     }
 
     private void loadHistory() {
-        List<BigDecimal> history = gameManager.getPlayer().getNetWorthHistory();
+        List<BigDecimal> history = gameService.getPlayer().getNetWorthHistory();
         for (int i = 0; i < history.size(); i++) {
             series.getData().add(new XYChart.Data<>(i + 1, history.get(i).doubleValue()));
         }
@@ -80,13 +82,13 @@ public class NetWorthCard extends WidgetCard {
 
     /**
      * Updates the net worth label and change label with current values.
-     * Reads derived values from {@link GameManager} via facade methods.
+     * Reads derived values from {@link GameService} via facade methods.
      */
     @Override
     protected void refreshDisplay() {
-        BigDecimal netWorth = gameManager.getPlayerNetWorth();
-        BigDecimal change = gameManager.getPlayerNetWorthChangeSinceStart();
-        BigDecimal percentChange = gameManager.getPlayerNetWorthChangePercentSinceStart();
+        BigDecimal netWorth = statsService.getNetWorth(gameService.getPlayer(), gameService.getCurrencyConverter());
+        BigDecimal change = statsService.getNetWorthChangeSinceStart(gameService.getPlayer(), gameService.getCurrencyConverter());
+        BigDecimal percentChange = statsService.getNetWorthChangePercentSinceStart(gameService.getPlayer(), gameService.getCurrencyConverter());
 
         String sign = change.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
         String formattedPercent = String.format(Locale.of("no"), "%.1f", percentChange);
@@ -111,7 +113,7 @@ public class NetWorthCard extends WidgetCard {
     @Override
     public void onGameUpdated() {
         int nextPoint = series.getData().size() + 1;
-        double netWorth = gameManager.getPlayerNetWorth().doubleValue();
+        double netWorth = statsService.getNetWorth(gameService.getPlayer(), gameService.getCurrencyConverter()).doubleValue();
         series.getData().add(new XYChart.Data<>(nextPoint, netWorth));
         xAxis.setUpperBound(nextPoint);
         xAxis.setTickUnit(Math.max(1, nextPoint / 8));

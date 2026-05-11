@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
-import edu.ntnu.idatt2003.millions.manager.GameManager;
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 
 /**
@@ -13,8 +13,8 @@ public abstract class WidgetCard extends Card {
     private final String titleKey;
     protected final StyledText titleLabel = StyledText.widgetLabel();
 
-    protected WidgetCard(GameManager gameManager, String titleKey) {
-        super(gameManager);
+    protected WidgetCard(GameService gameService, String titleKey) {
+        super(gameService);
         this.titleKey = titleKey;
         setSpacing(4);
         titleLabel.setText(LanguageManager.get(titleKey));
