@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.stream.Stream;
 
 /**
  * Represents a stock exchange where players can buy and sell shares.
@@ -283,14 +284,11 @@ public class Exchange {
      *
      * @param limit the maximum number of stocks to return
      * @return a list of top ranked stocks ordered by descending weekly percentage change
-     * @throws IllegalArgumentException if limit is not greater than zero.
+     * @throws IllegalArgumentException if limit is not greater than zero
      */
     public List<Stock> getGainers(int limit) {
-        if (limit <= 0) {
-            throw new IllegalArgumentException("Limit must be greater than 0");
-        }
-        return stockMap.values().stream()
-                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) > 0)
+        if (limit <= 0) throw new IllegalArgumentException("Limit must be greater than 0");
+        return gainersStream()
                 .sorted((a, b) -> b.getWeeklyChangePercent().compareTo(a.getWeeklyChangePercent()))
                 .limit(limit)
                 .toList();
@@ -305,11 +303,8 @@ public class Exchange {
      * @throws IllegalArgumentException if limit is not greater than zero
      */
     public List<Stock> getLosers(int limit) {
-        if (limit <= 0) {
-            throw new IllegalArgumentException("Limit must be greater than 0");
-        }
-        return stockMap.values().stream()
-                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) < 0)
+        if (limit <= 0) throw new IllegalArgumentException("Limit must be greater than 0");
+        return losersStream()
                 .sorted(Comparator.comparing(Stock::getWeeklyChangePercent))
                 .limit(limit)
                 .toList();
@@ -321,9 +316,7 @@ public class Exchange {
      * @return the count of stocks with a weekly change above zero
      */
     public long countGainers() {
-        return stockMap.values().stream()
-                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) > 0)
-                .count();
+        return gainersStream().count();
     }
 
     /**
@@ -332,9 +325,31 @@ public class Exchange {
      * @return the count of stocks with a weekly change below zero
      */
     public long countLosers() {
+        return losersStream().count();
+    }
+
+    /**
+     * Returns a stream of stocks with a positive weekly percentage change.
+     * Used internally by {@link #getGainers} and {@link #countGainers}
+     * to avoid duplicating the filter predicate.
+     *
+     * @return a stream of gaining stocks
+     */
+    private Stream<Stock> gainersStream() {
         return stockMap.values().stream()
-                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) < 0)
-                .count();
+                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) > 0);
+    }
+
+    /**
+     * Returns a stream of stocks with a negative weekly percentage change.
+     * Used internally by {@link #getLosers} and {@link #countLosers}
+     * to avoid duplicating the filter predicate.
+     *
+     * @return a stream of losing stocks
+     */
+    private Stream<Stock> losersStream() {
+        return stockMap.values().stream()
+                .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) < 0);
     }
 
     /**
