@@ -28,7 +28,8 @@ public class BuyDialog extends TransactionDialog {
     @Override
     protected String getStockHint() {
         return MessageFormat.format(LanguageManager.get("dialog.stock.priceHint"),
-                NUMBER_FORMAT.format(stock.getSalesPrice()));
+                NUMBER_FORMAT.format(stock.getSalesPrice()),
+                stock.getCurrency().getCurrencyCode());
     }
 
     @Override
@@ -82,7 +83,6 @@ public class BuyDialog extends TransactionDialog {
             setConfirmEnabled(false);
         } else {
             balanceAfterValue.getStyleClass().removeAll("positive", "negative");
-            balanceAfterValue.getStyleClass().add("positive");
             setConfirmEnabled(true);
         }
     }

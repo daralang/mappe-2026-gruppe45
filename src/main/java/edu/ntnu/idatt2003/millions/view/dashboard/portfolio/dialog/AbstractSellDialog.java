@@ -41,7 +41,8 @@ public abstract class AbstractSellDialog extends TransactionDialog {
     @Override
     protected String getStockHint() {
         return MessageFormat.format(LanguageManager.get("dialog.stock.salesPriceHint"),
-                NUMBER_FORMAT.format(stock.getSalesPrice()));
+                NUMBER_FORMAT.format(stock.getSalesPrice()),
+                stock.getCurrency().getCurrencyCode());
     }
 
     @Override
@@ -104,7 +105,6 @@ public abstract class AbstractSellDialog extends TransactionDialog {
         balanceAfterValue.setText(
                 NUMBER_FORMAT.format(preview.balanceAfter()) + " NOK");
         balanceAfterValue.getStyleClass().removeAll("positive", "negative");
-        balanceAfterValue.getStyleClass().add("positive");
     }
 
     @Override
