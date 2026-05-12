@@ -175,6 +175,14 @@
     -fx-border-color: -primary-dark;
 }
 
+.modal-button-outlined {
+    -fx-border-color: -primary;
+    -fx-text-fill: -primary;
+}
+.modal-button-outlined:hover {
+    -fx-background-color: -surface-alt;
+}
+
 .modal-button-danger {
     -fx-background-color: -danger;
     -fx-text-fill: white;
