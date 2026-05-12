@@ -35,6 +35,14 @@ import java.util.List;
  * (all / buy / sell) and a {@link WeekRangeFilter}; a search field can
  * be added to the same row later without restructuring the card.</p>
  *
+ * <p>The {@link WeekRangeFilter} is supplied by {@code TransactionsView}
+ * and shared with {@code TransactionsSummaryCard} so both cards on the
+ * tab show data for the same period. This card owns the visible spinner
+ * widget; the summary card only echoes the current range as a read-only
+ * label. The type filter, on the other hand, is local to this card —
+ * the summary's whole purpose is to compare purchases against sales, so
+ * filtering it by type would zero out one of the two rows.</p>
+ *
  * <p>Shares structure and CSS with {@code HoldingsCard} via
  * {@link TableCells} (column setup, header row, cell factories, empty
  * state), {@link ChangeFormatter} (coloured signed amounts) and the
@@ -74,11 +82,14 @@ public class TransactionsCard extends Card {
     /**
      * Constructs a new TransactionsCard.
      *
-     * @param gameService the game manager containing player and exchange
+     * @param gameService     the game manager containing player and exchange
+     * @param weekRangeFilter the shared filter that scopes both this card's
+     *                        table and the summary card's totals
      */
-    public TransactionsCard(GameService gameService) {
+    public TransactionsCard(GameService gameService, WeekRangeFilter weekRangeFilter) {
         super(gameService);
         this.gameService = gameService;
+        this.weekRangeFilter = weekRangeFilter;
 
         setSpacing(16);
 
@@ -87,8 +98,6 @@ public class TransactionsCard extends Card {
         typeFilter = new TransactionTypeFilter();
         typeFilter.selectedTypeProperty().addListener((obs, oldVal, newVal) -> refresh());
 
-        int currentWeek = Math.max(gameService.getExchange().getWeek(), 1);
-        weekRangeFilter = new WeekRangeFilter(1, currentWeek);
         weekRangeFilter.fromWeekProperty().addListener((obs, oldVal, newVal) -> refresh());
         weekRangeFilter.toWeekProperty().addListener((obs, oldVal, newVal) -> refresh());
 
