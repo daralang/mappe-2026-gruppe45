@@ -30,11 +30,8 @@ public class StocksInvestedCard extends SimpleWidgetCard {
                                 gameService.getPlayer(),
                                 gameService.getCurrencyConverter())),
                 () -> {
-                    long positions = gameService.getPlayer().getPortfolio().getShares()
-                            .stream()
-                            .map(s -> s.getStock().getSymbol())
-                            .distinct()
-                            .count();
+                    long positions = new PortfolioService().getPositionCount(
+                            gameService.getPlayer());
                     return MessageFormat.format(
                             LanguageManager.get(subtitleKey),
                             positions);
