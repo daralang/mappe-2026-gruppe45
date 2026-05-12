@@ -75,7 +75,7 @@ public class StocksTable extends VBox implements GameObserver {
         configureColumns();
 
         getChildren().addAll(buildSearchBar(), grid, paginationBar);
-        refresh();
+        onGameUpdated();
     }
 
     /**
