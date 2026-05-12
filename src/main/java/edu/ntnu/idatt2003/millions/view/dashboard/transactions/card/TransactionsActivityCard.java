@@ -71,7 +71,7 @@ public class TransactionsActivityCard extends Card {
     private final GridPane grid = new GridPane();
 
     /**
-     * Constructs a new TradingActivityCard.
+     * Constructs a new TransactionsActivityCard.
      *
      * @param gameService     the game manager containing player and exchange
      * @param weekRangeFilter the shared filter that scopes the table this
