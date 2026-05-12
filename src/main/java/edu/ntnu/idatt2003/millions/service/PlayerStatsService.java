@@ -48,4 +48,38 @@ public class PlayerStatsService {
     public PlayerStatusLevel getStatus(Player player, CurrencyConverter converter) {
         return player.getStatus(converter);
     }
+
+    /**
+     * Returns the player's progress toward the next status level as a value
+     * between 0.0 and 1.0 (inclusive).
+     *
+     * <p>Progress is computed as the average of two sub-scores, each capped at 1.0:
+     * <ul>
+     *   <li>weeks-traded score: {@code weeksTraded / weeksThreshold}</li>
+     *   <li>growth score: {@code growthPercent / growthThreshold}</li>
+     * </ul>
+     *
+     * <p>For {@link PlayerStatusLevel#NOVICE}, thresholds are 10 weeks and 20% growth.
+     * For {@link PlayerStatusLevel#INVESTOR}, thresholds are 20 weeks and 100% growth.
+     * For {@link PlayerStatusLevel#SPECULATOR}, always returns 1.0 (top level reached).
+     *
+     * @param player    the player to evaluate
+     * @param converter the currency converter used to compute the current net worth
+     * @return progress toward the next status, in {@code [0.0, 1.0]}
+     */
+    public double getProgressToNextStatus(Player player, CurrencyConverter converter) {
+        PlayerStatusLevel status = getStatus(player, converter);
+        if (status == PlayerStatusLevel.SPECULATOR) return 1.0;
+
+        int weeksTraded = player.getTransactionArchive().countDistinctWeeks();
+        double growthPercent = player.getNetWorthChangePercentSinceStart(converter).doubleValue();
+
+        double weeksThreshold = (status == PlayerStatusLevel.NOVICE) ? 10.0 : 20.0;
+        double growthThreshold = (status == PlayerStatusLevel.NOVICE) ? 20.0 : 100.0;
+
+        double weeksScore = Math.min(1.0, weeksTraded / weeksThreshold);
+        double growthScore = Math.min(1.0, Math.max(0.0, growthPercent / growthThreshold));
+
+        return (weeksScore + growthScore) / 2.0;
+    }
 }
