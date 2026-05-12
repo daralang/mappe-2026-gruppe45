@@ -161,7 +161,7 @@ class StocksRowRenderer {
 
         List<Share> shares = gameService.getPlayer().getPortfolio().getShares(stock.getSymbol());
         if (!shares.isEmpty()) {
-            Share share = shares.get(0);
+            Share share = shares.getFirst();
             Button sellButton = new Button(LanguageManager.get("exchange.stocks.sell"));
             sellButton.getStyleClass().addAll("holdings-action-link", "holdings-action-sell");
             sellButton.setOnAction(e -> controller.openSellDialog(share));
