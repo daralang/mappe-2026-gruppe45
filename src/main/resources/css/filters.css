@@ -1,11 +1,11 @@
 .filter-label {
     -fx-font-size: 13px;
-    -fx-text-fill: text-secondary;
+    -fx-text-fill: -text-secondary;
 }
 
 .filter-separator {
     -fx-font-size: 14px;
-    -fx-text-fill: text-muted;
+    -fx-text-fill: -text-muted;
     -fx-padding: 0 2 0 2;
 }
 
@@ -15,13 +15,13 @@
 
 .week-spinner {
     -fx-font-size: 13px;
-    -fx-background-color: #888888, #ffffff;
+    -fx-background-color: -border-strong, -surface;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 6, 5;
 }
 
 .week-spinner:focused {
-    -fx-background-color: #2563eb, #ffffff;
+    -fx-background-color: -primary, -surface;
 }
 
 .week-spinner .text-field {
@@ -29,7 +29,7 @@
     -fx-border-color: transparent;
     -fx-padding: 2 6 2 6;
     -fx-alignment: center;
-    -fx-text-fill: #111111;
+    -fx-text-fill: -text-primary;
 }
 
 .week-spinner .text-field:focused {
@@ -38,7 +38,7 @@
 
 .week-spinner .increment-arrow-button,
 .week-spinner .decrement-arrow-button {
-    -fx-background-color: #888888, #f3f3f3;
+    -fx-background-color: -border-strong, -surface-alt;
     -fx-background-insets: 0, 0 0 0 1;
     -fx-background-radius: 0;
     -fx-padding: 0 6 0 6;
@@ -46,7 +46,7 @@
 
 .week-spinner .increment-arrow-button:hover,
 .week-spinner .decrement-arrow-button:hover {
-    -fx-background-color: #888888, #e5e5e5;
+    -fx-background-color: -border-strong, -border-light;
 }
 
 .week-spinner .increment-arrow-button {
@@ -59,60 +59,58 @@
 
 .week-spinner .increment-arrow,
 .week-spinner .decrement-arrow {
-    -fx-background-color: #555555;
+    -fx-background-color: -text-muted;
 }
 
 .type-filter {
     -fx-font-size: 13px;
-    -fx-background-color: #888888, #ffffff;
+    -fx-background-color: -border-strong, -surface;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 6, 5;
     -fx-padding: 0;
 }
 
 .type-filter:focused {
-    -fx-background-color: #2563eb, #ffffff;
+    -fx-background-color: -primary, -surface;
 }
 
 .type-filter .list-cell {
     -fx-background-color: transparent;
     -fx-padding: 4 8 4 8;
-    -fx-text-fill: #111111;
+    -fx-text-fill: -text-primary;
 }
 
-/* Arrow button on the right edge of the closed combo box. */
-
 .type-filter .arrow-button {
-    -fx-background-color: #888888, #f3f3f3;
+    -fx-background-color: -border-strong, -surface-alt;
     -fx-background-insets: 0, 0 0 0 1;
     -fx-background-radius: 0 5 5 0;
     -fx-padding: 0 6 0 6;
 }
 
 .type-filter .arrow-button:hover {
-    -fx-background-color: #888888, #e5e5e5;
+    -fx-background-color: -border-strong, -border-light;
 }
 
 .type-filter .arrow-button .arrow {
-    -fx-background-color: #555555;
+    -fx-background-color: -text-muted;
 }
 
 .type-filter .combo-box-popup .list-view {
-    -fx-background-color: #888888, #ffffff;
+    -fx-background-color: -border-strong, -surface;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 6, 5;
 }
 
 .type-filter .combo-box-popup .list-view .list-cell {
     -fx-padding: 6 12 6 12;
-    -fx-text-fill: #111111;
+    -fx-text-fill: -text-primary;
 }
 
 .type-filter .combo-box-popup .list-view .list-cell:filled:hover {
-    -fx-background-color: #f3f3f3;
+    -fx-background-color: -surface-alt;
 }
 
 .type-filter .combo-box-popup .list-view .list-cell:filled:selected {
-    -fx-background-color: #2563eb;
-    -fx-text-fill: #ffffff;
+    -fx-background-color: -primary;
+    -fx-text-fill: -surface;
 }
