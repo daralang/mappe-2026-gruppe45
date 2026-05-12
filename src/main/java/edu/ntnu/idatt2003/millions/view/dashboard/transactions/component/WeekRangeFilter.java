@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.transactions.component;
 
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -46,7 +47,7 @@ public class WeekRangeFilter extends HBox {
     private final IntegerProperty toWeek = new SimpleIntegerProperty();
     private final Spinner<Integer> fromSpinner;
     private final Spinner<Integer> toSpinner;
-    private final Label label;
+    private final StyledText label;
 
     private final int minWeek;
 
@@ -65,8 +66,7 @@ public class WeekRangeFilter extends HBox {
         setAlignment(Pos.CENTER_LEFT);
         getStyleClass().add("week-range-filter");
 
-        label = new Label(LanguageManager.get("filter.week"));
-        label.getStyleClass().add("filter-label");
+        label = StyledText.detailLabel(LanguageManager.get("filter.week"));
 
         fromSpinner = createSpinner(minWeek, maxWeek, minWeek);
         toSpinner = createSpinner(minWeek, maxWeek, maxWeek);
