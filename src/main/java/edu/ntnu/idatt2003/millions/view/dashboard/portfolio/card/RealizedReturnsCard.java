@@ -5,9 +5,8 @@ import edu.ntnu.idatt2003.millions.service.RealizedReturnsService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Card;
-import edu.ntnu.idatt2003.millions.view.component.InfoIcon;
+import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.Tooltips;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
@@ -153,9 +152,10 @@ public class RealizedReturnsCard extends Card {
     private VBox buildCell(StyledText label, StyledText value, String tooltipKey) {
         VBox cell;
         if (tooltipKey != null) {
-            HBox labelRow = new HBox(4, label, new InfoIcon());
+            InfoTooltip infoTooltip = new InfoTooltip(tooltipKey);
+            HBox labelRow = new HBox(4, label, infoTooltip);
             labelRow.setAlignment(Pos.CENTER_LEFT);
-            Tooltips.attach(labelRow, tooltipKey);
+            infoTooltip.attachToParent(labelRow);
             cell = new VBox(4, labelRow, value);
         } else {
             cell = new VBox(4, label, value);

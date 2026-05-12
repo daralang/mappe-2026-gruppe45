@@ -3,9 +3,8 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.PlayerStatsService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.InfoIcon;
+import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.Tooltips;
 import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
@@ -22,9 +21,10 @@ public class StatusCard extends WidgetCard {
     public StatusCard(GameService gameService) {
         super(gameService, "dashboard.status");
         this.gameService = gameService;
-        HBox titleRow = new HBox(5, titleLabel, new InfoIcon());
+        InfoTooltip infoTooltip = new InfoTooltip("tooltip.dashboard.status");
+        HBox titleRow = new HBox(5, titleLabel, infoTooltip);
         titleRow.setAlignment(Pos.CENTER_LEFT);
-        Tooltips.attach(titleRow, "tooltip.dashboard.status");
+        infoTooltip.attachToParent(titleRow);
         getChildren().addAll(titleRow, valueLabel);
         refreshDisplay();
     }
