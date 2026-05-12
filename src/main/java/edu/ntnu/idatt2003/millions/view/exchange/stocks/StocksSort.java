@@ -95,19 +95,20 @@ public class StocksSort {
     }
 
     /**
-     * Builds a sortable header button for the given column.
-     * Appends ↑ or ↓ when this column is the active sort column.
+     * Builds a sortable header button for the given column using
+     * {@link TableCells#sortHeader(String, Runnable)}.
+     *
+     * <p>Appends ↓↑ when the column is inactive, ↓ when sorted ascending,
+     * or ↑ when sorted descending.
      *
      * @param labelKey  the i18n key for the column label
      * @param column    the sort column this header controls
      * @param onChanged callback invoked after the sort state changes
-     * @return a styled {@link Button} acting as the column header
+     * @return a styled sort header button
      */
     private Button buildSortableHeader(String labelKey, SortColumn column, Runnable onChanged) {
         String indicator = activeSortColumn == column ? (sortAscending ? " ↓ " : "  ↑") : " ↓↑";
-        Button header = new Button(LanguageManager.get(labelKey) + indicator);
-        header.getStyleClass().add("holdings-header");
-        header.setOnAction(e -> {
+        return TableCells.sortHeader(LanguageManager.get(labelKey) + indicator, () -> {
             if (activeSortColumn == column) {
                 sortAscending = !sortAscending;
             } else {
@@ -116,7 +117,6 @@ public class StocksSort {
             }
             onChanged.run();
         });
-        return header;
     }
 
     /**
