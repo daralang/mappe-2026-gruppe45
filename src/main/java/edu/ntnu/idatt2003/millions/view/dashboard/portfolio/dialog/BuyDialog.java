@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Currency;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -63,6 +64,14 @@ public class BuyDialog extends TransactionDialog {
         }
 
         TransactionPreview preview = controller.previewBuy(stock, quantity);
+
+        Optional<String> policyError = controller.validateTransactionInput(quantity, preview.totalInNok());
+        if (policyError.isPresent()) {
+            renderEmptySummary();
+            showError(LanguageManager.get(policyError.get()));
+            setConfirmEnabled(false);
+            return;
+        }
 
         summaryBox.addRow(LanguageManager.get("dialog.summary.gross"),
                 NUMBER_FORMAT.format(preview.gross()) + " " + currencyCode());

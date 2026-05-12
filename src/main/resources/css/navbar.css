@@ -34,3 +34,30 @@
     -fx-background-color: transparent;
     -fx-cursor: hand;
 }
+
+/* Language picker */
+.language-picker {
+    -fx-alignment: center;
+    -fx-spacing: 2;
+}
+
+.language-picker-btn {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+    -fx-padding: 3 5 3 5;
+    -fx-background-radius: 4;
+    -fx-opacity: 0.35;
+}
+
+.language-picker-btn:hover {
+    -fx-opacity: 0.65;
+}
+
+.language-picker-btn-active {
+    -fx-opacity: 1.0;
+}
+
+.language-picker-btn-active:hover {
+    -fx-opacity: 1.0;
+}

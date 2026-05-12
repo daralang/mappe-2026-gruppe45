@@ -4,9 +4,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.MainView;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
+import edu.ntnu.idatt2003.millions.view.dialog.ExitDialog;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -35,6 +33,7 @@ public class MainController {
         this.gameService = gameService;
         PortfolioController portfolioController = new PortfolioController(gameService);
         this.view = new MainView(
+                stage,
                 gameService,
                 portfolioController,
                 this::handleSaveGame,
@@ -75,41 +74,17 @@ public class MainController {
     }
 
     /**
-     * Shows a confirmation dialog when the user wants to exit the game.
-     * The user can choose to save before exiting, exit without saving,
-     * or cancel by closing the dialog with the X button.
+     * Shows the exit confirmation dialog. Saving or exiting is handled
+     * by the callbacks passed to {@link ExitDialog}.
      */
     private void handleExitGame() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(LanguageManager.get("nav.exitGame"));
-        alert.setHeaderText(LanguageManager.get("exit.confirmHeader"));
-        alert.setContentText(LanguageManager.get("exit.confirmContent"));
+        new ExitDialog(this::handleSaveAndExit, stage::close).show();
+    }
 
-        ButtonType saveAndExit = new ButtonType(
-                LanguageManager.get("exit.saveAndExit")
-        );
-        ButtonType exitWithoutSaving = new ButtonType(
-                LanguageManager.get("exit.exitWithoutSaving")
-        );
-        ButtonType cancel = new ButtonType("", ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        alert.getButtonTypes().setAll(saveAndExit, exitWithoutSaving, cancel);
-
-        alert.getDialogPane().lookup(".button-bar")
-                .setStyle("-fx-alignment: center;");
-        alert.getDialogPane().lookupButton(cancel).setVisible(false);
-        alert.getDialogPane().lookupButton(cancel).setManaged(false);
-
-        alert.showAndWait().ifPresent(response -> {
-            if (response == saveAndExit) {
-                boolean saved = handleSaveGame();
-                if (saved) {
-                    stage.close();
-                }
-            } else if (response == exitWithoutSaving) {
-                stage.close();
-            }
-        });
+    private void handleSaveAndExit() {
+        if (handleSaveGame()) {
+            stage.close();
+        }
     }
 
     /**
