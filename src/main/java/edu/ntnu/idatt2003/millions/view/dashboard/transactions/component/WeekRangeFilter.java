@@ -123,14 +123,8 @@ public class WeekRangeFilter extends HBox {
     }
 
     /**
-     * Raises the upper bound of both spinners so the user can pick
-     * higher weeks.
-     *
-     * <p>If the to-spinner is currently sitting at the old maximum,
-     * its value is advanced to the new maximum — interpreting that
-     * state as "show all weeks" and keeping it so. If the user has
-     * picked a smaller upper bound, the value is left untouched;
-     * only the ceiling moves.</p>
+     * Raises the upper bound of both spinners and advances the to-spinner
+     * value to {@code newMax} so that newly added weeks are always visible.
      *
      * <p>Typically called from a parent view's {@code onGameUpdated()}
      * hook whenever the game advances to a new week.</p>
@@ -148,16 +142,10 @@ public class WeekRangeFilter extends HBox {
         SpinnerValueFactory.IntegerSpinnerValueFactory fromFactory =
                 (SpinnerValueFactory.IntegerSpinnerValueFactory) fromSpinner.getValueFactory();
 
-        // "Show all" intent is preserved by bumping the to-spinner's
-        // value forward when it was pinned to the old ceiling.
-        boolean wasAtCeiling = toSpinner.getValue() == toFactory.getMax();
-
         fromFactory.setMax(newMax);
         toFactory.setMax(newMax);
-
-        if (wasAtCeiling) {
-            toFactory.setValue(newMax);
-        }
+        fromFactory.setValue(minWeek);
+        toFactory.setValue(newMax);
     }
 
     /**
