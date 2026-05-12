@@ -106,7 +106,8 @@ public class ShareDetailsModal extends Modal {
                 NUMBER_FORMAT.format(share.getQuantity()));
         box.addRow(
                 LanguageManager.get("details.row.avgPrice"),
-                NUMBER_FORMAT.format(share.getPurchasePrice()) + " " + currencyCode);
+                NUMBER_FORMAT.format(share.getPurchasePrice()) + " " + currencyCode,
+                null, "tooltip.details.gav");
         box.addRow(
                 LanguageManager.get("details.row.cost"),
                 NUMBER_FORMAT.format(share.getCost()) + " " + currencyCode);
@@ -119,20 +120,24 @@ public class ShareDetailsModal extends Modal {
         if (isForeign) {
             box.addRow(
                     LanguageManager.get("details.row.marketValue"),
-                    NUMBER_FORMAT.format(share.getCurrentValue()) + " " + currencyCode);
+                    NUMBER_FORMAT.format(share.getCurrentValue()) + " " + currencyCode,
+                    null, "tooltip.details.marketValue");
             box.addRow(
                     LanguageManager.get("details.row.marketValueNok"),
                     NUMBER_FORMAT.format(portfolioService.getShareValueInNok(
-                            share, controller.getCurrencyConverter())) + " NOK");
+                            share, controller.getCurrencyConverter())) + " NOK",
+                    null, "tooltip.details.marketValueNok");
         } else {
             box.addRow(
                     LanguageManager.get("details.row.marketValue"),
-                    NUMBER_FORMAT.format(share.getCurrentValue()) + " NOK");
+                    NUMBER_FORMAT.format(share.getCurrentValue()) + " NOK",
+                    null, "tooltip.details.marketValue");
         }
         box.addRow(
                 LanguageManager.get("details.row.liquidationValue"),
                 NUMBER_FORMAT.format(portfolioService.getLiquidationValueInNok(
-                        share, controller.getCurrencyConverter())) + " NOK");
+                        share, controller.getCurrencyConverter())) + " NOK",
+                null, "tooltip.details.liquidation");
         return box;
     }
 
@@ -151,7 +156,8 @@ public class ShareDetailsModal extends Modal {
             box.addRow(
                     returnNativeLabel,
                     returnNativeStr + " " + currencyCode,
-                    positiveNative ? "positive" : "negative");
+                    positiveNative ? "positive" : "negative",
+                    "tooltip.details.returnNative");
 
             BigDecimal returnNok = portfolioService.getShareReturnInNok(
                     share, controller.getCurrencyConverter());
@@ -160,12 +166,14 @@ public class ShareDetailsModal extends Modal {
             box.addRow(
                     LanguageManager.get("details.row.returnNok"),
                     signNok + NUMBER_FORMAT.format(returnNok.abs()) + " NOK",
-                    positiveNok ? "positive" : "negative");
+                    positiveNok ? "positive" : "negative",
+                    "tooltip.shared.returnNok");
         } else {
             box.addRow(
                     LanguageManager.get("details.row.return"),
                     returnNativeStr + " NOK",
-                    positiveNative ? "positive" : "negative");
+                    positiveNative ? "positive" : "negative",
+                    "tooltip.details.return");
         }
 
         BigDecimal returnPct = share.getReturnPercent();
@@ -174,7 +182,8 @@ public class ShareDetailsModal extends Modal {
         box.addRow(
                 LanguageManager.get("details.row.returnPercent"),
                 signPct + returnPct.toPlainString() + "%",
-                positivePct ? "positive" : "negative");
+                positivePct ? "positive" : "negative",
+                "tooltip.shared.returnPct");
 
         BigDecimal weeklyChange = share.getStock().getWeeklyChangePercent();
         boolean positiveWeekly = weeklyChange.signum() >= 0;
@@ -182,7 +191,8 @@ public class ShareDetailsModal extends Modal {
         box.addRow(
                 LanguageManager.get("details.row.weeklyChange"),
                 signWeekly + weeklyChange.toPlainString() + "%",
-                positiveWeekly ? "positive" : "negative");
+                positiveWeekly ? "positive" : "negative",
+                "tooltip.shared.weeklyChange");
 
         return box;
     }
