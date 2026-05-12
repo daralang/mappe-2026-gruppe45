@@ -9,7 +9,9 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Card;
+import edu.ntnu.idatt2003.millions.view.component.InfoIcon;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.component.Tooltips;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -140,10 +142,28 @@ public class HoldingsCard extends Card {
                 LanguageManager.get("dashboard.portfolio.returnNok"),
                 ""
         };
+        String[] tooltipKeys = {
+                null, null, null,
+                "tooltip.holdings.weeklyChange",
+                "tooltip.holdings.valueNok",
+                "tooltip.holdings.returnPct",
+                "tooltip.holdings.returnNok",
+                null
+        };
         for (int i = 0; i < headers.length; i++) {
             Label label = new Label(headers[i]);
             label.getStyleClass().add("holdings-header");
-            grid.add(label, i, 0);
+            if (tooltipKeys[i] != null) {
+                InfoIcon icon = new InfoIcon();
+                icon.getStyleClass().add("holdings-header-icon");
+                HBox headerCell = new HBox(6, label, icon);
+                headerCell.setAlignment(Pos.CENTER_RIGHT);
+                GridPane.setFillWidth(headerCell, false);
+                Tooltips.attach(headerCell, tooltipKeys[i]);
+                grid.add(headerCell, i, 0);
+            } else {
+                grid.add(label, i, 0);
+            }
         }
     }
 
