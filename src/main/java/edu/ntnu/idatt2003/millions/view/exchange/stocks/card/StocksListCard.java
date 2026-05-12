@@ -21,16 +21,15 @@ import java.util.List;
 /**
  * Sortable, searchable and paginated table of all stocks listed on the exchange.
  *
- * <p>Displays ticker (with owner badge), company name, current price, weekly
- * change in NOK and percent, a sparkline trend and buy/sell action buttons.
- * Row rendering is delegated to {@link StocksRowRenderer}.
+ * <p>Displays ticker, company, prices, weekly change, 4-week high/low,
+ * trend and trade actions. Row rendering is delegated to {@link StocksRowRenderer}.
  */
 public class StocksListCard extends Card {
 
     public static final int PAGE_SIZE = 20;
 
     private final GameService gameService;
-    private final StocksSort sort = new StocksSort();
+    private final StocksSort sort;
     private final StocksRowRenderer rowRenderer;
 
     private List<Stock> allStocks = new ArrayList<>();
@@ -54,6 +53,7 @@ public class StocksListCard extends Card {
     public StocksListCard(GameService gameService, PortfolioController controller) {
         super(gameService);
         this.gameService = gameService;
+        this.sort = new StocksSort(gameService.getCurrencyConverter());
         this.rowRenderer = new StocksRowRenderer(gameService, controller);
 
         emptyLabel.getStyleClass().add("empty-state-label");
@@ -71,12 +71,16 @@ public class StocksListCard extends Card {
 
     /**
      * Configures the percentage widths and horizontal alignments of the table columns.
-     * Column order: ticker, company, price, change NOK, change %, trend, trade.
+     * Column order: ticker, company, USD price, NOK price, change NOK,
+     * change %, 4-week high/low, trend, trade.
      */
     private void configureColumns() {
         TableCells.configureColumns(grid,
-                new double[]{12, 25, 10, 10, 10, 12, 21},
-                new HPos[]{HPos.LEFT, HPos.LEFT, HPos.RIGHT, HPos.RIGHT, HPos.RIGHT, HPos.CENTER, HPos.LEFT});
+                new double[]{10, 22, 9, 9, 9, 9, 10, 10, 12},
+                new HPos[]{
+                        HPos.LEFT, HPos.LEFT, HPos.RIGHT, HPos.RIGHT, HPos.RIGHT,
+                        HPos.RIGHT, HPos.RIGHT, HPos.CENTER, HPos.LEFT
+                });
     }
 
     /**
@@ -112,8 +116,6 @@ public class StocksListCard extends Card {
      * Rebuilds the table from the current filtered and sorted stock list.
      * If a sort is active, sorts via {@link StocksSort}.
      * If no sort is active, restores the original exchange order via {@link #restoreOrder()}.
-     * Clears the grid, renders the header and the current page of rows, then fires
-     * the {@link #onRefreshed} callback so the parent view can update pagination and status.
      */
     private void refresh() {
         if (sort.isActive()) {

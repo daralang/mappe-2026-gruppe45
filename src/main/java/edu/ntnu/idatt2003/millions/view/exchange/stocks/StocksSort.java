@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
@@ -7,28 +8,44 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.Currency;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Manages sort state and header rendering for the stocks table.
  *
  * <p>Owns the active {@link SortColumn} and sort direction. Builds a header row
- * into a provided {@link GridPane} with clickable sort buttons and a clear-sort
- * button when a column is active. Sorts a stock list in-place via
- * {@link #applySort(List)}.
+ * into a provided {@link GridPane} with clickable sort buttons.
+ * Sorts a stock list in-place via {@link #applySort(List)}.
  */
 public class StocksSort {
+
+    private static final int HIGH_LOW_WEEKS = 4;
+    private static final Currency NOK = Currency.getInstance("NOK");
 
     /**
      * Columns that support ascending/descending sort.
      */
     public enum SortColumn {
-        TICKER, PRICE, CHANGE_KR, CHANGE_PCT
+        TICKER, PRICE_USD, PRICE_NOK, CHANGE_KR, CHANGE_PCT, HIGH_LOW
     }
 
+    private final CurrencyConverter converter;
     private SortColumn activeSortColumn = null;
     private boolean sortAscending = true;
+
+    /**
+     * Creates a stock sorter using the given converter for NOK price sorting.
+     *
+     * @param converter the converter used for NOK price values
+     * @throws NullPointerException if converter is null
+     */
+    public StocksSort(CurrencyConverter converter) {
+        this.converter = Objects.requireNonNull(converter, "Converter cannot be null");
+    }
 
     /**
      * Builds the header row into row 0 of the given grid.
@@ -54,23 +71,35 @@ public class StocksSort {
                 0);
         grid.add(buildSortableHeader(
                 "exchange.stocks.col.priceUSD",
-                SortColumn.PRICE, onChanged),
+                SortColumn.PRICE_USD, onChanged),
                 2,
+                0);
+        grid.add(buildSortableHeader(
+                "exchange.stocks.col.priceNOK",
+                SortColumn.PRICE_NOK, onChanged),
+                3,
                 0);
         grid.add(buildSortableHeader(
                 "exchange.stocks.col.changeKr",
                 SortColumn.CHANGE_KR, onChanged),
-                3,
+                4,
                 0);
         grid.add(buildSortableHeader(
                 "exchange.stocks.col.changePct",
                 SortColumn.CHANGE_PCT, onChanged),
-                4,
+                5,
                 0);
-        grid.add(buildStaticHeader("exchange.stocks.col.trend"),                                           5, 0);
+        grid.add(buildSortableHeader(
+                "exchange.stocks.col.highLow4",
+                SortColumn.HIGH_LOW, onChanged),
+                6,
+                0);
+        grid.add(buildStaticHeader("exchange.stocks.col.trend"),
+                7,
+                0);
 
         grid.add(buildStaticHeader("exchange.stocks.col.trade"),
-                6,
+                8,
                 0);
     }
 
@@ -85,9 +114,11 @@ public class StocksSort {
 
         Comparator<Stock> comparator = switch (activeSortColumn) {
             case TICKER -> Comparator.comparing(Stock::getSymbol);
-            case PRICE -> Comparator.comparing(Stock::getSalesPrice);
-            case CHANGE_KR -> Comparator.comparing(Stock::getLatestPriceChange);
+            case PRICE_USD -> Comparator.comparing(Stock::getSalesPrice);
+            case PRICE_NOK -> Comparator.comparing(this::priceInNok);
+            case CHANGE_KR -> Comparator.comparing(this::changeInNok);
             case CHANGE_PCT -> Comparator.comparing(Stock::getWeeklyChangePercent);
+            case HIGH_LOW -> Comparator.comparing(this::highLowRange);
         };
 
         if (!sortAscending) comparator = comparator.reversed();
@@ -145,5 +176,49 @@ public class StocksSort {
      */
     private Label buildStaticHeader(String labelKey) {
         return TableCells.header(LanguageManager.get(labelKey));
+    }
+
+    /**
+     * Returns the latest stock price converted to NOK.
+     *
+     * @param stock the stock to read from
+     * @return the latest price in NOK
+     */
+    private BigDecimal priceInNok(Stock stock) {
+        return converter.convert(stock.getSalesPrice(), stock.getCurrency(), NOK);
+    }
+
+    /**
+     * Returns the latest price change converted to NOK.
+     *
+     * @param stock the stock to read from
+     * @return the latest price change in NOK
+     */
+    private BigDecimal changeInNok(Stock stock) {
+        return converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
+    }
+
+    /**
+     * Returns the NOK range between the 4-week high and low.
+     *
+     * @param stock the stock to read from
+     * @return the high-low range in NOK
+     */
+    private BigDecimal highLowRange(Stock stock) {
+        List<BigDecimal> prices = lastPrices(stock);
+        BigDecimal low = prices.stream().min(BigDecimal::compareTo).orElseThrow();
+        BigDecimal high = prices.stream().max(BigDecimal::compareTo).orElseThrow();
+        return converter.convert(high.subtract(low), stock.getCurrency(), NOK);
+    }
+
+    /**
+     * Returns the latest prices used for high-low sorting.
+     *
+     * @param stock the stock to read from
+     * @return the latest price entries
+     */
+    private List<BigDecimal> lastPrices(Stock stock) {
+        List<BigDecimal> prices = stock.getHistoricalPrices();
+        return prices.subList(Math.max(0, prices.size() - HIGH_LOW_WEEKS), prices.size());
     }
 }
