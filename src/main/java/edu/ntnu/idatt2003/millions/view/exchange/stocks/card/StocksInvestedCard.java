@@ -3,7 +3,10 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks.card;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.SimpleWidgetCard;
+
+import java.text.MessageFormat;
 
 /**
  * Widget card displaying the total amount the player has invested in NOK.
@@ -13,16 +16,28 @@ import edu.ntnu.idatt2003.millions.view.component.SimpleWidgetCard;
 public class StocksInvestedCard extends SimpleWidgetCard {
 
     /**
-     * Constructs a new StocksInvestedCard.
+     * Constructs a new StocksInvestedCard with a dynamic subtitle showing the
+     * number of distinct stock positions, formatted using the given i18n key.
      *
      * @param gameService the game service containing player and exchange state
+     * @param subtitleKey the i18n key for the subtitle, with {@code {0}} for the position count
      */
-    public StocksInvestedCard(GameService gameService) {
+    public StocksInvestedCard(GameService gameService, String subtitleKey) {
         super(gameService,
                 "exchange.stocks.invested",
                 () -> CurrencyFormatter.format(
                         new PortfolioService().getInvestedAmount(
                                 gameService.getPlayer(),
-                                gameService.getCurrencyConverter())));
+                                gameService.getCurrencyConverter())),
+                () -> {
+                    long positions = gameService.getPlayer().getPortfolio().getShares()
+                            .stream()
+                            .map(s -> s.getStock().getSymbol())
+                            .distinct()
+                            .count();
+                    return MessageFormat.format(
+                            LanguageManager.get(subtitleKey),
+                            positions);
+                });
     }
 }
