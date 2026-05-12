@@ -9,20 +9,24 @@ import edu.ntnu.idatt2003.millions.view.component.PortfolioValueCard;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksInvestedCard;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksUnrealizedReturnCard;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 /**
  * View for the exchange stocks tab.
  *
- * <p>Assembles four portfolio summary cards and a searchbar, and a
- * sortable, paginated {@link StocksTable}.
+ * <p>Assembles four portfolio summary cards, a search bar with an inline clear sort
+ * button, and a sortable, paginated {@link StocksTable}.
  *
  * <p>Search is triggered explicitly by pressing Enter or clicking the search button,
  * delegated entirely to {@link SearchBar}. Sort state is managed by
- * {@link StocksSort} inside the table. This view only wires the components together
- * and updates the search bar status on each game state change.
+ * {@link StocksSort} inside the table. The clear sort button is shown only when a
+ * sort is active and is placed right-aligned on the same row as the search bar via
+ * {@link StocksTable#setOnSortChanged(Runnable)}.
  */
 public class StocksView extends VBox implements GameObserver {
 
@@ -33,6 +37,10 @@ public class StocksView extends VBox implements GameObserver {
     /**
      * Constructs a new StocksView.
      *
+     * <p>Wires the search bar to {@link StocksTable#filter(String)} and registers
+     * a sort-change callback so the clear sort button visibility tracks the active
+     * sort state via opacity.
+     *
      * @param gameService the game service containing player and exchange state
      * @param controller  the controller used to open buy/sell dialogs
      */
@@ -42,9 +50,21 @@ public class StocksView extends VBox implements GameObserver {
         this.searchBar = new SearchBar(
                 "exchange.stocks.search.placeholder",
                 "search.button",
-                term -> {
-                    stocksTable.filter(term);
-                });
+                term -> stocksTable.filter(term));
+
+        Button clearSortButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
+        clearSortButton.getStyleClass().add("holdings-header");
+        clearSortButton.setOpacity(0);
+        clearSortButton.setOnAction(e -> stocksTable.clearSort());
+
+        stocksTable.setOnSortChanged(() ->
+                clearSortButton.setOpacity(stocksTable.isSortActive() ? 1 : 0));
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox searchRow = new HBox(8, searchBar, spacer, clearSortButton);
+        searchRow.setAlignment(Pos.CENTER_LEFT);
 
         setSpacing(16);
         getStyleClass().add("content-area");
@@ -58,7 +78,7 @@ public class StocksView extends VBox implements GameObserver {
 
         gameService.addObserver(this);
 
-        getChildren().addAll(cards, searchBar, stocksTable);
+        getChildren().addAll(cards, searchRow, stocksTable);
     }
 
     /**

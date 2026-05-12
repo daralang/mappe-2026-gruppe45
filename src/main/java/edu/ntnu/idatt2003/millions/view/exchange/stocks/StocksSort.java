@@ -37,9 +37,9 @@ public class StocksSort {
      * Builds the header row into row 0 of the given grid.
      *
      * <p>Sortable columns render as clickable buttons with a ↑/↓ indicator.
-     * A "clear sort" button appears in the trade column when a sort is active.
      * Clicking a sort button activates ascending sort, or toggles direction if
-     * already active. Clicking clear sort resets state via {@link #clearSort()}.
+     * already active. The trade column always shows a static header; the clear
+     * sort button is managed externally by the view layer.
      *
      * @param grid      the grid to add the header row into
      * @param onChanged callback invoked after any sort state change so the table
@@ -53,17 +53,7 @@ public class StocksSort {
         grid.add(buildSortableHeader("exchange.stocks.col.changePct", SortColumn.CHANGE_PCT, onChanged), 4, 0);
         grid.add(buildStaticHeader("exchange.stocks.col.trend"),                                           5, 0);
 
-        if (activeSortColumn != null) {
-            Button clearButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
-            clearButton.getStyleClass().add("holdings-header");
-            clearButton.setOnAction(e -> {
-                clearSort();
-                onChanged.run();
-            });
-            grid.add(clearButton, 6, 0);
-        } else {
-            grid.add(buildStaticHeader("exchange.stocks.col.trade"), 6, 0);
-        }
+        grid.add(buildStaticHeader("exchange.stocks.col.trade"), 6, 0);
     }
 
     /**
