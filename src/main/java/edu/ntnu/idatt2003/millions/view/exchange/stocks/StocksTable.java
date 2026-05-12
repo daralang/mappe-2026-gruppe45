@@ -192,8 +192,8 @@ public class StocksTable extends Card {
 
         Label companyLabel = TableCells.data(stock.getCompany());
         Label priceLabel = TableCells.data(ChangeFormatter.formatPlain(stock.getSalesPrice()));
-        Label changeKrLabel  = ChangeFormatter.styledAmount(stock.getLatestPriceChange(),    "holdings-cell");
-        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "holdings-cell");
+        Label changeKrLabel = ChangeFormatter.styledAmount(stock.getLatestPriceChange(),"holdings-cell");
+        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(),"holdings-cell");
 
         List<BigDecimal> prices = stock.getHistoricalPrices();
         List<BigDecimal> sparkPrices = prices.subList(
