@@ -137,10 +137,14 @@ public class WeekRangeFilter extends HBox {
         if (newMax < minWeek) {
             return;
         }
-        ((SpinnerValueFactory.IntegerSpinnerValueFactory)
-                fromSpinner.getValueFactory()).setMax(newMax);
-        ((SpinnerValueFactory.IntegerSpinnerValueFactory)
-                toSpinner.getValueFactory()).setMax(newMax);
+        SpinnerValueFactory.IntegerSpinnerValueFactory fromFactory =
+                (SpinnerValueFactory.IntegerSpinnerValueFactory) fromSpinner.getValueFactory();
+        SpinnerValueFactory.IntegerSpinnerValueFactory toFactory =
+                (SpinnerValueFactory.IntegerSpinnerValueFactory) toSpinner.getValueFactory();
+        fromFactory.setMax(newMax);
+        toFactory.setMax(newMax);
+        fromFactory.setValue(minWeek);
+        toFactory.setValue(newMax);
     }
 
     /**

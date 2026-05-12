@@ -3,12 +3,16 @@ package edu.ntnu.idatt2003.millions.view;
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.Header;
+import edu.ntnu.idatt2003.millions.view.component.TitleBar;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.DashboardView;
 import edu.ntnu.idatt2003.millions.view.exchange.ExchangeView;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
 
 /**
  * The main view of the application.
@@ -28,14 +32,17 @@ public class MainView {
     private final WeekBar weekBar;
 
     /**
-     * Constructs a new MainView with a header and dashboard as the default content.
+     * Constructs a new MainView with a custom title bar, header, and dashboard
+     * as the default content.
      *
+     * @param stage          the primary stage, used by the title bar for window controls
      * @param gameService    the game manager containing player and exchange
      * @param onSaveGame     callback invoked when the user clicks "Save game"
      * @param onExitGame     callback invoked when the user clicks "Exit game"
      * @param onAdvanceWeek  callback invoked when the user clicks "Advance week"
      */
-    public MainView(GameService gameService,
+    public MainView(Stage stage,
+                    GameService gameService,
                     PortfolioController portfolioController,
                     Runnable onSaveGame,
                     Runnable onExitGame,
@@ -50,7 +57,31 @@ public class MainView {
                 onExitGame
         );
         this.root = new BorderPane();
-        root.setTop(header);
+        root.getStyleClass().add("main-root");
+        root.setTop(new VBox(new TitleBar(stage), header));
+
+        // Clip all children to the rounded corner shape so no child
+        // background bleeds into the transparent corner areas.
+        Rectangle clip = new Rectangle();
+        clip.widthProperty().bind(root.widthProperty());
+        clip.heightProperty().bind(root.heightProperty());
+        clip.setArcWidth(24);
+        clip.setArcHeight(24);
+        root.setClip(clip);
+
+        Runnable updateCorners = () -> {
+            boolean flat = stage.isMaximized() || stage.isFullScreen();
+            clip.setArcWidth(flat ? 0 : 24);
+            clip.setArcHeight(flat ? 0 : 24);
+            if (flat) {
+                root.getStyleClass().add("main-root-flat");
+            } else {
+                root.getStyleClass().remove("main-root-flat");
+            }
+        };
+        stage.maximizedProperty().addListener((obs, old, val) -> updateCorners.run());
+        stage.fullScreenProperty().addListener((obs, old, val) -> updateCorners.run());
+
         showDashboard();
     }
 

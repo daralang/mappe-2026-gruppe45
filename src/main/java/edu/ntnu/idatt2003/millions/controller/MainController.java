@@ -35,6 +35,7 @@ public class MainController {
         this.gameService = gameService;
         PortfolioController portfolioController = new PortfolioController(gameService);
         this.view = new MainView(
+                stage,
                 gameService,
                 portfolioController,
                 this::handleSaveGame,
