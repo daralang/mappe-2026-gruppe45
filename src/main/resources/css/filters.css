@@ -9,21 +9,54 @@
     -fx-padding: 0 2 0 2;
 }
 
+.transactions-filter-row {
+    -fx-padding: 8 0 8 0;
+}
+
 .week-spinner {
     -fx-font-size: 13px;
+    -fx-background-color: #888888, #ffffff;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6, 5;
+}
+
+.week-spinner:focused {
+    -fx-background-color: #2563eb, #ffffff;
 }
 
 .week-spinner .text-field {
-    -fx-background-color: surface;
-    -fx-border-color: border;
-    -fx-border-radius: 4;
-    -fx-background-radius: 4;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
     -fx-padding: 4 6 4 6;
-    -fx-text-fill: text-primary;
+    -fx-alignment: center;
+    -fx-text-fill: #111111;
+}
+
+.week-spinner .text-field:focused {
+    -fx-background-color: transparent;
 }
 
 .week-spinner .increment-arrow-button,
 .week-spinner .decrement-arrow-button {
-    -fx-background-color: surface-alt;
-    -fx-border-color: border;
+    -fx-background-color: #888888, #f3f3f3;
+    -fx-background-insets: 0, 0 0 0 1;
+    -fx-padding: 2 6 2 6;
+}
+
+.week-spinner .increment-arrow-button:hover,
+.week-spinner .decrement-arrow-button:hover {
+    -fx-background-color: #888888, #e5e5e5;
+}
+
+.week-spinner .increment-arrow-button {
+    -fx-background-radius: 0 5 0 0;
+}
+
+.week-spinner .decrement-arrow-button {
+    -fx-background-radius: 0 0 5 0;
+}
+
+.week-spinner .increment-arrow,
+.week-spinner .decrement-arrow {
+    -fx-background-color: #555555;
 }
