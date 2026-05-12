@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.SimpleWidgetCard;
+import edu.ntnu.idatt2003.millions.view.component.card.SimpleWidgetCard;
 
 /**
  * Widget card displaying the player's total unrealized return in NOK combined

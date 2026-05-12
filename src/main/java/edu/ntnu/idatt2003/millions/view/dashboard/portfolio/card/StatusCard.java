@@ -4,7 +4,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.PlayerStatsService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
+import edu.ntnu.idatt2003.millions.view.component.card.WidgetCard;
 
 /**
  * Widget card displaying the player's current status level.
