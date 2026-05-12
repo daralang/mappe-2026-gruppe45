@@ -11,6 +11,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.TransactionTypeFilter;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
@@ -29,10 +30,10 @@ import java.util.List;
  * Dashboard card for the transactions tab.
  *
  * <p>Renders the section title, a filter row, and a table of every
- * committed transaction within the selected week range, sorted oldest
- * first. The filter row currently holds a {@link WeekRangeFilter}; the
- * search field and type dropdown will be added later in the same row
- * without restructuring the card.</p>
+ * committed transaction within the current filter selection, sorted
+ * oldest first. The filter row holds a {@link TransactionTypeFilter}
+ * (all / buy / sell) and a {@link WeekRangeFilter}; a search field can
+ * be added to the same row later without restructuring the card.</p>
  *
  * <p>Shares structure and CSS with {@code HoldingsCard} via
  * {@link TableCells} (column setup, header row, cell factories, empty
@@ -66,6 +67,7 @@ public class TransactionsCard extends Card {
     private final GameService gameService;
     private final TransactionStatsService statsService = new TransactionStatsService();
     private final StyledText title;
+    private final TransactionTypeFilter typeFilter;
     private final WeekRangeFilter weekRangeFilter;
     private final GridPane grid = new GridPane();
 
@@ -81,6 +83,9 @@ public class TransactionsCard extends Card {
         setSpacing(16);
 
         title = StyledText.sectionTitle(LanguageManager.get("transactions.title"));
+
+        typeFilter = new TransactionTypeFilter();
+        typeFilter.selectedTypeProperty().addListener((obs, oldVal, newVal) -> refresh());
 
         int currentWeek = Math.max(gameService.getExchange().getWeek(), 1);
         weekRangeFilter = new WeekRangeFilter(1, currentWeek);
@@ -99,9 +104,10 @@ public class TransactionsCard extends Card {
     /**
      * Builds the filter row that sits between the title and the table.
      *
-     * <p>The week range filter is pushed to the right edge with a flexible
-     * spacer so future filter controls (search field, type dropdown) can
-     * be inserted on the left without affecting alignment.</p>
+     * <p>Both filters sit together on the left edge with a small gap
+     * between them; a flexible spacer takes up the remaining width so
+     * future filter controls can be inserted next to the existing ones
+     * without disturbing the layout.</p>
      *
      * @return the configured filter row
      */
@@ -109,7 +115,7 @@ public class TransactionsCard extends Card {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox row = new HBox(16, spacer, weekRangeFilter);
+        HBox row = new HBox(36, typeFilter, weekRangeFilter, spacer);
         row.setAlignment(Pos.CENTER_LEFT);
         row.getStyleClass().add("transactions-filter-row");
         return row;
@@ -140,7 +146,7 @@ public class TransactionsCard extends Card {
     /**
      * Rebuilds the table from scratch: clears the grid, adds the header
      * row, then either renders a centered empty-state message or one
-     * row per transaction within the selected week range.
+     * row per transaction that passes the current filters.
      */
     private void refresh() {
         grid.getChildren().clear();
@@ -149,7 +155,11 @@ public class TransactionsCard extends Card {
         TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
         int fromWeek = weekRangeFilter.getFromWeek();
         int toWeek = weekRangeFilter.getToWeek();
-        List<Transaction> transactions = collectRange(archive, fromWeek, toWeek);
+        Class<? extends Transaction> selectedType = typeFilter.getSelectedType();
+
+        List<Transaction> transactions = collectRange(archive, fromWeek, toWeek).stream()
+                .filter(t -> selectedType == null || selectedType.isInstance(t))
+                .toList();
 
         if (transactions.isEmpty()) {
             TableCells.renderEmptyState(

@@ -27,7 +27,7 @@
 .week-spinner .text-field {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-padding: 4 6 4 6;
+    -fx-padding: 2 6 2 6;
     -fx-alignment: center;
     -fx-text-fill: #111111;
 }
@@ -40,7 +40,8 @@
 .week-spinner .decrement-arrow-button {
     -fx-background-color: #888888, #f3f3f3;
     -fx-background-insets: 0, 0 0 0 1;
-    -fx-padding: 2 6 2 6;
+    -fx-background-radius: 0;
+    -fx-padding: 0 6 0 6;
 }
 
 .week-spinner .increment-arrow-button:hover,
@@ -59,4 +60,59 @@
 .week-spinner .increment-arrow,
 .week-spinner .decrement-arrow {
     -fx-background-color: #555555;
+}
+
+.type-filter {
+    -fx-font-size: 13px;
+    -fx-background-color: #888888, #ffffff;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6, 5;
+    -fx-padding: 0;
+}
+
+.type-filter:focused {
+    -fx-background-color: #2563eb, #ffffff;
+}
+
+.type-filter .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 4 8 4 8;
+    -fx-text-fill: #111111;
+}
+
+/* Arrow button on the right edge of the closed combo box. */
+
+.type-filter .arrow-button {
+    -fx-background-color: #888888, #f3f3f3;
+    -fx-background-insets: 0, 0 0 0 1;
+    -fx-background-radius: 0 5 5 0;
+    -fx-padding: 0 6 0 6;
+}
+
+.type-filter .arrow-button:hover {
+    -fx-background-color: #888888, #e5e5e5;
+}
+
+.type-filter .arrow-button .arrow {
+    -fx-background-color: #555555;
+}
+
+.type-filter .combo-box-popup .list-view {
+    -fx-background-color: #888888, #ffffff;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6, 5;
+}
+
+.type-filter .combo-box-popup .list-view .list-cell {
+    -fx-padding: 6 12 6 12;
+    -fx-text-fill: #111111;
+}
+
+.type-filter .combo-box-popup .list-view .list-cell:filled:hover {
+    -fx-background-color: #f3f3f3;
+}
+
+.type-filter .combo-box-popup .list-view .list-cell:filled:selected {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: #ffffff;
 }
