@@ -56,7 +56,7 @@ public class StocksListCard extends Card {
     });
 
     /**
-     * Constructs a new StocksTable.
+     * Constructs a new StocksListCard.
      *
      * @param gameService the game service containing exchange and player state
      * @param controller  the controller used to open buy/sell dialogs
