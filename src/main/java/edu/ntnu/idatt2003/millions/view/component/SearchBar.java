@@ -14,11 +14,18 @@ import java.util.function.Consumer;
 
 /**
  * Reusable search bar for views that need explicit search input.
+ * Assembles a search icon, a text field, a search button, and a
+ * clear button into a single row. Search is triggered by pressing Enter or
+ * clicking the search button. The clear button is hidden until a non-empty
+ * search has been submitted; clicking it resets the field and notifies the
+ * caller.
+ *
  */
 public class SearchBar extends VBox {
 
     private final TextField searchField = new TextField();
     private final Button searchButton = new Button();
+    private final Button clearButton = new Button("✕");
     private final String placeholderKey;
     private final String buttonKey;
 
@@ -27,7 +34,8 @@ public class SearchBar extends VBox {
      *
      * @param placeholderKey the i18n key for the field placeholder
      * @param buttonKey      the i18n key for the button text
-     * @param onSearch       callback receiving the current search term
+     * @param onSearch       callback receiving the current search term on each
+     *                       triggered search or clear action
      * @throws NullPointerException if any argument is null
      */
     public SearchBar(String placeholderKey, String buttonKey, Consumer<String> onSearch) {
@@ -45,17 +53,32 @@ public class SearchBar extends VBox {
 
         searchButton.getStyleClass().add("search-button");
 
-        Runnable triggerSearch = () -> onSearch.accept(searchField.getText());
+        clearButton.getStyleClass().add("search-clear-button");
+        clearButton.setOpacity(0);
+
+        Runnable triggerSearch = () -> {
+            String term = searchField.getText();
+            onSearch.accept(term);
+            clearButton.setOpacity(term.isBlank() ? 0 : 1);
+        };
+
         searchField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) triggerSearch.run();
         });
         searchButton.setOnAction(event -> triggerSearch.run());
+        clearButton.setOnAction(event -> {
+            searchField.clear();
+            onSearch.accept("");
+            clearButton.setOpacity(0);
+        });
 
         HBox searchInput = new HBox(8, iconLabel, searchField);
         searchInput.getStyleClass().add("search-bar");
         HBox.setHgrow(searchInput, Priority.ALWAYS);
 
-        HBox content = new HBox(12, searchInput, searchButton);
+        HBox actionButtons = new HBox(8, searchButton, clearButton);
+
+        HBox content = new HBox(12, searchInput, actionButtons);
         content.getStyleClass().add("search-row");
         getChildren().add(content);
 
