@@ -78,6 +78,6 @@ public class LanguageManager {
         Objects.requireNonNull(language, "Language cannot be null");
         currentLanguage = language;
         bundle = ResourceBundle.getBundle("i18n/messages", language.locale);
-        observers.forEach(Runnable::run);
+        List.copyOf(observers).forEach(Runnable::run);
     }
 }

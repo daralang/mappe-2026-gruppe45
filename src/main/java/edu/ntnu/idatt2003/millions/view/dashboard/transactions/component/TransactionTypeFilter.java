@@ -65,7 +65,11 @@ public class TransactionTypeFilter extends ComboBox<TransactionTypeFilter.TypeOp
         // and reassigning the value.
         LanguageManager.addObserver(() -> {
             TypeOption current = getValue();
-            setValue(null);
+            setItems(FXCollections.observableArrayList(
+                    TypeOption.ALL,
+                    TypeOption.BUY,
+                    TypeOption.SELL
+            ));
             setValue(current);
         });
     }
