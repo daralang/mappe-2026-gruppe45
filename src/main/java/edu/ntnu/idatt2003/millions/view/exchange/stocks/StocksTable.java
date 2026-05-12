@@ -108,11 +108,16 @@ public class StocksTable extends Card {
 
     /**
      * Rebuilds the table from the current filtered and sorted stock list.
-     * Applies sort via {@link StocksSort#applySort(List)}, clears the grid,
-     * renders the header and the current page of rows, then updates pagination.
+     * If a sort is active, sorts via {@link StocksSort#applySort(List)}.
+     * If no sort is active, restores the original exchange order via {@link #restoreOrder()}.
+     * Clears the grid, renders the header and the current page of rows, then updates pagination.
      */
     private void refresh() {
-        sort.applySort(filteredStocks);
+        if (sort.isActive()) {
+            sort.applySort(filteredStocks);
+        } else {
+            restoreOrder();
+        }
 
         grid.getChildren().clear();
         sort.buildHeader(grid, this::refresh);
@@ -141,6 +146,17 @@ public class StocksTable extends Card {
                 ? new ArrayList<>(allStocks)
                 : new ArrayList<>(gameService.getExchange().findStocks(currentFilterTerm));
         currentPage = 0;
+    }
+
+    /**
+     * Restores {@link #filteredStocks} to the original exchange order without
+     * resetting {@link #currentPage}. Used when sort is cleared so the list
+     * returns to its pre-sort state while keeping the user on the current page.
+     */
+    private void restoreOrder() {
+        filteredStocks = currentFilterTerm.isBlank()
+                ? new ArrayList<>(allStocks)
+                : new ArrayList<>(gameService.getExchange().findStocks(currentFilterTerm));
     }
 
     /**

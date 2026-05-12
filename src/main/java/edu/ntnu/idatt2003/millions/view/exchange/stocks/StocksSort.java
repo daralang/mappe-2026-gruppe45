@@ -96,6 +96,15 @@ public class StocksSort {
     }
 
     /**
+     * Returns whether a sort column is currently active.
+     *
+     * @return {@code true} if a sort column is active, {@code false} otherwise
+     */
+    public boolean isActive() {
+        return activeSortColumn != null;
+    }
+
+    /**
      * Builds a sortable header button for the given column.
      * Appends ↑ or ↓ when this column is the active sort column.
      *
