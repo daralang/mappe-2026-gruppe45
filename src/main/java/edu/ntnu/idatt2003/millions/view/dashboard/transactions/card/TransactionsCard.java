@@ -150,6 +150,7 @@ public class TransactionsCard extends Card {
      */
     private void refresh() {
         grid.getChildren().clear();
+        if (gameService.getPlayer() == null) return;
         TableCells.addHeaderRow(grid, headerTexts());
 
         TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
