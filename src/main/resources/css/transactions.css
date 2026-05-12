@@ -1,0 +1,21 @@
+.transaction-type-badge {
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+    -fx-padding: 2 10 2 10;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-alignment: center;
+}
+
+.badge-buy {
+    -fx-background-color: -info-bg;
+    -fx-text-fill: -info-text;
+    -fx-border-color: -info-border;
+}
+
+.badge-sell {
+    -fx-background-color: -success-bg;
+    -fx-text-fill: -success-text;
+    -fx-border-color: -success-border;
+}
