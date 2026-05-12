@@ -1,0 +1,29 @@
+.filter-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: text-secondary;
+}
+
+.filter-separator {
+    -fx-font-size: 14px;
+    -fx-text-fill: text-muted;
+    -fx-padding: 0 2 0 2;
+}
+
+.week-spinner {
+    -fx-font-size: 13px;
+}
+
+.week-spinner .text-field {
+    -fx-background-color: surface;
+    -fx-border-color: border;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 4 6 4 6;
+    -fx-text-fill: text-primary;
+}
+
+.week-spinner .increment-arrow-button,
+.week-spinner .decrement-arrow-button {
+    -fx-background-color: surface-alt;
+    -fx-border-color: border;
+}
