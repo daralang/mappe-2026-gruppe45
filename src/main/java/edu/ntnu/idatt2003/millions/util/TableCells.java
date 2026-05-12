@@ -145,9 +145,6 @@ public final class TableCells {
      * Writes a header row to row 0 of the given grid, with one
      * {@link #header} cell per provided label.
      *
-     * <p>Does not clear the grid first — callers typically call
-     * {@code grid.getChildren().clear()} themselves before refreshing.</p>
-     *
      * @param grid    the grid to write to
      * @param headers the header texts, one per column
      */
