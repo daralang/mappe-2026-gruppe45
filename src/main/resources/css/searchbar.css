@@ -50,7 +50,8 @@
 .search-button:hover {
     -fx-background-color: -primary-dark;
 }
-search-clear-button:hover {
+
+.search-clear-button:hover {
     -fx-background-color: -primary-dark;
 }
 

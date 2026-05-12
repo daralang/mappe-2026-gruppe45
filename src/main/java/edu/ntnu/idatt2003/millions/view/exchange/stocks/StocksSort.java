@@ -17,9 +17,6 @@ import java.util.List;
  * into a provided {@link GridPane} with clickable sort buttons and a clear-sort
  * button when a column is active. Sorts a stock list in-place via
  * {@link #applySort(List)}.
- *
- * <p>Callers supply a {@code Runnable onChanged} to {@link #buildHeader(GridPane, Runnable)}
- * so the table can re-render when the sort state changes.
  */
 public class StocksSort {
 
@@ -38,8 +35,7 @@ public class StocksSort {
      *
      * <p>Sortable columns render as clickable buttons with a ↑/↓ indicator.
      * Clicking a sort button activates ascending sort, or toggles direction if
-     * already active. The trade column always shows a static header; the clear
-     * sort button is managed externally by the view layer.
+     * already active.
      *
      * @param grid      the grid to add the header row into
      * @param onChanged callback invoked after any sort state change so the table
@@ -117,8 +113,7 @@ public class StocksSort {
     }
 
     /**
-     * Builds a sortable header button for the given column using
-     * {@link TableCells#sortHeader(String, Runnable)}.
+     * Builds a sortable header button for the given column.
      *
      * <p>Appends ↓↑ when the column is inactive, ↓ when sorted ascending,
      * or ↑ when sorted descending.
