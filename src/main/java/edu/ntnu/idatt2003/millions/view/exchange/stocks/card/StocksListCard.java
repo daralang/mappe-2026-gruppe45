@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.exchange.stocks;
+package edu.ntnu.idatt2003.millions.view.exchange.stocks.card;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -10,6 +10,7 @@ import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Card;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
+import edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -32,7 +33,7 @@ import java.util.List;
  * header row. Pagination is delegated to {@link Pagination}. This class handles
  * data loading, filtering and row rendering.
  */
-public class StocksTable extends Card {
+public class StocksListCard extends Card {
 
     private static final int PAGE_SIZE = 20;
     private static final int MAX_SPARKLINE_WEEKS = 8;
@@ -60,7 +61,7 @@ public class StocksTable extends Card {
      * @param gameService the game service containing exchange and player state
      * @param controller  the controller used to open buy/sell dialogs
      */
-    public StocksTable(GameService gameService, PortfolioController controller) {
+    public StocksListCard(GameService gameService, PortfolioController controller) {
         super(gameService);
         this.gameService = gameService;
         this.controller = controller;

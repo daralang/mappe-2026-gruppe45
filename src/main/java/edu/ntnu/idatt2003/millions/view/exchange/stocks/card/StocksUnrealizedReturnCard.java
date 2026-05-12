@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.PortfolioService;
+import java.math.BigDecimal;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
@@ -19,13 +20,9 @@ public class StocksUnrealizedReturnCard extends SimpleWidgetCard {
 
     /**
      * Constructs a new StocksUnrealizedReturnCard.
-     *
-     * <p>The value label combines the total unrealized NOK return with the
+     * The value label combines the total unrealized NOK return with the
      * total return percentage since purchase, formatted as
-     * {@code +X NOK (+Y%)} using {@link CurrencyFormatter} and
-     * {@link ChangeFormatter#formatSignedPercent(java.math.BigDecimal)}.
-     * Colour is applied based on the sign of the total unrealized return via
-     * {@link edu.ntnu.idatt2003.millions.util.ColourChange}.
+     * {@code ↗ +X NOK (+Y%)} or {@code ↘ -X NOK (-Y%)}.
      *
      * @param gameService the game service containing player and exchange state
      * @param subtitleKey the i18n key for the static subtitle label
@@ -35,10 +32,11 @@ public class StocksUnrealizedReturnCard extends SimpleWidgetCard {
                 "exchange.stocks.unrealized",
                 () -> {
                     PortfolioService ps = new PortfolioService();
-                    String nok = CurrencyFormatter.format(
-                            ps.getTotalReturnInNok(
-                                    gameService.getPlayer(),
-                                    gameService.getCurrencyConverter()));
+                    BigDecimal totalNok = ps.getTotalReturnInNok(
+                            gameService.getPlayer(),
+                            gameService.getCurrencyConverter());
+                    String prefix = totalNok.signum() >= 0 ? "↗ +" : "↘ ";
+                    String nok = prefix + CurrencyFormatter.format(totalNok);
                     String pct = ChangeFormatter.formatSignedPercent(
                             ps.getTotalReturnPercent(
                                     gameService.getPlayer(),
