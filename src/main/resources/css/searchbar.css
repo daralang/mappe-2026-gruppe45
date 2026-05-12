@@ -1,0 +1,38 @@
+.search-bar {
+    -fx-background-color: #f5f5f5;
+    -fx-background-radius: 20;
+
+    -fx-padding: 10 18 10 18;
+    -fx-spacing: 12;
+
+    -fx-alignment: center-left;
+
+    -fx-border-color: #e5e5e5;
+    -fx-border-radius: 20;
+
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(0,0,0,0.06),
+            10,
+            0,
+            0,
+            2
+    );
+}
+.search-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+
+    -fx-font-size: 18px;
+    -fx-text-fill: #333333;
+    -fx-prompt-text-fill: #b0b0b0;
+
+    -fx-padding: 5 0 5 0;
+
+    -fx-pref-width: 400;
+}
+
+.search-field:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
