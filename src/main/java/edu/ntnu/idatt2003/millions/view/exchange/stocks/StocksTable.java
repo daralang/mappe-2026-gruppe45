@@ -128,15 +128,31 @@ public class StocksTable extends VBox implements GameObserver {
 
     /**
      * Rebuilds the table from the current filtered and sorted stock list.
-     * Resets to page 0 when the stock list or filter changes.
+     * Applies sort, clears the grid, renders the header and the current page of rows,
+     * then updates the pagination bar and status label.
      */
     private void refresh() {
+        applySort();
+
+        grid.getChildren().clear();
+        buildTableHeader();
+
+        int fromIndex = currentPage * PAGE_SIZE;
+        int toIndex = Math.min(fromIndex + PAGE_SIZE, filteredStocks.size());
+        List<Stock> page = filteredStocks.subList(fromIndex, toIndex);
+
+        for (int i = 0; i < page.size(); i++) {
+            buildDataRow(page.get(i), i + 1);
+        }
+
+        buildPagination();
+        updateStatusLabel();
     }
 
     /**
-     * Filters {@link #allStocks} by the current search field text into
-     * {@link #filteredStocks}. Resets {@link #currentPage} to 0.
-     * Delegates to {@link edu.ntnu.idatt2003.millions.model.exchange.Exchange#findStocks(String)}
+     * Filters all stocks by the current search field text into.
+     * Resets {@link #currentPage} to 0.
+     * Delegates to findStock in Exchange.
      * when a search term is present; uses the full list otherwise.
      */
     private void applyFilter() {
@@ -148,8 +164,8 @@ public class StocksTable extends VBox implements GameObserver {
     }
 
     /**
-     * Sorts {@link #filteredStocks} in-place according to {@link #activeSortColumn}
-     * and {@link #sortAscending}. No-op when {@link #activeSortColumn} is {@code null}.
+     * Sorts all stocks in-place according to active sort button with ascending.
+     * No-op when active sort is {@code null}.
      */
     private void applySort() {
         if (activeSortColumn == null) return;
@@ -166,9 +182,56 @@ public class StocksTable extends VBox implements GameObserver {
     }
 
     /**
-     * Builds and adds the header row and data rows for the current page to the grid.
+     * Builds and adds the header row to the grid.
+     * Sortable columns render as clickable buttons with a ↑/↓ indicator.
+     * Non-sortable columns render as plain labels.
      */
     private void buildTableHeader() {
+        grid.add(buildSortableHeader("exchange.stocks.col.ticker",    SortColumn.TICKER),     0, 0);
+        grid.add(buildStaticHeader("exchange.stocks.col.company"),                             1, 0);
+        grid.add(buildSortableHeader("exchange.stocks.col.price",     SortColumn.PRICE),      2, 0);
+        grid.add(buildSortableHeader("exchange.stocks.col.changeKr",  SortColumn.CHANGE_KR),  3, 0);
+        grid.add(buildSortableHeader("exchange.stocks.col.changePct", SortColumn.CHANGE_PCT), 4, 0);
+        grid.add(buildStaticHeader("exchange.stocks.col.trend"),                               5, 0);
+        grid.add(buildStaticHeader("exchange.stocks.col.trade"),                               6, 0);
+    }
+
+    /**
+     * Builds a sortable header button for the given column.
+     * Appends ↑ or ↓ when this column is the active sort column.
+     * Clicking toggles sort direction if already active, or activates ascending sort otherwise.
+     *
+     * @param labelKey the i18n key for the column label
+     * @param column   the sort column this header controls
+     * @return a styled Button acting as the column header
+     */
+    private Button buildSortableHeader(String labelKey, SortColumn column) {
+        String indicator = activeSortColumn == column ? (sortAscending ? " ↑" : " ↓") : "";
+        Button header = new Button(LanguageManager.get(labelKey) + indicator);
+        header.getStyleClass().add("holdings-header");
+        //TODO: Connect to a css file, header.getStyleClass().add("stocks-header-button");
+        header.setOnAction(e -> {
+            if (activeSortColumn == column) {
+                sortAscending = !sortAscending;
+            } else {
+                activeSortColumn = column;
+                sortAscending = true;
+            }
+            refresh();
+        });
+        return header;
+    }
+
+    /**
+     * Builds a non-sortable header label for the given column.
+     *
+     * @param labelKey the i18n key for the column label
+     * @return a styled Label
+     */
+    private Label buildStaticHeader(String labelKey) {
+        Label header = new Label(LanguageManager.get(labelKey));
+        header.getStyleClass().add("holdings-header");
+        return header;
     }
 
     /**
