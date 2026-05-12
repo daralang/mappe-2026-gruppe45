@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.scene.control.Button;
@@ -12,6 +13,7 @@ import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.Optional;
 
 /**
  * Dialog for selling a user-specified quantity of shares.
@@ -79,6 +81,16 @@ public class SellDialog extends AbstractSellDialog {
             showError(MessageFormat.format(
                     LanguageManager.get("dialog.quantity.notEnoughShares"),
                     NUMBER_FORMAT.format(share.getQuantity())));
+            return;
+        }
+
+        TransactionPreview preview = controller.previewSell(share, quantity);
+        Optional<String> policyError = controller.validateTransactionInput(quantity, preview.totalInNok());
+        if (policyError.isPresent()) {
+            renderEmptySummary();
+            setTransactionInfo(null, null, null, false);
+            showError(LanguageManager.get(policyError.get()));
+            setConfirmEnabled(false);
             return;
         }
 
