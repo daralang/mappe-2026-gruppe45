@@ -11,9 +11,14 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
 import javafx.geometry.HPos;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -23,11 +28,11 @@ import java.util.List;
 /**
  * Dashboard card for the transactions tab.
  *
- * <p>Renders the section title and a table of every committed transaction
- * from week 1 up to and including the current game week, sorted oldest
- * first. Filter controls (search, type, week range) are deliberately not
- * yet wired up — they will be layered on top in a follow-up change and
- * will only narrow which rows are rendered, not how a row is rendered.</p>
+ * <p>Renders the section title, a filter row, and a table of every
+ * committed transaction within the selected week range, sorted oldest
+ * first. The filter row currently holds a {@link WeekRangeFilter}; the
+ * search field and type dropdown will be added later in the same row
+ * without restructuring the card.</p>
  *
  * <p>Shares structure and CSS with {@code HoldingsCard} via
  * {@link TableCells} (column setup, header row, cell factories, empty
@@ -61,6 +66,7 @@ public class TransactionsCard extends Card {
     private final GameService gameService;
     private final TransactionStatsService statsService = new TransactionStatsService();
     private final StyledText title;
+    private final WeekRangeFilter weekRangeFilter;
     private final GridPane grid = new GridPane();
 
     /**
@@ -76,19 +82,47 @@ public class TransactionsCard extends Card {
 
         title = StyledText.sectionTitle(LanguageManager.get("transactions.title"));
 
+        int currentWeek = Math.max(gameService.getExchange().getWeek(), 1);
+        weekRangeFilter = new WeekRangeFilter(1, currentWeek);
+        weekRangeFilter.fromWeekProperty().addListener((obs, oldVal, newVal) -> refresh());
+        weekRangeFilter.toWeekProperty().addListener((obs, oldVal, newVal) -> refresh());
+
+        HBox filterRow = buildFilterRow();
+
         grid.setHgap(20);
         TableCells.configureColumns(grid, COLUMN_WIDTHS, COLUMN_ALIGNMENTS);
 
-        getChildren().addAll(title, grid);
+        getChildren().addAll(title, filterRow, grid);
         refresh();
     }
 
     /**
+     * Builds the filter row that sits between the title and the table.
+     *
+     * <p>The week range filter is pushed to the right edge with a flexible
+     * spacer so future filter controls (search field, type dropdown) can
+     * be inserted on the left without affecting alignment.</p>
+     *
+     * @return the configured filter row
+     */
+    private HBox buildFilterRow() {
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox row = new HBox(16, spacer, weekRangeFilter);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getStyleClass().add("transactions-filter-row");
+        return row;
+    }
+
+    /**
      * Picks up new transactions and the new current week whenever the
-     * model changes.
+     * model changes. Also extends the week range filter's upper bound
+     * so the player can include the new week in the filter.
      */
     @Override
     public void onGameUpdated() {
+        weekRangeFilter.setMaxWeek(Math.max(gameService.getExchange().getWeek(), 1));
         refresh();
     }
 
@@ -106,15 +140,16 @@ public class TransactionsCard extends Card {
     /**
      * Rebuilds the table from scratch: clears the grid, adds the header
      * row, then either renders a centered empty-state message or one
-     * row per transaction.
+     * row per transaction within the selected week range.
      */
     private void refresh() {
         grid.getChildren().clear();
         TableCells.addHeaderRow(grid, headerTexts());
 
         TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
-        int currentWeek = gameService.getExchange().getWeek();
-        List<Transaction> transactions = collectAll(archive, currentWeek);
+        int fromWeek = weekRangeFilter.getFromWeek();
+        int toWeek = weekRangeFilter.getToWeek();
+        List<Transaction> transactions = collectRange(archive, fromWeek, toWeek);
 
         if (transactions.isEmpty()) {
             TableCells.renderEmptyState(
@@ -148,17 +183,18 @@ public class TransactionsCard extends Card {
     }
 
     /**
-     * Gathers every transaction in the archive from week 1 up to and
-     * including the current week, then sorts them oldest first so the
-     * table reads chronologically from top to bottom.
+     * Gathers every transaction in the archive within the given week
+     * range (inclusive on both ends), then sorts them oldest first so
+     * the table reads chronologically from top to bottom.
      *
-     * @param archive     the archive to read transactions from
-     * @param currentWeek the current game week (inclusive upper bound)
-     * @return a chronologically sorted list of all transactions
+     * @param archive  the archive to read transactions from
+     * @param fromWeek the first week to include (inclusive)
+     * @param toWeek   the last week to include (inclusive)
+     * @return a chronologically sorted list of transactions in the range
      */
-    private List<Transaction> collectAll(TransactionArchive archive, int currentWeek) {
+    private List<Transaction> collectRange(TransactionArchive archive, int fromWeek, int toWeek) {
         List<Transaction> list = new ArrayList<>();
-        for (int week = 1; week <= currentWeek; week++) {
+        for (int week = fromWeek; week <= toWeek; week++) {
             list.addAll(archive.getTransactions(week));
         }
         list.sort(Comparator.comparingInt(Transaction::getWeek));
