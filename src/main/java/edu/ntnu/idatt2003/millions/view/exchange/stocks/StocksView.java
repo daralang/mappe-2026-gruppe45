@@ -85,8 +85,10 @@ public class StocksView extends VBox {
                 withGrow(new StocksUnrealizedReturnCard(gameService,
                         "exchange.stocks.unrealized.sub"))
         );
+        Region spacer = new Region();
+        spacer.setMinHeight(12);
 
-        getChildren().addAll(cards, searchRow, listHeader, stocksListCard, pagination);
+        getChildren().addAll(cards, spacer, searchRow, listHeader, stocksListCard, pagination);
         pagination.update(stocksListCard.getCurrentPage(), stocksListCard.getFilteredCount());
         updateStatus();
     }
