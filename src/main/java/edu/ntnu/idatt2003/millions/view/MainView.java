@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view;
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.Header;
+import edu.ntnu.idatt2003.millions.view.component.StatusFooter;
 import edu.ntnu.idatt2003.millions.view.component.TitleBar;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.DashboardView;
@@ -30,6 +31,7 @@ public class MainView {
     private final BorderPane root;
     private final Header header;
     private final WeekBar weekBar;
+    private final StatusFooter footer;
 
     /**
      * Constructs a new MainView with a custom title bar, header, and dashboard
@@ -56,9 +58,11 @@ public class MainView {
                 onSaveGame,
                 onExitGame
         );
+        this.footer = new StatusFooter(gameService);
         this.root = new BorderPane();
         root.getStyleClass().add("main-root");
         root.setTop(new VBox(new TitleBar(stage), header));
+        root.setBottom(footer);
 
         // Clip all children to the rounded corner shape so no child
         // background bleeds into the transparent corner areas.

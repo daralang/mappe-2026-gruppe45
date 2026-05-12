@@ -1,0 +1,68 @@
+.status-footer {
+    -fx-background-color: -footer-bg;
+    -fx-padding: 13 32 13 32;
+    -fx-alignment: center-left;
+    -fx-spacing: 24;
+}
+
+.status-footer-label {
+    -fx-font-size: 13;
+    -fx-text-fill: -footer-label;
+}
+
+.status-footer-value {
+    -fx-font-size: 13;
+    -fx-font-weight: 500;
+    -fx-text-fill: -footer-text;
+}
+
+.status-footer-divider {
+    -fx-background-color: -footer-divider;
+    -fx-pref-width: 1;
+    -fx-min-width: 1;
+    -fx-max-width: 1;
+}
+
+/* Progress bar built from two regions in an HBox */
+.status-footer-progress-track {
+    -fx-background-color: -footer-track;
+    -fx-background-radius: 2;
+    -fx-pref-height: 4;
+    -fx-min-height: 4;
+    -fx-max-height: 4;
+}
+
+.status-footer-progress-fill {
+    -fx-background-radius: 2;
+    -fx-pref-height: 4;
+    -fx-min-height: 4;
+    -fx-max-height: 4;
+}
+
+.status-footer-progress-fill-novice {
+    -fx-background-color: -status-novice;
+}
+
+.status-footer-progress-fill-investor {
+    -fx-background-color: -status-investor;
+}
+
+/* Speculator pill badge (replaces progress bar) */
+.status-footer-speculator-badge {
+    -fx-background-color: -status-speculator-bg;
+    -fx-background-radius: 14;
+    -fx-padding: 4 14 4 14;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.status-footer-speculator-label {
+    -fx-font-size: 12;
+    -fx-font-weight: 500;
+    -fx-text-fill: -status-speculator;
+}
+
+.status-footer-speculator-icon {
+    -fx-font-size: 14;
+    -fx-text-fill: -status-speculator;
+}
