@@ -6,12 +6,12 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Card;
 import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
 import javafx.geometry.HPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -71,17 +71,9 @@ public class StocksTable extends Card {
      * Column order: ticker, company, price, change NOK, change %, trend, trade.
      */
     private void configureColumns() {
-        double[] widths = {12, 25, 10, 10, 10, 12, 21};
-        HPos[] alignments = {
-                HPos.LEFT, HPos.LEFT, HPos.RIGHT,
-                HPos.RIGHT, HPos.RIGHT, HPos.CENTER, HPos.LEFT
-        };
-        for (int i = 0; i < widths.length; i++) {
-            ColumnConstraints col = new ColumnConstraints();
-            col.setPercentWidth(widths[i]);
-            col.setHalignment(alignments[i]);
-            grid.getColumnConstraints().add(col);
-        }
+        TableCells.configureColumns(grid,
+                new double[]{12, 25, 10, 10, 10, 12, 21},
+                new HPos[]{HPos.LEFT, HPos.LEFT, HPos.RIGHT, HPos.RIGHT, HPos.RIGHT, HPos.CENTER, HPos.LEFT});
     }
 
     /**
@@ -169,8 +161,8 @@ public class StocksTable extends Card {
             tickerCell.getChildren().add(badge);
         }
 
-        Label companyLabel = new Label(stock.getCompany());
-        Label priceLabel = new Label(ChangeFormatter.formatPlain(stock.getSalesPrice()));
+        Label companyLabel = TableCells.data(stock.getCompany());
+        Label priceLabel = TableCells.data(ChangeFormatter.formatPlain(stock.getSalesPrice()));
         Label changeKrLabel = ChangeFormatter.styledAmount(stock.getLatestPriceChange());
         Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent());
 

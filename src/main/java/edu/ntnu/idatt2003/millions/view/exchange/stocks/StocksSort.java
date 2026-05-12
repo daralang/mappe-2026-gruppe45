@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.TableCells;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -123,11 +124,9 @@ public class StocksSort {
      * Builds a non-sortable header label for the given column.
      *
      * @param labelKey the i18n key for the column label
-     * @return a styled {@link Label}
+     * @return a styled {@link Label} via {@link TableCells#header(String)}
      */
     private Label buildStaticHeader(String labelKey) {
-        Label header = new Label(LanguageManager.get(labelKey));
-        header.getStyleClass().add("holdings-header");
-        return header;
+        return TableCells.header(LanguageManager.get(labelKey));
     }
 }
