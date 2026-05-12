@@ -1,8 +1,3 @@
-.filter-label {
-    -fx-font-size: 13px;
-    -fx-text-fill: -text-secondary;
-}
-
 .filter-separator {
     -fx-font-size: 14px;
     -fx-text-fill: -text-muted;
