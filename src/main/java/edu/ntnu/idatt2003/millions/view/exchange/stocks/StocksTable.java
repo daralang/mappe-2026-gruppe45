@@ -44,6 +44,7 @@ public class StocksTable extends Card {
 
     private int currentPage = 0;
     private String currentFilterTerm = "";
+    private Runnable onSortChanged = null;
 
     private final GridPane grid = new GridPane();
     private final HBox paginationBar = new HBox(8);
@@ -131,6 +132,9 @@ public class StocksTable extends Card {
         }
 
         buildPagination();
+        if (onSortChanged != null) {
+            onSortChanged.run();
+        }
     }
 
     /**
@@ -282,6 +286,34 @@ public class StocksTable extends Card {
             refresh();
         });
         return button;
+    }
+
+    /**
+     * Returns whether a sort column is currently active in {@link StocksSort}.
+     *
+     * @return {@code true} if a sort is active, {@code false} otherwise
+     */
+    public boolean isSortActive() {
+        return sort.isActive();
+    }
+
+    /**
+     * Clears the active sort and refreshes the table, restoring the original
+     * exchange order. Delegates to {@link StocksSort#clearSort()}.
+     */
+    public void clearSort() {
+        sort.clearSort();
+        refresh();
+    }
+
+    /**
+     * Registers a callback that is invoked at the end of every {@link #refresh()}.
+     * Use this to react to sort state changes, e.g. to show or hide a clear sort button.
+     *
+     * @param onSortChanged the callback to run after each refresh
+     */
+    public void setOnSortChanged(Runnable onSortChanged) {
+        this.onSortChanged = onSortChanged;
     }
 
     /**
