@@ -9,6 +9,7 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Card;
+import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
@@ -140,10 +141,28 @@ public class HoldingsCard extends Card {
                 LanguageManager.get("dashboard.portfolio.returnNok"),
                 ""
         };
+        String[] tooltipKeys = {
+                null, null, null,
+                "tooltip.shared.weeklyChange",
+                "tooltip.holdings.valueNok",
+                "tooltip.shared.returnPct",
+                "tooltip.shared.returnNok",
+                null
+        };
         for (int i = 0; i < headers.length; i++) {
             Label label = new Label(headers[i]);
             label.getStyleClass().add("holdings-header");
-            grid.add(label, i, 0);
+            if (tooltipKeys[i] != null) {
+                InfoTooltip icon = new InfoTooltip(tooltipKeys[i]);
+                icon.getStyleClass().add("holdings-header-icon");
+                HBox headerCell = new HBox(6, label, icon);
+                headerCell.setAlignment(Pos.CENTER_RIGHT);
+                GridPane.setFillWidth(headerCell, false);
+                icon.attachToParent(headerCell);
+                grid.add(headerCell, i, 0);
+            } else {
+                grid.add(label, i, 0);
+            }
         }
     }
 
