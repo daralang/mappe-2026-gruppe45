@@ -10,11 +10,12 @@ import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Card;
 import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
 import javafx.geometry.HPos;
+import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -153,12 +154,15 @@ public class StocksTable extends Card {
      */
     private void buildDataRow(Stock stock, int rowIndex) {
         Label tickerLabel = new Label(stock.getSymbol());
+        tickerLabel.getStyleClass().add("holdings-cell");
 
         List<Share> ownedShares = gameService.getPlayer().getPortfolio().getShares(stock.getSymbol());
-        VBox tickerCell = new VBox(2, tickerLabel);
+        HBox tickerCell = new HBox(4, tickerLabel);
+        tickerCell.setAlignment(Pos.CENTER_LEFT);
         if (!ownedShares.isEmpty()) {
-            Label badge = new Label(LanguageManager.get("exchange.stocks.badge.owner"));
-            tickerCell.getChildren().add(badge);
+            Label ownerBadge = new Label(LanguageManager.get("exchange.stocks.badge.owner"));
+            ownerBadge.getStyleClass().add("owner-cell");
+            tickerCell.getChildren().add(ownerBadge);
         }
 
         Label companyLabel = TableCells.data(stock.getCompany());
@@ -172,13 +176,23 @@ public class StocksTable extends Card {
         SparklineChart sparkline = new SparklineChart();
         sparkline.update(sparkPrices);
 
-        grid.add(tickerCell,               0, rowIndex);
-        grid.add(companyLabel,             1, rowIndex);
-        grid.add(priceLabel,               2, rowIndex);
-        grid.add(changeKrLabel,            3, rowIndex);
-        grid.add(changePctLabel,           4, rowIndex);
-        grid.add(sparkline,                5, rowIndex);
-        grid.add(buildTradeButtons(stock), 6, rowIndex);
+        HBox tradeButtons = buildTradeButtons(stock);
+
+        grid.add(tickerCell, 0, rowIndex);
+        grid.add(companyLabel, 1, rowIndex);
+        grid.add(priceLabel, 2, rowIndex);
+        grid.add(changeKrLabel, 3, rowIndex);
+        grid.add(changePctLabel, 4, rowIndex);
+        grid.add(sparkline, 5, rowIndex);
+        grid.add(tradeButtons, 6, rowIndex);
+
+        GridPane.setValignment(tickerCell, VPos.TOP);
+        GridPane.setValignment(companyLabel, VPos.TOP);
+        GridPane.setValignment(priceLabel, VPos.TOP);
+        GridPane.setValignment(changeKrLabel, VPos.TOP);
+        GridPane.setValignment(changePctLabel, VPos.TOP);
+        GridPane.setValignment(sparkline, VPos.TOP);
+        GridPane.setValignment(tradeButtons, VPos.TOP);
     }
 
     /**

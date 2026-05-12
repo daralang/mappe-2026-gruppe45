@@ -46,11 +46,11 @@ public class StocksSort {
      *                  can re-render
      */
     public void buildHeader(GridPane grid, Runnable onChanged) {
-        grid.add(buildSortableHeader("exchange.stocks.col.ticker",    SortColumn.TICKER,      onChanged), 0, 0);
-        grid.add(buildStaticHeader("exchange.stocks.col.company"),                                         1, 0);
-        grid.add(buildSortableHeader("exchange.stocks.col.price",     SortColumn.PRICE,       onChanged), 2, 0);
-        grid.add(buildSortableHeader("exchange.stocks.col.changeKr",  SortColumn.CHANGE_KR,   onChanged), 3, 0);
-        grid.add(buildSortableHeader("exchange.stocks.col.changePct", SortColumn.CHANGE_PCT,  onChanged), 4, 0);
+        grid.add(buildSortableHeader("exchange.stocks.col.ticker", SortColumn.TICKER, onChanged), 0, 0);
+        grid.add(buildStaticHeader("exchange.stocks.col.company"), 1, 0);
+        grid.add(buildSortableHeader("exchange.stocks.col.priceUSD", SortColumn.PRICE, onChanged),2, 0);
+        grid.add(buildSortableHeader("exchange.stocks.col.changeKr", SortColumn.CHANGE_KR, onChanged), 3, 0);
+        grid.add(buildSortableHeader("exchange.stocks.col.changePct", SortColumn.CHANGE_PCT, onChanged), 4, 0);
         grid.add(buildStaticHeader("exchange.stocks.col.trend"),                                           5, 0);
 
         if (activeSortColumn != null) {
@@ -105,7 +105,7 @@ public class StocksSort {
      * @return a styled {@link Button} acting as the column header
      */
     private Button buildSortableHeader(String labelKey, SortColumn column, Runnable onChanged) {
-        String indicator = activeSortColumn == column ? (sortAscending ? " ↑" : " ↓") : "";
+        String indicator = activeSortColumn == column ? (sortAscending ? " ↓ " : "  ↑") : " ↓↑";
         Button header = new Button(LanguageManager.get(labelKey) + indicator);
         header.getStyleClass().add("holdings-header");
         header.setOnAction(e -> {
