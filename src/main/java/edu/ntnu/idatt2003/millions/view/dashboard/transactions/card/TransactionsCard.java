@@ -46,7 +46,7 @@ public class TransactionsCard extends Card {
     private static final int COLUMN_COUNT = 8;
 
     /** Percentage widths for each column; sums to 100. */
-    private static final double[] COLUMN_WIDTHS = {8, 28, 10, 10, 12, 12, 10, 10};
+    private static final double[] COLUMN_WIDTHS = {8, 28, 6, 7, 12, 12, 13, 14};
 
     /**
      * Horizontal alignment per column: text columns (week, company, type)
