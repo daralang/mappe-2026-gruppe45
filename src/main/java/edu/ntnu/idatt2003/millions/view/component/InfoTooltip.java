@@ -7,13 +7,15 @@ import javafx.scene.control.Tooltip;
 import javafx.util.Duration;
 
 /**
- * A self-contained "ⓘ" icon that owns its own i18n-aware tooltip.
+ * A "ⓘ" icon that owns an i18n-aware tooltip.
  *
- * <p>The tooltip is installed on the icon itself by default. Call
- * {@link #attachToParent(Node)} to additionally install it on a surrounding
- * container (e.g. an HBox holding a label and this icon), so the tooltip
- * triggers anywhere the user hovers over that container — not only over the
- * icon.</p>
+ * <p>The tooltip is <em>not</em> installed on the icon itself. Call
+ * {@link #attachToParent(Node)} to install it on the desired hover target —
+ * typically an HBox that contains both a label and this icon, so the tooltip
+ * triggers anywhere the user hovers over that row. Installing the same
+ * {@link Tooltip} instance on both a parent node and its child causes
+ * {@code MOUSE_EXITED_TARGET} on the child to cancel the tooltip while the
+ * mouse is still inside the parent, so only one node should own the install.</p>
  *
  * <p>The tooltip text is resolved via {@link LanguageManager} and refreshes
  * automatically when the application language changes.</p>
@@ -31,15 +33,15 @@ public class InfoTooltip extends Label {
         tooltip = new Tooltip(LanguageManager.get(i18nKey));
         tooltip.setShowDelay(Duration.millis(300));
         tooltip.setHideDelay(Duration.millis(100));
-        Tooltip.install(this, tooltip);
         LanguageManager.addObserver(() -> tooltip.setText(LanguageManager.get(i18nKey)));
     }
 
     /**
-     * Installs the same tooltip on {@code parent}, so that hovering anywhere
-     * over the parent node (e.g. a label-and-icon HBox) triggers the tooltip.
+     * Installs the tooltip on {@code parent}. The tooltip will trigger
+     * whenever the user hovers anywhere over {@code parent}.
+     * Pass {@code this} if the icon itself should be the sole hover target.
      *
-     * @param parent the node to extend the hover target to
+     * @param parent the node to install the tooltip on
      */
     public void attachToParent(Node parent) {
         Tooltip.install(parent, tooltip);

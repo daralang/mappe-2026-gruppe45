@@ -7,7 +7,6 @@
     -fx-text-fill: -text-secondary;
     -fx-font-size: 12;
     -fx-alignment: center;
-    -fx-cursor: hand;
 }
 .info-tooltip-icon:hover {
     -fx-text-fill: -text-muted;
