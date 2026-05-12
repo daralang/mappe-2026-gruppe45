@@ -39,7 +39,7 @@ public class SummaryBox extends VBox {
      * @param value the row value
      */
     public void addRow(String label, String value) {
-        getChildren().add(buildRow(label, value, false, null));
+        getChildren().add(buildRow(label, value, false, null, null));
     }
 
     /**
@@ -51,7 +51,21 @@ public class SummaryBox extends VBox {
      * @param extraValueClass additional style class for the value label, or null
      */
     public void addRow(String label, String value, String extraValueClass) {
-        getChildren().add(buildRow(label, value, false, extraValueClass));
+        getChildren().add(buildRow(label, value, false, extraValueClass, null));
+    }
+
+    /**
+     * Adds a regular row with an {@link InfoTooltip} next to the label.
+     * The tooltip triggers on hover anywhere over the row.
+     * Pass {@code null} for {@code extraValueClass} when no color modifier is needed.
+     *
+     * @param label           the row label
+     * @param value           the row value
+     * @param extraValueClass additional style class for the value label, or null
+     * @param tooltipKey      the i18n key used to look up the tooltip text
+     */
+    public void addRow(String label, String value, String extraValueClass, String tooltipKey) {
+        getChildren().add(buildRow(label, value, false, extraValueClass, tooltipKey));
     }
 
     /**
@@ -61,7 +75,7 @@ public class SummaryBox extends VBox {
      * @param value the total value
      */
     public void addTotal(String label, String value) {
-        getChildren().add(buildRow(label, value, true, null));
+        getChildren().add(buildRow(label, value, true, null, null));
     }
 
     /**
@@ -89,7 +103,8 @@ public class SummaryBox extends VBox {
         getChildren().clear();
     }
 
-    private HBox buildRow(String label, String value, boolean total, String extraValueClass) {
+    private HBox buildRow(String label, String value, boolean total,
+                          String extraValueClass, String tooltipKey) {
         Label labelNode;
         Label valueNode;
         if (total) {
@@ -109,7 +124,15 @@ public class SummaryBox extends VBox {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox row = new HBox(labelNode, spacer, valueNode);
+        HBox row;
+        if (tooltipKey != null) {
+            InfoTooltip infoTooltip = new InfoTooltip(tooltipKey);
+            HBox labelContainer = new HBox(5, labelNode, infoTooltip);
+            row = new HBox(labelContainer, spacer, valueNode);
+            infoTooltip.attachToParent(row);
+        } else {
+            row = new HBox(labelNode, spacer, valueNode);
+        }
         row.getStyleClass().add("modal-summary-row");
         if (total) {
             row.getStyleClass().add("modal-summary-total");
