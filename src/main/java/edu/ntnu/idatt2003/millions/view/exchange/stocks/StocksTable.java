@@ -315,13 +315,38 @@ public class StocksTable extends VBox implements GameObserver {
 
     /**
      * Rebuilds the pagination bar for the current page and total filtered stock count.
+     *
+     * <p>Renders a Prev button, one numbered button per page, and a Next button.
+     * The Prev button is disabled on the first page; Next is disabled on the last.
+     * The active page button receives the {@code pagination-active} style class.
+     * The bar is cleared and left empty when there is only one page.
      */
     private void buildPagination() {
+        paginationBar.getChildren().clear();
+        int totalPages = (int) Math.ceil((double) filteredStocks.size() / PAGE_SIZE);
+        if (totalPages <= 1) return;
+
+        paginationBar.getChildren().add(
+                buildPageButton(LanguageManager.get("exchange.stocks.pagination.prev"),
+                        currentPage - 1, currentPage == 0));
+
+        for (int i = 0; i < totalPages; i++) {
+            Button pageBtn = buildPageButton(String.valueOf(i + 1), i, false);
+            if (i == currentPage) {
+                pageBtn.getStyleClass().add("pagination-active");
+            }
+            paginationBar.getChildren().add(pageBtn);
+        }
+
+        paginationBar.getChildren().add(
+                buildPageButton(LanguageManager.get("exchange.stocks.pagination.next"),
+                        currentPage + 1, currentPage >= totalPages - 1));
     }
 
     /**
      * Creates a pagination button with the given label text.
-     * Clicking the button sets {@link #currentPage} to {@code targetPage}
+     *
+     * <p>Clicking the button sets {@link #currentPage} to {@code targetPage}
      * and calls {@link #refresh()}.
      *
      * @param text       the button label
@@ -330,7 +355,14 @@ public class StocksTable extends VBox implements GameObserver {
      * @return a configured Button
      */
     private Button buildPageButton(String text, int targetPage, boolean disabled) {
-        return new Button(text);
+        Button button = new Button(text);
+        button.getStyleClass().add("pagination-button");
+        button.setDisable(disabled);
+        button.setOnAction(e -> {
+            currentPage = targetPage;
+            refresh();
+        });
+        return button;
     }
 
     /**
