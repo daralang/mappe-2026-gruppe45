@@ -52,6 +52,8 @@ public class StocksListCard extends Card {
 
         setSpacing(12);
         grid.setHgap(16);
+        setMinWidth(0);
+        grid.setMinWidth(0);
         configureColumns();
 
         getChildren().add(grid);
