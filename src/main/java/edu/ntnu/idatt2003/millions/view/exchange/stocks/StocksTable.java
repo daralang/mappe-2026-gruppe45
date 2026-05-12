@@ -167,8 +167,8 @@ public class StocksTable extends Card {
 
         Label companyLabel = TableCells.data(stock.getCompany());
         Label priceLabel = TableCells.data(ChangeFormatter.formatPlain(stock.getSalesPrice()));
-        Label changeKrLabel = ChangeFormatter.styledAmount(stock.getLatestPriceChange());
-        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent());
+        Label changeKrLabel  = ChangeFormatter.styledAmount(stock.getLatestPriceChange(),    "holdings-cell");
+        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "holdings-cell");
 
         List<BigDecimal> prices = stock.getHistoricalPrices();
         List<BigDecimal> sparkPrices = prices.subList(
@@ -282,9 +282,15 @@ public class StocksTable extends Card {
     /**
      * Called when the application language changes.
      * Re-renders headers and pagination with updated labels.
+     * Logs any unexpected exception to prevent leaving the grid in an empty state.
      */
     @Override
     protected void onLanguageChanged() {
-        refresh();
+        try {
+            refresh();
+        } catch (Exception e) {
+            System.err.println("[StocksTable] onLanguageChanged failed: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
