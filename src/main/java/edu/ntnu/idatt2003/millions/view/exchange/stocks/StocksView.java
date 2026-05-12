@@ -23,9 +23,8 @@ import java.text.MessageFormat;
 /**
  * View for the exchange stocks tab.
  *
- * <p>Assembles four portfolio summary cards (each with subtitles), a search bar
- * with an inline clear sort button, a status label, and a sortable paginated
- * {@link StocksListCard}.
+ * <p>Assembles four portfolio summary cards, a search bar, a status label,
+ * sort actions, and a sortable paginated {@link StocksListCard}.
  *
  * <p>Search is triggered explicitly by pressing Enter or clicking the search button,
  * delegated entirely to {@link SearchBar}. Sort state is managed by
@@ -56,22 +55,24 @@ public class StocksView extends VBox {
 
         Button clearSortButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
         clearSortButton.getStyleClass().add("clear-sort-button");
-        clearSortButton.setOpacity(0);
+        clearSortButton.setVisible(false);
         clearSortButton.setOnAction(e -> stocksListCard.clearSort());
 
+        HBox searchRow = new HBox(8, searchBar);
+        searchRow.setAlignment(Pos.CENTER_LEFT);
+
+        Region statusSpacer = new Region();
+        HBox.setHgrow(statusSpacer, Priority.ALWAYS);
+        HBox listHeader = new HBox(statusLabel, statusSpacer, clearSortButton);
+        listHeader.setAlignment(Pos.CENTER_LEFT);
+
         stocksListCard.setOnRefreshed(() -> {
-            clearSortButton.setOpacity(stocksListCard.isSortActive() ? 1 : 0);
+            boolean sortActive = stocksListCard.isSortActive();
+            clearSortButton.setVisible(sortActive);
             pagination.update(stocksListCard.getCurrentPage(), stocksListCard.getFilteredCount());
             updateStatus();
         });
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox searchRow = new HBox(8, searchBar, spacer, clearSortButton);
-        searchRow.setAlignment(Pos.CENTER_LEFT);
-
-        setSpacing(16);
         getStyleClass().add("content-area");
 
         HBox cards = new HBox(16,
@@ -85,7 +86,8 @@ public class StocksView extends VBox {
                         "exchange.stocks.unrealized.sub"))
         );
 
-        getChildren().addAll(cards, searchRow, statusLabel, pagination, stocksListCard);
+        getChildren().addAll(cards, searchRow, listHeader, stocksListCard, pagination);
+        pagination.update(stocksListCard.getCurrentPage(), stocksListCard.getFilteredCount());
         updateStatus();
     }
 
