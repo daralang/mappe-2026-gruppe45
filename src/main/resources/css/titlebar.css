@@ -1,0 +1,36 @@
+.title-bar {
+    -fx-background-color: black;
+    -fx-min-height: 30;
+    -fx-max-height: 30;
+    -fx-pref-height: 30;
+    -fx-alignment: center-right;
+}
+
+.title-bar-drag-area {
+    -fx-cursor: move;
+}
+
+.title-bar-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 0 16 0 16;
+    -fx-min-height: 30;
+    -fx-max-height: 30;
+    -fx-pref-height: 30;
+    -fx-min-width: 46;
+    -fx-background-radius: 0;
+}
+
+.title-bar-btn:hover {
+    -fx-background-color: #333333;
+}
+
+.title-bar-btn-max {
+    -fx-font-size: 18px;
+}
+
+.title-bar-btn-close:hover {
+    -fx-background-color: -danger;
+}
