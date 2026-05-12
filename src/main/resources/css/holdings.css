@@ -5,6 +5,10 @@
     -fx-padding: 0 0 8 0;
 }
 
+.holdings-header-icon {
+    -fx-padding: -1 0 8 0;
+}
+
 .holdings-cell {
     -fx-font-size: 13;
     -fx-text-fill: -text-primary;

@@ -1,0 +1,9 @@
+.tooltip-info-icon {
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 12;
+    -fx-alignment: center;
+    -fx-cursor: hand;
+}
+.tooltip-info-icon:hover {
+    -fx-text-fill: -text-muted;
+}

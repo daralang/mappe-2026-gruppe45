@@ -6,12 +6,16 @@ import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.InfoIcon;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.component.Tooltips;
 import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
 import javafx.collections.ListChangeListener;
+import javafx.geometry.Pos;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.layout.HBox;
 import javafx.util.StringConverter;
 
 import java.math.BigDecimal;
@@ -69,7 +73,10 @@ public class NetWorthCard extends WidgetCard {
         chart.setAnimated(false);
         chart.getStyleClass().add("area-chart");
 
-        getChildren().addAll(titleLabel, netWorthLabel, changeLabel, chart);
+        HBox titleRow = new HBox(5, titleLabel, new InfoIcon());
+        titleRow.setAlignment(Pos.CENTER_LEFT);
+        Tooltips.attach(titleRow, "tooltip.dashboard.netWorth");
+        getChildren().addAll(titleRow, netWorthLabel, changeLabel, chart);
 
         loadHistory();
         refreshDisplay();
