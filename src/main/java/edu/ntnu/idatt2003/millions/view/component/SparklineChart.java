@@ -53,7 +53,7 @@ public class SparklineChart extends Canvas {
                 .orElse(1);
         double range = (max == min) ? 1 : max - min;
 
-        double drawWidth  = getWidth()  - 2 * PADDING;
+        double drawWidth = getWidth()  - 2 * PADDING;
         double drawHeight = getHeight() - 2 * PADDING;
 
         boolean positive = prices.getLast().compareTo(prices.getFirst()) >= 0;
