@@ -37,7 +37,7 @@ import javafx.scene.layout.HBox;
 public class WeekRangeFilter extends HBox {
 
     /** Preferred width for each spinner, in pixels. */
-    private static final int SPINNER_WIDTH = 72;
+    private static final int SPINNER_WIDTH = 60;
 
     /** Horizontal spacing between the label, spinners and separator. */
     private static final int SPACING = 8;
@@ -123,9 +123,8 @@ public class WeekRangeFilter extends HBox {
     }
 
     /**
-     * Raises the upper bound of both spinners so the user can pick
-     * higher weeks. The currently selected range is preserved; only
-     * the maximum selectable value moves.
+     * Raises the upper bound of both spinners and advances the to-spinner
+     * value to {@code newMax} so that newly added weeks are always visible.
      *
      * <p>Typically called from a parent view's {@code onGameUpdated()}
      * hook whenever the game advances to a new week.</p>
@@ -137,10 +136,16 @@ public class WeekRangeFilter extends HBox {
         if (newMax < minWeek) {
             return;
         }
-        ((SpinnerValueFactory.IntegerSpinnerValueFactory)
-                fromSpinner.getValueFactory()).setMax(newMax);
-        ((SpinnerValueFactory.IntegerSpinnerValueFactory)
-                toSpinner.getValueFactory()).setMax(newMax);
+
+        SpinnerValueFactory.IntegerSpinnerValueFactory toFactory =
+                (SpinnerValueFactory.IntegerSpinnerValueFactory) toSpinner.getValueFactory();
+        SpinnerValueFactory.IntegerSpinnerValueFactory fromFactory =
+                (SpinnerValueFactory.IntegerSpinnerValueFactory) fromSpinner.getValueFactory();
+
+        fromFactory.setMax(newMax);
+        toFactory.setMax(newMax);
+        fromFactory.setValue(minWeek);
+        toFactory.setValue(newMax);
     }
 
     /**
