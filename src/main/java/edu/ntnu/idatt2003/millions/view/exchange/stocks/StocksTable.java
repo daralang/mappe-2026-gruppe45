@@ -1,10 +1,13 @@
 package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
 import javafx.geometry.HPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -14,6 +17,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -171,8 +175,8 @@ public class StocksTable extends VBox implements GameObserver {
         if (activeSortColumn == null) return;
 
         java.util.Comparator<Stock> comparator = switch (activeSortColumn) {
-            case TICKER    -> java.util.Comparator.comparing(Stock::getSymbol);
-            case PRICE     -> java.util.Comparator.comparing(Stock::getSalesPrice);
+            case TICKER -> java.util.Comparator.comparing(Stock::getSymbol);
+            case PRICE -> java.util.Comparator.comparing(Stock::getSalesPrice);
             case CHANGE_KR -> java.util.Comparator.comparing(Stock::getLatestPriceChange);
             case CHANGE_PCT -> java.util.Comparator.comparing(Stock::getWeeklyChangePercent);
         };
@@ -236,22 +240,76 @@ public class StocksTable extends VBox implements GameObserver {
 
     /**
      * Builds a single data row for the given stock at the specified grid row index.
+     * Renders the ticker label with an owner badge,company name, current price,
+     * weekly change in NOK and percent, and {@link SparklineChart} with the last ¨
+     * {@link #MAX_SPARKLINE_WEEKS} prices, and buy/sell action buttons.
      *
      * @param stock    the stock to display
-     * @param rowIndex the zero-based grid row index (0 = header)
+     * @param rowIndex the grid row index (0 = header)
      */
     private void buildDataRow(Stock stock, int rowIndex) {
+        Label tickerLabel = new Label(stock.getSymbol());
+        //TODO: Connect to a CSS file, tickerLabel.getStyleClass().add("holdings-ticker");
+
+        List<Share> ownedShares = gameService.getPlayer().getPortfolio().getShares(stock.getSymbol());
+        VBox tickerCell = new VBox(2, tickerLabel);
+        if (!ownedShares.isEmpty()) {
+            Label badge = new Label(LanguageManager.get("exchange.stocks.badge.owner"));
+            //TODO: Connect to a CSS file, badge.getStyleClass().add("holdings-owner-badge");
+            tickerCell.getChildren().add(badge);
+        }
+
+        Label companyLabel = new Label(stock.getCompany());
+
+        Label priceLabel = new Label(ChangeFormatter.formatPlain(stock.getSalesPrice()));
+        //TODO: Connect to a CSS file, priceLabel.getStyleClass().add("holdings-value");
+
+        Label changeKrLabel = ChangeFormatter.styledAmount(stock.getLatestPriceChange());
+        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent());
+
+        List<BigDecimal> prices = stock.getHistoricalPrices();
+        List<BigDecimal> sparkPrices = prices.subList(
+                Math.max(0, prices.size() - MAX_SPARKLINE_WEEKS), prices.size());
+        SparklineChart sparkline = new SparklineChart();
+        sparkline.update(sparkPrices);
+
+        grid.add(tickerCell,               0, rowIndex);
+        grid.add(companyLabel,             1, rowIndex);
+        grid.add(priceLabel,               2, rowIndex);
+        grid.add(changeKrLabel,            3, rowIndex);
+        grid.add(changePctLabel,           4, rowIndex);
+        grid.add(sparkline,                5, rowIndex);
+        grid.add(buildTradeButtons(stock), 6, rowIndex);
     }
 
     /**
      * Builds the buy and optional sell buttons for the trade column.
-     * Always shows a buy button; shows a sell button when the player owns the stock.
+     *
+     * <p>Always shows a buy button that delegates to
+     * {@link PortfolioController#openBuyDialog(Stock)}.
+     * Shows a sell button when the player holds at least one {@link Share} of the stock,
+     * delegating to {@link PortfolioController#openSellDialog(Share)} with the first position.
      *
      * @param stock the stock the buttons act on
      * @return an HBox containing the action buttons
      */
     private HBox buildTradeButtons(Stock stock) {
-        return new HBox();
+        Button buyButton = new Button(LanguageManager.get("exchange.stocks.buy"));
+        buyButton.getStyleClass().add("buy-button");
+        buyButton.setOnAction(e -> controller.openBuyDialog(stock));
+
+        HBox buttons = new HBox(4, buyButton);
+
+        List<Share> shares = gameService.getPlayer().getPortfolio().getShares(stock.getSymbol());
+        if (!shares.isEmpty()) {
+            Share share = shares.get(0);
+            Button sellButton = new Button(LanguageManager.get("exchange.stocks.sell"));
+            sellButton.getStyleClass().add("sell-button");
+            sellButton.setOnAction(e -> controller.openSellDialog(share));
+            buttons.getChildren().add(sellButton);
+        }
+
+        return buttons;
     }
 
 
