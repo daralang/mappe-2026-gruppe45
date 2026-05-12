@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
+import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.scene.control.Button;
@@ -12,6 +13,7 @@ import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.Optional;
 
 /**
  * Dialog for selling a user-specified quantity of shares.
@@ -43,18 +45,18 @@ public class SellDialog extends AbstractSellDialog {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox labelRow = new HBox(label, spacer, owned);
 
-        quantityInput.getStyleClass().add("modal-input");
         quantityInput.setText(getInitialQuantity().toPlainString());
         quantityInput.textProperty().addListener(
                 (obs, oldVal, newVal) -> updateSummary());
-        HBox.setHgrow(quantityInput, Priority.ALWAYS);
 
         Button sellAll = new Button(LanguageManager.get("dialog.button.sellAll"));
         sellAll.getStyleClass().add("modal-button");
         sellAll.setOnAction(e ->
                 quantityInput.setText(share.getQuantity().stripTrailingZeros().toPlainString()));
 
-        HBox inputRow = new HBox(8, quantityInput, sellAll);
+        HBox stepperRow = buildStepperRow();
+        HBox.setHgrow(stepperRow, Priority.ALWAYS);
+        HBox inputRow = new HBox(8, stepperRow, sellAll);
 
         return new VBox(6, labelRow, inputRow);
     }
@@ -79,6 +81,16 @@ public class SellDialog extends AbstractSellDialog {
             showError(MessageFormat.format(
                     LanguageManager.get("dialog.quantity.notEnoughShares"),
                     NUMBER_FORMAT.format(share.getQuantity())));
+            return;
+        }
+
+        TransactionPreview preview = controller.previewSell(share, quantity);
+        Optional<String> policyError = controller.validateTransactionInput(quantity, preview.totalInNok());
+        if (policyError.isPresent()) {
+            renderEmptySummary();
+            setTransactionInfo(null, null, null, false);
+            showError(LanguageManager.get(policyError.get()));
+            setConfirmEnabled(false);
             return;
         }
 

@@ -1,3 +1,18 @@
+/* === Main window root — requires StageStyle.TRANSPARENT === */
+.main-root {
+    -fx-background-color: -surface-alt;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.42), 28, 0.15, 0, 0);
+}
+
+/* Overrides rounded style when the window is maximised or full-screen */
+.main-root-flat {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-width: 0;
+    -fx-effect: null;
+}
+
 .content-area {
     -fx-padding: 24 32 24 32;
     -fx-spacing: 16;
