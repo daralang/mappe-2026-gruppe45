@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -17,9 +18,8 @@ import java.util.Objects;
 /**
  * Manages sort state and header rendering for the stocks table.
  *
- * <p>Owns the active {@link SortColumn} and sort direction. Builds a header row
- * into a provided {@link GridPane} with clickable sort buttons.
- * Sorts a stock list in-place via {@link #applySort(List)}.
+ * <p>Owns stock-specific sort columns and comparators. Generic sort state
+ * is delegated to {@link SortState}.
  */
 public class StocksSort {
 
@@ -34,8 +34,7 @@ public class StocksSort {
     }
 
     private final CurrencyConverter converter;
-    private SortColumn activeSortColumn = null;
-    private boolean sortAscending = true;
+    private final SortState<SortColumn> sortState = new SortState<>();
 
     /**
      * Creates a stock sorter using the given converter for NOK price sorting.
@@ -110,9 +109,9 @@ public class StocksSort {
      * @param stocks the list to sort
      */
     public void applySort(List<Stock> stocks) {
-        if (activeSortColumn == null) return;
+        if (!sortState.hasActiveSort()) return;
 
-        Comparator<Stock> comparator = switch (activeSortColumn) {
+        Comparator<Stock> comparator = switch (sortState.getActiveColumn()) {
             case TICKER -> Comparator.comparing(Stock::getSymbol);
             case PRICE_USD -> Comparator.comparing(Stock::getSalesPrice);
             case PRICE_NOK -> Comparator.comparing(this::priceInNok);
@@ -121,7 +120,7 @@ public class StocksSort {
             case HIGH_LOW -> Comparator.comparing(this::highLowRange);
         };
 
-        if (!sortAscending) comparator = comparator.reversed();
+        if (!sortState.isAscending()) comparator = comparator.reversed();
         stocks.sort(comparator);
     }
 
@@ -130,8 +129,7 @@ public class StocksSort {
      * After calling this, {@link #applySort(List)} becomes a no-op.
      */
     public void clearSort() {
-        activeSortColumn = null;
-        sortAscending = true;
+        sortState.clear();
     }
 
     /**
@@ -140,14 +138,11 @@ public class StocksSort {
      * @return {@code true} if a sort column is active, {@code false} otherwise
      */
     public boolean isActive() {
-        return activeSortColumn != null;
+        return sortState.hasActiveSort();
     }
 
     /**
      * Builds a sortable header button for the given column.
-     *
-     * <p>Appends ↓↑ when the column is inactive, ↓ when sorted ascending,
-     * or ↑ when sorted descending.
      *
      * @param labelKey  the i18n key for the column label
      * @param column    the sort column this header controls
@@ -155,17 +150,14 @@ public class StocksSort {
      * @return a styled sort header button
      */
     private Button buildSortableHeader(String labelKey, SortColumn column, Runnable onChanged) {
-        String indicator = activeSortColumn == column ? (sortAscending ? " ↓ " : "  ↑") : " ↓↑";
-        //TODO: Add icons.
-        return TableCells.sortHeader(LanguageManager.get(labelKey) + indicator, () -> {
-            if (activeSortColumn == column) {
-                sortAscending = !sortAscending;
-            } else {
-                activeSortColumn = column;
-                sortAscending = true;
-            }
-            onChanged.run();
-        });
+        return TableCells.sortHeader(
+                LanguageManager.get(labelKey),
+                sortState.isActive(column),
+                sortState.isAscending(),
+                () -> {
+                    sortState.toggle(column);
+                    onChanged.run();
+                });
     }
 
     /**
