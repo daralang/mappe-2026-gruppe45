@@ -60,6 +60,51 @@
     -fx-border-color: -primary;
 }
 
+/* Quantity stepper: [−] [input] [+] */
+.quantity-stepper-group {
+    -fx-background-color: -border;
+    -fx-background-radius: 6;
+    -fx-border-color: -border;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-alignment: center-left;
+}
+
+.quantity-stepper-input {
+    -fx-alignment: center;
+    -fx-border-color: transparent;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+}
+
+.quantity-stepper-input:focused {
+    -fx-border-color: transparent;
+}
+
+.quantity-stepper-btn {
+    -fx-background-color: -surface-alt;
+    -fx-text-fill: -text-primary;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 0 14 0 14;
+    -fx-pref-height: 38;
+    -fx-min-width: 38;
+    -fx-border-width: 0;
+}
+
+.quantity-stepper-btn:hover {
+    -fx-background-color: -border-light;
+}
+
+.quantity-stepper-btn-dec {
+    -fx-background-radius: 5 0 0 5;
+}
+
+.quantity-stepper-btn-inc {
+    -fx-background-radius: 0 5 5 0;
+}
+
 .modal-summary {
     -fx-background-color: -surface-alt;
     -fx-background-radius: 8;

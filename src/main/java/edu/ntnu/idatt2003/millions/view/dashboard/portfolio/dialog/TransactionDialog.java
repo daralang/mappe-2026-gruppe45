@@ -112,12 +112,41 @@ public abstract class TransactionDialog extends Modal {
      */
     protected VBox buildQuantitySection() {
         StyledText label = StyledText.detailLabel(LanguageManager.get("dialog.quantity.label"));
-
-        quantityInput.getStyleClass().add("modal-input");
         quantityInput.setText(getInitialQuantity().toPlainString());
         quantityInput.textProperty().addListener((obs, oldVal, newVal) -> updateSummary());
+        return new VBox(6, label, buildStepperRow());
+    }
 
-        return new VBox(6, label, quantityInput);
+    /**
+     * Returns the [−] [input] [+] stepper group. Sets up CSS and grow
+     * constraints on {@code quantityInput}; callers are responsible for
+     * setting the initial text and change listener before or after.
+     */
+    protected HBox buildStepperRow() {
+        quantityInput.getStyleClass().addAll("modal-input", "quantity-stepper-input");
+        HBox.setHgrow(quantityInput, Priority.ALWAYS);
+
+        Button dec = new Button("−");
+        dec.getStyleClass().addAll("quantity-stepper-btn", "quantity-stepper-btn-dec");
+        dec.setOnAction(e -> stepQuantity(-1));
+
+        Button inc = new Button("+");
+        inc.getStyleClass().addAll("quantity-stepper-btn", "quantity-stepper-btn-inc");
+        inc.setOnAction(e -> stepQuantity(1));
+
+        HBox group = new HBox(1, dec, quantityInput, inc);
+        group.getStyleClass().add("quantity-stepper-group");
+        return group;
+    }
+
+    private void stepQuantity(int delta) {
+        BigDecimal current = getQuantity();
+        BigDecimal next = (current == null ? BigDecimal.ZERO : current)
+                .add(BigDecimal.valueOf(delta));
+        if (next.compareTo(BigDecimal.ONE) < 0) {
+            next = BigDecimal.ONE;
+        }
+        quantityInput.setText(next.stripTrailingZeros().toPlainString());
     }
 
     private VBox buildBalanceSection() {
