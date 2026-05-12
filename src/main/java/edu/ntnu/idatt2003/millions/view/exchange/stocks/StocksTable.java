@@ -99,7 +99,30 @@ public class StocksTable extends VBox implements GameObserver {
      * @return a VBox containing the search field and status label
      */
     private VBox buildSearchBar() {
+        searchField.setPromptText(LanguageManager.get("exchange.stocks.search.placeholder"));
+        //TODO: Connect to a css file, searchField.getStyleClass().add("stocks-search-field");
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            currentPage = 0;
+            applyFilter();
+            refresh();
+        });
+
+        //TODO: Connect to a css file, statusLabel.getStyleClass().add("stocks-status-label");
+        updateStatusLabel();
+
         return new VBox(4, searchField, statusLabel);
+    }
+
+    /**
+     * Updates the status label text to reflect the current filtered and total stock counts.
+     * Uses {@link java.text.MessageFormat} to inject the counts into the i18n pattern.
+     */
+    private void updateStatusLabel() {
+        statusLabel.setText(java.text.MessageFormat.format(
+                LanguageManager.get("exchange.stocks.status"),
+                filteredStocks.size(),
+                allStocks.size()
+        ));
     }
 
 
