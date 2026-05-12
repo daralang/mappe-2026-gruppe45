@@ -2,7 +2,7 @@
     -fx-alignment: center-left;
     -fx-spacing: 20;
     -fx-max-width: 800;
-    -fx-min-width: 500;
+    -fx-min-width: 600;
 }
 
 .search-bar,
@@ -55,6 +55,6 @@ search-clear-button:hover {
 }
 
 .search-clear-button {
-    -fx-background-color: -text-muted;
+    -fx-background-color: #CECECE;
     -fx-text-fill: -surface;
 }

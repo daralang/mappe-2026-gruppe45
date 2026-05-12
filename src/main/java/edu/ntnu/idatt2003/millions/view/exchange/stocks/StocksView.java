@@ -53,7 +53,7 @@ public class StocksView extends VBox implements GameObserver {
                 term -> stocksTable.filter(term));
 
         Button clearSortButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
-        clearSortButton.getStyleClass().add("holdings-header");
+        clearSortButton.getStyleClass().add("clear-button");
         clearSortButton.setOpacity(0);
         clearSortButton.setOnAction(e -> stocksTable.clearSort());
 
