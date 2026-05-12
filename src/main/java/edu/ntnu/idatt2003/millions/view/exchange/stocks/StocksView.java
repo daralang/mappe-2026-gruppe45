@@ -45,37 +45,59 @@ public class StocksView extends VBox {
     public StocksView(GameService gameService, PortfolioController controller) {
         this.stocksListCard = new StocksListCard(gameService, controller);
         this.pagination = new Pagination(StocksListCard.PAGE_SIZE, stocksListCard::setPage);
+
+        Button clearSortButton = createClearSortButton();
+        HBox cards = createSummaryCards(gameService);
+        HBox searchRow = createSearchRow();
+        HBox listHeader = createListHeader(clearSortButton);
+        Region spacer = createSpacer(12);
+
+        configureRefreshCallback(clearSortButton);
+        getStyleClass().add("content-area");
+        getChildren().addAll(cards, spacer, searchRow, listHeader, stocksListCard, pagination);
+        updateMetaInfo();
+    }
+
+    private HBox createSearchRow() {
         SearchBar searchBar = new SearchBar(
                 "exchange.stocks.search.placeholder",
                 "search.button",
                 term -> {
                     stocksListCard.filter(term);
-                    updateStatus();
+                    updateMetaInfo();
                 });
-
-        Button clearSortButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
-        clearSortButton.getStyleClass().add("clear-sort-button");
-        clearSortButton.setVisible(false);
-        clearSortButton.setOnAction(e -> stocksListCard.clearSort());
 
         HBox searchRow = new HBox(8, searchBar);
         searchRow.setAlignment(Pos.CENTER_LEFT);
+        return searchRow;
+    }
 
+    private Button createClearSortButton() {
+        Button button = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
+        button.getStyleClass().add("clear-sort-button");
+        button.setVisible(false);
+        button.setOnAction(e -> stocksListCard.clearSort());
+        return button;
+    }
+
+    private HBox createListHeader(Button clearSortButton) {
         Region statusSpacer = new Region();
         HBox.setHgrow(statusSpacer, Priority.ALWAYS);
         HBox listHeader = new HBox(statusLabel, statusSpacer, clearSortButton);
         listHeader.setAlignment(Pos.CENTER_LEFT);
+        return listHeader;
+    }
 
+    private void configureRefreshCallback(Button clearSortButton) {
         stocksListCard.setOnRefreshed(() -> {
             boolean sortActive = stocksListCard.isSortActive();
             clearSortButton.setVisible(sortActive);
-            pagination.update(stocksListCard.getCurrentPage(), stocksListCard.getFilteredCount());
-            updateStatus();
+            updateMetaInfo();
         });
+    }
 
-        getStyleClass().add("content-area");
-
-        HBox cards = new HBox(16,
+    private HBox createSummaryCards(GameService gameService) {
+        return new HBox(16,
                 withGrow(new PortfolioValueCard(gameService,
                         "exchange.stocks.portfolio", "exchange.stocks.portfolio.sub")),
                 withGrow(new AvailableFundsCard(gameService,
@@ -85,10 +107,15 @@ public class StocksView extends VBox {
                 withGrow(new StocksUnrealizedReturnCard(gameService,
                         "exchange.stocks.unrealized.sub"))
         );
-        Region spacer = new Region();
-        spacer.setMinHeight(12);
+    }
 
-        getChildren().addAll(cards, spacer, searchRow, listHeader, stocksListCard, pagination);
+    private Region createSpacer(double height) {
+        Region spacer = new Region();
+        spacer.setMinHeight(height);
+        return spacer;
+    }
+
+    private void updateMetaInfo() {
         pagination.update(stocksListCard.getCurrentPage(), stocksListCard.getFilteredCount());
         updateStatus();
     }
