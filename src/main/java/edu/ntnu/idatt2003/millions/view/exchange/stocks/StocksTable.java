@@ -3,10 +3,10 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.Card;
 import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
 import javafx.geometry.HPos;
 import javafx.scene.control.Button;
@@ -26,12 +26,11 @@ import java.util.List;
  *
  * <p>Displays ticker (with owner badge), company name, current price, weekly
  * change in NOK and percent, a SparklineChart trend and buy/sell action buttons.
- * Registers as a {@link GameObserver}.
  *
  * <p>Sorting state is tracked via the {@link SortColumn} enum. Only one column
  * can be active at a time; clicking the same header again reverses direction.
  */
-public class StocksTable extends VBox implements GameObserver {
+public class StocksTable extends Card {
 
     private static final int PAGE_SIZE = 15;
     private static final int MAX_SPARKLINE_WEEKS = 8;
@@ -63,13 +62,11 @@ public class StocksTable extends VBox implements GameObserver {
      * @param controller  the controller used to open buy/sell dialogs
      */
     public StocksTable(GameService gameService, PortfolioController controller) {
+        super(gameService);
         this.gameService = gameService;
         this.controller = controller;
 
         setSpacing(12);
-
-        gameService.addObserver(this);
-        LanguageManager.addObserver(this::onLanguageChanged);
 
         grid.setHgap(16);
         configureColumns();
@@ -295,7 +292,7 @@ public class StocksTable extends VBox implements GameObserver {
      */
     private HBox buildTradeButtons(Stock stock) {
         Button buyButton = new Button(LanguageManager.get("exchange.stocks.buy"));
-        buyButton.getStyleClass().add("buy-button");
+        buyButton.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
         buyButton.setOnAction(e -> controller.openBuyDialog(stock));
 
         HBox buttons = new HBox(4, buyButton);
@@ -304,7 +301,7 @@ public class StocksTable extends VBox implements GameObserver {
         if (!shares.isEmpty()) {
             Share share = shares.get(0);
             Button sellButton = new Button(LanguageManager.get("exchange.stocks.sell"));
-            sellButton.getStyleClass().add("sell-button");
+            sellButton.getStyleClass().addAll("holdings-action-link", "holdings-action-sell");
             sellButton.setOnAction(e -> controller.openSellDialog(share));
             buttons.getChildren().add(sellButton);
         }
@@ -380,7 +377,8 @@ public class StocksTable extends VBox implements GameObserver {
      * Called when the application language changes.
      * Updates placeholder text and re-renders headers and status.
      */
-    private void onLanguageChanged() {
+    @Override
+    protected void onLanguageChanged() {
         searchField.setPromptText(LanguageManager.get("exchange.stocks.search.placeholder"));
         refresh();
     }

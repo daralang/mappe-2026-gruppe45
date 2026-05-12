@@ -2,9 +2,9 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksAvailableFundsCard;
+import edu.ntnu.idatt2003.millions.view.component.AvailableFundsCard;
+import edu.ntnu.idatt2003.millions.view.component.PortfolioValueCard;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksInvestedCard;
-import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksPortfolioValueCard;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksUnrealizedReturnCard;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -12,7 +12,11 @@ import javafx.scene.layout.VBox;
 
 /**
  * View for the exchange stocks tab.
- * Assembles four portfolio summary cards followed by a sortable, searchable.
+ *
+ * <p>Assembles four portfolio summary cards ({@link PortfolioValueCard},
+ * {@link AvailableFundsCard}, {@link StocksInvestedCard},
+ * {@link StocksUnrealizedReturnCard}) followed by a sortable, searchable
+ * {@link StocksTable}.
  *
  * <p>All value queries are delegated to the individual card classes;
  * mutations are routed through {@link PortfolioController}.
@@ -30,8 +34,8 @@ public class StocksView extends VBox {
         getStyleClass().add("content-area");
 
         HBox cards = new HBox(16,
-                withGrow(new StocksPortfolioValueCard(gameService)),
-                withGrow(new StocksAvailableFundsCard(gameService)),
+                withGrow(new PortfolioValueCard(gameService, "exchange.stocks.portfolio")),
+                withGrow(new AvailableFundsCard(gameService, "exchange.stocks.available")),
                 withGrow(new StocksInvestedCard(gameService)),
                 withGrow(new StocksUnrealizedReturnCard(gameService))
         );
