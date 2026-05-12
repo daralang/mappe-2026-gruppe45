@@ -81,12 +81,15 @@ public final class TableCells {
      * this method returns a {@link Button} suitable for column headers that trigger
      * a sort action when clicked.
      *
-     * @param text    the header button text, typically including a sort indicator
-     * @param onClick the action to run when the button is clicked
+     * @param text      the header button text
+     * @param active    whether this column is the active sort column
+     * @param ascending whether the active sort direction is ascending
+     * @param onClick   the action to run when the button is clicked
      * @return a styled sort header button
      */
-    public static Button sortHeader(String text, Runnable onClick) {
-        Button button = new Button(text);
+    public static Button sortHeader(String text, boolean active, boolean ascending, Runnable onClick) {
+        String indicator = active ? (ascending ? " ↓ " : "  ↑") : " ↓↑";
+        Button button = new Button(text + indicator);
         button.getStyleClass().add("holdings-header");
         button.setOnAction(e -> onClick.run());
         return button;
