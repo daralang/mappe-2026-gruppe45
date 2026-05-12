@@ -136,8 +136,15 @@ public class StocksTable extends VBox implements GameObserver {
     /**
      * Filters {@link #allStocks} by the current search field text into
      * {@link #filteredStocks}. Resets {@link #currentPage} to 0.
+     * Delegates to {@link edu.ntnu.idatt2003.millions.model.exchange.Exchange#findStocks(String)}
+     * when a search term is present; uses the full list otherwise.
      */
     private void applyFilter() {
+        String term = searchField.getText();
+        filteredStocks = term == null || term.isBlank()
+                ? new ArrayList<>(allStocks)
+                : new ArrayList<>(gameService.getExchange().findStocks(term));
+        currentPage = 0;
     }
 
     /**
@@ -145,6 +152,17 @@ public class StocksTable extends VBox implements GameObserver {
      * and {@link #sortAscending}. No-op when {@link #activeSortColumn} is {@code null}.
      */
     private void applySort() {
+        if (activeSortColumn == null) return;
+
+        java.util.Comparator<Stock> comparator = switch (activeSortColumn) {
+            case TICKER    -> java.util.Comparator.comparing(Stock::getSymbol);
+            case PRICE     -> java.util.Comparator.comparing(Stock::getSalesPrice);
+            case CHANGE_KR -> java.util.Comparator.comparing(Stock::getLatestPriceChange);
+            case CHANGE_PCT -> java.util.Comparator.comparing(Stock::getWeeklyChangePercent);
+        };
+
+        if (!sortAscending) comparator = comparator.reversed();
+        filteredStocks.sort(comparator);
     }
 
     /**
