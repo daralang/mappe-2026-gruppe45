@@ -6,7 +6,7 @@ import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
+import edu.ntnu.idatt2003.millions.view.component.card.WidgetCard;
 
 import java.math.BigDecimal;
 

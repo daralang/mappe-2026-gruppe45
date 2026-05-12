@@ -5,14 +5,10 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
-import edu.ntnu.idatt2003.millions.view.component.Card;
+import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort;
 import javafx.geometry.HPos;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -40,8 +36,6 @@ public class StocksListCard extends Card {
     private Runnable onRefreshed = null;
 
     private final GridPane grid = new GridPane();
-    private final Label emptyLabel = new Label();
-    private final VBox emptyState;
 
     /**
      * Constructs a new StocksListCard.
@@ -55,11 +49,6 @@ public class StocksListCard extends Card {
         this.gameService = gameService;
         this.sort = new StocksSort(gameService.getCurrencyConverter());
         this.rowRenderer = new StocksRowRenderer(gameService, controller);
-
-        emptyLabel.getStyleClass().add("empty-state-label");
-        emptyState = new VBox(emptyLabel);
-        emptyState.setAlignment(Pos.CENTER);
-        emptyState.setPadding(new Insets(100, 0, 100, 0));
 
         setSpacing(12);
         grid.setHgap(16);
@@ -141,12 +130,7 @@ public class StocksListCard extends Card {
                     : MessageFormat.format(
                             LanguageManager.get("exchange.stocks.empty.search"),
                             currentFilterTerm);
-            emptyLabel.setText(msg);
-            if (!getChildren().contains(emptyState)) {
-                getChildren().add(emptyState);
-            }
-        } else {
-            getChildren().remove(emptyState);
+            TableCells.renderEmptyState(grid, msg, 9);
         }
 
         if (onRefreshed != null) {

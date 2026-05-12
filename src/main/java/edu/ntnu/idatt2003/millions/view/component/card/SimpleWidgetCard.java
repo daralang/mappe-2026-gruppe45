@@ -1,8 +1,9 @@
-package edu.ntnu.idatt2003.millions.view.component;
+package edu.ntnu.idatt2003.millions.view.component.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.ColourChange;
 
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import java.math.BigDecimal;
 import java.util.function.Supplier;
 

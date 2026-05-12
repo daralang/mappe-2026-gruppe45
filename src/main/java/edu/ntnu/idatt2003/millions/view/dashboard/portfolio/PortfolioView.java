@@ -2,8 +2,8 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.view.component.AvailableFundsCard;
-import edu.ntnu.idatt2003.millions.view.component.PortfolioValueCard;
+import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
+import edu.ntnu.idatt2003.millions.view.component.card.PortfolioValueCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
