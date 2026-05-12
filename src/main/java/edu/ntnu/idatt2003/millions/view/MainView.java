@@ -81,6 +81,7 @@ public class MainView {
         };
         stage.maximizedProperty().addListener((obs, old, val) -> updateCorners.run());
         stage.fullScreenProperty().addListener((obs, old, val) -> updateCorners.run());
+        updateCorners.run();
 
         showDashboard();
     }
