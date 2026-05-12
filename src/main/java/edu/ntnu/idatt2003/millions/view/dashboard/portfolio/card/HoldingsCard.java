@@ -143,10 +143,10 @@ public class HoldingsCard extends Card {
         };
         String[] tooltipKeys = {
                 null, null, null,
-                "tooltip.holdings.weeklyChange",
+                "tooltip.shared.weeklyChange",
                 "tooltip.holdings.valueNok",
-                "tooltip.holdings.returnPct",
-                "tooltip.holdings.returnNok",
+                "tooltip.shared.returnPct",
+                "tooltip.shared.returnNok",
                 null
         };
         for (int i = 0; i < headers.length; i++) {
