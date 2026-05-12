@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.util;
 
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.HPos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -16,8 +17,8 @@ import java.util.Locale;
  *
  * <p>Covers two levels:</p>
  * <ul>
- *   <li><b>Cell factories</b> — {@link #header}, {@link #data} and
- *       {@link #empty} return individual styled labels. Callers compose
+ *   <li><b>Cell factories</b> — {@link #header}, {@link #sortHeader}, {@link #data} and
+ *       {@link #empty} return individual styled nodes. Callers compose
  *       them into rows themselves, so anything that needs a one-off cell
  *       (a row with a tooltip, a custom badge, a colored amount) gets the
  *       same look without going through a generic row builder.</li>
@@ -71,6 +72,24 @@ public final class TableCells {
         Label label = new Label(text);
         label.getStyleClass().add("holdings-header");
         return label;
+    }
+
+    /**
+     * Creates a sortable header button with the shared {@code holdings-header} CSS class.
+     *
+     * <p>Unlike {@link #header(String)}, which returns a non-interactive {@link Label},
+     * this method returns a {@link Button} suitable for column headers that trigger
+     * a sort action when clicked.
+     *
+     * @param text    the header button text, typically including a sort indicator
+     * @param onClick the action to run when the button is clicked
+     * @return a styled sort header button
+     */
+    public static Button sortHeader(String text, Runnable onClick) {
+        Button button = new Button(text);
+        button.getStyleClass().add("holdings-header");
+        button.setOnAction(e -> onClick.run());
+        return button;
     }
 
     /**

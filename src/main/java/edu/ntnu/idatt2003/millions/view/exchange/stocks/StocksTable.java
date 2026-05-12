@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Card;
+import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
@@ -28,7 +29,8 @@ import java.util.List;
  * change in NOK and percent, a {@link SparklineChart} trend and buy/sell action buttons.
  *
  * <p>Sort state is fully managed by {@link StocksSort}, which also builds the
- * header row. This class handles data loading, filtering, pagination and row rendering.
+ * header row. Pagination is delegated to {@link Pagination}. This class handles
+ * data loading, filtering and row rendering.
  */
 public class StocksTable extends Card {
 
@@ -47,7 +49,10 @@ public class StocksTable extends Card {
     private Runnable onSortChanged = null;
 
     private final GridPane grid = new GridPane();
-    private final HBox paginationBar = new HBox(8);
+    private final Pagination pagination = new Pagination(PAGE_SIZE, page -> {
+        currentPage = page;
+        refresh();
+    });
 
     /**
      * Constructs a new StocksTable.
@@ -64,7 +69,7 @@ public class StocksTable extends Card {
         grid.setHgap(16);
         configureColumns();
 
-        getChildren().addAll(grid, paginationBar);
+        getChildren().addAll(grid, pagination);
         onGameUpdated();
     }
 
@@ -131,7 +136,7 @@ public class StocksTable extends Card {
             buildDataRow(page.get(i), i + 1);
         }
 
-        buildPagination();
+        pagination.update(currentPage, filteredStocks.size());
         if (onSortChanged != null) {
             onSortChanged.run();
         }
@@ -218,10 +223,9 @@ public class StocksTable extends Card {
     /**
      * Builds the buy and optional sell buttons for the trade column.
      *
-     * <p>Always shows a buy button that delegates to
-     * {@link PortfolioController#openBuyDialog(Stock)}.
+     * <p>Always shows a buy button that delegates to {@link PortfolioController}.
      * Shows a sell button when the player holds at least one {@link Share} of the stock,
-     * delegating to {@link PortfolioController#openSellDialog(Share)} with the first position.
+     * delegating to {@link PortfolioController} with the first position.
      *
      * @param stock the stock the buttons act on
      * @return an HBox containing the action buttons
@@ -243,49 +247,6 @@ public class StocksTable extends Card {
         }
 
         return buttons;
-    }
-
-    /**
-     * Rebuilds the pagination bar for the current page and total filtered stock count.
-     *
-     * <p>Renders only a Prev and a Next button. Prev is disabled on the first page;
-     * Next is disabled on the last. The bar is cleared and left empty when there is
-     * only one page.
-     */
-    private void buildPagination() {
-        paginationBar.getChildren().clear();
-        int totalPages = (int) Math.ceil((double) filteredStocks.size() / PAGE_SIZE);
-        if (totalPages <= 1) return;
-
-        paginationBar.getChildren().add(
-                buildPageButton(LanguageManager.get("exchange.stocks.pagination.prev"),
-                        currentPage - 1, currentPage == 0));
-
-        paginationBar.getChildren().add(
-                buildPageButton(LanguageManager.get("exchange.stocks.pagination.next"),
-                        currentPage + 1, currentPage >= totalPages - 1));
-    }
-
-    /**
-     * Creates a pagination button with the given label text.
-     *
-     * <p>Clicking the button sets {@link #currentPage} to {@code targetPage}
-     * and calls {@link #refresh()}.
-     *
-     * @param text       the button label
-     * @param targetPage the page index to navigate to on click
-     * @param disabled   whether the button should be disabled
-     * @return a configured {@link Button}
-     */
-    private Button buildPageButton(String text, int targetPage, boolean disabled) {
-        Button button = new Button(text);
-        button.getStyleClass().add("pagination-button");
-        button.setDisable(disabled);
-        button.setOnAction(e -> {
-            currentPage = targetPage;
-            refresh();
-        });
-        return button;
     }
 
     /**
@@ -334,11 +295,6 @@ public class StocksTable extends Card {
      */
     @Override
     protected void onLanguageChanged() {
-        try {
-            refresh();
-        } catch (Exception e) {
-            System.err.println("[StocksTable] onLanguageChanged failed: " + e.getMessage());
-            e.printStackTrace();
-        }
+        refresh();
     }
 }
