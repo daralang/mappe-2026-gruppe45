@@ -43,18 +43,18 @@ public class SellDialog extends AbstractSellDialog {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox labelRow = new HBox(label, spacer, owned);
 
-        quantityInput.getStyleClass().add("modal-input");
         quantityInput.setText(getInitialQuantity().toPlainString());
         quantityInput.textProperty().addListener(
                 (obs, oldVal, newVal) -> updateSummary());
-        HBox.setHgrow(quantityInput, Priority.ALWAYS);
 
         Button sellAll = new Button(LanguageManager.get("dialog.button.sellAll"));
         sellAll.getStyleClass().add("modal-button");
         sellAll.setOnAction(e ->
                 quantityInput.setText(share.getQuantity().stripTrailingZeros().toPlainString()));
 
-        HBox inputRow = new HBox(8, quantityInput, sellAll);
+        HBox stepperRow = buildStepperRow();
+        HBox.setHgrow(stepperRow, Priority.ALWAYS);
+        HBox inputRow = new HBox(8, stepperRow, sellAll);
 
         return new VBox(6, labelRow, inputRow);
     }
