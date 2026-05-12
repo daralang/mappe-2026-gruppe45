@@ -1,3 +1,9 @@
+.filter-label {
+    -fx-font-size: 13;
+    -fx-text-fill: -text-primary;
+    -fx-padding: 0 8 0 0;
+}
+
 .filter-separator {
     -fx-font-size: 14px;
     -fx-text-fill: -text-muted;
