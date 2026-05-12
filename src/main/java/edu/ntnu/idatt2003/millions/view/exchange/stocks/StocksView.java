@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.AvailableFundsCard;
 import edu.ntnu.idatt2003.millions.view.component.PortfolioValueCard;
@@ -15,13 +16,19 @@ import javafx.scene.layout.VBox;
  *
  * <p>Assembles four portfolio summary cards ({@link PortfolioValueCard},
  * {@link AvailableFundsCard}, {@link StocksInvestedCard},
- * {@link StocksUnrealizedReturnCard}) followed by a sortable, searchable
- * {@link StocksTable}.
+ * {@link StocksUnrealizedReturnCard}), a {@link StocksSearchBar}, and a
+ * sortable, paginated {@link StocksTable}.
  *
- * <p>All value queries are delegated to the individual card classes;
- * mutations are routed through {@link PortfolioController}.
+ * <p>Search is triggered explicitly by pressing Enter or clicking the search button,
+ * delegated entirely to {@link StocksSearchBar}. Sort state is managed by
+ * {@link StocksSort} inside the table. This view only wires the components together
+ * and updates the search bar status on each game state change.
  */
-public class StocksView extends VBox {
+public class StocksView extends VBox implements GameObserver {
+
+    private final StocksTable stocksTable;
+    private final StocksSearchBar searchBar;
+    private final GameService gameService;
 
     /**
      * Constructs a new StocksView.
@@ -30,6 +37,12 @@ public class StocksView extends VBox {
      * @param controller  the controller used to open buy/sell dialogs
      */
     public StocksView(GameService gameService, PortfolioController controller) {
+        this.gameService = gameService;
+        this.stocksTable = new StocksTable(gameService, controller);
+        this.searchBar = new StocksSearchBar(gameService, term -> {
+            stocksTable.filter(term);
+        });
+
         setSpacing(16);
         getStyleClass().add("content-area");
 
@@ -40,12 +53,21 @@ public class StocksView extends VBox {
                 withGrow(new StocksUnrealizedReturnCard(gameService))
         );
 
-        getChildren().addAll(cards, new StocksTable(gameService, controller));
+        gameService.addObserver(this);
+
+        getChildren().addAll(cards, searchBar, stocksTable);
+    }
+
+
+    /**
+     * Called when the game state changes.
+     */
+    @Override
+    public void onGameUpdated() {
     }
 
     /**
      * Sets horizontal grow priority to ALWAYS for the given card and returns it.
-     * Used to make summary cards fill the available width equally.
      *
      * @param card the card to configure
      * @return the same card with grow priority set
