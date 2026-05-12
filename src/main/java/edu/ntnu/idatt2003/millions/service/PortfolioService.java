@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Currency;
 
 /**
@@ -61,6 +62,44 @@ public class PortfolioService {
      */
     public BigDecimal getInvestedAmount(Player player, CurrencyConverter converter) {
         return getValue(player, converter).subtract(getTotalReturnInNok(player, converter));
+    }
+
+    /**
+     * Returns the total portfolio value change for the current week in NOK.
+     *
+     * <p>Computed as the sum of {@code latestPriceChange × quantity} for every
+     * {@link Share} in the portfolio, with each stock's price change converted
+     * from its native currency to NOK using the given converter.
+     *
+     * @param player    the player whose portfolio to inspect
+     * @param converter the currency converter used to translate values to NOK
+     * @return total weekly return in NOK, negative when the portfolio lost value
+     */
+    public BigDecimal getWeeklyReturnInNok(Player player, CurrencyConverter converter) {
+        return player.getPortfolio().getShares().stream()
+                .map(share -> converter.convert(
+                        share.getStock().getLatestPriceChange().multiply(share.getQuantity()),
+                        share.getStock().getCurrency(),
+                        NOK))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Returns the portfolio's weekly return as a percentage of the total cost basis in NOK.
+     *
+     * <p>Returns zero when the portfolio is empty or the invested amount is zero
+     * to avoid division by zero.
+     *
+     * @param player    the player whose portfolio to inspect
+     * @param converter the currency converter used to translate values to NOK
+     * @return weekly return percent, negative when the portfolio lost value this week
+     */
+    public BigDecimal getWeeklyReturnPercent(Player player, CurrencyConverter converter) {
+        BigDecimal invested = getInvestedAmount(player, converter);
+        if (invested.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
+        return getWeeklyReturnInNok(player, converter)
+                .divide(invested, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
     }
 
     /**

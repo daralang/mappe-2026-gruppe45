@@ -46,14 +46,36 @@ public class StocksSort {
      *                  can re-render
      */
     public void buildHeader(GridPane grid, Runnable onChanged) {
-        grid.add(buildSortableHeader("exchange.stocks.col.ticker", SortColumn.TICKER, onChanged), 0, 0);
-        grid.add(buildStaticHeader("exchange.stocks.col.company"), 1, 0);
-        grid.add(buildSortableHeader("exchange.stocks.col.priceUSD", SortColumn.PRICE, onChanged),2, 0);
-        grid.add(buildSortableHeader("exchange.stocks.col.changeKr", SortColumn.CHANGE_KR, onChanged), 3, 0);
-        grid.add(buildSortableHeader("exchange.stocks.col.changePct", SortColumn.CHANGE_PCT, onChanged), 4, 0);
+        grid.add(buildSortableHeader(
+                "exchange.stocks.col.ticker",
+                SortColumn.TICKER, onChanged),
+                0,
+                0);
+
+        grid.add(buildStaticHeader(
+                "exchange.stocks.col.company"),
+                1,
+                0);
+        grid.add(buildSortableHeader(
+                "exchange.stocks.col.priceUSD",
+                SortColumn.PRICE, onChanged),
+                2,
+                0);
+        grid.add(buildSortableHeader(
+                "exchange.stocks.col.changeKr",
+                SortColumn.CHANGE_KR, onChanged),
+                3,
+                0);
+        grid.add(buildSortableHeader(
+                "exchange.stocks.col.changePct",
+                SortColumn.CHANGE_PCT, onChanged),
+                4,
+                0);
         grid.add(buildStaticHeader("exchange.stocks.col.trend"),                                           5, 0);
 
-        grid.add(buildStaticHeader("exchange.stocks.col.trade"), 6, 0);
+        grid.add(buildStaticHeader("exchange.stocks.col.trade"),
+                6,
+                0);
     }
 
     /**
@@ -108,6 +130,7 @@ public class StocksSort {
      */
     private Button buildSortableHeader(String labelKey, SortColumn column, Runnable onChanged) {
         String indicator = activeSortColumn == column ? (sortAscending ? " ↓ " : "  ↑") : " ↓↑";
+        //TODO: Add icons.
         return TableCells.sortHeader(LanguageManager.get(labelKey) + indicator, () -> {
             if (activeSortColumn == column) {
                 sortAscending = !sortAscending;

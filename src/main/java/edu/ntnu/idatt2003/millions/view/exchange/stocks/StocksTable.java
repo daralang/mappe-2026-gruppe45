@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class StocksTable extends Card {
 
-    private static final int PAGE_SIZE = 15;
+    private static final int PAGE_SIZE = 20;
     private static final int MAX_SPARKLINE_WEEKS = 8;
 
     private final GameService gameService;
