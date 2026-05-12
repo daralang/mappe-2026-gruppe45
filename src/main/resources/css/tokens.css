@@ -1,4 +1,4 @@
-/* === Design Tokens === */
+/* Design Tokens */
 .root {
     -primary:          #2980b9;
     -primary-dark:     #1f6391;
@@ -12,6 +12,10 @@
     -success-bg:       #EAF3DE;
     -success-text:     #2E5A0E;
     -success-border:   #C4DDA0;
+
+    -info-bg:          #E3EEF7;
+    -info-text:        #1F4E79;
+    -info-border:      #B4CCE3;
 
     -text-primary:     #333333;
     -text-secondary:   #888888;
