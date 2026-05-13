@@ -18,49 +18,27 @@ import javafx.scene.layout.Region;
 import java.text.MessageFormat;
 
 /**
- * Dashboard card that counts the user's trading activity over the
- * week range selected in {@code TransactionsCard}: number of
- * purchases, number of sales, and their sum.
+ * Dashboard card for the transactions tab that counts trading activity over the selected
+ * week range: number of purchases, number of sales, and their sum.
  *
  * <p>Sits beside {@code TransactionsSummaryCard} on the transactions
- * tab. Where the summary card answers "how much money moved", this
- * card answers "how often did I trade" — two different questions
- * over the same period, so the two cards complement each other
- * rather than overlap.</p>
+ * tab. The summary card shows <em>how much money moved</em>; this
+ * card shows <em>how often the player traded</em>.</p>
  *
- * <p>Layout mirrors the summary card exactly: section title on the
- * left, read-only "UKE {from}-{to}" label on the right, then Kjøp /
- * Salg / Total rows separated by the same divider {@code HoldingsCard}
- * uses for its total row. Sharing the structure keeps the two cards
- * reading as a visual family.</p>
- *
- * <p>The card does not own a filter widget. It listens to the
- * {@link WeekRangeFilter} that {@code TransactionsView} created and
- * handed to all three components on the tab (the table card, the
- * summary card, and this card), so they always show data for the
- * same period. The spinner lives in {@code TransactionsCard}; this
- * card only echoes the current range as a label.</p>
- *
- * <p>Counts come straight from {@link TransactionArchive#getPurchases}
- * and {@link TransactionArchive#getSales}. No conversion or
- * aggregation service is needed — these are plain list sizes.</p>
+ * <p>Listens to the shared {@link WeekRangeFilter} owned by
+ * {@code TransactionsCard} so all three components on the tab show
+ * data for the same period.</p>
  */
 public class TransactionsActivityCard extends Card {
 
     /** Spacing between the header row and the value grid. */
     private static final int CARD_SPACING = 16;
 
-    /** Horizontal gap between label and value columns in the value grid. */
+    /** Horizontal gap between the label and value columns. */
     private static final int VALUE_HGAP = 20;
 
-    /**
-     * Column widths for the two-column value grid. Left column carries
-     * the label, right column the integer count, right-aligned so
-     * digits stack cleanly across the three rows.
-     */
+    /** Equal-width two-column layout: label left, count right. */
     private static final double[] COLUMN_WIDTHS = {50, 50};
-
-    /** Left-aligned labels, right-aligned values. */
     private static final HPos[] COLUMN_ALIGNMENTS = {HPos.LEFT, HPos.RIGHT};
 
     private final GameService gameService;
@@ -71,12 +49,8 @@ public class TransactionsActivityCard extends Card {
     private final GridPane grid = new GridPane();
 
     /**
-     * Constructs a new TransactionsActivityCard.
-     *
-     * @param gameService     the game manager containing player and exchange
-     * @param weekRangeFilter the shared filter that scopes the table this
-     *                        card counts against; the card listens to it
-     *                        but does not render its spinner widget
+     * @param gameService     game manager containing player and exchange
+     * @param weekRangeFilter shared filter that scopes the table this card counts against
      */
     public TransactionsActivityCard(GameService gameService, WeekRangeFilter weekRangeFilter) {
         super(gameService);
@@ -100,13 +74,7 @@ public class TransactionsActivityCard extends Card {
         refresh();
     }
 
-    /**
-     * Builds the title row: section title on the left, a flexible
-     * spacer in the middle, and the read-only "UKE {from}-{to}" label
-     * on the right.
-     *
-     * @return the configured header row
-     */
+    /** Title on the left, flexible spacer, week-range label on the right. */
     private HBox buildHeader() {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -116,20 +84,11 @@ public class TransactionsActivityCard extends Card {
         return header;
     }
 
-    /**
-     * Picks up new transactions whenever the model changes. The
-     * filter's upper bound is bumped by {@code TransactionsCard}, so
-     * this card only needs to recount.
-     */
     @Override
     public void onGameUpdated() {
         refresh();
     }
 
-    /**
-     * Refreshes title, week-range label, and the row contents so
-     * everything follows the active language.
-     */
     @Override
     protected void onLanguageChanged() {
         title.setText(LanguageManager.get("transactions.activity.title"));
@@ -138,10 +97,9 @@ public class TransactionsActivityCard extends Card {
 
     /**
      * Rebuilds the value rows from the current filter selection and
-     * updates the header's week-range label. The three rows (Kjøp,
-     * Salg, Total) follow the same divider pattern {@code HoldingsCard}
-     * uses, so this card reads as part of the same visual family as
-     * the summary card next to it.
+     * updates the week-range label. The Total row uses the same
+     * divider as {@code HoldingsCard} so the two cards read as a
+     * visual family.
      */
     private void refresh() {
         int fromWeek = weekRangeFilter.getFromWeek();
@@ -172,14 +130,9 @@ public class TransactionsActivityCard extends Card {
     }
 
     /**
-     * Counts the purchases or sales in the archive within the given
-     * week range (inclusive on both ends).
+     * Counts purchases or sales in the archive over the inclusive range.
      *
-     * @param fromWeek    the first week to include (inclusive)
-     * @param toWeek      the last week to include (inclusive)
-     * @param countBuys   {@code true} to count purchases, {@code false}
-     *                    to count sales
-     * @return the total number of matching transactions in the range
+     * @param countBuys {@code true} for purchases, {@code false} for sales
      */
     private int countTransactions(int fromWeek, int toWeek, boolean countBuys) {
         TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
@@ -192,14 +145,7 @@ public class TransactionsActivityCard extends Card {
         return total;
     }
 
-    /**
-     * Creates a label for the leftmost column. Bold variant is used for
-     * the total row to match the {@code HoldingsCard} total-row styling.
-     *
-     * @param text the label text
-     * @param bold whether to apply the bold modifier
-     * @return a styled label
-     */
+    /** Left-column label; bold variant is used for the total row. */
     private Label rowLabel(String text, boolean bold) {
         Label label = TableCells.data(text);
         if (bold) {
@@ -209,13 +155,8 @@ public class TransactionsActivityCard extends Card {
     }
 
     /**
-     * Creates a plain integer count label for the rightmost column.
-     * No sign or unit — these are activity counts, not signed amounts,
-     * so they read cleanly as "5", "3", "8" rather than "+5", "+3", "+8".
-     *
-     * @param count the value to render
-     * @param bold  whether to apply the bold modifier
-     * @return a styled label
+     * Right-column count. No sign or unit - these are counts, not
+     * signed amounts, so "5" reads cleaner than "+5".
      */
     private Label rowValue(int count, boolean bold) {
         Label label = TableCells.data(Integer.toString(count));
