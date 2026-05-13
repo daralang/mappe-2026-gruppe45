@@ -1,22 +1,21 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.transactions.card;
 
-import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
+import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
-import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.TransactionTypeFilter;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
-import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -29,58 +28,36 @@ import java.util.List;
 /**
  * Dashboard card for the transactions tab.
  *
- * <p>Renders the section title, a filter row, and a table of every
- * committed transaction within the current filter selection, sorted
- * oldest first. The filter row holds a {@link TransactionTypeFilter}
- * (all / buy / sell) and a {@link WeekRangeFilter}; a search field can
- * be added to the same row later without restructuring the card.</p>
+ * <p>Renders the section title, a filter row, and a sortable table of every
+ * committed transaction within the current filter selection. The default order
+ * is chronological (oldest first); clicking a column header activates
+ * ascending sort on that column, toggling to descending on a second click.</p>
  *
- * <p>The {@link WeekRangeFilter} is supplied by {@code TransactionsView}
- * and shared with {@code TransactionsSummaryCard} so both cards on the
- * tab show data for the same period. This card owns the visible spinner
- * widget; the summary card only echoes the current range as a read-only
- * label. The type filter, on the other hand, is local to this card —
- * the summary's whole purpose is to compare purchases against sales, so
- * filtering it by type would zero out one of the two rows.</p>
+ * <p>The filter row holds a {@link TransactionTypeFilter} (all / buy / sell)
+ * and a {@link WeekRangeFilter}. The {@link WeekRangeFilter} is shared with
+ * {@code TransactionsSummaryCard} so both cards show data for the same period.</p>
  *
- * <p>Shares structure and CSS with {@code HoldingsCard} via
- * {@link TableCells} (column setup, header row, cell factories, empty
- * state), {@link ChangeFormatter} (coloured signed amounts) and the
- * {@code holdings-*} CSS classes, so both dashboard tables look like
- * part of the same family.</p>
- *
- * <p>The type column uses a pill-shaped badge with its own colour scheme
- * (light blue for buys, light green for sales); the helper that builds
- * the badge will be extracted into a reusable {@code TransactionTypeBadge}
- * component once we have a second caller for it.</p>
+ * <p>Column structure, sort state and header rendering are owned by
+ * {@link SortColumnTable}. Domain-specific sort logic is delegated to
+ * {@link TransactionsSort}. This card is responsible for data fetching,
+ * filtering, sort orchestration and cell construction only.</p>
  */
 public class TransactionsCard extends Card {
 
-    /** Number of columns in the table — used for empty-state column span. */
-    private static final int COLUMN_COUNT = 8;
-
-    /** Percentage widths for each column; sums to 100. */
-    private static final double[] COLUMN_WIDTHS = {8, 26, 8, 7, 12, 12, 13, 14};
-
-    /**
-     * Horizontal alignment per column: text columns (week, company, type)
-     * align left so labels read naturally; numeric columns align right so
-     * digits line up cleanly.
-     */
-    private static final HPos[] COLUMN_ALIGNMENTS = {
-            HPos.LEFT, HPos.LEFT, HPos.LEFT, HPos.RIGHT,
-            HPos.RIGHT, HPos.RIGHT, HPos.RIGHT, HPos.RIGHT
-    };
-
     private final GameService gameService;
     private final TransactionStatsService statsService = new TransactionStatsService();
+    private final TransactionsSort sort;
+    private final SortColumnTable<TransactionsSort.SortColumn> table;
     private final StyledText title;
     private final TransactionTypeFilter typeFilter;
     private final WeekRangeFilter weekRangeFilter;
-    private final GridPane grid = new GridPane();
 
     /**
      * Constructs a new TransactionsCard.
+     *
+     * <p>Column definitions, widths and alignments are read from
+     * {@link TransactionsSort#getColumnDefs()} via a method reference so that
+     * {@link SortColumnTable} can resolve fresh i18n labels on every header refresh.</p>
      *
      * @param gameService     the game manager containing player and exchange
      * @param weekRangeFilter the shared filter that scopes both this card's
@@ -90,6 +67,8 @@ public class TransactionsCard extends Card {
         super(gameService);
         this.gameService = gameService;
         this.weekRangeFilter = weekRangeFilter;
+        this.sort = new TransactionsSort(statsService, gameService.getCurrencyConverter());
+        this.table = new SortColumnTable<>(sort::getColumnDefs);
 
         setSpacing(16);
 
@@ -101,22 +80,15 @@ public class TransactionsCard extends Card {
         weekRangeFilter.fromWeekProperty().addListener((obs, oldVal, newVal) -> refresh());
         weekRangeFilter.toWeekProperty().addListener((obs, oldVal, newVal) -> refresh());
 
-        HBox filterRow = buildFilterRow();
-
-        grid.setHgap(20);
-        TableCells.configureColumns(grid, COLUMN_WIDTHS, COLUMN_ALIGNMENTS);
-
-        getChildren().addAll(title, filterRow, grid);
+        getChildren().addAll(title, buildFilterRow(), table.asNode());
         refresh();
     }
 
     /**
      * Builds the filter row that sits between the title and the table.
      *
-     * <p>Both filters sit together on the left edge with a small gap
-     * between them; a flexible spacer takes up the remaining width so
-     * future filter controls can be inserted next to the existing ones
-     * without disturbing the layout.</p>
+     * <p>Both filters sit on the left edge; a flexible spacer takes up the
+     * remaining width so future controls can be inserted without restructuring.</p>
      *
      * @return the configured filter row
      */
@@ -131,9 +103,8 @@ public class TransactionsCard extends Card {
     }
 
     /**
-     * Picks up new transactions and the new current week whenever the
-     * model changes. Also extends the week range filter's upper bound
-     * so the player can include the new week in the filter.
+     * Picks up new transactions and extends the week range filter's upper bound
+     * whenever the model changes.
      */
     @Override
     public void onGameUpdated() {
@@ -142,9 +113,8 @@ public class TransactionsCard extends Card {
     }
 
     /**
-     * Refreshes the section title and rebuilds the table so column
-     * headers, badge labels and the empty-state message follow the
-     * active language.
+     * Refreshes the section title and rebuilds the table so column headers,
+     * badge labels and the empty-state message follow the active language.
      */
     @Override
     protected void onLanguageChanged() {
@@ -153,27 +123,33 @@ public class TransactionsCard extends Card {
     }
 
     /**
-     * Rebuilds the table from scratch: clears the grid, adds the header
-     * row, then either renders a centered empty-state message or one
-     * row per transaction that passes the current filters.
+     * Rebuilds the table: clears, rebuilds the header, collects and filters
+     * transactions, optionally sorts them, then renders rows or an empty state.
+     *
+     * <p>When no sort is active the default chronological order from
+     * {@link #collectRange} is preserved.</p>
      */
     private void refresh() {
-        grid.getChildren().clear();
+        table.clearRows();
         if (gameService.getPlayer() == null) return;
-        TableCells.addHeaderRow(grid, headerTexts());
+        table.refreshHeader(this::refresh);
 
         TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
         int fromWeek = weekRangeFilter.getFromWeek();
         int toWeek = weekRangeFilter.getToWeek();
         Class<? extends Transaction> selectedType = typeFilter.getSelectedType();
 
-        List<Transaction> transactions = collectRange(archive, fromWeek, toWeek).stream()
-                .filter(t -> selectedType == null || selectedType.isInstance(t))
-                .toList();
+        List<Transaction> transactions = new ArrayList<>(
+                collectRange(archive, fromWeek, toWeek).stream()
+                        .filter(t -> selectedType == null || selectedType.isInstance(t))
+                        .toList());
+
+        if (table.isSortActive()) {
+            sort.applySort(transactions, table.getSortState());
+        }
 
         if (transactions.isEmpty()) {
-            TableCells.renderEmptyState(
-                    grid, LanguageManager.get("transactions.empty"), COLUMN_COUNT);
+            table.renderEmptyState(LanguageManager.get("transactions.empty"));
             return;
         }
 
@@ -184,33 +160,13 @@ public class TransactionsCard extends Card {
     }
 
     /**
-     * Resolves the localized header text for each column. Returns a fresh
-     * array on every call so a language switch picks up new translations.
-     *
-     * @return one localized string per column
-     */
-    private String[] headerTexts() {
-        return new String[] {
-                LanguageManager.get("transactions.col.week"),
-                LanguageManager.get("transactions.col.company"),
-                LanguageManager.get("transactions.col.type"),
-                LanguageManager.get("transactions.col.quantity"),
-                LanguageManager.get("transactions.col.price"),
-                LanguageManager.get("transactions.col.commission"),
-                LanguageManager.get("transactions.col.tax"),
-                LanguageManager.get("transactions.col.amount")
-        };
-    }
-
-    /**
-     * Gathers every transaction in the archive within the given week
-     * range (inclusive on both ends), then sorts them oldest first so
-     * the table reads chronologically from top to bottom.
+     * Gathers every transaction in the archive within the given week range
+     * (inclusive on both ends), sorted chronologically oldest first.
      *
      * @param archive  the archive to read transactions from
      * @param fromWeek the first week to include (inclusive)
      * @param toWeek   the last week to include (inclusive)
-     * @return a chronologically sorted list of transactions in the range
+     * @return a chronologically sorted mutable list of transactions in the range
      */
     private List<Transaction> collectRange(TransactionArchive archive, int fromWeek, int toWeek) {
         List<Transaction> list = new ArrayList<>();
@@ -222,11 +178,11 @@ public class TransactionsCard extends Card {
     }
 
     /**
-     * Renders one transaction as a row in the table. Delegates value
+     * Renders one transaction as a data row in the table. Delegates value
      * computation to {@link TransactionStatsService#getStats} so this method
-     * only deals with cell placement and formatting.
+     * only deals with cell construction and placement.
      *
-     * @param row         the grid row index to write to
+     * @param row         the table row index to write to
      * @param transaction the transaction to render
      */
     private void addDataRow(int row, Transaction transaction) {
@@ -234,25 +190,23 @@ public class TransactionsCard extends Card {
         TransactionStatsService.TransactionStats stats =
                 statsService.getStats(transaction, gameService.getCurrencyConverter());
 
-        grid.add(TableCells.data(MessageFormat.format(
-                LanguageManager.get("transactions.weekValue"), transaction.getWeek())), 0, row);
-        grid.add(TableCells.data(stock.getSymbol() + ", " + stock.getCompany()), 1, row);
-        grid.add(typeBadge(transaction), 2, row);
-        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(stats.quantity())), 3, row);
-        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(stats.pricePerShare())
-                + " " + stats.nativeCurrencyCode()), 4, row);
-        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(stats.commissionNok()) + " NOK"), 5, row);
-        grid.add(taxCell(stats), 6, row);
-        grid.add(ChangeFormatter.styledAmount(stats.amountNok(), "holdings-cell"), 7, row);
+        table.addRow(row,
+                TableCells.data(MessageFormat.format(
+                        LanguageManager.get("transactions.weekValue"), transaction.getWeek())),
+                TableCells.data(stock.getSymbol() + ", " + stock.getCompany()),
+                typeBadge(transaction),
+                TableCells.data(TableCells.NUMBER_FORMAT.format(stats.quantity())),
+                TableCells.data(TableCells.NUMBER_FORMAT.format(stats.pricePerShare())
+                        + " " + stats.nativeCurrencyCode()),
+                TableCells.data(TableCells.NUMBER_FORMAT.format(stats.commissionNok()) + " NOK"),
+                taxCell(stats),
+                ChangeFormatter.styledAmount(stats.amountNok(), "holdings-cell")
+        );
     }
 
     /**
-     * Creates the pill-shaped type badge for a transaction. KJØP gets
-     * a light-blue colour scheme, SALG a light-green one.
-     *
-     * <p>Lives as a private helper for now; will be extracted into a
-     * reusable {@code TransactionTypeBadge} component once a second
-     * caller (receipts, details modal) needs it.</p>
+     * Creates the pill-shaped type badge for a transaction.
+     * Purchases get a light-blue colour scheme, sales a light-green one.
      *
      * @param transaction the transaction to label
      * @return a styled badge label
