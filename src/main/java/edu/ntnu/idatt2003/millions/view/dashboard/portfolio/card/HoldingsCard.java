@@ -11,6 +11,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
+import edu.ntnu.idatt2003.millions.view.component.SearchMetadataRow;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.PaginatedCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
@@ -22,7 +23,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 import java.math.BigDecimal;
@@ -53,6 +53,7 @@ public class HoldingsCard extends PaginatedCard {
     private final Pagination pagination;
     private final Region totalDivider = new Region();
     private final GridPane totalGrid = new GridPane();
+    private final SearchMetadataRow metadataRow;
 
     private String currentSearchTerm = "";
 
@@ -77,6 +78,7 @@ public class HoldingsCard extends PaginatedCard {
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
+        this.metadataRow = new SearchMetadataRow(clearSortButton);
 
         totalDivider.getStyleClass().add("holdings-total-divider");
         totalGrid.setHgap(20);
@@ -86,22 +88,11 @@ public class HoldingsCard extends PaginatedCard {
         StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
         setSpacing(16);
 
-        getChildren().addAll(title, createSearchBar(clearSortButton), table.asNode(), pagination, totalDivider, totalGrid);
+        getChildren().addAll(title, createSearchBar(), table.asNode(), pagination, totalDivider, totalGrid);
         refresh();
     }
 
-    /**
-     * Builds the search bar with a right-aligned clear-sort button in the metadata row.
-     *
-     * @param clearSortButton the button returned by {@link SortColumnTable#createClearSortButton}
-     * @return the configured search bar
-     */
-    private SearchBar createSearchBar(Button clearSortButton) {
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox metadataRow = new HBox(spacer, clearSortButton);
-        metadataRow.setAlignment(Pos.CENTER_RIGHT);
-
+    private SearchBar createSearchBar() {
         SearchBar searchBar = new SearchBar(
                 "search.placeholder",
                 "search.button",
@@ -157,11 +148,13 @@ public class HoldingsCard extends PaginatedCard {
         table.refreshHeader(this::refresh);
 
         Portfolio portfolio = gameService.getPlayer().getPortfolio();
-        List<Share> shares = new ArrayList<>(portfolio.getShares().stream()
+        List<Share> allShares = new ArrayList<>(portfolio.getShares());
+        List<Share> shares = new ArrayList<>(allShares.stream()
                 .filter(share -> currentSearchTerm.isBlank() || share.getStock().matches(currentSearchTerm))
                 .toList());
+        metadataRow.update("dashboard.portfolio.holdings.status", shares.size(), allShares.size());
 
-        boolean hasPortfolioShares = !portfolio.getShares().isEmpty();
+        boolean hasPortfolioShares = !allShares.isEmpty();
         setTotalVisible(hasPortfolioShares);
         if (hasPortfolioShares) {
             refreshTotal(portfolio);
