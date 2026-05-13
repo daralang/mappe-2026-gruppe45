@@ -172,6 +172,21 @@ public class Stock {
     }
 
     /**
+     * Returns whether this stock matches the given search term.
+     * Checks for a case-insensitive substring match against the symbol or company name.
+     * Returns {@code false} for null or blank terms.
+     *
+     * @param term the search term to test against
+     * @return {@code true} if the symbol or company name contains the term
+     */
+    public boolean matches(String term) {
+        if (term == null || term.isBlank()) return false;
+        String normalized = term.toLowerCase();
+        return symbol.toLowerCase().contains(normalized)
+                || company.toLowerCase().contains(normalized);
+    }
+
+    /**
      * Returns the price change this week as a percentage of the previous price.
      * Returns zero if there is no previous price to compare against.
      *
