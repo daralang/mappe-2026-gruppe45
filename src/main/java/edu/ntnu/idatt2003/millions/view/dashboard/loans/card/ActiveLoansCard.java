@@ -82,7 +82,7 @@ public class ActiveLoansCard extends Card {
         Map<String, Integer> typeCount = new HashMap<>();
         for (Loan loan : loans) {
             int count = typeCount.merge(loan.offer().id(), 1, Integer::sum);
-            addDataRow(row++, loan, count);
+            addDataRow(row++, loan, count, count);
         }
 
         addTotalRow(row, loans);
@@ -99,7 +99,7 @@ public class ActiveLoansCard extends Card {
         });
     }
 
-    private void addDataRow(int row, Loan loan, int typeCount) {
+    private void addDataRow(int row, Loan loan, int typeCount, int loanIndex) {
         String offerName = LanguageManager.get("loans.offer." + loan.offer().id() + ".name");
 
         BigDecimal weeklyRate = loan.offer().weeklyInterestRate()
@@ -120,7 +120,7 @@ public class ActiveLoansCard extends Card {
         grid.add(TableCells.data(weeksLeftText), 2, row);
         grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(weeklyCost) + " NOK"), 3, row);
         grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(loan.principal()) + " NOK"), 4, row);
-        grid.add(buildActionCell(loan), 5, row);
+        grid.add(buildActionCell(loan, loanIndex), 5, row);
     }
 
     private void addTotalRow(int row, List<Loan> loans) {
@@ -151,16 +151,16 @@ public class ActiveLoansCard extends Card {
         grid.add(totalDebtLabel, 4, dataRow);
     }
 
-    private HBox buildActionCell(Loan loan) {
+    private HBox buildActionCell(Loan loan, int loanIndex) {
         Button repay = new Button(LanguageManager.get("loans.active.button.repay"));
-        repay.getStyleClass().addAll("holdings-action-link", "holdings-action-sell");
-        repay.setOnAction(e -> controller.openRepayDialog(loan));
+        repay.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
+        repay.setOnAction(e -> controller.openRepayDialog(loan, loanIndex));
 
         Button details = new Button("❯");
         details.getStyleClass().add("holdings-details-chevron");
         details.setOnAction(e -> controller.openLoanDetailsModal(loan));
 
-        HBox box = new HBox(8, repay, details);
+        HBox box = new HBox(24, repay, details);
         box.setAlignment(Pos.CENTER_RIGHT);
         return box;
     }

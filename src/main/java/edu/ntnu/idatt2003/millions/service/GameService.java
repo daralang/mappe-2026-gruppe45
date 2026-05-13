@@ -321,6 +321,20 @@ public class GameService {
     }
 
     /**
+     * Repays the given loan in full, withdrawing the principal from the player's
+     * cash balance and removing the loan from their active list.
+     *
+     * @param loan the loan to repay
+     * @throws NullPointerException     if loan is null
+     * @throws IllegalArgumentException if the player cannot afford the repayment
+     */
+    public void repayLoan(Loan loan) {
+        Objects.requireNonNull(loan, "Loan cannot be null");
+        player.repayLoan(loan);
+        notifyObservers();
+    }
+
+    /**
      * Notifies all registered observers that the game state has changed.
      */
     private void notifyObservers() {
