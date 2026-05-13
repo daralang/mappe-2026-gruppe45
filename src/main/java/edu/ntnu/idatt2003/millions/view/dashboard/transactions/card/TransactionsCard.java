@@ -14,6 +14,7 @@ import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.dashboard.transactions.TransactionsSort;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.TransactionTypeFilter;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
 import javafx.geometry.Pos;
@@ -165,7 +166,7 @@ public class TransactionsCard extends Card {
         List<Transaction> transactions = new ArrayList<>(
                 collectRange(archive, fromWeek, toWeek).stream()
                         .filter(t -> selectedType == null || selectedType.isInstance(t))
-                        .filter(this::matchesSearch)
+                        .filter(t -> currentSearchTerm.isBlank() || t.getShare().getStock().matches(currentSearchTerm))
                         .toList());
 
         if (table.isSortActive()) {
@@ -220,24 +221,6 @@ public class TransactionsCard extends Card {
         if (currentPage > lastPage) {
             currentPage = lastPage;
         }
-    }
-
-    /**
-     * Checks whether a transaction matches the current search term.
-     * Searches the stock symbol and company name for the transaction's {@link Stock}.
-     *
-     * @param transaction the transaction to test
-     * @return {@code true} if the transaction should be shown
-     */
-    private boolean matchesSearch(Transaction transaction) {
-        if (currentSearchTerm.isBlank()) {
-            return true;
-        }
-
-        String normalized = currentSearchTerm.toLowerCase();
-        Stock stock = transaction.getShare().getStock();
-        return stock.getSymbol().toLowerCase().contains(normalized)
-                || stock.getCompany().toLowerCase().contains(normalized);
     }
 
     /**
