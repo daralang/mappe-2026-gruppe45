@@ -63,7 +63,7 @@ public record TableColumnDef<Column>(
     /**
      * Creates a static, non-sortable column with an info tooltip icon.
      *
-     * @param <Column>      the sort-column type (inferred; not used for static columns)
+     * @param <Column>     the sort-column type (inferred; not used for static columns)
      * @param label        the resolved display text
      * @param tooltipKey   the i18n key for the tooltip content
      * @param percentWidth the column width as a percentage of total table width
@@ -73,6 +73,27 @@ public record TableColumnDef<Column>(
     public static <Column> TableColumnDef<Column> withTooltip(
             String label, String tooltipKey, double percentWidth, HPos alignment) {
         return new TableColumnDef<>(label, null, tooltipKey, percentWidth, alignment);
+    }
+
+    /**
+     * Creates a sortable column with an info tooltip icon.
+     *
+     * <p>Use this when a column header needs both a sort button and an
+     * {@link InfoTooltip} icon — for example a numeric column whose label
+     * alone is not self-explanatory.</p>
+     *
+     * @param <Column>     the sort-column enum type
+     * @param label        the resolved display text
+     * @param sortColumn   the enum constant that identifies this column for sorting
+     * @param tooltipKey   the i18n key for the tooltip content
+     * @param percentWidth the column width as a percentage of total table width
+     * @param alignment    the horizontal alignment for cells in this column
+     * @return a new {@link TableColumnDef} with both a sort column and a tooltip
+     */
+    public static <Column> TableColumnDef<Column> sortableWithTooltip(
+            String label, Column sortColumn, String tooltipKey,
+            double percentWidth, HPos alignment) {
+        return new TableColumnDef<>(label, sortColumn, tooltipKey, percentWidth, alignment);
     }
 
     /**

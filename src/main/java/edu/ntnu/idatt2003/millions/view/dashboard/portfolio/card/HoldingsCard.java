@@ -1,65 +1,66 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
-import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.model.player.Portfolio;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.util.TableCells;
-import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import javafx.geometry.HPos;
+import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Card displaying the player's holdings (shares owned), with action buttons
- * for buy / sell / sell all / details, and a total row at the bottom.
+ * Card displaying the player's holdings (shares owned), with sortable column
+ * headers, action buttons for buy / sell / sell all / details, and a total row
+ * at the bottom.
  *
- * <p>Currency-related columns ("Valuta" and "Verdi") are intentionally
- * omitted from the main table and will be shown in the details popup
- * instead. This keeps the main table clean while Dara's currency PR is
- * pending.</p>
+ * <p>Column structure, sort state and header rendering are owned by
+ * {@link SortColumnTable}. Domain-specific sort logic is delegated to
+ * {@link HoldingsSort}. This card is responsible for data fetching, sort
+ * orchestration and cell construction only.</p>
  */
 public class HoldingsCard extends Card {
 
     private final GameService gameService;
     private final PortfolioService portfolioService = new PortfolioService();
     private final PortfolioController controller;
-    private final GridPane grid = new GridPane();
+    private final HoldingsSort sort;
+    private final SortColumnTable<HoldingsSort.SortColumn> table;
 
     /**
      * Constructs a new HoldingsCard.
      *
+     * <p>Column definitions, widths, alignments and tooltip keys are read from
+     * {@link HoldingsSort} via a method reference so that
+     * {@link SortColumnTable} can resolve fresh i18n labels on every header refresh.</p>
+     *
      * @param gameService the game manager containing player and exchange
-     * @param controller the controller handling portfolio actions
+     * @param controller  the controller handling portfolio actions
      */
     public HoldingsCard(GameService gameService, PortfolioController controller) {
         super(gameService);
         this.gameService = gameService;
         this.controller = controller;
+        this.sort = new HoldingsSort(portfolioService, gameService.getCurrencyConverter());
+        this.table = new SortColumnTable<>(sort::getColumnDefs);
 
         StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
         setSpacing(16);
 
-        grid.setHgap(20);
-        TableCells.configureColumns(grid,
-                new double[]{18, 22, 10, 12, 12, 10, 11, 5},
-                new HPos[]{HPos.LEFT, HPos.LEFT, HPos.RIGHT, HPos.RIGHT,
-                        HPos.RIGHT, HPos.RIGHT, HPos.RIGHT, HPos.CENTER});
-
-        getChildren().addAll(title, grid);
+        getChildren().addAll(title, table.asNode());
         refresh();
     }
 
@@ -74,7 +75,7 @@ public class HoldingsCard extends Card {
 
     /**
      * Called when the application language changes.
-     * Rebuilds the table so any future i18n keys are picked up.
+     * Rebuilds the table so column headers and labels are re-resolved.
      */
     @Override
     protected void onLanguageChanged() {
@@ -83,18 +84,23 @@ public class HoldingsCard extends Card {
 
     /**
      * Rebuilds the table contents based on the player's current portfolio.
+     * If a sort is active, delegates sorting to {@link HoldingsSort#applySort}
+     * before rendering rows.
      */
     private void refresh() {
-        grid.getChildren().clear();
+        table.clearRows();
+        table.refreshHeader(this::refresh);
 
         Portfolio portfolio = gameService.getPlayer().getPortfolio();
-        List<Share> shares = portfolio.getShares();
-
-        addHeaderRow();
+        List<Share> shares = new ArrayList<>(portfolio.getShares());
 
         if (shares.isEmpty()) {
-            TableCells.renderEmptyState(grid, LanguageManager.get("dashboard.portfolio.empty"), 8);
+            table.renderEmptyState(LanguageManager.get("dashboard.portfolio.empty"));
             return;
+        }
+
+        if (table.isSortActive()) {
+            sort.applySort(shares, table.getSortState());
         }
 
         int row = 1;
@@ -105,73 +111,63 @@ public class HoldingsCard extends Card {
         addTotalRow(row, portfolio);
     }
 
-    private void addHeaderRow() {
-        String[] headers = {
-                "",
-                LanguageManager.get("dashboard.portfolio.company"),
-                LanguageManager.get("dashboard.portfolio.quantity"),
-                LanguageManager.get("dashboard.portfolio.weeklyChange"),
-                LanguageManager.get("dashboard.portfolio.valueNok"),
-                LanguageManager.get("dashboard.portfolio.returnPct"),
-                LanguageManager.get("dashboard.portfolio.returnNok"),
-                ""
-        };
-        String[] tooltipKeys = {
-                null, null, null,
-                "tooltip.shared.weeklyChange",
-                "tooltip.holdings.valueNok",
-                "tooltip.shared.returnPct",
-                "tooltip.shared.returnNok",
-                null
-        };
-        for (int i = 0; i < headers.length; i++) {
-            Label label = TableCells.header(headers[i]);
-            if (tooltipKeys[i] != null) {
-                InfoTooltip icon = new InfoTooltip(tooltipKeys[i]);
-                icon.getStyleClass().add("holdings-header-icon");
-                HBox headerCell = new HBox(6, label, icon);
-                headerCell.setAlignment(Pos.CENTER_RIGHT);
-                GridPane.setFillWidth(headerCell, false);
-                icon.attachToParent(headerCell);
-                grid.add(headerCell, i, 0);
-            } else {
-                grid.add(label, i, 0);
-            }
-        }
-    }
-
+    /**
+     * Renders one share as a data row in the table.
+     *
+     * @param row   the grid row index to write to
+     * @param share the share to render
+     */
     private void addDataRow(int row, Share share) {
         Stock stock = share.getStock();
-        grid.add(buildActionButtons(share), 0, row);
-        grid.add(TableCells.data(stock.getSymbol() + ", " + stock.getCompany()), 1, row);
-        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(share.getQuantity())), 2, row);
-        grid.add(coloredPercentCell(stock.getWeeklyChangePercent()), 3, row);
-        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))), 4, row);
-        grid.add(coloredPercentCell(share.getReturnPercent()), 5, row);
-        grid.add(coloredAmountCell(portfolioService.getShareReturnInNok(share, gameService.getCurrencyConverter())), 6, row);
-        grid.add(buildDetailsButton(share), 7, row);
+        table.addRow(row,
+                buildActionButtons(share),
+                TableCells.data(stock.getSymbol() + ", " + stock.getCompany()),
+                TableCells.data(TableCells.NUMBER_FORMAT.format(share.getQuantity())),
+                coloredPercentCell(stock.getWeeklyChangePercent()),
+                TableCells.data(TableCells.NUMBER_FORMAT.format(
+                        portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))),
+                coloredPercentCell(share.getReturnPercent()),
+                coloredAmountCell(
+                        portfolioService.getShareReturnInNok(share, gameService.getCurrencyConverter())),
+                buildDetailsButton(share)
+        );
     }
 
+    /**
+     * Renders the total row below all data rows.
+     * A full-width divider separates the data rows from the totals.
+     *
+     * @param row       the grid row index for the divider
+     * @param portfolio the portfolio supplying the total values
+     */
     private void addTotalRow(int row, Portfolio portfolio) {
         Region divider = new Region();
         divider.getStyleClass().add("holdings-total-divider");
-        GridPane.setColumnSpan(divider, 8);
-        grid.add(divider, 0, row);
+        table.addFullWidthRow(divider, row);
 
         int dataRow = row + 1;
 
         Label totalLabel = new Label(LanguageManager.get("dashboard.portfolio.total"));
         totalLabel.getStyleClass().addAll("holdings-cell", "bold");
-        grid.add(totalLabel, 1, dataRow);
+        table.addCell(totalLabel, 1, dataRow);
 
-        Label valueNok = new Label(TableCells.NUMBER_FORMAT.format(portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
+        Label valueNok = new Label(TableCells.NUMBER_FORMAT.format(
+                portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
         valueNok.getStyleClass().addAll("holdings-cell", "bold");
-        grid.add(valueNok, 4, dataRow);
+        table.addCell(valueNok, 4, dataRow);
 
-        grid.add(coloredPercentCell(portfolioService.getTotalReturnPercent(gameService.getPlayer(), gameService.getCurrencyConverter())), 5, dataRow);
-        grid.add(coloredAmountCell(portfolioService.getTotalReturnInNok(gameService.getPlayer(), gameService.getCurrencyConverter())), 6, dataRow);
+        table.addCell(coloredPercentCell(portfolioService.getTotalReturnPercent(
+                gameService.getPlayer(), gameService.getCurrencyConverter())), 5, dataRow);
+        table.addCell(coloredAmountCell(portfolioService.getTotalReturnInNok(
+                gameService.getPlayer(), gameService.getCurrencyConverter())), 6, dataRow);
     }
 
+    /**
+     * Builds the buy, sell and sell-all action buttons for a share row.
+     *
+     * @param share the share the buttons act on
+     * @return an {@link HBox} containing the action buttons
+     */
     private HBox buildActionButtons(Share share) {
         Button buy = actionButton(LanguageManager.get("dashboard.portfolio.buy"), "holdings-action-buy");
         Button sell = actionButton(LanguageManager.get("dashboard.portfolio.sell"), "holdings-action-sell");
@@ -189,6 +185,12 @@ public class HoldingsCard extends Card {
         return box;
     }
 
+    /**
+     * Builds the details navigation button for a share row.
+     *
+     * @param share the share to open details for
+     * @return a styled chevron button
+     */
     private Button buildDetailsButton(Share share) {
         Button details = new Button("❯");
         details.getStyleClass().add("holdings-details-chevron");
@@ -196,16 +198,35 @@ public class HoldingsCard extends Card {
         return details;
     }
 
+    /**
+     * Creates a styled action button with the given label and colour class.
+     *
+     * @param text       the button label
+     * @param colorClass the CSS class controlling the button colour
+     * @return a styled action button
+     */
     private Button actionButton(String text, String colorClass) {
         Button b = new Button(text);
         b.getStyleClass().addAll("holdings-action-link", colorClass);
         return b;
     }
 
+    /**
+     * Creates a coloured percentage label using {@link ChangeFormatter}.
+     *
+     * @param value the percentage value to format
+     * @return a styled label
+     */
     private Label coloredPercentCell(BigDecimal value) {
         return ChangeFormatter.styledPercent(value, "holdings-cell");
     }
 
+    /**
+     * Creates a coloured signed amount label using {@link ChangeFormatter}.
+     *
+     * @param value the amount value to format
+     * @return a styled label
+     */
     private Label coloredAmountCell(BigDecimal value) {
         return ChangeFormatter.styledAmount(value, "holdings-cell");
     }
