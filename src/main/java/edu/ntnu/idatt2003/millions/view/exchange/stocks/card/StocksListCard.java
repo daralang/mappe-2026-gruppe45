@@ -4,11 +4,9 @@ import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort;
-import javafx.geometry.HPos;
-import javafx.scene.layout.GridPane;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -18,7 +16,9 @@ import java.util.List;
  * Sortable, searchable and paginated table of all stocks listed on the exchange.
  *
  * <p>Displays ticker, company, prices, weekly change, 4-week high/low,
- * trend and trade actions. Row rendering is delegated to {@link StocksRowRenderer}.
+ * trend and trade actions. Column structure and sort state are owned by
+ * {@link SortColumnTable}; domain-specific sort logic is delegated to
+ * {@link StocksSort}; row rendering is delegated to {@link StocksRowRenderer}.</p>
  */
 public class StocksListCard extends Card {
 
@@ -27,6 +27,7 @@ public class StocksListCard extends Card {
     private final GameService gameService;
     private final StocksSort sort;
     private final StocksRowRenderer rowRenderer;
+    private final SortColumnTable<StocksSort.SortColumn> table;
 
     private List<Stock> allStocks = new ArrayList<>();
     private List<Stock> filteredStocks = new ArrayList<>();
@@ -35,11 +36,13 @@ public class StocksListCard extends Card {
     private String currentFilterTerm = "";
     private Runnable onRefreshed = null;
 
-    private final GridPane grid = new GridPane();
-
     /**
      * Constructs a new StocksListCard.
-     * Row rendering is delegated to {@link StocksRowRenderer}.
+     *
+     * <p>Column definitions, widths and alignments are read from
+     * {@link StocksSort#getColumnDefs()} via a method reference so that
+     * {@link SortColumnTable} can resolve fresh i18n labels on every header refresh.
+     * Row rendering is delegated to {@link StocksRowRenderer}.</p>
      *
      * @param gameService the game service containing exchange and player state
      * @param controller  the controller used to open buy/sell dialogs
@@ -49,29 +52,13 @@ public class StocksListCard extends Card {
         this.gameService = gameService;
         this.sort = new StocksSort(gameService.getCurrencyConverter());
         this.rowRenderer = new StocksRowRenderer(gameService, controller);
+        this.table = new SortColumnTable<>(sort::getColumnDefs, 16);
 
         setSpacing(12);
-        grid.setHgap(16);
         setMinWidth(0);
-        grid.setMinWidth(0);
-        configureColumns();
 
-        getChildren().add(grid);
+        getChildren().add(table.asNode());
         onGameUpdated();
-    }
-
-    /**
-     * Configures the percentage widths and horizontal alignments of the table columns.
-     * Column order: ticker, company, USD price, NOK price, change NOK,
-     * change %, 4-week high/low, trend, trade.
-     */
-    private void configureColumns() {
-        TableCells.configureColumns(grid,
-                new double[]{10, 22, 9, 9, 9, 9, 10, 10, 12},
-                new HPos[]{
-                        HPos.LEFT, HPos.LEFT, HPos.RIGHT, HPos.RIGHT, HPos.RIGHT,
-                        HPos.RIGHT, HPos.RIGHT, HPos.CENTER, HPos.LEFT
-                });
     }
 
     /**
@@ -105,25 +92,25 @@ public class StocksListCard extends Card {
 
     /**
      * Rebuilds the table from the current filtered and sorted stock list.
-     * If a sort is active, sorts via {@link StocksSort}.
+     * If a sort is active, delegates sorting to {@link StocksSort#applySort}.
      * If no sort is active, restores the original exchange order via {@link #restoreOrder()}.
      */
     private void refresh() {
-        if (sort.isActive()) {
-            sort.applySort(filteredStocks);
+        if (table.isSortActive()) {
+            sort.applySort(filteredStocks, table.getSortState());
         } else {
             restoreOrder();
         }
 
-        grid.getChildren().clear();
-        sort.buildHeader(grid, this::refresh);
+        table.clearRows();
+        table.refreshHeader(this::refresh);
 
         int fromIndex = currentPage * PAGE_SIZE;
         int toIndex = Math.min(fromIndex + PAGE_SIZE, filteredStocks.size());
         List<Stock> page = filteredStocks.subList(fromIndex, toIndex);
 
         for (int i = 0; i < page.size(); i++) {
-            rowRenderer.buildRow(page.get(i), i + 1, grid);
+            rowRenderer.buildRow(page.get(i), i + 1, table);
         }
 
         if (filteredStocks.isEmpty()) {
@@ -132,7 +119,7 @@ public class StocksListCard extends Card {
                     : MessageFormat.format(
                             LanguageManager.get("exchange.stocks.empty.search"),
                             currentFilterTerm);
-            TableCells.renderEmptyState(grid, msg, 9);
+            table.renderEmptyState(msg);
         }
 
         if (onRefreshed != null) {
@@ -166,20 +153,21 @@ public class StocksListCard extends Card {
     }
 
     /**
-     * Returns whether a sort column is currently active in {@link StocksSort}.
+     * Returns whether a sort column is currently active.
+     * Delegates to {@link SortColumnTable#isSortActive()}.
      *
      * @return {@code true} if a sort is active, {@code false} otherwise
      */
     public boolean isSortActive() {
-        return sort.isActive();
+        return table.isSortActive();
     }
 
     /**
      * Clears the active sort and refreshes the table, restoring the original
-     * exchange order. Delegates to {@link StocksSort#clearSort()}.
+     * exchange order. Delegates to {@link SortColumnTable#clearSort()}.
      */
     public void clearSort() {
-        sort.clearSort();
+        table.clearSort();
         refresh();
     }
 
@@ -227,7 +215,6 @@ public class StocksListCard extends Card {
     /**
      * Called when the application language changes.
      * Re-renders headers and pagination with updated labels.
-     * Logs any unexpected exception to prevent leaving the grid in an empty state.
      */
     @Override
     protected void onLanguageChanged() {

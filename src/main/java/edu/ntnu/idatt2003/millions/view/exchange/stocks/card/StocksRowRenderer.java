@@ -9,6 +9,7 @@ import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
+import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.control.Button;
@@ -22,9 +23,9 @@ import java.util.Currency;
 import java.util.List;
 
 /**
- * Responsible for rendering a single stock row into a {@link GridPane}.
+ * Responsible for rendering a single stock row into a {@link SortColumnTable}.
  *
- * <p>Each call to {@link #buildRow(Stock, int, GridPane)} populates one row
+ * <p>Each call to {@link #buildRow(Stock, int, SortColumnTable)} populates one row
  * with ticker, company, prices, weekly change, 4-week high/low,
  * a {@link SparklineChart} trend and trade actions.
  *
@@ -51,16 +52,19 @@ class StocksRowRenderer {
     }
 
     /**
-     * Renders the given stock as a row at {@code rowIndex} in the provided grid.
+     * Renders the given stock as a row at {@code rowIndex} in the provided table.
      * Adds the ticker cell (with optional owner badge), company name, current price,
      * weekly change in NOK and percent, 4-week high/low, a sparkline trend,
      * and trade buttons.
      *
+     * <p>{@link GridPane#setValignment} constraints are applied to each node before
+     * insertion so all cells align to the top of their row.</p>
+     *
      * @param stock    the stock to render
-     * @param rowIndex the grid row index (0 is reserved for the header)
-     * @param grid     the {@link GridPane} to add the row nodes into
+     * @param rowIndex the table row index (0 is reserved for the header)
+     * @param table    the {@link SortColumnTable} to add the row nodes into
      */
-    void buildRow(Stock stock, int rowIndex, GridPane grid) {
+    void buildRow(Stock stock, int rowIndex, SortColumnTable<?> table) {
         CurrencyConverter converter = gameService.getCurrencyConverter();
 
         Label tickerLabel = new Label(stock.getSymbol());
@@ -92,16 +96,6 @@ class StocksRowRenderer {
 
         HBox tradeButtons = buildTradeButtons(stock);
 
-        grid.add(tickerCell, 0, rowIndex);
-        grid.add(companyLabel, 1, rowIndex);
-        grid.add(priceLabel, 2, rowIndex);
-        grid.add(priceNokLabel, 3, rowIndex);
-        grid.add(changeKrLabel, 4, rowIndex);
-        grid.add(changePctLabel, 5, rowIndex);
-        grid.add(highLowLabel, 6, rowIndex);
-        grid.add(sparkline, 7, rowIndex);
-        grid.add(tradeButtons, 8, rowIndex);
-
         GridPane.setValignment(tickerCell, VPos.TOP);
         GridPane.setValignment(companyLabel, VPos.TOP);
         GridPane.setValignment(priceLabel, VPos.TOP);
@@ -111,6 +105,9 @@ class StocksRowRenderer {
         GridPane.setValignment(highLowLabel, VPos.TOP);
         GridPane.setValignment(sparkline, VPos.TOP);
         GridPane.setValignment(tradeButtons, VPos.TOP);
+
+        table.addRow(rowIndex, tickerCell, companyLabel, priceLabel, priceNokLabel,
+                changeKrLabel, changePctLabel, highLowLabel, sparkline, tradeButtons);
     }
 
     /**
