@@ -9,6 +9,8 @@ import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.view.component.Pagination;
+import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
@@ -28,14 +30,14 @@ import java.util.List;
 /**
  * Dashboard card for the transactions tab.
  *
- * <p>Renders the section title, a filter row, and a sortable table of every
- * committed transaction within the current filter selection. The default order
+ * <p>Renders the section title, a search and filter row, and a sortable
+ * paginated table of every committed transaction within the current filter selection. The default order
  * is chronological (oldest first); clicking a column header activates
  * ascending sort on that column, toggling to descending on a second click.</p>
  *
- * <p>The filter row holds a {@link TransactionTypeFilter} (all / buy / sell)
- * and a {@link WeekRangeFilter}. The {@link WeekRangeFilter} is shared with
- * {@code TransactionsSummaryCard} so both cards show data for the same period.</p>
+ * <p>The filter row holds a {@link SearchBar}, a {@link TransactionTypeFilter}
+ * (all / buy / sell), and a {@link WeekRangeFilter}. The {@link WeekRangeFilter}
+ * is shared with {@code TransactionsSummaryCard} so both cards show data for the same period.</p>
  *
  * <p>Column structure, sort state and header rendering are owned by
  * {@link SortColumnTable}. Domain-specific sort logic is delegated to
@@ -44,6 +46,8 @@ import java.util.List;
  */
 public class TransactionsCard extends Card {
 
+    private static final int PAGE_SIZE = Pagination.DEFAULT_PAGE_SIZE;
+
     private final GameService gameService;
     private final TransactionStatsService statsService = new TransactionStatsService();
     private final TransactionsSort sort;
@@ -51,6 +55,10 @@ public class TransactionsCard extends Card {
     private final StyledText title;
     private final TransactionTypeFilter typeFilter;
     private final WeekRangeFilter weekRangeFilter;
+    private final Pagination pagination;
+
+    private int currentPage = 0;
+    private String currentSearchTerm = "";
 
     /**
      * Constructs a new TransactionsCard.
@@ -69,34 +77,46 @@ public class TransactionsCard extends Card {
         this.weekRangeFilter = weekRangeFilter;
         this.sort = new TransactionsSort(statsService, gameService.getCurrencyConverter());
         this.table = new SortColumnTable<>(sort::getColumnDefs);
+        this.pagination = new Pagination(PAGE_SIZE, this::setPage);
 
         setSpacing(16);
 
         title = StyledText.sectionTitle(LanguageManager.get("transactions.title"));
 
         typeFilter = new TransactionTypeFilter();
-        typeFilter.selectedTypeProperty().addListener((obs, oldVal, newVal) -> refresh());
+        typeFilter.selectedTypeProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
 
-        weekRangeFilter.fromWeekProperty().addListener((obs, oldVal, newVal) -> refresh());
-        weekRangeFilter.toWeekProperty().addListener((obs, oldVal, newVal) -> refresh());
+        weekRangeFilter.fromWeekProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
+        weekRangeFilter.toWeekProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
 
-        getChildren().addAll(title, buildFilterRow(), table.asNode());
+        getChildren().addAll(title, buildFilterRow(), table.asNode(), pagination);
         refresh();
     }
 
     /**
      * Builds the filter row that sits between the title and the table.
      *
-     * <p>Both filters sit on the left edge; a flexible spacer takes up the
-     * remaining width so future controls can be inserted without restructuring.</p>
+     * <p>The search field sits first, followed by the type and week filters.
+     * A flexible spacer takes up remaining width so future controls can be
+     * inserted without restructuring.</p>
      *
      * @return the configured filter row
      */
     private HBox buildFilterRow() {
+        SearchBar searchBar = new SearchBar(
+                "search.placeholder",
+                "search.button",
+                term -> {
+                    currentSearchTerm = term == null ? "" : term;
+                    resetPageAndRefresh();
+                });
+        searchBar.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(searchBar, Priority.ALWAYS);
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox row = new HBox(36, typeFilter, weekRangeFilter, spacer);
+        HBox row = new HBox(16, searchBar, typeFilter, weekRangeFilter, spacer);
         row.setAlignment(Pos.CENTER_LEFT);
         row.getStyleClass().add("transactions-filter-row");
         return row;
@@ -124,14 +144,17 @@ public class TransactionsCard extends Card {
 
     /**
      * Rebuilds the table: clears, rebuilds the header, collects and filters
-     * transactions, optionally sorts them, then renders rows or an empty state.
+     * transactions, optionally sorts them, then renders the current page or an empty state.
      *
      * <p>When no sort is active the default chronological order from
      * {@link #collectRange} is preserved.</p>
      */
     private void refresh() {
         table.clearRows();
-        if (gameService.getPlayer() == null) return;
+        if (gameService.getPlayer() == null) {
+            pagination.update(0, 0);
+            return;
+        }
         table.refreshHeader(this::refresh);
 
         TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
@@ -142,6 +165,7 @@ public class TransactionsCard extends Card {
         List<Transaction> transactions = new ArrayList<>(
                 collectRange(archive, fromWeek, toWeek).stream()
                         .filter(t -> selectedType == null || selectedType.isInstance(t))
+                        .filter(this::matchesSearch)
                         .toList());
 
         if (table.isSortActive()) {
@@ -150,13 +174,70 @@ public class TransactionsCard extends Card {
 
         if (transactions.isEmpty()) {
             table.renderEmptyState(LanguageManager.get("transactions.empty"));
+            pagination.update(0, 0);
             return;
         }
 
+        clampCurrentPage(transactions.size());
+        pagination.update(currentPage, transactions.size());
+
+        int fromIndex = currentPage * PAGE_SIZE;
+        int toIndex = Math.min(fromIndex + PAGE_SIZE, transactions.size());
+        List<Transaction> page = transactions.subList(fromIndex, toIndex);
+
         int row = 1;
-        for (Transaction transaction : transactions) {
+        for (Transaction transaction : page) {
             addDataRow(row++, transaction);
         }
+    }
+
+    /**
+     * Sets the active page and refreshes the rendered transaction rows.
+     * Called by {@link Pagination} when the user navigates.
+     *
+     * @param page the zero-based page index to render
+     */
+    private void setPage(int page) {
+        currentPage = page;
+        refresh();
+    }
+
+    /**
+     * Returns to the first page and refreshes the table after a filter change.
+     */
+    private void resetPageAndRefresh() {
+        currentPage = 0;
+        refresh();
+    }
+
+    /**
+     * Keeps the current page inside the valid page range after filtering.
+     *
+     * @param itemCount the number of filtered transactions
+     */
+    private void clampCurrentPage(int itemCount) {
+        int lastPage = Math.max(0, (itemCount - 1) / PAGE_SIZE);
+        if (currentPage > lastPage) {
+            currentPage = lastPage;
+        }
+    }
+
+    /**
+     * Checks whether a transaction matches the current search term.
+     * Searches the stock symbol and company name for the transaction's {@link Stock}.
+     *
+     * @param transaction the transaction to test
+     * @return {@code true} if the transaction should be shown
+     */
+    private boolean matchesSearch(Transaction transaction) {
+        if (currentSearchTerm.isBlank()) {
+            return true;
+        }
+
+        String normalized = currentSearchTerm.toLowerCase();
+        Stock stock = transaction.getShare().getStock();
+        return stock.getSymbol().toLowerCase().contains(normalized)
+                || stock.getCompany().toLowerCase().contains(normalized);
     }
 
     /**

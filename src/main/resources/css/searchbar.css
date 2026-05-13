@@ -1,25 +1,25 @@
 .search-row {
     -fx-alignment: center-left;
-    -fx-spacing: 20;
-    -fx-max-width: 800;
+    -fx-spacing: 10;
+    -fx-max-width: 600;
     -fx-min-width: 600;
 }
 
 .search-bar,
 .search-button,
 .search-clear-button {
-    -fx-min-height: 40;
-    -fx-pref-height: 40;
-    -fx-max-height: 40;
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-max-height: 30;
 }
 
 .search-bar {
     -fx-background-color: -surface;
-    -fx-padding: 0 18 0 18;
+    -fx-padding: 2 18 2 18;
     -fx-alignment: center-left;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 12, 0, 0, 2);
-    -fx-border-radius: 10;
-    -fx-background-radius: 10;
+    -fx-border-color: -border;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
 }
 .search-bar:focused {
     -fx-border-color: -primary-dark;
@@ -27,7 +27,7 @@
 .search-field {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
     -fx-text-fill: -text-primary;
     -fx-prompt-text-fill: -text-secondary;
 }
@@ -39,7 +39,7 @@
 
 .search-button,
 .search-clear-button {
-    -fx-background-radius: 10;
+    -fx-background-radius: 5;
     -fx-font-size: 14px;
     -fx-font-weight: 500;
     -fx-padding: 0 22 0 22;
