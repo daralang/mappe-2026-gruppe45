@@ -4,6 +4,7 @@ import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
+import edu.ntnu.idatt2003.millions.view.dashboard.loans.LoansView;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.PortfolioView;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.TransactionsView;
 import javafx.scene.layout.Priority;
@@ -85,7 +86,6 @@ public class DashboardView extends VBox {
     }
 
     private void showLoans() {
-        contentArea.getChildren().clear(); // remove this when implementing setAll
-        // contentArea.getChildren().setAll(new LoansView(gameService));
+        contentArea.getChildren().setAll(new LoansView(gameService));
     }
 }
