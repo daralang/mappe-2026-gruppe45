@@ -391,6 +391,99 @@ class PlayerTest {
     }
 
     @Nested
+    @DisplayName("recordTotalDebt()")
+    class RecordTotalDebt {
+
+        @Test
+        @DisplayName("Should append current total debt to history")
+        void appendsCurrentTotalDebtToHistory() {
+            // Arrange
+            int initialSize = player.getTotalDebtHistory().size();
+            // Act
+            player.recordTotalDebt();
+            // Assert
+            assertEquals(initialSize + 1, player.getTotalDebtHistory().size());
+        }
+
+        @Test
+        @DisplayName("Should record matching value as getTotalDebt")
+        void recordsMatchingValue() {
+            // Arrange
+            BigDecimal expected = player.getTotalDebt();
+            // Act
+            player.recordTotalDebt();
+            // Assert
+            BigDecimal recorded = player.getTotalDebtHistory().getLast();
+            assertEquals(0, expected.compareTo(recorded));
+        }
+
+        @Test
+        @DisplayName("Should record zero debt when no loans are active")
+        void recordsZeroWhenNoLoans() {
+            // Act
+            player.recordTotalDebt();
+            // Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getTotalDebtHistory().getLast()));
+        }
+
+        @Test
+        @DisplayName("Should support multiple recordings in order")
+        void supportsMultipleRecordings() {
+            // Arrange
+            LoanOffer offer = new LoanOffer("test", new BigDecimal("0.01"), 10,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+            player.recordTotalDebt(); // debt = 0
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 0), converter);
+            player.recordTotalDebt(); // debt = 200
+            // Act
+            List<BigDecimal> history = player.getTotalDebtHistory();
+            // Assert: two recordings
+            assertEquals(2, history.size());
+            assertTrue(history.getLast().compareTo(history.getFirst()) > 0);
+        }
+    }
+
+    @Nested
+    @DisplayName("getTotalDebtHistory()")
+    class GetTotalDebtHistory {
+
+        @Test
+        @DisplayName("Should start empty before any recording")
+        void startsEmpty() {
+            assertTrue(player.getTotalDebtHistory().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should return a copy that does not affect the internal list")
+        void returnsCopy() {
+            // Arrange
+            player.recordTotalDebt();
+            List<BigDecimal> history = player.getTotalDebtHistory();
+            // Act
+            history.clear();
+            // Assert
+            assertFalse(player.getTotalDebtHistory().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should reflect every recordTotalDebt call in order")
+        void reflectsRecordingsInOrder() {
+            // Arrange
+            LoanOffer offer = new LoanOffer("test", new BigDecimal("0.01"), 10,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+            player.recordTotalDebt(); // 0
+            player.takeLoan(new Loan(offer, new BigDecimal("100.00"), 0), converter);
+            player.recordTotalDebt(); // 100
+            // Act
+            List<BigDecimal> history = player.getTotalDebtHistory();
+            // Assert
+            assertEquals(2, history.size());
+            assertEquals(0, BigDecimal.ZERO.compareTo(history.getFirst()));
+            assertEquals(0, new BigDecimal("100.00").compareTo(history.getLast()));
+        }
+    }
+
+    @Nested
     @DisplayName("getStatus()")
     class GetStatus {
 

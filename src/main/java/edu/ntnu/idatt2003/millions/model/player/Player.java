@@ -34,6 +34,7 @@ public class Player {
 
     private BigDecimal previousNetWorth;
     private List<BigDecimal> netWorthHistory;
+    private List<BigDecimal> totalDebtHistory = new ArrayList<>();
 
     /**
      * Constructs a new Player with the specified name and starting balance.
@@ -220,6 +221,27 @@ public class Player {
         return activeLoansInternal().stream()
                 .map(Loan::principal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Records the player's current total debt in the history.
+     * Called by {@link edu.ntnu.idatt2003.millions.service.GameService}
+     * before advancing the week.
+     */
+    public void recordTotalDebt() {
+        if (totalDebtHistory == null) totalDebtHistory = new ArrayList<>();
+        totalDebtHistory.add(getTotalDebt());
+    }
+
+    /**
+     * Returns a list of all recorded total-debt snapshots over time.
+     * Each entry corresponds to the debt at the end of a week.
+     *
+     * @return a defensive copy of the debt history
+     */
+    public List<BigDecimal> getTotalDebtHistory() {
+        if (totalDebtHistory == null) return List.of();
+        return new ArrayList<>(totalDebtHistory);
     }
 
     /**

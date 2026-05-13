@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.AverageInterestRate
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.AvailableLoansCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.DebtRatioCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.LoanCapacityCard;
+import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.TotalDebtCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.WeeklyInterestCostCard;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -42,8 +43,16 @@ public class LoansView extends VBox {
         availableLoansCard = new AvailableLoansCard(gameService);
         activeLoansCard = new ActiveLoansCard(gameService, loanController);
 
-        VBox leftCards = new VBox(VERTICAL_SPACING, activeLoansCard, availableLoansCard);
-        HBox.setHgrow(leftCards, Priority.ALWAYS);
+        HBox topRow = buildTopRow(gameService);
+
+        getChildren().addAll(availableLoansCard, topRow, activeLoansCard);
+    }
+
+    private HBox buildTopRow(GameService gameService) {
+        HBox row = new HBox(VERTICAL_SPACING);
+
+        TotalDebtCard totalDebtCard = new TotalDebtCard(gameService);
+        HBox.setHgrow(totalDebtCard, Priority.ALWAYS);
 
         VBox rightCards = new VBox(12,
                 new WeeklyInterestCostCard(gameService),
@@ -54,7 +63,11 @@ public class LoansView extends VBox {
         rightCards.setMinWidth(220);
         rightCards.setMaxWidth(260);
 
-        getChildren().add(new HBox(VERTICAL_SPACING, leftCards, rightCards));
+        totalDebtCard.prefHeightProperty().bind(rightCards.heightProperty());
+        totalDebtCard.maxHeightProperty().bind(rightCards.heightProperty());
+
+        row.getChildren().addAll(totalDebtCard, rightCards);
+        return row;
     }
 
     /**
