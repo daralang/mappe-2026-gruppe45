@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Reusable sortable table component backed by a {@link GridPane}.
@@ -28,40 +29,46 @@ public class SortColumnTable<Column> {
 
     private static final double DEFAULT_HGAP = 20;
 
-    private final List<TableColumnDef<Column>> columns;
+    private final Supplier<List<TableColumnDef<Column>>> columnSupplier;
+    private final int columnCount;
     private final SortState<Column> sortState = new SortState<>();
     private final GridPane grid = new GridPane();
 
     /**
      * Constructs a sortable table with default horizontal gap of 20px.
      *
-     * @param columns the ordered list of column definitions
-     * @throws NullPointerException if {@code columns} is null
+     * @param columnSupplier supplier that returns the ordered column definitions
+     * @throws NullPointerException if {@code columnSupplier} is null
      */
-    public SortColumnTable(List<TableColumnDef<Column>> columns) {
-        this(columns, DEFAULT_HGAP);
+    public SortColumnTable(Supplier<List<TableColumnDef<Column>>> columnSupplier) {
+        this(columnSupplier, DEFAULT_HGAP);
     }
 
     /**
      * Constructs a sortable table with the given horizontal gap between columns.
      *
-     * @param columns the ordered list of column definitions
-     * @param gap    the horizontal gap between columns in pixels
-     * @throws NullPointerException if {@code columns} is null
+     * @param columnSupplier supplier that returns the ordered column definitions
+     * @param gap            the horizontal gap between columns in pixels
+     * @throws NullPointerException if {@code columnSupplier} is null
      */
-    public SortColumnTable(List<TableColumnDef<Column>> columns, double gap) {
-        this.columns = List.copyOf(Objects.requireNonNull(columns, "columns cannot be null"));
+    public SortColumnTable(Supplier<List<TableColumnDef<Column>>> columnSupplier, double gap) {
+        this.columnSupplier = Objects.requireNonNull(columnSupplier, "columnSupplier cannot be null");
+        List<TableColumnDef<Column>> initial = columnSupplier.get();
+        this.columnCount = initial.size();
         grid.setHgap(gap);
         grid.setMinWidth(0);
-        configureColumns();
+        configureColumns(initial);
     }
 
     /**
-     * Configures the grid's column constraints from the column definitions.
-     * Called once during construction.
+     * Configures the grid's column constraints from the initial column definitions.
+     * Called once during construction; widths and alignments are stable across
+     * language changes so the supplier need not be re-called for this.
+     *
+     * @param cols the initial column definitions to read structure from
      */
-    private void configureColumns() {
-        for (TableColumnDef<Column> col : columns) {
+    private void configureColumns(List<TableColumnDef<Column>> cols) {
+        for (TableColumnDef<Column> col : cols) {
             ColumnConstraints cc = new ColumnConstraints();
             cc.setPercentWidth(col.percentWidth());
             cc.setHalignment(col.alignment());
@@ -92,8 +99,9 @@ public class SortColumnTable<Column> {
      *                  owning card can trigger a data refresh
      */
     public void refreshHeader(Runnable onChanged) {
-        for (int i = 0; i < columns.size(); i++) {
-            grid.add(buildHeaderCell(columns.get(i), onChanged), i, 0);
+        List<TableColumnDef<Column>> current = columnSupplier.get();
+        for (int i = 0; i < current.size(); i++) {
+            grid.add(buildHeaderCell(current.get(i), onChanged), i, 0);
         }
     }
 
@@ -135,7 +143,7 @@ public class SortColumnTable<Column> {
      * @param row  the zero-based row index
      */
     public void addFullWidthRow(Node node, int row) {
-        GridPane.setColumnSpan(node, columns.size());
+        GridPane.setColumnSpan(node, columnCount);
         grid.add(node, 0, row);
     }
 
@@ -148,7 +156,7 @@ public class SortColumnTable<Column> {
      * @param message the localised empty-state text to display
      */
     public void renderEmptyState(String message) {
-        TableCells.renderEmptyState(grid, message, columns.size());
+        TableCells.renderEmptyState(grid, message, columnCount);
     }
 
     /**
@@ -162,6 +170,23 @@ public class SortColumnTable<Column> {
      */
     public SortState<Column> getSortState() {
         return sortState;
+    }
+
+    /**
+     * Clears the active sort column and direction, returning the table to
+     * its unsorted state. Equivalent to calling {@code getSortState().clear()}.
+     */
+    public void clearSort() {
+        sortState.clear();
+    }
+
+    /**
+     * Returns whether a sort column is currently active.
+     *
+     * @return {@code true} if a sort column is active, {@code false} otherwise
+     */
+    public boolean isSortActive() {
+        return sortState.hasActiveSort();
     }
 
     /**
