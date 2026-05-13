@@ -64,3 +64,19 @@
 .debt-ratio-bar.debt-bar-ok > .bar      { -fx-background-color: -success; }
 .debt-ratio-bar.debt-bar-warning > .bar { -fx-background-color: -warning; }
 .debt-ratio-bar.debt-bar-danger > .bar  { -fx-background-color: -danger; }
+
+/* Debt history bar chart */
+.debt-bar-chart {
+    -fx-background-color: transparent;
+}
+.debt-bar-chart .chart-plot-background {
+    -fx-background-color: transparent;
+}
+.debt-bar-chart .chart-vertical-grid-lines,
+.debt-bar-chart .chart-horizontal-grid-lines {
+    -fx-stroke: transparent;
+}
+.debt-bar-chart .chart-bar {
+    -fx-bar-fill: -warning;
+    -fx-background-radius: 2 2 0 0;
+}
