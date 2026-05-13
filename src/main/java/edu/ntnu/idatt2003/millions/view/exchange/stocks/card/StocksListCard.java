@@ -7,7 +7,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.view.component.card.PaginatedCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort;
 import javafx.geometry.Pos;
@@ -22,6 +22,8 @@ import java.util.List;
 
 /**
  * Market card with controls for searching, sorting, and paginating stocks listed on the exchange.
+ * Extends {@link edu.ntnu.idatt2003.millions.view.component.card.PaginatedCard} for
+ * shared pagination state and behaviour.
  *
  * <p>Displays a title, a {@link SearchBar} with result metadata, reset-sort action,
  * pagination, ticker, company, prices, weekly change, 4-week high/low, trend and
@@ -29,7 +31,7 @@ import java.util.List;
  * domain-specific sort logic is delegated to {@link StocksSort}; row rendering is
  * delegated to {@link StocksRowRenderer}.</p>
  */
-public class StocksListCard extends Card {
+public class StocksListCard extends PaginatedCard {
 
     public static final int PAGE_SIZE = 20;
     private static final double ROW_HEIGHT = 44.0;
@@ -45,7 +47,6 @@ public class StocksListCard extends Card {
     private List<Stock> allStocks = new ArrayList<>();
     private List<Stock> filteredStocks = new ArrayList<>();
 
-    private int currentPage = 0;
     private String currentFilterTerm = "";
     private Runnable onRefreshed = null;
 
@@ -61,7 +62,7 @@ public class StocksListCard extends Card {
      * @param controller  the controller used to open buy/sell dialogs
      */
     public StocksListCard(GameService gameService, PortfolioController controller) {
-        super(gameService);
+        super(gameService, PAGE_SIZE);
         this.gameService = gameService;
         this.sort = new StocksSort(gameService.getCurrencyConverter());
         this.rowRenderer = new StocksRowRenderer(gameService, controller);
@@ -138,7 +139,8 @@ public class StocksListCard extends Card {
      * If no sort is active, syncs the filtered list to the original exchange order
      * via {@link #syncFilteredList()}.
      */
-    private void refresh() {
+    @Override
+    protected void refresh() {
         if (table.isSortActive()) {
             sort.applySort(filteredStocks, table.getSortState());
         } else {
@@ -198,14 +200,7 @@ public class StocksListCard extends Card {
         filteredStocks = currentFilterTerm.isBlank()
                 ? new ArrayList<>(allStocks)
                 : new ArrayList<>(gameService.getExchange().findStocks(currentFilterTerm));
-        clampCurrentPage();
-    }
-
-    private void clampCurrentPage() {
-        int lastPage = Math.max(0, (filteredStocks.size() - 1) / PAGE_SIZE);
-        if (currentPage > lastPage) {
-            currentPage = lastPage;
-        }
+        clampCurrentPage(filteredStocks.size());
     }
 
     /**
@@ -224,17 +219,6 @@ public class StocksListCard extends Card {
      */
     public void clearSort() {
         table.clearSort();
-        refresh();
-    }
-
-    /**
-     * Sets the current page and refreshes the table to show the corresponding rows.
-     * Called by the parent view when the user navigates.
-     *
-     * @param page the zero-based page index to navigate to
-     */
-    public void setPage(int page) {
-        currentPage = page;
         refresh();
     }
 

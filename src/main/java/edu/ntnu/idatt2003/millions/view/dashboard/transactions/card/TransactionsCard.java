@@ -12,7 +12,7 @@ import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.view.component.card.PaginatedCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.TransactionsSort;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.TransactionTypeFilter;
@@ -29,7 +29,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Dashboard card for the transactions tab.
+ * Dashboard card for the transactions tab. Extends
+ * {@link PaginatedCard} for shared pagination state and behaviour.
  *
  * <p>Renders the section title, a search and filter row, and a sortable
  * paginated table of every committed transaction within the current filter selection. The default order
@@ -45,7 +46,7 @@ import java.util.List;
  * {@link TransactionsSort}. This card is responsible for data fetching,
  * filtering, sort orchestration and cell construction only.</p>
  */
-public class TransactionsCard extends Card {
+public class TransactionsCard extends PaginatedCard {
 
     private static final int PAGE_SIZE = Pagination.DEFAULT_PAGE_SIZE;
     private static final double ROW_HEIGHT = 44.0;
@@ -59,7 +60,6 @@ public class TransactionsCard extends Card {
     private final WeekRangeFilter weekRangeFilter;
     private final Pagination pagination;
 
-    private int currentPage = 0;
     private String currentSearchTerm = "";
 
     /**
@@ -74,7 +74,7 @@ public class TransactionsCard extends Card {
      *                        table and the summary card's totals
      */
     public TransactionsCard(GameService gameService, WeekRangeFilter weekRangeFilter) {
-        super(gameService);
+        super(gameService, PAGE_SIZE);
         this.gameService = gameService;
         this.weekRangeFilter = weekRangeFilter;
         this.sort = new TransactionsSort(statsService, gameService.getCurrencyConverter());
@@ -152,7 +152,8 @@ public class TransactionsCard extends Card {
      * <p>When no sort is active the default chronological order from
      * {@link #collectRange} is preserved.</p>
      */
-    private void refresh() {
+    @Override
+    protected void refresh() {
         table.clearRows();
         if (gameService.getPlayer() == null) {
             pagination.update(0, 0);
@@ -191,37 +192,6 @@ public class TransactionsCard extends Card {
         int row = 1;
         for (Transaction transaction : page) {
             addDataRow(row++, transaction);
-        }
-    }
-
-    /**
-     * Sets the active page and refreshes the rendered transaction rows.
-     * Called by {@link Pagination} when the user navigates.
-     *
-     * @param page the zero-based page index to render
-     */
-    private void setPage(int page) {
-        currentPage = page;
-        refresh();
-    }
-
-    /**
-     * Returns to the first page and refreshes the table after a filter change.
-     */
-    private void resetPageAndRefresh() {
-        currentPage = 0;
-        refresh();
-    }
-
-    /**
-     * Keeps the current page inside the valid page range after filtering.
-     *
-     * @param itemCount the number of filtered transactions
-     */
-    private void clampCurrentPage(int itemCount) {
-        int lastPage = Math.max(0, (itemCount - 1) / PAGE_SIZE);
-        if (currentPage > lastPage) {
-            currentPage = lastPage;
         }
     }
 
@@ -288,7 +258,7 @@ public class TransactionsCard extends Card {
 
     /**
      * Renders the tax cell. Purchases have no tax, so the column shows
-     * an en-dash for visual cleanliness instead of "0,00 NOK".
+     * an en,-dash for visual cleanliness instead of "0,00 NOK".
      *
      * @param stats the row stats supplying the NOK tax amount
      * @return a styled cell label
