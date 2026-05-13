@@ -3,7 +3,13 @@ package edu.ntnu.idatt2003.millions.view.dashboard.loans;
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.ActiveLoansCard;
+import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.AverageInterestRateCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.AvailableLoansCard;
+import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.DebtRatioCard;
+import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.LoanCapacityCard;
+import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.WeeklyInterestCostCard;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 /**
@@ -36,7 +42,19 @@ public class LoansView extends VBox {
         availableLoansCard = new AvailableLoansCard(gameService);
         activeLoansCard = new ActiveLoansCard(gameService, loanController);
 
-        getChildren().addAll(activeLoansCard, availableLoansCard);
+        VBox leftCards = new VBox(VERTICAL_SPACING, activeLoansCard, availableLoansCard);
+        HBox.setHgrow(leftCards, Priority.ALWAYS);
+
+        VBox rightCards = new VBox(12,
+                new WeeklyInterestCostCard(gameService),
+                new AverageInterestRateCard(gameService),
+                new LoanCapacityCard(gameService),
+                new DebtRatioCard(gameService)
+        );
+        rightCards.setMinWidth(220);
+        rightCards.setMaxWidth(260);
+
+        getChildren().add(new HBox(VERTICAL_SPACING, leftCards, rightCards));
     }
 
     /**
