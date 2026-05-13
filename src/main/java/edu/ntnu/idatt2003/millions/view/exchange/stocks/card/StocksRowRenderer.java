@@ -38,7 +38,6 @@ class StocksRowRenderer {
 
     private final GameService gameService;
     private final PortfolioController controller;
-    private final CurrencyConverter converter;
 
     /**
      * Constructs a new StocksRowRenderer.
@@ -49,7 +48,6 @@ class StocksRowRenderer {
     StocksRowRenderer(GameService gameService, PortfolioController controller) {
         this.gameService = gameService;
         this.controller = controller;
-        this.converter = gameService.getCurrencyConverter();
     }
 
     /**
@@ -63,6 +61,8 @@ class StocksRowRenderer {
      * @param grid     the {@link GridPane} to add the row nodes into
      */
     void buildRow(Stock stock, int rowIndex, GridPane grid) {
+        CurrencyConverter converter = gameService.getCurrencyConverter();
+
         Label tickerLabel = new Label(stock.getSymbol());
         tickerLabel.getStyleClass().add("holdings-cell");
 
