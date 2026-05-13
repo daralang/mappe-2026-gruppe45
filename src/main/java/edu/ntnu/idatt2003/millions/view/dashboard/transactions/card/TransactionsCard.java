@@ -11,6 +11,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
+import edu.ntnu.idatt2003.millions.view.component.SearchMetadataRow;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.PaginatedCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
@@ -60,6 +61,7 @@ public class TransactionsCard extends PaginatedCard {
     private final TransactionTypeFilter typeFilter;
     private final WeekRangeFilter weekRangeFilter;
     private final Pagination pagination;
+    private final SearchMetadataRow metadataRow;
 
     private String currentSearchTerm = "";
 
@@ -83,6 +85,7 @@ public class TransactionsCard extends PaginatedCard {
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
+        this.metadataRow = new SearchMetadataRow(clearSortButton);
         table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
 
         setSpacing(16);
@@ -95,26 +98,11 @@ public class TransactionsCard extends PaginatedCard {
         weekRangeFilter.fromWeekProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
         weekRangeFilter.toWeekProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
 
-        getChildren().addAll(title, buildFilterRow(clearSortButton), table.asNode(), pagination);
+        getChildren().addAll(title, buildFilterRow(), table.asNode(), pagination);
         refresh();
     }
 
-    /**
-     * Builds the filter row that sits between the title and the table.
-     *
-     * <p>The search field sits first, followed by the type and week filters.
-     * A flexible spacer takes up remaining width so future controls can be
-     * inserted without restructuring.</p>
-     *
-     * @param clearSortButton the button returned by {@link SortColumnTable#createClearSortButton}
-     * @return the configured filter row
-     */
-    private HBox buildFilterRow(Button clearSortButton) {
-        Region metadataSpacer = new Region();
-        HBox.setHgrow(metadataSpacer, Priority.ALWAYS);
-        HBox metadataRow = new HBox(metadataSpacer, clearSortButton);
-        metadataRow.setAlignment(Pos.CENTER_RIGHT);
-
+    private HBox buildFilterRow() {
         SearchBar searchBar = new SearchBar(
                 "search.placeholder",
                 "search.button",
@@ -176,11 +164,15 @@ public class TransactionsCard extends PaginatedCard {
         int toWeek = weekRangeFilter.getToWeek();
         Class<? extends Transaction> selectedType = typeFilter.getSelectedType();
 
-        List<Transaction> transactions = new ArrayList<>(
+        List<Transaction> searchableTransactions = new ArrayList<>(
                 collectRange(archive, fromWeek, toWeek).stream()
                         .filter(t -> selectedType == null || selectedType.isInstance(t))
+                        .toList());
+        List<Transaction> transactions = new ArrayList<>(
+                searchableTransactions.stream()
                         .filter(t -> currentSearchTerm.isBlank() || t.getShare().getStock().matches(currentSearchTerm))
                         .toList());
+        metadataRow.update("transactions.status", transactions.size(), searchableTransactions.size());
 
         if (table.isSortActive()) {
             sort.applySort(transactions, table.getSortState());
