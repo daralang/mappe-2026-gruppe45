@@ -43,22 +43,11 @@ public class StocksView extends VBox {
      * @param controller  the controller used to open buy/sell dialogs
      */
     public StocksView(GameService gameService, PortfolioController controller) {
+        getStyleClass().add("content-area");
+
         this.stocksListCard = new StocksListCard(gameService, controller);
         this.pagination = new Pagination(StocksListCard.PAGE_SIZE, stocksListCard::setPage);
 
-        Button clearSortButton = createClearSortButton();
-        HBox cards = createSummaryCards(gameService);
-        HBox searchRow = createSearchRow();
-        HBox listHeader = createListHeader(clearSortButton);
-        Region spacer = createSpacer(12);
-
-        configureRefreshCallback(clearSortButton);
-        getStyleClass().add("content-area");
-        getChildren().addAll(cards, spacer, searchRow, listHeader, stocksListCard, pagination);
-        updateMetaInfo();
-    }
-
-    private HBox createSearchRow() {
         SearchBar searchBar = new SearchBar(
                 "exchange.stocks.search.placeholder",
                 "search.button",
@@ -66,18 +55,23 @@ public class StocksView extends VBox {
                     stocksListCard.filter(term);
                     updateMetaInfo();
                 });
-
         HBox searchRow = new HBox(8, searchBar);
         searchRow.setAlignment(Pos.CENTER_LEFT);
-        return searchRow;
-    }
 
-    private Button createClearSortButton() {
-        Button button = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
-        button.getStyleClass().add("clear-sort-button");
-        button.setVisible(false);
-        button.setOnAction(e -> stocksListCard.clearSort());
-        return button;
+        Button clearSortButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
+        clearSortButton.getStyleClass().add("clear-sort-button");
+        clearSortButton.setVisible(false);
+        clearSortButton.setOnAction(e -> stocksListCard.clearSort());
+
+        Region spacer = new Region();
+        spacer.setMinHeight(12);
+
+        HBox summaryCards = createSummaryCards(gameService);
+        HBox listHeader = createListHeader(clearSortButton);
+
+        configureRefreshCallback(clearSortButton);
+        getChildren().addAll(summaryCards, spacer, searchRow, listHeader, stocksListCard, pagination);
+        updateMetaInfo();
     }
 
     private HBox createListHeader(Button clearSortButton) {
@@ -107,12 +101,6 @@ public class StocksView extends VBox {
                 withGrow(new StocksUnrealizedReturnCard(gameService,
                         "exchange.stocks.unrealized.sub"))
         );
-    }
-
-    private Region createSpacer(double height) {
-        Region spacer = new Region();
-        spacer.setMinHeight(height);
-        return spacer;
     }
 
     private void updateMetaInfo() {

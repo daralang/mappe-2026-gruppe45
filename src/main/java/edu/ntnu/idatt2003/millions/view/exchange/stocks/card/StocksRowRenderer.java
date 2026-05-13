@@ -148,8 +148,6 @@ class StocksRowRenderer {
      * Builds the buy and optional sell buttons for the trade column.
      *
      * <p>Always shows a buy button that delegates to {@link PortfolioController}.
-     * Shows a sell button when the player holds at least one {@link Share} of the stock,
-     * delegating to {@link PortfolioController} with the first owned position.
      *
      * @param stock the stock the buttons act on
      * @return an {@link HBox} containing the action buttons
@@ -159,17 +157,6 @@ class StocksRowRenderer {
         buyButton.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
         buyButton.setOnAction(e -> controller.openBuyDialog(stock));
 
-        HBox buttons = new HBox(4, buyButton);
-
-        List<Share> shares = gameService.getPlayer().getPortfolio().getShares(stock.getSymbol());
-        if (!shares.isEmpty()) {
-            Share share = shares.getFirst();
-            Button sellButton = new Button(LanguageManager.get("exchange.stocks.sell"));
-            sellButton.getStyleClass().addAll("holdings-action-link", "holdings-action-sell");
-            sellButton.setOnAction(e -> controller.openSellDialog(share));
-            buttons.getChildren().add(sellButton);
-        }
-
-        return buttons;
+        return new HBox(4, buyButton);
     }
 }
