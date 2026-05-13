@@ -699,5 +699,55 @@ class PlayerTest {
             assertEquals(0, moneyBefore.compareTo(player.getMoney()));
             assertEquals(loanCountBefore, player.getActiveLoans().size());
         }
+
+        @Test
+        @DisplayName("repayLoan() removes the loan from active loans")
+        void repayLoanRemovesFromActiveLoans() {
+            // Arrange
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
+            player.takeLoan(loan, converter);
+            // Act
+            player.repayLoan(loan);
+            // Assert
+            assertFalse(player.getActiveLoans().contains(loan));
+        }
+
+        @Test
+        @DisplayName("repayLoan() deducts the principal from player money")
+        void repayLoanDeductsMoney() {
+            // Arrange
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
+            player.takeLoan(loan, converter); // money: 1000 + 200 = 1200
+            BigDecimal moneyAfterTake = player.getMoney();
+            // Act
+            player.repayLoan(loan); // money: 1200 - 200 = 1000
+            // Assert
+            assertEquals(0, moneyAfterTake.subtract(new BigDecimal("200.00")).compareTo(player.getMoney()));
+        }
+
+        @Test
+        @DisplayName("repayLoan() throws when player cannot afford the principal")
+        void repayLoanThrowsWhenInsufficientFunds() {
+            // Arrange — give player a tiny balance by draining most of their cash
+            Player broke = new Player("Broke", new BigDecimal("100.00"));
+            // Manually add a loan with a principal larger than cash using internal via takeLoan
+            // Use a fresh offer with maxPrincipal matching the player's capacity
+            LoanOffer bigOffer = new LoanOffer("big", new BigDecimal("0.01"), 4,
+                    new BigDecimal("50.00"), edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel.LOW);
+            Loan loan = new Loan(bigOffer, new BigDecimal("50.00"), 0);
+            broke.takeLoan(loan, converter); // money: 100 + 50 = 150
+            broke.withdrawMoney(new BigDecimal("140.00")); // money: 10, principal: 50
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () -> broke.repayLoan(loan));
+        }
+
+        @Test
+        @DisplayName("repayLoan() throws when loan is not in the active list")
+        void repayLoanThrowsForUnknownLoan() {
+            // Arrange
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
+            // Act & Assert — loan never taken, so not in active list
+            assertThrows(IllegalArgumentException.class, () -> player.repayLoan(loan));
+        }
     }
 }

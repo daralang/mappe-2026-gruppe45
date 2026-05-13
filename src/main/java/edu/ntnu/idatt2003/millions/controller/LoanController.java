@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.LoanPreviewService;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanApplicationDialog;
+import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.RepayLoanDialog;
 
 import java.math.BigDecimal;
 
@@ -45,8 +46,19 @@ public class LoanController {
         ref[0].show();
     }
 
-    public void openRepayDialog(Loan loan) {
-        // TODO: implement repay dialog
+    /**
+     * Opens the repay dialog for the given loan.
+     *
+     * @param loan      the loan to repay
+     * @param loanIndex per-type index used for display (e.g. 2 → "Standard loan #2")
+     */
+    public void openRepayDialog(Loan loan, int loanIndex) {
+        Player player = gameService.getPlayer();
+        int currentWeek = gameService.getExchange().getWeek();
+        RepayLoanDialog[] ref = new RepayLoanDialog[1];
+        ref[0] = new RepayLoanDialog(loan, loanIndex, player, currentWeek);
+        ref[0].setOnConfirm(l -> handleRepayConfirm(ref[0], l));
+        ref[0].show();
     }
 
     public void openLoanDetailsModal(Loan loan) {
@@ -59,6 +71,15 @@ public class LoanController {
             dialog.close();
         } catch (ExcessiveDebtException e) {
             dialog.showError(e.getMessage());
+        } catch (Exception e) {
+            dialog.showError(e.getMessage());
+        }
+    }
+
+    private void handleRepayConfirm(RepayLoanDialog dialog, Loan loan) {
+        try {
+            gameService.repayLoan(loan);
+            dialog.close();
         } catch (Exception e) {
             dialog.showError(e.getMessage());
         }

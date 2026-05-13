@@ -278,6 +278,27 @@ public class Player {
     }
 
     /**
+     * Repays a loan in full: withdraws the principal from the player's cash
+     * balance and removes the loan from the active list.
+     *
+     * @param loan the loan to repay; must be an active loan owned by this player
+     * @throws NullPointerException     if loan is null
+     * @throws IllegalArgumentException if the player cannot afford the repayment
+     * @throws IllegalArgumentException if the loan is not in the active list
+     */
+    public void repayLoan(Loan loan) {
+        Objects.requireNonNull(loan, "Loan cannot be null");
+        if (money.compareTo(loan.principal()) < 0) {
+            throw new IllegalArgumentException(
+                    "Insufficient funds to repay loan of " + loan.principal() + " NOK");
+        }
+        if (!activeLoansInternal().remove(loan)) {
+            throw new IllegalArgumentException("Loan is not an active loan for this player");
+        }
+        money = money.subtract(loan.principal());
+    }
+
+    /**
      * Deducts one week's interest for every active loan from the player's
      * cash balance. If the balance is insufficient to cover the full amount,
      * the balance is reduced to zero and the unpaid shortfall is returned so
