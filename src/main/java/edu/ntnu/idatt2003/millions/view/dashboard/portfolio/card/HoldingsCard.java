@@ -23,6 +23,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 import java.math.BigDecimal;
@@ -78,7 +79,7 @@ public class HoldingsCard extends PaginatedCard {
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
-        this.metadataRow = new SearchMetadataRow(clearSortButton);
+        this.metadataRow = new SearchMetadataRow();
 
         totalDivider.getStyleClass().add("holdings-total-divider");
         totalGrid.setHgap(20);
@@ -88,11 +89,18 @@ public class HoldingsCard extends PaginatedCard {
         StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
         setSpacing(16);
 
-        getChildren().addAll(title, createSearchBar(), table.asNode(), pagination, totalDivider, totalGrid);
+        getChildren().addAll(title, buildSearchRow(clearSortButton), table.asNode(), pagination, totalDivider, totalGrid);
         refresh();
     }
 
-    private SearchBar createSearchBar() {
+    /**
+     * Builds a row containing the search bar (expanding) and the clear-sort button
+     * (right-aligned, visible only when a sort is active).
+     *
+     * @param clearSortButton the button returned by {@link edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable#createClearSortButton}
+     * @return the configured search row
+     */
+    private HBox buildSearchRow(Button clearSortButton) {
         SearchBar searchBar = new SearchBar(
                 "search.placeholder",
                 "search.button",
@@ -102,7 +110,11 @@ public class HoldingsCard extends PaginatedCard {
                 },
                 metadataRow);
         searchBar.setMaxWidth(Double.MAX_VALUE);
-        return searchBar;
+        HBox.setHgrow(searchBar, Priority.ALWAYS);
+
+        HBox row = new HBox(8, searchBar, clearSortButton);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
     }
 
     /**
