@@ -13,7 +13,8 @@ import java.util.Locale;
  *
  * <p>Provides factory methods for percentage and amount change labels that
  * combine formatted text with colour styling via {@link ColourChange},
- * as well as plain string formatting helpers such as {@link #formatSignedPercent}.
+ * as well as plain string formatting helpers such as {@link #formatSignedPercent}
+ * and {@link #formatPlain}.
  */
 public class ChangeFormatter {
 
@@ -82,5 +83,18 @@ public class ChangeFormatter {
         label.getStyleClass().addAll(List.of(cssClasses));
         ColourChange.applyChangeStyle(label, value);
         return label;
+    }
+
+    /**
+     * Returns the given value as an unsigned, formatted number string using Norwegian locale.
+     *
+     * <p>Example output: {@code 1 234,56}
+     *
+     * @param value the value to format
+     * @return a plain formatted number string without sign or currency symbol
+     * @throws NullPointerException if value is null
+     */
+    public static String formatPlain(BigDecimal value) {
+        return AMOUNT_FORMAT.format(value);
     }
 }

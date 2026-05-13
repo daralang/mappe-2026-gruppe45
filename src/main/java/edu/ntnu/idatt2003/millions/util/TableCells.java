@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.util;
 
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.HPos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -71,6 +72,27 @@ public final class TableCells {
         Label label = new Label(text);
         label.getStyleClass().add("holdings-header");
         return label;
+    }
+
+    /**
+     * Creates a sortable header button with the shared {@code holdings-header} CSS class.
+     *
+     * <p>Unlike {@link #header(String)}, which returns a non-interactive {@link Label},
+     * this method returns a {@link Button} suitable for column headers that trigger
+     * a sort action when clicked.
+     *
+     * @param text      the header button text
+     * @param active    whether this column is the active sort column
+     * @param ascending whether the active sort direction is ascending
+     * @param onClick   the action to run when the button is clicked
+     * @return a styled sort header button
+     */
+    public static Button sortHeader(String text, boolean active, boolean ascending, Runnable onClick) {
+        String indicator = active ? (ascending ? " ↓ " : "  ↑") : " ↓↑";
+        Button button = new Button(text + indicator);
+        button.getStyleClass().add("holdings-header");
+        button.setOnAction(e -> onClick.run());
+        return button;
     }
 
     /**

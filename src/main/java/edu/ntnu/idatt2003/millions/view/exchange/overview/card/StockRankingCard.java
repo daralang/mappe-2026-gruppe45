@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.exchange.overview.card;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -11,10 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * A table component displaying a ranked list of stocks with their
@@ -33,16 +31,9 @@ public class StockRankingCard extends VBox {
     private final Label changeHeader;
 
     private static final double SYMBOL_WIDTH = 60;
-    private static final double PRICE_WIDTH  = 70;
+    private static final double PRICE_WIDTH = 70;
     private static final double CHANGE_WIDTH = 70;
-    private static final double NAME_WIDTH   = 70;
-
-    private static final DecimalFormat PRICE_FORMAT;
-
-    static {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("nb-NO"));
-        PRICE_FORMAT = new DecimalFormat("#,##0.00", symbols);
-    }
+    private static final double NAME_WIDTH = 70;
 
     /**
      * Constructs a StockRankingCard with a title and an initial list of stocks.
@@ -99,16 +90,13 @@ public class StockRankingCard extends VBox {
     }
 
     /**
-     * Creates a header label styled with the {@code holdings-header} CSS class,
-     * consistent with {@link edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.HoldingsCard}.
+     * Creates a header label via TableCells.
      *
      * @param text the label text
      * @return a styled header label
      */
     private Label addHeaderLabel(String text) {
-        Label label = new Label(text);
-        label.getStyleClass().add("holdings-header");
-        return label;
+        return TableCells.header(text);
     }
 
     /**
@@ -138,10 +126,10 @@ public class StockRankingCard extends VBox {
      */
     private HBox addRow(Stock stock) {
         Label symbolLabel = StyledText.detailValue(stock.getSymbol());
-        Label nameLabel   = StyledText.detailValue(stock.getCompany());
-        String formattedPrice = PRICE_FORMAT.format(stock.getSalesPrice())
+        Label nameLabel  = StyledText.detailValue(stock.getCompany());
+        String formattedPrice = ChangeFormatter.formatPlain(stock.getSalesPrice())
                 + " " + stock.getCurrency().getCurrencyCode();
-        Label priceLabel  = StyledText.detailValue(formattedPrice);
+        Label priceLabel = StyledText.detailValue(formattedPrice);
         Label changeLabel = ChangeFormatter.styledPercent(
                 stock.getWeeklyChangePercent(), "detail-value");
 
