@@ -2,6 +2,10 @@ package edu.ntnu.idatt2003.millions.model;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
+import edu.ntnu.idatt2003.millions.model.loan.Loan;
+import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
+import edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -13,6 +17,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
@@ -577,6 +582,122 @@ class PlayerTest {
 
             // Assert
             assertEquals(new BigDecimal("7500.00"), player.getPreviousNetWorth());
+        }
+    }
+
+    @Nested
+    @DisplayName("Loans")
+    class Loans {
+
+        private LoanOffer offer;
+
+        @BeforeEach
+        void setUpOffer() {
+            // simple offer with generous maxPrincipal so tests can isolate capacity logic
+            offer = new LoanOffer("test", new BigDecimal("0.01"), 10,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+        }
+
+        @Test
+        @DisplayName("getTotalDebt() returns zero when no active loans")
+        void getTotalDebtReturnsZeroWithNoLoans() {
+            // Act & Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getTotalDebt()));
+        }
+
+        @Test
+        @DisplayName("getTotalDebt() sums principals of multiple loans")
+        void getTotalDebtSumsMultipleLoans() {
+            // Arrange — player starts with 1000, capacity = 500
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00")), converter);
+            // After first loan: money=1200, capacity=600, available=400
+            player.takeLoan(new Loan(offer, new BigDecimal("150.00")), converter);
+            // Assert
+            assertEquals(0, new BigDecimal("350.00").compareTo(player.getTotalDebt()));
+        }
+
+        @Test
+        @DisplayName("getLoanCapacity() equals net worth times MAX_DEBT_RATIO")
+        void getLoanCapacityEqualsNetWorthTimesRatio() {
+            // Arrange
+            BigDecimal expected = player.getNetWorth(converter)
+                    .multiply(Player.MAX_DEBT_RATIO)
+                    .setScale(2, RoundingMode.HALF_UP);
+            // Act & Assert
+            assertEquals(0, expected.compareTo(player.getLoanCapacity(converter)));
+        }
+
+        @Test
+        @DisplayName("getAvailableLoanCapacity() equals loan capacity when no debt")
+        void getAvailableLoanCapacityEqualsCapacityWithNoDebt() {
+            // Act & Assert
+            assertEquals(0, player.getLoanCapacity(converter)
+                    .compareTo(player.getAvailableLoanCapacity(converter)));
+        }
+
+        @Test
+        @DisplayName("getAvailableLoanCapacity() decreases after taking a loan")
+        void getAvailableLoanCapacityDecreasesAfterLoan() {
+            // Arrange
+            BigDecimal before = player.getAvailableLoanCapacity(converter);
+            // Act
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00")), converter);
+            BigDecimal after = player.getAvailableLoanCapacity(converter);
+            // Assert
+            assertTrue(after.compareTo(before) < 0);
+        }
+
+        @Test
+        @DisplayName("takeLoan() increases player money by the principal")
+        void takeLoanIncreasesMoney() {
+            // Arrange
+            BigDecimal before = player.getMoney();
+            BigDecimal principal = new BigDecimal("300.00");
+            // Act
+            player.takeLoan(new Loan(offer, principal), converter);
+            // Assert
+            assertEquals(0, before.add(principal).compareTo(player.getMoney()));
+        }
+
+        @Test
+        @DisplayName("takeLoan() adds the loan to active loans")
+        void takeLoanAddsToActiveLoans() {
+            // Arrange
+            Loan loan = new Loan(offer, new BigDecimal("300.00"));
+            // Act
+            player.takeLoan(loan, converter);
+            // Assert
+            assertTrue(player.getActiveLoans().contains(loan));
+        }
+
+        @Test
+        @DisplayName("takeLoan() throws ExcessiveDebtException when limit would be breached")
+        void takeLoanThrowsWhenCapacityExceeded() {
+            // Arrange — player starts with 1000, capacity = 500; request 600 > 500
+            assertThrows(ExcessiveDebtException.class, () ->
+                    player.takeLoan(new Loan(offer, new BigDecimal("600.00")), converter));
+        }
+
+        @Test
+        @DisplayName("takeLoan() throws NullPointerException when loan is null")
+        void takeLoanThrowsWhenLoanIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    player.takeLoan(null, converter));
+        }
+
+        @Test
+        @DisplayName("takeLoan() does not modify money or active loans when it throws")
+        void takeLoanIsAtomic() {
+            // Arrange
+            BigDecimal moneyBefore = player.getMoney();
+            int loanCountBefore = player.getActiveLoans().size();
+            // Act — request 600 > capacity 500 → throws
+            assertThrows(ExcessiveDebtException.class, () ->
+                    player.takeLoan(new Loan(offer, new BigDecimal("600.00")), converter));
+            // Assert — state unchanged
+            assertEquals(0, moneyBefore.compareTo(player.getMoney()));
+            assertEquals(loanCountBefore, player.getActiveLoans().size());
         }
     }
 }

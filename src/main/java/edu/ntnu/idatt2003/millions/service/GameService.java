@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.file.stock.StockFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -297,21 +298,25 @@ public class GameService {
     }
 
     /**
-     * Credits the player's balance with the given loan amount and notifies observers.
+     * Creates a loan against the given offer, disburses the principal to the player,
+     * and notifies observers. Delegates all capacity and limit validation to
+     * {@link edu.ntnu.idatt2003.millions.model.player.Player#takeLoan}.
      *
      * @param offer  the loan offer the player is accepting
      * @param amount the principal to disburse; must be positive and within offer limits
-     * @throws NullPointerException     if either argument is null
+     * @return the created {@link Loan}
+     * @throws NullPointerException    if either argument is null
      * @throws IllegalArgumentException if amount exceeds the offer's maximum principal
+     * @throws edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException
+     *         if the loan would breach the player's debt-to-net-worth limit
      */
-    public void takeLoan(LoanOffer offer, BigDecimal amount) {
+    public Loan takeLoan(LoanOffer offer, BigDecimal amount) {
         Objects.requireNonNull(offer, "Offer cannot be null");
         Objects.requireNonNull(amount, "Amount cannot be null");
-        if (amount.compareTo(offer.maxPrincipal()) > 0) {
-            throw new IllegalArgumentException("Amount exceeds maximum for this offer");
-        }
-        player.addMoney(amount);
+        Loan loan = new Loan(offer, amount);
+        player.takeLoan(loan, exchange.getCurrencyConverter());
         notifyObservers();
+        return loan;
     }
 
     /**

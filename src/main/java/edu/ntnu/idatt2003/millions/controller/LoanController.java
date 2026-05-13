@@ -1,6 +1,9 @@
 package edu.ntnu.idatt2003.millions.controller;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
+import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.LoanPreviewService;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanApplicationDialog;
@@ -27,13 +30,14 @@ public class LoanController {
      * @param offer the loan offer the player wants to apply for
      */
     public void openLoanDialog(LoanOffer offer) {
-        BigDecimal netWorth = gameService.getPlayer()
-                .getNetWorth(gameService.getCurrencyConverter());
+        Player player = gameService.getPlayer();
+        CurrencyConverter converter = gameService.getCurrencyConverter();
+        BigDecimal availableLoanCapacity = player.getAvailableLoanCapacity(converter);
 
         LoanApplicationDialog[] ref = new LoanApplicationDialog[1];
         ref[0] = new LoanApplicationDialog(
                 offer,
-                netWorth,
+                availableLoanCapacity,
                 amount -> previewService.preview(offer, amount),
                 amount -> handleConfirm(ref[0], offer, amount)
         );
@@ -44,6 +48,8 @@ public class LoanController {
         try {
             gameService.takeLoan(offer, amount);
             dialog.close();
+        } catch (ExcessiveDebtException e) {
+            dialog.showError(e.getMessage());
         } catch (Exception e) {
             dialog.showError(e.getMessage());
         }

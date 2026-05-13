@@ -39,6 +39,9 @@
     -status-speculator:      #a78bfa;
     -status-speculator-bg:   rgba(167, 139, 250, 0.15);
 
+    /* Shadows */
+    -shadow-subtle:  rgba(0,0,0,0.12);
+
     /* Footer-specific surface */
     -footer-bg:      #1a1a1a;
     -footer-text:    white;
