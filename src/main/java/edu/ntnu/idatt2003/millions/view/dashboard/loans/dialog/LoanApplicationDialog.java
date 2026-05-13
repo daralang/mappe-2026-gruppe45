@@ -54,7 +54,8 @@ public class LoanApplicationDialog extends Modal {
     }
 
     private final LoanOffer offer;
-    private final BigDecimal currentNetWorth;
+    private final BigDecimal availableLoanCapacity;
+    private final BigDecimal effectiveMax;
     private final Function<BigDecimal, LoanPreview> previewCallback;
     private final Consumer<BigDecimal> confirmCallback;
 
@@ -66,17 +67,18 @@ public class LoanApplicationDialog extends Modal {
     private boolean updatingAmount = false;
 
     /**
-     * @param offer            the loan product the player is applying for
-     * @param currentNetWorth  player's net worth snapshot at dialog-open time (NOK)
-     * @param previewCallback  pure calculation callback: principal → {@link LoanPreview}
-     * @param confirmCallback  callback invoked with the chosen principal when confirmed
+     * @param offer                  the loan product the player is applying for
+     * @param availableLoanCapacity  player's remaining borrowing capacity at dialog-open time (NOK)
+     * @param previewCallback        pure calculation callback: principal → {@link LoanPreview}
+     * @param confirmCallback        callback invoked with the chosen principal when confirmed
      */
     public LoanApplicationDialog(LoanOffer offer,
-                                 BigDecimal currentNetWorth,
+                                 BigDecimal availableLoanCapacity,
                                  Function<BigDecimal, LoanPreview> previewCallback,
                                  Consumer<BigDecimal> confirmCallback) {
         this.offer = offer;
-        this.currentNetWorth = currentNetWorth;
+        this.availableLoanCapacity = availableLoanCapacity;
+        this.effectiveMax = offer.maxPrincipal().min(availableLoanCapacity);
         this.previewCallback = previewCallback;
         this.confirmCallback = confirmCallback;
     }
@@ -139,14 +141,14 @@ public class LoanApplicationDialog extends Modal {
                 MessageFormat.format(
                         LanguageManager.get("loans.dialog.amount.range"),
                         NUMBER_FORMAT.format(BigDecimal.ZERO),
-                        NUMBER_FORMAT.format(offer.maxPrincipal())));
+                        NUMBER_FORMAT.format(effectiveMax)));
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox labelRow = new HBox(labelLeft, spacer, labelRight);
 
         amountSlider.getStyleClass().add("loan-amount-slider");
         amountSlider.setMin(0);
-        amountSlider.setMax(offer.maxPrincipal().doubleValue());
+        amountSlider.setMax(effectiveMax.doubleValue());
         amountSlider.setValue(0);
         amountSlider.setMajorTickUnit(1000);
         amountSlider.setMinorTickCount(0);
@@ -247,15 +249,16 @@ public class LoanApplicationDialog extends Modal {
             return;
         }
 
+        if (amount.compareTo(availableLoanCapacity) > 0) {
+            renderEmptySummary();
+            showError(LanguageManager.get("loans.dialog.error.exceedsCapacity"));
+            setConfirmEnabled(false);
+            return;
+        }
+
         LoanPreview preview = previewCallback.apply(amount);
         renderSummary(preview);
-
-        if (!offer.isEligible(currentNetWorth, amount)) {
-            showError(LanguageManager.get("loans.dialog.error.insufficientCollateral"));
-            setConfirmEnabled(false);
-        } else {
-            setConfirmEnabled(true);
-        }
+        setConfirmEnabled(true);
     }
 
     private void renderSummary(LoanPreview preview) {

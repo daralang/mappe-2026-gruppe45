@@ -266,8 +266,7 @@
     -fx-background-color: -text-primary, -surface;
     -fx-background-insets: 0, 1.5;
     -fx-background-radius: 10, 10;
-    /* one-off shadow — no shadow token exists for this use case */
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 6, 0, 0, 1);
+    -fx-effect: dropshadow(gaussian, -shadow-subtle, 6, 0, 0, 1);
 }
 
 .loan-amount-slider .thumb:hover {
