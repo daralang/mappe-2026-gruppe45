@@ -114,13 +114,21 @@ class StocksRowRenderer {
     }
 
     /**
-     * Formats the lowest and highest prices from the latest price entries.
+     * Formats the lowest and highest prices from the latest
+     * {@value #HIGH_LOW_WEEKS} historical price entries.
+     *
+     * <p>Returns {@code "—"} when the stock has no historical price data,
+     * avoiding a {@link java.util.NoSuchElementException} on an empty stream.
      *
      * @param stock the stock to read prices from
-     * @return formatted low and high values
+     * @return a formatted {@code "low / high"} string, or {@code "—"} if
+     *         insufficient price history is available
      */
     private String formatHighLow(Stock stock) {
         List<BigDecimal> prices = lastPrices(stock, HIGH_LOW_WEEKS);
+        if (prices.isEmpty()) {
+            return "—";
+        }
         BigDecimal low = prices.stream().min(BigDecimal::compareTo).orElseThrow();
         BigDecimal high = prices.stream().max(BigDecimal::compareTo).orElseThrow();
         return formatWhole(low) + " / " + formatWhole(high);
