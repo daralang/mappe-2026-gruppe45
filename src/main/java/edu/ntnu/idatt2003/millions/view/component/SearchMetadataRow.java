@@ -1,41 +1,33 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 
 import java.text.MessageFormat;
 import java.util.Objects;
 
 /**
- * Reusable metadata row for search sections.
+ * Reusable metadata row shown below a search bar.
  *
- * <p>Displays a left-aligned result count label and a right-aligned clear-sort
- * {@link Button}. Cards update the label with {@link #update(String, int, int)}
- * after filtering, while {@code SortColumnTable} owns the clear-sort button state.</p>
+ * <p>Displays a left-aligned result count label that is hidden when the
+ * filtered count is zero. Cards call {@link #update(String, int, int)}
+ * after each filter operation to keep the label in sync.</p>
+ *
+ * <p>The clear-sort button is intentionally <em>not</em> part of this row.
+ * It lives in the card's outer layout on the same line as the search bar
+ * so it is always visible alongside the other table controls.</p>
  */
 public class SearchMetadataRow extends HBox {
 
     private final StyledText statusLabel = StyledText.widgetLabel();
 
     /**
-     * Creates a metadata row with a right-aligned clear-sort button.
-     *
-     * @param clearSortButton the button used to clear the active table sort
-     * @throws NullPointerException if clearSortButton is null
+     * Creates an empty metadata row. The status label is hidden until
+     * the first call to {@link #update(String, int, int)}.
      */
-    public SearchMetadataRow(Button clearSortButton) {
-        Objects.requireNonNull(clearSortButton, "Clear sort button cannot be null");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        setAlignment(Pos.CENTER_LEFT);
+    public SearchMetadataRow() {
         setMaxWidth(Double.MAX_VALUE);
-        getChildren().addAll(statusLabel, spacer, clearSortButton);
+        getChildren().add(statusLabel);
         setStatusVisible(false);
     }
 

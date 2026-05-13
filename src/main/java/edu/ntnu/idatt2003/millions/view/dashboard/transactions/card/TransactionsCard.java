@@ -23,7 +23,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -85,7 +84,7 @@ public class TransactionsCard extends PaginatedCard {
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
-        this.metadataRow = new SearchMetadataRow(clearSortButton);
+        this.metadataRow = new SearchMetadataRow();
         table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
 
         setSpacing(16);
@@ -98,11 +97,22 @@ public class TransactionsCard extends PaginatedCard {
         weekRangeFilter.fromWeekProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
         weekRangeFilter.toWeekProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
 
-        getChildren().addAll(title, buildFilterRow(), table.asNode(), pagination);
+        getChildren().addAll(title, buildFilterRow(clearSortButton), table.asNode(), pagination);
         refresh();
     }
 
-    private HBox buildFilterRow() {
+    /**
+     * Builds the filter row that sits between the title and the table.
+     *
+     * <p>The search bar expands to fill available space. The type filter,
+     * week range filter and clear-sort button follow on the right.</p>
+     *
+     * @param clearSortButton the button returned by
+     *                        {@link edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable#createClearSortButton},
+     *                        visible only when a sort is active
+     * @return the configured filter row
+     */
+    private HBox buildFilterRow(Button clearSortButton) {
         SearchBar searchBar = new SearchBar(
                 "search.placeholder",
                 "search.button",
@@ -114,10 +124,7 @@ public class TransactionsCard extends PaginatedCard {
         searchBar.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(searchBar, Priority.ALWAYS);
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox row = new HBox(16, searchBar, typeFilter, weekRangeFilter, spacer);
+        HBox row = new HBox(16, searchBar, typeFilter, weekRangeFilter, clearSortButton);
         row.setAlignment(Pos.CENTER_LEFT);
         row.getStyleClass().add("transactions-filter-row");
         return row;

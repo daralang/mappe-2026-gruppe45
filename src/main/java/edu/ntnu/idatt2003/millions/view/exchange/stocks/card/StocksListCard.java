@@ -6,6 +6,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
+import edu.ntnu.idatt2003.millions.view.component.SearchMetadataRow;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.PaginatedCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
@@ -14,7 +15,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -41,8 +41,7 @@ public class StocksListCard extends PaginatedCard {
     private final StocksRowRenderer rowRenderer;
     private final SortColumnTable<StocksSort.SortColumn> table;
     private final StyledText title;
-    private final StyledText statusLabel = StyledText.widgetLabel();
-    private final Button clearSortButton;
+    private final SearchMetadataRow metadataRow;
 
     private List<Stock> allStocks = new ArrayList<>();
     private List<Stock> filteredStocks = new ArrayList<>();
@@ -68,43 +67,40 @@ public class StocksListCard extends PaginatedCard {
         this.rowRenderer = new StocksRowRenderer(gameService, controller);
         this.table = new SortColumnTable<>(sort::getColumnDefs, 10);
         this.title = StyledText.sectionTitle(LanguageManager.get("exchange.stocks.market"));
-        this.clearSortButton = table.createClearSortButton(
+        Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
+        this.metadataRow = new SearchMetadataRow();
 
         setSpacing(12);
         setMinWidth(0);
         table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
 
-        getChildren().addAll(title, createSearchBar(), table.asNode());
+        getChildren().addAll(title, buildSearchRow(clearSortButton), table.asNode());
         onGameUpdated();
     }
 
-    private SearchBar createSearchBar() {
+    /**
+     * Builds a row containing the search bar (expanding) and the clear-sort button
+     * (right-aligned, visible only when a sort is active).
+     *
+     * @param clearSortButton the button returned by
+     *                        {@link edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable#createClearSortButton}
+     * @return the configured search row
+     */
+    private HBox buildSearchRow(Button clearSortButton) {
         SearchBar searchBar = new SearchBar(
                 "search.placeholder",
                 "search.button",
                 this::filter,
-                createMetadataRow());
+                metadataRow);
         searchBar.setMaxWidth(Double.MAX_VALUE);
-        return searchBar;
+        HBox.setHgrow(searchBar, Priority.ALWAYS);
+
+        HBox row = new HBox(8, searchBar, clearSortButton);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
     }
 
-    private HBox createMetadataRow() {
-        Region statusSpacer = new Region();
-        HBox.setHgrow(statusSpacer, Priority.ALWAYS);
-
-        HBox metadataRow = new HBox(statusLabel, statusSpacer, clearSortButton);
-        metadataRow.setAlignment(Pos.CENTER_LEFT);
-        metadataRow.setMaxWidth(Double.MAX_VALUE);
-        return metadataRow;
-    }
-
-    /**
-     * Filters the table to stocks matching the given term and refreshes the display.
-     * Resets to the first page. An empty or blank term clears the filter.
-     *
-     * @param term the search term to filter by
-     */
     /**
      * Filters the table to stocks matching the given term and refreshes the display.
      * Resets to the first page. An empty or blank term clears the filter.
@@ -143,7 +139,7 @@ public class StocksListCard extends PaginatedCard {
 
         table.clearRows();
         table.refreshHeader(this::refresh);
-        updateStatus();
+        metadataRow.update("exchange.stocks.status", filteredStocks.size(), allStocks.size());
 
         int fromIndex = currentPage * PAGE_SIZE;
         int toIndex = Math.min(fromIndex + PAGE_SIZE, filteredStocks.size());
@@ -174,45 +170,15 @@ public class StocksListCard extends PaginatedCard {
     }
 
     /**
-     * Updates the status label to reflect the current filtered and total stock counts.
-     * Uses the {@code exchange.stocks.status} i18n key with two positional arguments.
-     */
-    private void updateStatus() {
-        statusLabel.setText(MessageFormat.format(
-                LanguageManager.get("exchange.stocks.status"),
-                filteredStocks.size(),
-                allStocks.size()));
-    }
-
-    /**
      * Rebuilds {@link #filteredStocks} from {@link #allStocks} and the current filter
      * term, then clamps {@link #currentPage} into the valid range. Does not reset the page.
-     * Used by {@link #applyFilter}, {@link #onGameUpdated} and sort-clear flows.
+     * Called by {@link #filter}, {@link #onGameUpdated} and sort-clear flows.
      */
     private void syncFilteredList() {
         filteredStocks = currentFilterTerm.isBlank()
                 ? new ArrayList<>(allStocks)
                 : new ArrayList<>(gameService.getExchange().findStocks(currentFilterTerm));
         clampCurrentPage(filteredStocks.size());
-    }
-
-    /**
-     * Returns whether a sort column is currently active.
-     * Delegates to {@link SortColumnTable#isSortActive()}.
-     *
-     * @return {@code true} if a sort is active, {@code false} otherwise
-     */
-    public boolean isSortActive() {
-        return table.isSortActive();
-    }
-
-    /**
-     * Clears the active sort and refreshes the table, restoring the original
-     * exchange order. Delegates to {@link SortColumnTable#clearSort()}.
-     */
-    public void clearSort() {
-        table.clearSort();
-        refresh();
     }
 
     /**
