@@ -8,7 +8,7 @@ import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
+import edu.ntnu.idatt2003.millions.view.component.card.WidgetCard;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Pos;
 import javafx.scene.chart.AreaChart;

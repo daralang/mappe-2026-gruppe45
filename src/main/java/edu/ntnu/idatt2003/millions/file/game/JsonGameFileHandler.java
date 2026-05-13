@@ -36,7 +36,7 @@ public class JsonGameFileHandler implements GameFileHandler {
     /**
      * Constructs a new JsonGameFileHandler.
      * Configures Gson with a custom serializer for transactions
-     * and pretty printing for human-readable output.
+     * and pretty printing for readable output.
      */
     public JsonGameFileHandler() {
         this.gson = new GsonBuilder()

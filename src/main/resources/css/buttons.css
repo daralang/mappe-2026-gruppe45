@@ -1,0 +1,35 @@
+.clear-sort-button {
+    -fx-min-height: 35;
+    -fx-pref-height: 35;
+    -fx-max-height: 35;
+    -fx-background-insets: 0;
+    -fx-background-radius: 10;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-padding: 0 22 0 22;
+    -fx-cursor: hand;
+    -fx-border-radius: 10;
+    -fx-background-color: white;
+    -fx-border-color: #EDEDED;
+    -fx-text-fill: black;
+}
+.clear-sort-button:hover {
+    -fx-background-color: -primary-dark;
+    -fx-text-fill: white;
+}
+
+ .pagination-button {
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-padding: 5 10 5 10;
+    -fx-cursor: hand;
+    -fx-border-color: black;
+    -fx-background-color: white;
+    -fx-text-fill: black;
+}
+.pagination-button:hover {
+    -fx-background-color: black;
+    -fx-text-fill: white;
+}
