@@ -32,10 +32,12 @@ public class MainController {
         this.stage = stage;
         this.gameService = gameService;
         PortfolioController portfolioController = new PortfolioController(gameService);
+        LoanController loanController = new LoanController(gameService);
         this.view = new MainView(
                 stage,
                 gameService,
                 portfolioController,
+                loanController,
                 this::handleSaveGame,
                 this::handleExitGame,
                 this::handleAdvanceWeek

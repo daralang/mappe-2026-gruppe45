@@ -120,7 +120,7 @@
 }
 
 .modal-summary-row .detail-label {
-    -fx-text-fill: -text-primary;
+    -fx-text-fill: -text-muted;
 }
 
 .modal-summary-total {
@@ -219,6 +219,14 @@
     -fx-text-fill: -danger-text;
 }
 
+.modal-info-warning {
+    -fx-background-color: -warning-bg;
+}
+
+.modal-info-warning .detail-label {
+    -fx-text-fill: -warning-text;
+}
+
 .modal-success-icon {
     -fx-background-color: -success-bg;
     -fx-text-fill: -success-text;
@@ -242,4 +250,38 @@
 
 .modal-header-success .modal-title {
     -fx-text-fill: -success-text;
+}
+
+/* ─── Loan amount slider ─────────────────────────────────────────────── */
+
+/* Make the built-in track transparent so the custom overlay regions show through */
+.loan-amount-slider .track {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 2;
+    -fx-pref-height: 4;
+}
+
+.loan-amount-slider .thumb {
+    -fx-background-color: -text-primary, -surface;
+    -fx-background-insets: 0, 1.5;
+    -fx-background-radius: 10, 10;
+    -fx-effect: dropshadow(gaussian, -shadow-subtle, 6, 0, 0, 1);
+}
+
+.loan-amount-slider .thumb:hover {
+    -fx-background-color: -text-primary, -surface-alt;
+    -fx-background-insets: 0, 1.5;
+}
+
+/* Full-width track backdrop — the "empty" (right) portion */
+.loan-amount-slider-track-empty {
+    -fx-background-color: -border;
+    -fx-background-radius: 2;
+}
+
+/* Proportionally-bound fill — the "filled" (left) portion */
+.loan-amount-slider-track-fill {
+    -fx-background-color: -text-primary;
+    -fx-background-radius: 2;
 }

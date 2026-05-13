@@ -8,6 +8,8 @@ import edu.ntnu.idatt2003.millions.file.stock.StockFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.loan.Loan;
+import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -253,6 +255,7 @@ public class GameService {
         CurrencyConverter converter = exchange.getCurrencyConverter();
         player.setPreviousNetWorth(player.getNetWorth(converter));
         exchange.advance();
+        player.collectWeeklyInterest(); // TODO: handle shortfall with forced share sales
         player.recordNetWorth(converter);
         notifyObservers();
     }
@@ -293,6 +296,42 @@ public class GameService {
      */
     public BigDecimal getPreviousNetWorth() {
         return player.getPreviousNetWorth();
+    }
+
+    /**
+     * Creates a loan against the given offer, disburses the principal to the player,
+     * and notifies observers. Delegates all capacity and limit validation to
+     * {@link edu.ntnu.idatt2003.millions.model.player.Player#takeLoan}.
+     *
+     * @param offer  the loan offer the player is accepting
+     * @param amount the principal to disburse; must be positive and within offer limits
+     * @return the created {@link Loan}
+     * @throws NullPointerException    if either argument is null
+     * @throws IllegalArgumentException if amount exceeds the offer's maximum principal
+     * @throws edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException
+     *         if the loan would breach the player's debt-to-net-worth limit
+     */
+    public Loan takeLoan(LoanOffer offer, BigDecimal amount) {
+        Objects.requireNonNull(offer, "Offer cannot be null");
+        Objects.requireNonNull(amount, "Amount cannot be null");
+        Loan loan = new Loan(offer, amount, exchange.getWeek());
+        player.takeLoan(loan, exchange.getCurrencyConverter());
+        notifyObservers();
+        return loan;
+    }
+
+    /**
+     * Repays the given loan in full, withdrawing the principal from the player's
+     * cash balance and removing the loan from their active list.
+     *
+     * @param loan the loan to repay
+     * @throws NullPointerException     if loan is null
+     * @throws IllegalArgumentException if the player cannot afford the repayment
+     */
+    public void repayLoan(Loan loan) {
+        Objects.requireNonNull(loan, "Loan cannot be null");
+        player.repayLoan(loan);
+        notifyObservers();
     }
 
     /**

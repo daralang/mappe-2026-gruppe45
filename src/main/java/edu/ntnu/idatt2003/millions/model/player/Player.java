@@ -1,6 +1,8 @@
 package edu.ntnu.idatt2003.millions.model.player;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
+import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 
 import java.math.BigDecimal;
@@ -15,12 +17,20 @@ import java.util.Objects;
  * and a {@link TransactionArchive} of committed transactions.
  */
 public class Player {
+
+    /**
+     * Maximum ratio of total outstanding loan debt to current net worth.
+     * A player may not borrow more than this fraction of their net worth in total.
+     */
+    public static final BigDecimal MAX_DEBT_RATIO = new BigDecimal("0.50");
+
     private final String name;
     private final BigDecimal startingMoney;
     private BigDecimal money;
 
     private final Portfolio portfolio;
     private final TransactionArchive transactionArchive;
+    private List<Loan> activeLoans;
 
     private BigDecimal previousNetWorth;
     private List<BigDecimal> netWorthHistory;
@@ -47,6 +57,7 @@ public class Player {
 
         this.portfolio = new Portfolio();
         this.transactionArchive = new TransactionArchive();
+        this.activeLoans = new ArrayList<>();
 
         this.netWorthHistory = new ArrayList<>();
         netWorthHistory.add(startingMoney);
@@ -184,6 +195,127 @@ public class Player {
      */
     public void setPreviousNetWorth(BigDecimal previousNetWorth) {
         this.previousNetWorth = previousNetWorth;
+    }
+
+    /**
+     * Returns a defensive copy of the player's active loans.
+     *
+     * @return immutable snapshot of active loans
+     */
+    private List<Loan> activeLoansInternal() {
+        if (activeLoans == null) activeLoans = new ArrayList<>();
+        return activeLoans;
+    }
+
+    public List<Loan> getActiveLoans() {
+        return new ArrayList<>(activeLoansInternal());
+    }
+
+    /**
+     * Returns the sum of all outstanding loan principals.
+     *
+     * @return total debt in NOK; zero if no active loans
+     */
+    public BigDecimal getTotalDebt() {
+        return activeLoansInternal().stream()
+                .map(Loan::principal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Returns the maximum total debt the player may carry, equal to
+     * {@link #MAX_DEBT_RATIO} of their current net worth.
+     *
+     * @param converter the currency converter used to compute net worth
+     * @return loan capacity in NOK
+     * @throws NullPointerException if converter is null
+     */
+    public BigDecimal getLoanCapacity(CurrencyConverter converter) {
+        return getNetWorth(converter)
+                .multiply(MAX_DEBT_RATIO)
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Returns how much additional debt the player may take on right now.
+     * Equal to {@link #getLoanCapacity} minus {@link #getTotalDebt}, floored at zero.
+     *
+     * @param converter the currency converter used to compute net worth
+     * @return available borrowing capacity in NOK; never negative
+     * @throws NullPointerException if converter is null
+     */
+    public BigDecimal getAvailableLoanCapacity(CurrencyConverter converter) {
+        return getLoanCapacity(converter).subtract(getTotalDebt()).max(BigDecimal.ZERO);
+    }
+
+    /**
+     * Disburses a loan to the player: credits their balance with the principal
+     * and records the loan as an active debt.
+     *
+     * <p>The combined total of existing debt plus this loan's principal must not
+     * exceed {@link #MAX_DEBT_RATIO} of the player's current net worth. If it
+     * would, an {@link ExcessiveDebtException} is thrown and no state is mutated.
+     *
+     * @param loan      the loan to take; must not be null
+     * @param converter the currency converter used to evaluate net worth
+     * @throws NullPointerException    if loan or converter is null
+     * @throws ExcessiveDebtException  if taking the loan would breach the debt ratio
+     */
+    public void takeLoan(Loan loan, CurrencyConverter converter) {
+        Objects.requireNonNull(loan, "Loan cannot be null");
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        BigDecimal newTotalDebt = getTotalDebt().add(loan.principal());
+        BigDecimal capacity = getLoanCapacity(converter);
+        if (newTotalDebt.compareTo(capacity) > 0) {
+            throw new ExcessiveDebtException(
+                    "Loan of " + loan.principal() + " NOK would bring total debt to "
+                    + newTotalDebt + " NOK, exceeding the "
+                    + MAX_DEBT_RATIO.multiply(BigDecimal.valueOf(100)).stripTrailingZeros().toPlainString()
+                    + "% capacity of " + capacity + " NOK.");
+        }
+        addMoney(loan.principal());
+        activeLoansInternal().add(loan);
+    }
+
+    /**
+     * Repays a loan in full: withdraws the principal from the player's cash
+     * balance and removes the loan from the active list.
+     *
+     * @param loan the loan to repay; must be an active loan owned by this player
+     * @throws NullPointerException     if loan is null
+     * @throws IllegalArgumentException if the player cannot afford the repayment
+     * @throws IllegalArgumentException if the loan is not in the active list
+     */
+    public void repayLoan(Loan loan) {
+        Objects.requireNonNull(loan, "Loan cannot be null");
+        if (money.compareTo(loan.principal()) < 0) {
+            throw new IllegalArgumentException(
+                    "Insufficient funds to repay loan of " + loan.principal() + " NOK");
+        }
+        if (!activeLoansInternal().remove(loan)) {
+            throw new IllegalArgumentException("Loan is not an active loan for this player");
+        }
+        money = money.subtract(loan.principal());
+    }
+
+    /**
+     * Deducts one week's interest for every active loan from the player's
+     * cash balance. If the balance is insufficient to cover the full amount,
+     * the balance is reduced to zero and the unpaid shortfall is returned so
+     * the caller can trigger forced share sales.
+     *
+     * @return the interest amount that could not be paid; zero when fully covered
+     */
+    public BigDecimal collectWeeklyInterest() {
+        BigDecimal total = activeLoansInternal().stream()
+                .map(l -> l.principal()
+                        .multiply(l.offer().weeklyInterestRate())
+                        .setScale(2, RoundingMode.HALF_UP))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (total.signum() == 0) return BigDecimal.ZERO;
+        BigDecimal paid = total.min(money);
+        money = money.subtract(paid);
+        return total.subtract(paid);
     }
 
     /**
