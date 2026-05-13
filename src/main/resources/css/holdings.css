@@ -5,6 +5,10 @@
     -fx-padding: 0 0 8 0;
 }
 
+.holdings-header-icon {
+    -fx-padding: -1 0 8 0;
+}
+
 Button.holdings-header {
     -fx-background-color: transparent;
     -fx-background-insets: 0;

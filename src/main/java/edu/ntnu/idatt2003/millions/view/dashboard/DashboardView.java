@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.PortfolioView;
+import edu.ntnu.idatt2003.millions.view.dashboard.transactions.TransactionsView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
@@ -22,6 +23,9 @@ public class DashboardView extends VBox {
     private final PortfolioController portfolioController;
     private final Runnable onExploreStocks;
     private final VBox contentArea;
+
+    private PortfolioView portfolioView;
+    private TransactionsView transactionsView;
 
     /**
      * Constructs a new DashboardView with a tab bar.
@@ -62,13 +66,17 @@ public class DashboardView extends VBox {
     }
 
     private void showPortfolio() {
-        contentArea.getChildren().setAll(
-                new PortfolioView(gameService, portfolioController, onExploreStocks));
+        if (portfolioView == null) {
+            portfolioView = new PortfolioView(gameService, portfolioController, onExploreStocks);
+        }
+        contentArea.getChildren().setAll(portfolioView);
     }
 
     private void showTransactions() {
-        contentArea.getChildren().clear(); // remove this when implementing setAll
-        // contentArea.getChildren().setAll(new TransactionsView(gameService));
+        if (transactionsView == null) {
+            transactionsView = new TransactionsView(gameService);
+        }
+        contentArea.getChildren().setAll(transactionsView);
     }
 
     private void showWatchlist() {

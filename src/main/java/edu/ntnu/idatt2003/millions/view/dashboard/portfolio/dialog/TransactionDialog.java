@@ -4,6 +4,8 @@ import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Modal;
+import edu.ntnu.idatt2003.millions.view.component.ModalActions;
+import edu.ntnu.idatt2003.millions.view.component.StockHeader;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.SummaryBox;
 import javafx.scene.control.Button;
@@ -100,15 +102,8 @@ public abstract class TransactionDialog extends Modal {
         return body;
     }
 
-    private VBox buildStockSection() {
-        StyledText label = StyledText.detailLabel(LanguageManager.get("dialog.stock.label"));
-
-        Label value = new Label(stock.getSymbol() + ", " + stock.getCompany());
-        value.getStyleClass().add("modal-section-value");
-
-        StyledText hint = StyledText.detailLabel(getStockHint());
-
-        return new VBox(4, label, value, hint);
+    private StockHeader buildStockSection() {
+        return new StockHeader(stock, getStockHint());
     }
 
     /**
@@ -117,12 +112,41 @@ public abstract class TransactionDialog extends Modal {
      */
     protected VBox buildQuantitySection() {
         StyledText label = StyledText.detailLabel(LanguageManager.get("dialog.quantity.label"));
-
-        quantityInput.getStyleClass().add("modal-input");
         quantityInput.setText(getInitialQuantity().toPlainString());
         quantityInput.textProperty().addListener((obs, oldVal, newVal) -> updateSummary());
+        return new VBox(6, label, buildStepperRow());
+    }
 
-        return new VBox(6, label, quantityInput);
+    /**
+     * Returns the [−] [input] [+] stepper group. Sets up CSS and grow
+     * constraints on {@code quantityInput}; callers are responsible for
+     * setting the initial text and change listener before or after.
+     */
+    protected HBox buildStepperRow() {
+        quantityInput.getStyleClass().addAll("modal-input", "quantity-stepper-input");
+        HBox.setHgrow(quantityInput, Priority.ALWAYS);
+
+        Button dec = new Button("−");
+        dec.getStyleClass().addAll("quantity-stepper-btn", "quantity-stepper-btn-dec");
+        dec.setOnAction(e -> stepQuantity(-1));
+
+        Button inc = new Button("+");
+        inc.getStyleClass().addAll("quantity-stepper-btn", "quantity-stepper-btn-inc");
+        inc.setOnAction(e -> stepQuantity(1));
+
+        HBox group = new HBox(1, dec, quantityInput, inc);
+        group.getStyleClass().add("quantity-stepper-group");
+        return group;
+    }
+
+    private void stepQuantity(int delta) {
+        BigDecimal current = getQuantity();
+        BigDecimal next = (current == null ? BigDecimal.ZERO : current)
+                .add(BigDecimal.valueOf(delta));
+        if (next.compareTo(BigDecimal.ONE) < 0) {
+            next = BigDecimal.ONE;
+        }
+        quantityInput.setText(next.stripTrailingZeros().toPlainString());
     }
 
     private VBox buildBalanceSection() {
@@ -152,14 +176,7 @@ public abstract class TransactionDialog extends Modal {
         confirmButton.getStyleClass().addAll("modal-button", getConfirmButtonStyleClass());
         confirmButton.setOnAction(e -> onConfirm());
 
-        HBox.setHgrow(cancel, Priority.ALWAYS);
-        HBox.setHgrow(confirmButton, Priority.ALWAYS);
-        cancel.setMaxWidth(Double.MAX_VALUE);
-        confirmButton.setMaxWidth(Double.MAX_VALUE);
-
-        HBox actions = new HBox(cancel, confirmButton);
-        actions.getStyleClass().add("modal-actions");
-        return actions;
+        return ModalActions.row(cancel, confirmButton);
     }
 
     /**

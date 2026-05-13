@@ -259,6 +259,91 @@ class PortfolioTest {
     }
 
     @Nested
+    @DisplayName("addShare merge logic")
+    class AddShareMergeLogic {
+
+        @Test
+        @DisplayName("Should return true when adding a second different share object with the same stock symbol")
+        void returnsTrueWhenAddingSecondShareWithSameSymbol() {
+            // Arrange
+            portfolio.addShare(share);
+            Share second = new Share(share.getStock(), new BigDecimal("5"), new BigDecimal("80"));
+            // Act
+            boolean result = portfolio.addShare(second);
+            // Assert
+            assertTrue(result);
+        }
+
+        @Test
+        @DisplayName("Should keep only one share per stock symbol after two purchases")
+        void portfolioHasOneShareAfterTwoPurchasesOfSameStock() {
+            // Arrange
+            portfolio.addShare(share);
+            Share second = new Share(share.getStock(), new BigDecimal("5"), new BigDecimal("80"));
+            // Act
+            portfolio.addShare(second);
+            // Assert
+            assertEquals(1, portfolio.getShares().size());
+        }
+
+        @Test
+        @DisplayName("Should sum quantities when merging two shares of the same stock")
+        void mergedShareHasCorrectQuantityAfterTwoPurchases() {
+            // Arrange
+            portfolio.addShare(share);
+            Share second = new Share(share.getStock(), new BigDecimal("5"), new BigDecimal("80"));
+            portfolio.addShare(second);
+            // Act
+            Share merged = portfolio.getShares().getFirst();
+            // Assert
+            assertEquals(0, new BigDecimal("15").compareTo(merged.getQuantity()));
+        }
+
+        @Test
+        @DisplayName("Should compute weighted-average purchase price (GAV) when merging two shares")
+        void mergedShareHasCorrectGavAfterTwoPurchases() {
+            // Arrange: share = qty 10 @ 50, second = qty 5 @ 80
+            // GAV = (10×50 + 5×80) / (10+5) = 900 / 15 = 60.0000
+            portfolio.addShare(share);
+            Share second = new Share(share.getStock(), new BigDecimal("5"), new BigDecimal("80"));
+            portfolio.addShare(second);
+            // Act
+            Share merged = portfolio.getShares().getFirst();
+            // Assert
+            assertEquals(0, new BigDecimal("60.0000").compareTo(merged.getPurchasePrice()));
+        }
+
+        @Test
+        @DisplayName("Should keep only one share per symbol after three purchases of the same stock")
+        void portfolioHasOneShareAfterThreePurchasesOfSameStock() {
+            // Arrange
+            Share second = new Share(share.getStock(), new BigDecimal("5"), new BigDecimal("80"));
+            Share third  = new Share(share.getStock(), new BigDecimal("5"), new BigDecimal("60"));
+            // Act
+            portfolio.addShare(share);
+            portfolio.addShare(second);
+            portfolio.addShare(third);
+            // Assert
+            assertEquals(1, portfolio.getShares().size());
+        }
+
+        @Test
+        @DisplayName("Should not merge shares of different stock symbols")
+        void doesNotMergeSharesOfDifferentSymbols() {
+            // Arrange
+            Share nike = new Share(
+                    new Stock("NKE", "NIKE, Inc",
+                            new ArrayList<>(List.of(new BigDecimal("100"))), NOK),
+                    new BigDecimal("5"), new BigDecimal("80"));
+            // Act
+            portfolio.addShare(share);   // DIS
+            portfolio.addShare(nike);    // NKE
+            // Assert
+            assertEquals(2, portfolio.getShares().size());
+        }
+    }
+
+    @Nested
     @DisplayName("getNetWorth()")
     class GetNetWorth {
 

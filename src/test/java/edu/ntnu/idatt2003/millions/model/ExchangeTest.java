@@ -428,6 +428,47 @@ class ExchangeTest {
     }
 
     @Nested
+    @DisplayName("GAV consolidation")
+    class GavConsolidation {
+
+        @Test
+        @DisplayName("Should result in a single portfolio share after buying the same stock twice")
+        void buyingSameStockTwiceResultsInSingleShare() {
+            // Act
+            exchange.buy("DIS", new BigDecimal("5"), player);
+            exchange.buy("DIS", new BigDecimal("3"), player);
+            // Assert
+            assertEquals(1, player.getPortfolio().getShares().size());
+        }
+
+        @Test
+        @DisplayName("Should sum quantities when buying the same stock twice")
+        void buyingSameStockTwiceSumsQuantities() {
+            // Act
+            exchange.buy("DIS", new BigDecimal("5"), player);
+            exchange.buy("DIS", new BigDecimal("3"), player);
+            Share merged = player.getPortfolio().getShares().getFirst();
+            // Assert
+            assertEquals(0, new BigDecimal("8").compareTo(merged.getQuantity()));
+        }
+
+        @Test
+        @DisplayName("Should leave remainder in portfolio after partial sale of a merged position")
+        void partialSaleOfMergedPositionLeavesRemainder() {
+            // Arrange
+            exchange.buy("DIS", new BigDecimal("5"), player);
+            exchange.buy("DIS", new BigDecimal("3"), player);
+            Share merged = player.getPortfolio().getShares().getFirst();
+            // Act
+            exchange.sell(merged, new BigDecimal("3"), player);
+            // Assert
+            assertEquals(1, player.getPortfolio().getShares().size());
+            Share remaining = player.getPortfolio().getShares().getFirst();
+            assertEquals(0, new BigDecimal("5").compareTo(remaining.getQuantity()));
+        }
+    }
+
+    @Nested
     @DisplayName("advance()")
     class Advance {
 

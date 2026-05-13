@@ -1,4 +1,4 @@
-/* === Design Tokens === */
+/* Design Tokens */
 .root {
     -primary:          #2980b9;
     -primary-dark:     #1f6391;
@@ -13,6 +13,10 @@
     -success-text:     #2E5A0E;
     -success-border:   #C4DDA0;
 
+    -info-bg:          #E3EEF7;
+    -info-text:        #1F4E79;
+    -info-border:      #B4CCE3;
+
     -text-primary:     #333333;
     -text-secondary:   #888888;
     -text-muted:       #555555;
@@ -23,4 +27,17 @@
 
     -surface:          white;
     -surface-alt:      #f5f5f5;
+
+    /* Status colors */
+    -status-novice:          #4ade80;
+    -status-investor:        #fbbf24;
+    -status-speculator:      #a78bfa;
+    -status-speculator-bg:   rgba(167, 139, 250, 0.15);
+
+    /* Footer-specific surface */
+    -footer-bg:      #1a1a1a;
+    -footer-text:    white;
+    -footer-label:   rgba(255, 255, 255, 0.5);
+    -footer-divider: rgba(255, 255, 255, 0.12);
+    -footer-track:   rgba(255, 255, 255, 0.1);
 }

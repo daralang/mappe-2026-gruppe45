@@ -1,15 +1,18 @@
 package edu.ntnu.idatt2003.millions.controller;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreviewService;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog.*;
 import javafx.application.Platform;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * Controller for portfolio actions (buy, sell, sell all, view details).
@@ -21,6 +24,9 @@ import java.math.BigDecimal;
  * derived data without performing a mutation.</p>
  */
 public class PortfolioController {
+
+    private static final int MAX_QUANTITY_SCALE = 4;
+    private static final BigDecimal MIN_TRANSACTION_VALUE_NOK = BigDecimal.ONE;
 
     private final GameService gameService;
     private final TransactionPreviewService previewService;
@@ -47,6 +53,16 @@ public class PortfolioController {
     }
 
     /**
+     * Returns the current currency converter, used by views that call
+     * read services directly with a currency converter argument.
+     *
+     * @return the active currency converter
+     */
+    public CurrencyConverter getCurrencyConverter() {
+        return gameService.getCurrencyConverter();
+    }
+
+    /**
      * Returns a preview of buying the given quantity of a stock.
      *
      * @param stock    the stock to buy
@@ -70,6 +86,27 @@ public class PortfolioController {
         return previewService.previewSale(
                 share, quantity, gameService.getPlayer(),
                 gameService.getCurrencyConverter());
+    }
+
+    /**
+     * Game-policy validation for buy and sell quantity inputs.
+     * Returns an i18n key if a rule is violated, or empty if both rules pass.
+     *
+     * <p>Rules: quantity has at most 4 decimal places; total order value in NOK
+     * is at least 1.00 NOK.</p>
+     *
+     * @param quantity   the parsed quantity (positive, non-null)
+     * @param totalInNok the full order value in NOK from the preview
+     * @return an i18n key for the error message, or empty if valid
+     */
+    public Optional<String> validateTransactionInput(BigDecimal quantity, BigDecimal totalInNok) {
+        if (quantity.stripTrailingZeros().scale() > MAX_QUANTITY_SCALE) {
+            return Optional.of("dialog.error.tooManyDecimals");
+        }
+        if (totalInNok.compareTo(MIN_TRANSACTION_VALUE_NOK) < 0) {
+            return Optional.of("dialog.error.belowMinimumValue");
+        }
+        return Optional.empty();
     }
 
     // Dialog opening
@@ -117,6 +154,11 @@ public class PortfolioController {
         TransactionPreview preview = previewService.previewPurchase(
                 stock, quantity, gameService.getPlayer(),
                 gameService.getCurrencyConverter());
+        Optional<String> policyError = validateTransactionInput(quantity, preview.totalInNok());
+        if (policyError.isPresent()) {
+            dialog.showError(LanguageManager.get(policyError.get()));
+            return;
+        }
         try {
             Transaction transaction = gameService.buy(stock.getSymbol(), quantity);
             dialog.close();
@@ -137,6 +179,11 @@ public class PortfolioController {
         TransactionPreview preview = previewService.previewSale(
                 share, quantity, gameService.getPlayer(),
                 gameService.getCurrencyConverter());
+        Optional<String> policyError = validateTransactionInput(quantity, preview.totalInNok());
+        if (policyError.isPresent()) {
+            dialog.showError(LanguageManager.get(policyError.get()));
+            return;
+        }
         try {
             Transaction transaction = gameService.sell(share, quantity);
             dialog.close();
@@ -152,5 +199,13 @@ public class PortfolioController {
         }
     }
 
-    // TODO: openDetailsDialog(Share share)
+    /**
+     * Opens the share details modal for the given share position.
+     *
+     * @param share the share to show details for
+     */
+    public void openDetailsModal(Share share) {
+        ShareDetailsModal modal = new ShareDetailsModal(share, this);
+        modal.show();
+    }
 }

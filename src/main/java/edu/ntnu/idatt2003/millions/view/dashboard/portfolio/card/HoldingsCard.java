@@ -9,12 +9,13 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -53,24 +54,13 @@ public class HoldingsCard extends Card {
         setSpacing(16);
 
         grid.setHgap(20);
-        configureColumns();
+        TableCells.configureColumns(grid,
+                new double[]{18, 22, 10, 12, 12, 10, 11, 5},
+                new HPos[]{HPos.LEFT, HPos.LEFT, HPos.RIGHT, HPos.RIGHT,
+                        HPos.RIGHT, HPos.RIGHT, HPos.RIGHT, HPos.CENTER});
 
         getChildren().addAll(title, grid);
         refresh();
-    }
-
-    private void configureColumns() {
-        double[] widths = {18, 22, 10, 12, 12, 10, 11, 5};
-        HPos[] alignments = {
-                HPos.LEFT, HPos.LEFT, HPos.RIGHT, HPos.RIGHT,
-                HPos.RIGHT, HPos.RIGHT, HPos.RIGHT, HPos.CENTER
-        };
-        for (int i = 0; i < widths.length; i++) {
-            ColumnConstraints col = new ColumnConstraints();
-            col.setHalignment(alignments[i]);
-            col.setPercentWidth(widths[i]);
-            grid.getColumnConstraints().add(col);
-        }
     }
 
     /**
@@ -103,11 +93,7 @@ public class HoldingsCard extends Card {
         addHeaderRow();
 
         if (shares.isEmpty()) {
-            StyledText empty = StyledText.widgetLabel(LanguageManager.get("dashboard.portfolio.empty"));
-            empty.getStyleClass().add("holdings-empty");
-            GridPane.setColumnSpan(empty, 8);
-            GridPane.setHalignment(empty, HPos.CENTER);
-            grid.add(empty, 0, 1);
+            TableCells.renderEmptyState(grid, LanguageManager.get("dashboard.portfolio.empty"), 8);
             return;
         }
 
@@ -130,20 +116,37 @@ public class HoldingsCard extends Card {
                 LanguageManager.get("dashboard.portfolio.returnNok"),
                 ""
         };
+        String[] tooltipKeys = {
+                null, null, null,
+                "tooltip.shared.weeklyChange",
+                "tooltip.holdings.valueNok",
+                "tooltip.shared.returnPct",
+                "tooltip.shared.returnNok",
+                null
+        };
         for (int i = 0; i < headers.length; i++) {
-            Label label = new Label(headers[i]);
-            label.getStyleClass().add("holdings-header");
-            grid.add(label, i, 0);
+            Label label = TableCells.header(headers[i]);
+            if (tooltipKeys[i] != null) {
+                InfoTooltip icon = new InfoTooltip(tooltipKeys[i]);
+                icon.getStyleClass().add("holdings-header-icon");
+                HBox headerCell = new HBox(6, label, icon);
+                headerCell.setAlignment(Pos.CENTER_RIGHT);
+                GridPane.setFillWidth(headerCell, false);
+                icon.attachToParent(headerCell);
+                grid.add(headerCell, i, 0);
+            } else {
+                grid.add(label, i, 0);
+            }
         }
     }
 
     private void addDataRow(int row, Share share) {
         Stock stock = share.getStock();
         grid.add(buildActionButtons(share), 0, row);
-        grid.add(cell(stock.getSymbol() + ", " + stock.getCompany()), 1, row);
-        grid.add(cell(ChangeFormatter.formatPlain(share.getQuantity())), 2, row);
+        grid.add(TableCells.data(stock.getSymbol() + ", " + stock.getCompany()), 1, row);
+        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(share.getQuantity())), 2, row);
         grid.add(coloredPercentCell(stock.getWeeklyChangePercent()), 3, row);
-        grid.add(cell(ChangeFormatter.formatPlain(portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))), 4, row);
+        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))), 4, row);
         grid.add(coloredPercentCell(share.getReturnPercent()), 5, row);
         grid.add(coloredAmountCell(portfolioService.getShareReturnInNok(share, gameService.getCurrencyConverter())), 6, row);
         grid.add(buildDetailsButton(share), 7, row);
@@ -161,7 +164,7 @@ public class HoldingsCard extends Card {
         totalLabel.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(totalLabel, 1, dataRow);
 
-        Label valueNok = new Label(ChangeFormatter.formatPlain(portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
+        Label valueNok = new Label(TableCells.NUMBER_FORMAT.format(portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
         valueNok.getStyleClass().addAll("holdings-cell", "bold");
         grid.add(valueNok, 4, dataRow);
 
@@ -189,9 +192,7 @@ public class HoldingsCard extends Card {
     private Button buildDetailsButton(Share share) {
         Button details = new Button("❯");
         details.getStyleClass().add("holdings-details-chevron");
-        details.setOnAction(e -> {
-            // TODO: open Detaljer-popup with detailed share info
-        });
+        details.setOnAction(e -> controller.openDetailsModal(share));
         return details;
     }
 
@@ -199,12 +200,6 @@ public class HoldingsCard extends Card {
         Button b = new Button(text);
         b.getStyleClass().addAll("holdings-action-link", colorClass);
         return b;
-    }
-
-    private Label cell(String text) {
-        Label label = new Label(text);
-        label.getStyleClass().add("holdings-cell");
-        return label;
     }
 
     private Label coloredPercentCell(BigDecimal value) {

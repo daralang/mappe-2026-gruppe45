@@ -17,8 +17,8 @@ import java.util.Locale;
  *
  * <p>Covers two levels:</p>
  * <ul>
- *   <li><b>Cell factories</b> — {@link #header}, {@link #sortHeader}, {@link #data} and
- *       {@link #empty} return individual styled nodes. Callers compose
+ *   <li><b>Cell factories</b> — {@link #header}, {@link #data} and
+ *       {@link #empty} return individual styled labels. Callers compose
  *       them into rows themselves, so anything that needs a one-off cell
  *       (a row with a tooltip, a custom badge, a colored amount) gets the
  *       same look without going through a generic row builder.</li>
@@ -147,6 +147,9 @@ public final class TableCells {
     /**
      * Writes a header row to row 0 of the given grid, with one
      * {@link #header} cell per provided label.
+     *
+     * <p>Does not clear the grid first — callers typically call
+     * {@code grid.getChildren().clear()} themselves before refreshing.</p>
      *
      * @param grid    the grid to write to
      * @param headers the header texts, one per column

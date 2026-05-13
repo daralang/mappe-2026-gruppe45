@@ -1,12 +1,17 @@
 @import "typography.css";
+@import "titlebar.css";
 @import "navbar.css";
 @import "tabs.css";
 @import "layout.css";
 @import "chart.css";
 @import "holdings.css";
 @import "portfolio.css";
+@import "transactions.css";
+@import "footer.css";
 @import "modal.css";
 @import "utilities.css";
+@import "tooltip.css";
+@import "filters.css";
 @import "searchbar.css";
 @import "label.css";
 @import "buttons.css";
