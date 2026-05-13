@@ -57,9 +57,6 @@ class StocksRowRenderer {
      * weekly change in NOK and percent, 4-week high/low, a sparkline trend,
      * and trade buttons.
      *
-     * <p>{@link GridPane#setValignment} constraints are applied to each node before
-     * insertion so all cells align to the top of their row.</p>
-     *
      * @param stock    the stock to render
      * @param rowIndex the table row index (0 is reserved for the header)
      * @param table    the {@link SortColumnTable} to add the row nodes into
