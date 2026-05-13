@@ -9,14 +9,18 @@ import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.view.component.card.PaginatedCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.HoldingsSort;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 
@@ -26,21 +30,29 @@ import java.util.List;
 
 /**
  * Card displaying the player's holdings (shares owned), with sortable column
- * headers, search, action buttons for buy / sell / sell all / details, and a
- * total row at the bottom.
+ * headers, search, pagination, action buttons for buy / sell / sell all / details,
+ * and a persistent total row below the pagination.
  *
- * <p>Column structure, sort state and header rendering are owned by
- * {@link SortColumnTable}. Domain-specific sort logic is delegated to
- * {@link HoldingsSort}. This card is responsible for data fetching, sort
- * orchestration and cell construction only.</p>
+ * <p>Extends {@link edu.ntnu.idatt2003.millions.view.component.card.PaginatedCard} for
+ * shared pagination state and behaviour. Column structure, sort state and header
+ * rendering are owned by {@link SortColumnTable}. Domain-specific sort logic is
+ * delegated to {@link HoldingsSort}. The total row lives in a separate {@link GridPane}
+ * with the same column constraints as the table, so values align regardless
+ * of which page is active.</p>
  */
-public class HoldingsCard extends Card {
+public class HoldingsCard extends PaginatedCard {
+
+    private static final int PAGE_SIZE = 9;
 
     private final GameService gameService;
     private final PortfolioService portfolioService = new PortfolioService();
     private final PortfolioController controller;
     private final HoldingsSort sort;
     private final SortColumnTable<HoldingsSort.SortColumn> table;
+    private final Pagination pagination;
+    private final Region totalDivider = new Region();
+    private final GridPane totalGrid = new GridPane();
+
     private String currentSearchTerm = "";
 
     /**
@@ -48,22 +60,30 @@ public class HoldingsCard extends Card {
      *
      * <p>Column definitions, widths, alignments and tooltip keys are read from
      * {@link HoldingsSort} via a method reference so that
-     * {@link SortColumnTable} can resolve fresh i18n labels on every header refresh.</p>
+     * {@link SortColumnTable} can resolve fresh i18n labels on every header refresh.
+     * The total grid is initialised with the same column constraints so values
+     * align with the table above it.</p>
      *
      * @param gameService the game manager containing player and exchange
      * @param controller  the controller handling portfolio actions
      */
     public HoldingsCard(GameService gameService, PortfolioController controller) {
-        super(gameService);
+        super(gameService, PAGE_SIZE);
         this.gameService = gameService;
         this.controller = controller;
         this.sort = new HoldingsSort(portfolioService, gameService.getCurrencyConverter());
         this.table = new SortColumnTable<>(sort::getColumnDefs);
+        this.pagination = new Pagination(PAGE_SIZE, this::setPage);
+
+        totalDivider.getStyleClass().add("holdings-total-divider");
+        totalGrid.setHgap(20);
+        initTotalGridColumns();
+        setTotalVisible(false);
 
         StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
         setSpacing(16);
 
-        getChildren().addAll(title, createSearchBar(), table.asNode());
+        getChildren().addAll(title, createSearchBar(), table.asNode(), pagination, totalDivider, totalGrid);
         refresh();
     }
 
@@ -73,10 +93,23 @@ public class HoldingsCard extends Card {
                 "search.button",
                 term -> {
                     currentSearchTerm = term == null ? "" : term;
-                    refresh();
+                    resetPageAndRefresh();
                 });
         searchBar.setMaxWidth(Double.MAX_VALUE);
         return searchBar;
+    }
+
+    /**
+     * Configures {@link #totalGrid} with the same percentage column constraints
+     * as the holdings table so total values align with their respective columns.
+     */
+    private void initTotalGridColumns() {
+        for (TableColumnDef<HoldingsSort.SortColumn> col : sort.getColumnDefs()) {
+            ColumnConstraints cc = new ColumnConstraints();
+            cc.setPercentWidth(col.percentWidth());
+            cc.setHalignment(col.alignment());
+            totalGrid.getColumnConstraints().add(cc);
+        }
     }
 
     /**
@@ -99,10 +132,12 @@ public class HoldingsCard extends Card {
 
     /**
      * Rebuilds the table contents based on the player's current portfolio.
-     * If a sort is active, delegates sorting to {@link HoldingsSort#applySort}
-     * before rendering rows.
+     * Applies search filtering, optional sort, and renders the current page.
+     * The total row is always shown below the pagination when the portfolio
+     * has any shares.
      */
-    private void refresh() {
+    @Override
+    protected void refresh() {
         table.clearRows();
         table.refreshHeader(this::refresh);
 
@@ -111,8 +146,15 @@ public class HoldingsCard extends Card {
                 .filter(share -> currentSearchTerm.isBlank() || share.getStock().matches(currentSearchTerm))
                 .toList());
 
+        boolean hasPortfolioShares = !portfolio.getShares().isEmpty();
+        setTotalVisible(hasPortfolioShares);
+        if (hasPortfolioShares) {
+            refreshTotal(portfolio);
+        }
+
         if (shares.isEmpty()) {
             table.renderEmptyState(LanguageManager.get("dashboard.portfolio.empty"));
+            pagination.update(0, 0);
             return;
         }
 
@@ -120,12 +162,52 @@ public class HoldingsCard extends Card {
             sort.applySort(shares, table.getSortState());
         }
 
+        clampCurrentPage(shares.size());
+        pagination.update(currentPage, shares.size());
+
+        int fromIndex = currentPage * PAGE_SIZE;
+        int toIndex = Math.min(fromIndex + PAGE_SIZE, shares.size());
+        List<Share> page = shares.subList(fromIndex, toIndex);
+
         int row = 1;
-        for (Share share : shares) {
+        for (Share share : page) {
             addDataRow(row++, share);
         }
+    }
 
-        addTotalRow(row, portfolio);
+    /**
+     * Rebuilds the total row in {@link #totalGrid} with the latest portfolio values.
+     *
+     * @param portfolio the portfolio supplying the total values
+     */
+    private void refreshTotal(Portfolio portfolio) {
+        totalGrid.getChildren().clear();
+
+        Label totalLabel = new Label(LanguageManager.get("dashboard.portfolio.total"));
+        totalLabel.getStyleClass().addAll("holdings-cell", "bold");
+        totalGrid.add(totalLabel, 1, 0);
+
+        Label valueNok = new Label(TableCells.NUMBER_FORMAT.format(
+                portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
+        valueNok.getStyleClass().addAll("holdings-cell", "bold");
+        totalGrid.add(valueNok, 4, 0);
+
+        totalGrid.add(coloredPercentCell(portfolioService.getTotalReturnPercent(
+                gameService.getPlayer(), gameService.getCurrencyConverter())), 5, 0);
+        totalGrid.add(coloredAmountCell(portfolioService.getTotalReturnInNok(
+                gameService.getPlayer(), gameService.getCurrencyConverter())), 6, 0);
+    }
+
+    /**
+     * Shows or hides the total divider and grid.
+     *
+     * @param visible {@code true} to show, {@code false} to hide and unmanage
+     */
+    private void setTotalVisible(boolean visible) {
+        totalDivider.setVisible(visible);
+        totalDivider.setManaged(visible);
+        totalGrid.setVisible(visible);
+        totalGrid.setManaged(visible);
     }
 
     /**
@@ -148,35 +230,6 @@ public class HoldingsCard extends Card {
                         portfolioService.getShareReturnInNok(share, gameService.getCurrencyConverter())),
                 buildDetailsButton(share)
         );
-    }
-
-    /**
-     * Renders the total row below all data rows.
-     * A full-width divider separates the data rows from the totals.
-     *
-     * @param row       the grid row index for the divider
-     * @param portfolio the portfolio supplying the total values
-     */
-    private void addTotalRow(int row, Portfolio portfolio) {
-        Region divider = new Region();
-        divider.getStyleClass().add("holdings-total-divider");
-        table.addFullWidthRow(divider, row);
-
-        int dataRow = row + 1;
-
-        Label totalLabel = new Label(LanguageManager.get("dashboard.portfolio.total"));
-        totalLabel.getStyleClass().addAll("holdings-cell", "bold");
-        table.addCell(totalLabel, 1, dataRow);
-
-        Label valueNok = new Label(TableCells.NUMBER_FORMAT.format(
-                portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
-        valueNok.getStyleClass().addAll("holdings-cell", "bold");
-        table.addCell(valueNok, 4, dataRow);
-
-        table.addCell(coloredPercentCell(portfolioService.getTotalReturnPercent(
-                gameService.getPlayer(), gameService.getCurrencyConverter())), 5, dataRow);
-        table.addCell(coloredAmountCell(portfolioService.getTotalReturnInNok(
-                gameService.getPlayer(), gameService.getCurrencyConverter())), 6, dataRow);
     }
 
     /**

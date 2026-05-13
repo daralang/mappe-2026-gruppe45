@@ -91,7 +91,7 @@ class StocksRowRenderer {
         SparklineChart sparkline = new SparklineChart();
         sparkline.update(sparkPrices);
 
-        HBox tradeButtons = buildTradeButtons(stock);
+        HBox tradeButtons = buildBuyButton(stock);
 
         GridPane.setValignment(tickerCell, VPos.TOP);
         GridPane.setValignment(companyLabel, VPos.TOP);
@@ -152,7 +152,7 @@ class StocksRowRenderer {
      * @param stock the stock the buttons act on
      * @return an {@link HBox} containing the action buttons
      */
-    private HBox buildTradeButtons(Stock stock) {
+    private HBox buildBuyButton(Stock stock) {
         Button buyButton = new Button(LanguageManager.get("exchange.stocks.buy"));
         buyButton.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
         buyButton.setOnAction(e -> controller.openBuyDialog(stock));
