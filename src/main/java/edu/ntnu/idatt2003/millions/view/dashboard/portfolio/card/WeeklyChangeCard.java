@@ -7,9 +7,10 @@ import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.WidgetCard;
+import edu.ntnu.idatt2003.millions.view.component.card.WidgetCard;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
+import edu.ntnu.idatt2003.millions.view.component.card.WidgetCard;
 
 import java.math.BigDecimal;
 

@@ -111,11 +111,11 @@ public class MainView {
      * Switches the content area to the exchange view.
      */
     private void showExchange() {
-        root.setCenter(wrapScrollable(new ExchangeView(gameService, weekBar)));
+        root.setCenter(wrapScrollable(new ExchangeView(gameService, weekBar, portfolioController)));
     }
 
     private void showExchangeOnStocksTab() {
-        ExchangeView exchangeView = new ExchangeView(gameService, weekBar);
+        ExchangeView exchangeView = new ExchangeView(gameService, weekBar, portfolioController);
         exchangeView.selectStocksTab();
         root.setCenter(wrapScrollable(exchangeView));
     }

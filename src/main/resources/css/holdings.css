@@ -9,6 +9,18 @@
     -fx-padding: -1 0 8 0;
 }
 
+Button.holdings-header {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+}
+
+Button.holdings-header:hover {
+    -fx-text-fill: -primary;
+}
+
 .holdings-cell {
     -fx-font-size: 13;
     -fx-text-fill: -text-primary;
