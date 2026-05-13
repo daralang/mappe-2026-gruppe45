@@ -2,6 +2,8 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
+import edu.ntnu.idatt2003.millions.view.component.card.PortfolioValueCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -48,8 +50,8 @@ public class PortfolioView extends VBox {
 
         VBox rightCards = new VBox(12,
                 new WeeklyChangeCard(gameService),
-                new AvailableFundsCard(gameService),
-                new PortfolioValueCard(gameService),
+                new AvailableFundsCard(gameService, "dashboard.availableFunds"),
+                new PortfolioValueCard(gameService, "dashboard.portfolioValue"),
                 new StatusCard(gameService)
         );
         rightCards.setMinWidth(220);

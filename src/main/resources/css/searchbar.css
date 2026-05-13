@@ -1,0 +1,61 @@
+.search-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 20;
+    -fx-max-width: 800;
+    -fx-min-width: 600;
+}
+
+.search-bar,
+.search-button,
+.search-clear-button {
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+}
+
+.search-bar {
+    -fx-background-color: -surface;
+    -fx-padding: 0 18 0 18;
+    -fx-alignment: center-left;
+    -fx-border-color: -boder-strong;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+.search-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 14px;
+    -fx-text-fill: -text-primary;
+    -fx-prompt-text-fill: -text-secondary;
+}
+
+.search-field:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.search-button,
+.search-clear-button {
+    -fx-background-radius: 10;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-padding: 0 22 0 22;
+    -fx-cursor: hand;
+}
+.search-button {
+    -fx-background-color: black;
+    -fx-text-fill: -surface;
+}
+
+.search-button:hover {
+    -fx-background-color: -primary-dark;
+}
+
+.search-clear-button:hover {
+    -fx-background-color: -primary-dark;
+}
+
+.search-clear-button {
+    -fx-background-color: #CECECE;
+    -fx-text-fill: -surface;
+}

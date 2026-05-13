@@ -1,7 +1,8 @@
-package edu.ntnu.idatt2003.millions.view.component;
+package edu.ntnu.idatt2003.millions.view.component.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 
 /**
  * Abstract base class for read-only dashboard widget cards.
