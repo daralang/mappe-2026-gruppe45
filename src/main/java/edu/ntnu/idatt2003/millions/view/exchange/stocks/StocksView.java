@@ -55,7 +55,7 @@ public class StocksView extends VBox {
 
         HBox metadataRow = createMetadataRow(clearSortButton);
         SearchBar searchBar = new SearchBar(
-                "exchange.stocks.search.placeholder",
+                "search.placeholder",
                 "search.button",
                 term -> {
                     stocksListCard.filter(term);
