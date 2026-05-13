@@ -172,17 +172,22 @@ public class StocksSort {
      */
     private Button buildSortableHeader(String labelKey, SortColumn column, Runnable onChanged) {
         String label = LanguageManager.get(labelKey);
+        Runnable action = () -> {
+            sortState.toggle(column);
+            onChanged.run();
+        };
         if (sortState.isSecondaryActive(column)) {
-            label += sortState.isSecondaryAscending() ? " ²↓" : " ²↑";
+            return TableCells.sortHeader(
+                    "² " + label,
+                    true,
+                    sortState.isSecondaryAscending(),
+                    action);
         }
         return TableCells.sortHeader(
                 label,
                 sortState.isActive(column),
                 sortState.isAscending(),
-                () -> {
-                    sortState.toggle(column);
-                    onChanged.run();
-                });
+                action);
     }
 
     /**
