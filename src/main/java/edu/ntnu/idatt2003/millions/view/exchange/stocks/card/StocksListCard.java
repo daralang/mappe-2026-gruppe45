@@ -5,21 +5,29 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
+import edu.ntnu.idatt2003.millions.view.component.SearchBar;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Sortable, searchable and paginated table of all stocks listed on the exchange.
+ * Market card with controls for searching, sorting, and paginating stocks listed on the exchange.
  *
- * <p>Displays ticker, company, prices, weekly change, 4-week high/low,
- * trend and trade actions. Column structure and sort state are owned by
- * {@link SortColumnTable}; domain-specific sort logic is delegated to
- * {@link StocksSort}; row rendering is delegated to {@link StocksRowRenderer}.</p>
+ * <p>Displays a title, a {@link SearchBar} with result metadata, reset-sort action,
+ * pagination, ticker, company, prices, weekly change, 4-week high/low, trend and
+ * trade actions. Column structure and sort state are owned by {@link SortColumnTable};
+ * domain-specific sort logic is delegated to {@link StocksSort}; row rendering is
+ * delegated to {@link StocksRowRenderer}.</p>
  */
 public class StocksListCard extends Card {
 
@@ -29,6 +37,9 @@ public class StocksListCard extends Card {
     private final StocksSort sort;
     private final StocksRowRenderer rowRenderer;
     private final SortColumnTable<StocksSort.SortColumn> table;
+    private final StyledText title;
+    private final StyledText statusLabel = StyledText.widgetLabel();
+    private final Button clearSortButton;
 
     private List<Stock> allStocks = new ArrayList<>();
     private List<Stock> filteredStocks = new ArrayList<>();
@@ -54,12 +65,41 @@ public class StocksListCard extends Card {
         this.sort = new StocksSort(gameService.getCurrencyConverter());
         this.rowRenderer = new StocksRowRenderer(gameService, controller);
         this.table = new SortColumnTable<>(sort::getColumnDefs, 16);
+        this.title = StyledText.sectionTitle(LanguageManager.get("exchange.stocks.market"));
+        this.clearSortButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
 
         setSpacing(12);
         setMinWidth(0);
 
-        getChildren().add(table.asNode());
+        configureClearSortButton();
+        getChildren().addAll(title, createSearchBar(), table.asNode());
         onGameUpdated();
+    }
+
+    private SearchBar createSearchBar() {
+        SearchBar searchBar = new SearchBar(
+                "search.placeholder",
+                "search.button",
+                this::filter,
+                createMetadataRow());
+        searchBar.setMaxWidth(Double.MAX_VALUE);
+        return searchBar;
+    }
+
+    private HBox createMetadataRow() {
+        Region statusSpacer = new Region();
+        HBox.setHgrow(statusSpacer, Priority.ALWAYS);
+
+        HBox metadataRow = new HBox(statusLabel, statusSpacer, clearSortButton);
+        metadataRow.setAlignment(Pos.CENTER_LEFT);
+        metadataRow.setMaxWidth(Double.MAX_VALUE);
+        return metadataRow;
+    }
+
+    private void configureClearSortButton() {
+        clearSortButton.getStyleClass().add("clear-sort-button");
+        clearSortButton.setVisible(false);
+        clearSortButton.setOnAction(e -> clearSort());
     }
 
     /**
@@ -83,15 +123,6 @@ public class StocksListCard extends Card {
     }
 
     /**
-     * Returns the total number of stocks on the exchange.
-     *
-     * @return total stock count
-     */
-    public int getTotalCount() {
-        return allStocks.size();
-    }
-
-    /**
      * Rebuilds the table from the current filtered and sorted stock list.
      * If a sort is active, delegates sorting to {@link StocksSort#applySort}.
      * If no sort is active, restores the original exchange order via {@link #restoreOrder()}.
@@ -105,6 +136,8 @@ public class StocksListCard extends Card {
 
         table.clearRows();
         table.refreshHeader(this::refresh);
+        clearSortButton.setVisible(table.isSortActive());
+        updateStatus();
 
         int fromIndex = currentPage * PAGE_SIZE;
         int toIndex = Math.min(fromIndex + PAGE_SIZE, filteredStocks.size());
@@ -121,11 +154,28 @@ public class StocksListCard extends Card {
                             LanguageManager.get("exchange.stocks.empty.search"),
                             currentFilterTerm);
             table.renderEmptyState(msg);
+            notifyRefreshed();
+            return;
         }
 
+        notifyRefreshed();
+    }
+
+    private void notifyRefreshed() {
         if (onRefreshed != null) {
             onRefreshed.run();
         }
+    }
+
+    /**
+     * Updates the status label to reflect the current filtered and total stock counts.
+     * Uses the {@code exchange.stocks.status} i18n key with two positional arguments.
+     */
+    private void updateStatus() {
+        statusLabel.setText(MessageFormat.format(
+                LanguageManager.get("exchange.stocks.status"),
+                filteredStocks.size(),
+                allStocks.size()));
     }
 
     /**
@@ -151,6 +201,14 @@ public class StocksListCard extends Card {
         filteredStocks = currentFilterTerm.isBlank()
                 ? new ArrayList<>(allStocks)
                 : new ArrayList<>(gameService.getExchange().findStocks(currentFilterTerm));
+        clampCurrentPage();
+    }
+
+    private void clampCurrentPage() {
+        int lastPage = Math.max(0, (filteredStocks.size() - 1) / PAGE_SIZE);
+        if (currentPage > lastPage) {
+            currentPage = lastPage;
+        }
     }
 
     /**
@@ -194,7 +252,7 @@ public class StocksListCard extends Card {
 
     /**
      * Registers a callback that is invoked at the end of every {@link #refresh()}.
-     * Use this to update pagination, status labels, or sort controls in the parent view.
+     * Use this to update external controls such as {@link Pagination}.
      *
      * @param onRefreshed the callback to run after each refresh
      */
@@ -219,6 +277,8 @@ public class StocksListCard extends Card {
      */
     @Override
     protected void onLanguageChanged() {
+        title.setText(LanguageManager.get("exchange.stocks.market"));
+        clearSortButton.setText(LanguageManager.get("exchange.stocks.sort.clear"));
         refresh();
     }
 }
