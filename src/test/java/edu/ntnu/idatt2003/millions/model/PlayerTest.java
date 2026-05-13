@@ -608,9 +608,9 @@ class PlayerTest {
         @Test
         @DisplayName("getTotalDebt() sums principals of multiple loans")
         void getTotalDebtSumsMultipleLoans() {
-            // Arrange — player starts with 1000, capacity = 500
+            // Arrange — player starts with 1000, net worth=1000, capacity=500
             player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 0), converter);
-            // After first loan: money=1200, capacity=600, available=400
+            // After first loan: money=1200, debt=200, net worth=1000, capacity=500, available=300
             player.takeLoan(new Loan(offer, new BigDecimal("150.00"), 0), converter);
             // Assert
             assertEquals(0, new BigDecimal("350.00").compareTo(player.getTotalDebt()));
@@ -748,6 +748,76 @@ class PlayerTest {
             Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
             // Act & Assert — loan never taken, so not in active list
             assertThrows(IllegalArgumentException.class, () -> player.repayLoan(loan));
+        }
+
+        @Test
+        @DisplayName("getNetWorth() subtracts outstanding debt")
+        void getNetWorthSubtractsDebt() {
+            // Arrange — player starts with 1000 cash
+            BigDecimal principal = new BigDecimal("300.00");
+            player.takeLoan(new Loan(offer, principal, 0), converter);
+            // money = 1300, debt = 300 → net worth = 1300 - 300 = 1000
+            assertEquals(0, new BigDecimal("1000.00").compareTo(player.getNetWorth(converter)));
+        }
+
+        @Test
+        @DisplayName("Taking a loan does not change net worth")
+        void takingLoanDoesNotChangeNetWorth() {
+            // Arrange
+            BigDecimal before = player.getNetWorth(converter);
+            // Act
+            player.takeLoan(new Loan(offer, new BigDecimal("300.00"), 0), converter);
+            // Assert — cash up by 300, debt up by 300: net effect is zero
+            assertEquals(0, before.compareTo(player.getNetWorth(converter)));
+        }
+
+        @Test
+        @DisplayName("Repaying a loan does not change net worth")
+        void repayingLoanDoesNotChangeNetWorth() {
+            // Arrange
+            Loan loan = new Loan(offer, new BigDecimal("300.00"), 0);
+            player.takeLoan(loan, converter);
+            BigDecimal before = player.getNetWorth(converter);
+            // Act
+            player.repayLoan(loan);
+            // Assert — cash down by 300, debt down by 300: net effect is zero
+            assertEquals(0, before.compareTo(player.getNetWorth(converter)));
+        }
+
+        @Test
+        @DisplayName("getNetWorth() can be negative when debt exceeds assets")
+        void getNetWorthCanBeNegative() {
+            // Arrange — take a loan, then drain cash below the principal
+            Loan loan = new Loan(offer, new BigDecimal("400.00"), 0);
+            player.takeLoan(loan, converter);        // cash=1400, debt=400, net worth=1000
+            player.withdrawMoney(new BigDecimal("1390.00")); // cash=10, debt=400, net worth=-390
+            // Act & Assert
+            assertTrue(player.getNetWorth(converter).compareTo(BigDecimal.ZERO) < 0);
+        }
+
+        @Test
+        @DisplayName("getLoanCapacity() clamps to zero when net worth is negative")
+        void getLoanCapacityIsZeroOnNegativeNetWorth() {
+            // Arrange — same setup as above produces negative net worth
+            Loan loan = new Loan(offer, new BigDecimal("400.00"), 0);
+            player.takeLoan(loan, converter);
+            player.withdrawMoney(new BigDecimal("1390.00"));
+            // Act & Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getLoanCapacity(converter)));
+        }
+
+        @Test
+        @DisplayName("Stacking loans to bypass the 50% cap is blocked")
+        void stackingLoansIsBlocked() {
+            // Arrange — player starts with 10 000 NOK, capacity = 5 000
+            Player rich = new Player("Rich", new BigDecimal("10000.00"));
+            LoanOffer bigOffer = new LoanOffer("big", new BigDecimal("0.01"), 10,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+            // First loan fills capacity exactly: debt=5000, net worth still 10000, available=0
+            rich.takeLoan(new Loan(bigOffer, new BigDecimal("5000.00"), 0), converter);
+            // Act & Assert — any further loan must be rejected
+            assertThrows(ExcessiveDebtException.class, () ->
+                    rich.takeLoan(new Loan(bigOffer, new BigDecimal("1.00"), 0), converter));
         }
     }
 }
