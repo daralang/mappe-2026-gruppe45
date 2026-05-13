@@ -68,13 +68,13 @@ public class StocksListCard extends PaginatedCard {
         this.rowRenderer = new StocksRowRenderer(gameService, controller);
         this.table = new SortColumnTable<>(sort::getColumnDefs, 10);
         this.title = StyledText.sectionTitle(LanguageManager.get("exchange.stocks.market"));
-        this.clearSortButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
+        this.clearSortButton = table.createClearSortButton(
+                () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
 
         setSpacing(12);
         setMinWidth(0);
         table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
 
-        configureClearSortButton();
         getChildren().addAll(title, createSearchBar(), table.asNode());
         onGameUpdated();
     }
@@ -97,12 +97,6 @@ public class StocksListCard extends PaginatedCard {
         metadataRow.setAlignment(Pos.CENTER_LEFT);
         metadataRow.setMaxWidth(Double.MAX_VALUE);
         return metadataRow;
-    }
-
-    private void configureClearSortButton() {
-        clearSortButton.getStyleClass().add("clear-sort-button");
-        clearSortButton.setVisible(false);
-        clearSortButton.setOnAction(e -> clearSort());
     }
 
     /**
@@ -149,7 +143,6 @@ public class StocksListCard extends PaginatedCard {
 
         table.clearRows();
         table.refreshHeader(this::refresh);
-        clearSortButton.setVisible(table.isSortActive());
         updateStatus();
 
         int fromIndex = currentPage * PAGE_SIZE;
@@ -260,7 +253,6 @@ public class StocksListCard extends PaginatedCard {
     @Override
     protected void onLanguageChanged() {
         title.setText(LanguageManager.get("exchange.stocks.market"));
-        clearSortButton.setText(LanguageManager.get("exchange.stocks.sort.clear"));
         refresh();
     }
 }
