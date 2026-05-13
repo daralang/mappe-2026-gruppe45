@@ -79,7 +79,7 @@ public record TableColumnDef<Column>(
      * Creates a sortable column with an info tooltip icon.
      *
      * <p>Use this when a column header needs both a sort button and an
-     * {@link InfoTooltip} icon — for example a numeric column whose label
+     * {@link InfoTooltip} icon, for example a numeric column whose label
      * alone is not self-explanatory.</p>
      *
      * @param <Column>     the sort-column enum type
