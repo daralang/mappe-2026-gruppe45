@@ -22,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 import java.math.BigDecimal;
@@ -74,6 +75,8 @@ public class HoldingsCard extends PaginatedCard {
         this.sort = new HoldingsSort(portfolioService, gameService.getCurrencyConverter());
         this.table = new SortColumnTable<>(sort::getColumnDefs);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
+        Button clearSortButton = table.createClearSortButton(
+                () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
 
         totalDivider.getStyleClass().add("holdings-total-divider");
         totalGrid.setHgap(20);
@@ -83,18 +86,30 @@ public class HoldingsCard extends PaginatedCard {
         StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
         setSpacing(16);
 
-        getChildren().addAll(title, createSearchBar(), table.asNode(), pagination, totalDivider, totalGrid);
+        getChildren().addAll(title, createSearchBar(clearSortButton), table.asNode(), pagination, totalDivider, totalGrid);
         refresh();
     }
 
-    private SearchBar createSearchBar() {
+    /**
+     * Builds the search bar with a right-aligned clear-sort button in the metadata row.
+     *
+     * @param clearSortButton the button returned by {@link SortColumnTable#createClearSortButton}
+     * @return the configured search bar
+     */
+    private SearchBar createSearchBar(Button clearSortButton) {
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox metadataRow = new HBox(spacer, clearSortButton);
+        metadataRow.setAlignment(Pos.CENTER_RIGHT);
+
         SearchBar searchBar = new SearchBar(
                 "search.placeholder",
                 "search.button",
                 term -> {
                     currentSearchTerm = term == null ? "" : term;
                     resetPageAndRefresh();
-                });
+                },
+                metadataRow);
         searchBar.setMaxWidth(Double.MAX_VALUE);
         return searchBar;
     }

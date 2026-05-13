@@ -18,6 +18,7 @@ import edu.ntnu.idatt2003.millions.view.dashboard.transactions.TransactionsSort;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.TransactionTypeFilter;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -80,6 +81,8 @@ public class TransactionsCard extends PaginatedCard {
         this.sort = new TransactionsSort(statsService, gameService.getCurrencyConverter());
         this.table = new SortColumnTable<>(sort::getColumnDefs);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
+        Button clearSortButton = table.createClearSortButton(
+                () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
         table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
 
         setSpacing(16);
@@ -92,7 +95,7 @@ public class TransactionsCard extends PaginatedCard {
         weekRangeFilter.fromWeekProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
         weekRangeFilter.toWeekProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
 
-        getChildren().addAll(title, buildFilterRow(), table.asNode(), pagination);
+        getChildren().addAll(title, buildFilterRow(clearSortButton), table.asNode(), pagination);
         refresh();
     }
 
@@ -103,16 +106,23 @@ public class TransactionsCard extends PaginatedCard {
      * A flexible spacer takes up remaining width so future controls can be
      * inserted without restructuring.</p>
      *
+     * @param clearSortButton the button returned by {@link SortColumnTable#createClearSortButton}
      * @return the configured filter row
      */
-    private HBox buildFilterRow() {
+    private HBox buildFilterRow(Button clearSortButton) {
+        Region metadataSpacer = new Region();
+        HBox.setHgrow(metadataSpacer, Priority.ALWAYS);
+        HBox metadataRow = new HBox(metadataSpacer, clearSortButton);
+        metadataRow.setAlignment(Pos.CENTER_RIGHT);
+
         SearchBar searchBar = new SearchBar(
                 "search.placeholder",
                 "search.button",
                 term -> {
                     currentSearchTerm = term == null ? "" : term;
                     resetPageAndRefresh();
-                });
+                },
+                metadataRow);
         searchBar.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(searchBar, Priority.ALWAYS);
 

@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.component.table;
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 
@@ -13,9 +14,10 @@ import java.util.function.Supplier;
 /**
  * Reusable sortable table component backed by a {@link GridPane}.
  *
- * <p>Manages column layout, row insertion, sort state and empty-state display.
- * Header-cell building and caching is delegated to {@link TableHeaderRenderer}
- * so this class stays focused on grid structure and the public table API.</p>
+ * <p>Manages column layout, row insertion, sort state, empty-state display and an
+ * optional clear-sort button. Header-cell building and caching is delegated to
+ * {@link TableHeaderRenderer} so this class stays focused on grid structure and
+ * the public table API.</p>
  *
  * <p>Cards retain responsibility for data fetching, filtering, sorting and
  * cell construction.</p>
@@ -32,6 +34,9 @@ public class SortColumnTable<Column> {
     private final SortState<Column> sortState = new SortState<>();
     private final GridPane grid = new GridPane();
     private final TableHeaderRenderer<Column> headerRenderer = new TableHeaderRenderer<>(sortState);
+
+    private Button clearSortButton;
+    private Supplier<String> clearSortLabelSupplier;
 
     /**
      * Constructs a sortable table with default horizontal gap of 20px.
@@ -60,10 +65,6 @@ public class SortColumnTable<Column> {
         configureColumns(initial);
     }
 
-    // -------------------------------------------------------------------------
-    // Grid management
-    // -------------------------------------------------------------------------
-
     /**
      * Clears all nodes from the grid, including header and data rows.
      * Call this at the start of every refresh before calling {@link #refreshHeader}.
@@ -83,6 +84,7 @@ public class SortColumnTable<Column> {
      */
     public void refreshHeader(Runnable onChanged) {
         headerRenderer.renderInto(grid, columnSupplier.get(), onChanged);
+        updateClearSortButton();
     }
 
     /**
@@ -152,10 +154,6 @@ public class SortColumnTable<Column> {
         return grid;
     }
 
-    // -------------------------------------------------------------------------
-    // Sort state
-    // -------------------------------------------------------------------------
-
     /**
      * Returns the {@link SortState} owned by this table.
      *
@@ -167,6 +165,38 @@ public class SortColumnTable<Column> {
      */
     public SortState<Column> getSortState() {
         return sortState;
+    }
+
+    /**
+     * Creates a clear-sort button managed by this table and returns it for placement
+     * in the owning card's layout.
+     *
+     * <p>The button is hidden ({@code setVisible(false)}, {@code setManaged(false)}) until
+     * a sort becomes active. On every call to {@link #refreshHeader} the button's text
+     * and visibility are updated automatically, so the owning card does not need to
+     * manage this state manually.</p>
+     *
+     * <p>Calling this method more than once replaces the previously created button.</p>
+     *
+     * @param labelSupplier supplier that returns the current button label, called on
+     *                      every header refresh so i18n updates are picked up automatically
+     * @param onClear       callback invoked after the sort is cleared, typically
+     *                      {@code this::refresh} in the owning card
+     * @return the configured button, ready to place in a metadata row
+     * @throws NullPointerException if {@code labelSupplier} or {@code onClear} is null
+     */
+    public Button createClearSortButton(Supplier<String> labelSupplier, Runnable onClear) {
+        this.clearSortLabelSupplier = Objects.requireNonNull(labelSupplier, "labelSupplier cannot be null");
+        Objects.requireNonNull(onClear, "onClear cannot be null");
+        clearSortButton = new Button(labelSupplier.get());
+        clearSortButton.getStyleClass().add("clear-sort-button");
+        clearSortButton.setVisible(false);
+        clearSortButton.setManaged(false);
+        clearSortButton.setOnAction(e -> {
+            clearSort();
+            onClear.run();
+        });
+        return clearSortButton;
     }
 
     /**
@@ -186,9 +216,19 @@ public class SortColumnTable<Column> {
         return sortState.hasActiveSort();
     }
 
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
+    /**
+     * Updates the clear-sort button's text and visibility to match the current sort state.
+     * No-op if {@link #createClearSortButton} has not been called.
+     */
+    private void updateClearSortButton() {
+        if (clearSortButton == null) {
+            return;
+        }
+        boolean active = sortState.hasActiveSort();
+        clearSortButton.setVisible(active);
+        clearSortButton.setManaged(active);
+        clearSortButton.setText(clearSortLabelSupplier.get());
+    }
 
     /**
      * Configures the grid's column constraints from the initial column definitions.
