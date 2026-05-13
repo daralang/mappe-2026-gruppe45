@@ -23,7 +23,7 @@ import java.text.MessageFormat;
 /**
  * View for the exchange stocks tab.
  *
- * <p>Assembles four portfolio summary cards, a search bar, a status label,
+ * <p>Assembles four portfolio summary cards, a search bar with status metadata,
  * sort actions, and a sortable paginated {@link StocksListCard}.
  *
  * <p>Search is triggered explicitly by pressing Enter or clicking the search button,
@@ -48,38 +48,39 @@ public class StocksView extends VBox {
         this.stocksListCard = new StocksListCard(gameService, controller);
         this.pagination = new Pagination(StocksListCard.PAGE_SIZE, stocksListCard::setPage);
 
+        Button clearSortButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
+        clearSortButton.getStyleClass().add("clear-sort-button");
+        clearSortButton.setVisible(false);
+        clearSortButton.setOnAction(e -> stocksListCard.clearSort());
+
+        HBox metadataRow = createMetadataRow(clearSortButton);
         SearchBar searchBar = new SearchBar(
                 "exchange.stocks.search.placeholder",
                 "search.button",
                 term -> {
                     stocksListCard.filter(term);
                     updateMetaInfo();
-                });
+                },
+                metadataRow);
+        searchBar.setMaxWidth(Double.MAX_VALUE);
         HBox searchRow = new HBox(8, searchBar);
         searchRow.setAlignment(Pos.CENTER_LEFT);
-
-        Button clearSortButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
-        clearSortButton.getStyleClass().add("clear-sort-button");
-        clearSortButton.setVisible(false);
-        clearSortButton.setOnAction(e -> stocksListCard.clearSort());
-
-        Region spacer = new Region();
-        spacer.setMinHeight(12);
+        HBox.setHgrow(searchBar, Priority.ALWAYS);
 
         HBox summaryCards = createSummaryCards(gameService);
-        HBox listHeader = createListHeader(clearSortButton);
 
         configureRefreshCallback(clearSortButton);
-        getChildren().addAll(summaryCards, spacer, searchRow, listHeader, stocksListCard, pagination);
+        getChildren().addAll(summaryCards, searchRow, stocksListCard, pagination);
         updateMetaInfo();
     }
 
-    private HBox createListHeader(Button clearSortButton) {
+    private HBox createMetadataRow(Button clearSortButton) {
         Region statusSpacer = new Region();
         HBox.setHgrow(statusSpacer, Priority.ALWAYS);
-        HBox listHeader = new HBox(statusLabel, statusSpacer, clearSortButton);
-        listHeader.setAlignment(Pos.CENTER_LEFT);
-        return listHeader;
+        HBox metadataRow = new HBox(statusLabel, statusSpacer, clearSortButton);
+        metadataRow.setAlignment(Pos.CENTER_LEFT);
+        metadataRow.setMaxWidth(Double.MAX_VALUE);
+        return metadataRow;
     }
 
     private void configureRefreshCallback(Button clearSortButton) {

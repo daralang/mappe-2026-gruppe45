@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -15,7 +16,8 @@ import java.util.function.Consumer;
 /**
  * Reusable search bar for views that need explicit search input.
  * Assembles a search icon, a text field, a search button, and a
- * clear button into a single row. Search is triggered by pressing Enter or
+ * clear button into a single row, with optional metadata below it.
+ * Search is triggered by pressing Enter or
  * clicking the search button. The clear button is hidden until a non-empty
  * search has been submitted; clicking it resets the field and notifies the
  * caller.
@@ -39,9 +41,24 @@ public class SearchBar extends VBox {
      * @throws NullPointerException if any argument is null
      */
     public SearchBar(String placeholderKey, String buttonKey, Consumer<String> onSearch) {
+        this(placeholderKey, buttonKey, onSearch, null);
+    }
+
+    /**
+     * Creates a search bar with localized text and optional metadata below the input row.
+     *
+     * @param placeholderKey the i18n key for the field placeholder
+     * @param buttonKey      the i18n key for the button text
+     * @param onSearch       callback receiving the current search term on each
+     *                       triggered search or clear action
+     * @param metadata       optional metadata shown below the search row, such as a {@link Label}
+     * @throws NullPointerException if placeholder key, button key or callback is null
+     */
+    public SearchBar(String placeholderKey, String buttonKey, Consumer<String> onSearch, Node metadata) {
         Objects.requireNonNull(placeholderKey, "Placeholder key cannot be null");
         Objects.requireNonNull(buttonKey, "Button key cannot be null");
         Objects.requireNonNull(onSearch, "Search callback cannot be null");
+
         this.placeholderKey = placeholderKey;
         this.buttonKey = buttonKey;
 
@@ -81,6 +98,10 @@ public class SearchBar extends VBox {
         HBox content = new HBox(12, searchInput, actionButtons);
         content.getStyleClass().add("search-row");
         getChildren().add(content);
+        if (metadata != null) {
+            metadata.getStyleClass().add("search-metadata");
+            getChildren().add(metadata);
+        }
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
