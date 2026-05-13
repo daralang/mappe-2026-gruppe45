@@ -129,26 +129,15 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
     }
 
     /**
-     * Returns the NOK range between the 4-week high and low.
+     * Returns the NOK range between the {@value #HIGH_LOW_WEEKS}-week high and low.
      *
      * @param stock the stock to read from
      * @return the high-low range in NOK
      */
     private BigDecimal highLowRange(Stock stock) {
-        List<BigDecimal> prices = lastPrices(stock);
+        List<BigDecimal> prices = stock.getRecentPrices(HIGH_LOW_WEEKS);
         BigDecimal low = prices.stream().min(BigDecimal::compareTo).orElseThrow();
         BigDecimal high = prices.stream().max(BigDecimal::compareTo).orElseThrow();
         return converter.convert(high.subtract(low), stock.getCurrency(), NOK);
-    }
-
-    /**
-     * Returns the latest {@value #HIGH_LOW_WEEKS} historical prices for the given stock.
-     *
-     * @param stock the stock to read prices from
-     * @return the latest price entries up to {@value #HIGH_LOW_WEEKS} entries
-     */
-    private List<BigDecimal> lastPrices(Stock stock) {
-        List<BigDecimal> prices = stock.getHistoricalPrices();
-        return prices.subList(Math.max(0, prices.size() - HIGH_LOW_WEEKS), prices.size());
     }
 }
