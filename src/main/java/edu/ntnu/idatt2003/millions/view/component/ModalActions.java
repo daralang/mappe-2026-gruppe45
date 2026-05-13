@@ -24,6 +24,7 @@ public final class ModalActions {
         hbox.getStyleClass().add("modal-actions");
         for (Button b : buttons) {
             b.setMaxWidth(Double.MAX_VALUE);
+            b.setPrefWidth(0);
             HBox.setHgrow(b, Priority.ALWAYS);
         }
         return hbox;
