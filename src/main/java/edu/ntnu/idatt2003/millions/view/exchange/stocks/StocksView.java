@@ -2,39 +2,23 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
+import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
 import edu.ntnu.idatt2003.millions.view.component.card.PortfolioValueCard;
-import edu.ntnu.idatt2003.millions.view.component.SearchBar;
-import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksInvestedCard;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksListCard;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksUnrealizedReturnCard;
-import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-
-import java.text.MessageFormat;
 
 /**
  * View for the exchange stocks tab.
  *
- * <p>Assembles four portfolio summary cards, a search bar with status metadata,
- * sort actions, and a sortable paginated {@link StocksListCard}.
- *
- * <p>Search is triggered explicitly by pressing Enter or clicking the search button,
- * delegated entirely to {@link SearchBar}. Sort state is managed by
- * {@link StocksSort} inside the table.
+ * <p>Assembles four portfolio summary cards and a sortable, searchable,
+ * paginated {@link StocksListCard}.
  */
 public class StocksView extends VBox {
-
-    private final StocksListCard stocksListCard;
-    private final StyledText statusLabel = StyledText.widgetLabel();
-    private final Pagination pagination;
 
     /**
      * Constructs a new StocksView.
@@ -45,50 +29,15 @@ public class StocksView extends VBox {
     public StocksView(GameService gameService, PortfolioController controller) {
         getStyleClass().add("content-area");
 
-        this.stocksListCard = new StocksListCard(gameService, controller);
-        this.pagination = new Pagination(StocksListCard.PAGE_SIZE, stocksListCard::setPage);
-
-        Button clearSortButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
-        clearSortButton.getStyleClass().add("clear-sort-button");
-        clearSortButton.setVisible(false);
-        clearSortButton.setOnAction(e -> stocksListCard.clearSort());
-
-        HBox metadataRow = createMetadataRow(clearSortButton);
-        SearchBar searchBar = new SearchBar(
-                "search.placeholder",
-                "search.button",
-                term -> {
-                    stocksListCard.filter(term);
-                    updateMetaInfo();
-                },
-                metadataRow);
-        searchBar.setMaxWidth(Double.MAX_VALUE);
-        HBox searchRow = new HBox(8, searchBar);
-        searchRow.setAlignment(Pos.CENTER_LEFT);
-        HBox.setHgrow(searchBar, Priority.ALWAYS);
-
         HBox summaryCards = createSummaryCards(gameService);
+        StocksListCard stocksListCard = new StocksListCard(gameService, controller);
+        Pagination pagination = new Pagination(StocksListCard.PAGE_SIZE, stocksListCard::setPage);
+        stocksListCard.setOnRefreshed(() -> pagination.update(
+                stocksListCard.getCurrentPage(),
+                stocksListCard.getFilteredCount()));
+        pagination.update(stocksListCard.getCurrentPage(), stocksListCard.getFilteredCount());
 
-        configureRefreshCallback(clearSortButton);
-        getChildren().addAll(summaryCards, searchRow, stocksListCard, pagination);
-        updateMetaInfo();
-    }
-
-    private HBox createMetadataRow(Button clearSortButton) {
-        Region statusSpacer = new Region();
-        HBox.setHgrow(statusSpacer, Priority.ALWAYS);
-        HBox metadataRow = new HBox(statusLabel, statusSpacer, clearSortButton);
-        metadataRow.setAlignment(Pos.CENTER_LEFT);
-        metadataRow.setMaxWidth(Double.MAX_VALUE);
-        return metadataRow;
-    }
-
-    private void configureRefreshCallback(Button clearSortButton) {
-        stocksListCard.setOnRefreshed(() -> {
-            boolean sortActive = stocksListCard.isSortActive();
-            clearSortButton.setVisible(sortActive);
-            updateMetaInfo();
-        });
+        getChildren().addAll(summaryCards, stocksListCard, pagination);
     }
 
     private HBox createSummaryCards(GameService gameService) {
@@ -102,22 +51,6 @@ public class StocksView extends VBox {
                 withGrow(new StocksUnrealizedReturnCard(gameService,
                         "exchange.stocks.unrealized.sub"))
         );
-    }
-
-    private void updateMetaInfo() {
-        pagination.update(stocksListCard.getCurrentPage(), stocksListCard.getFilteredCount());
-        updateStatus();
-    }
-
-    /**
-     * Updates the status label to reflect the current filtered and total stock counts.
-     * Uses the {@code exchange.stocks.status} i18n key with two positional arguments.
-     */
-    private void updateStatus() {
-        statusLabel.setText(MessageFormat.format(
-                LanguageManager.get("exchange.stocks.status"),
-                stocksListCard.getFilteredCount(),
-                stocksListCard.getTotalCount()));
     }
 
     /**
