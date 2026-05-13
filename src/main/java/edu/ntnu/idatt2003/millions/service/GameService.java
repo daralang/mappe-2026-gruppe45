@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.file.stock.StockFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -293,6 +294,24 @@ public class GameService {
      */
     public BigDecimal getPreviousNetWorth() {
         return player.getPreviousNetWorth();
+    }
+
+    /**
+     * Credits the player's balance with the given loan amount and notifies observers.
+     *
+     * @param offer  the loan offer the player is accepting
+     * @param amount the principal to disburse; must be positive and within offer limits
+     * @throws NullPointerException     if either argument is null
+     * @throws IllegalArgumentException if amount exceeds the offer's maximum principal
+     */
+    public void takeLoan(LoanOffer offer, BigDecimal amount) {
+        Objects.requireNonNull(offer, "Offer cannot be null");
+        Objects.requireNonNull(amount, "Amount cannot be null");
+        if (amount.compareTo(offer.maxPrincipal()) > 0) {
+            throw new IllegalArgumentException("Amount exceeds maximum for this offer");
+        }
+        player.addMoney(amount);
+        notifyObservers();
     }
 
     /**

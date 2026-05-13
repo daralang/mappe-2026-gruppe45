@@ -11,6 +11,7 @@ import edu.ntnu.idatt2003.millions.view.component.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.ColumnConstraints;
@@ -114,6 +115,8 @@ public class AvailableLoansCard extends Card {
     private VBox buildOfferNode(LoanOffer offer, int index) {
         VBox box = new VBox(10);
         box.getStyleClass().add("loans-offer-card");
+        box.setCursor(Cursor.HAND);
+        box.setOnMouseClicked(e -> select(index));
 
         StyledText nameLabel = StyledText.weekLabel(
                 LanguageManager.get("loans.offer." + offer.id() + ".name"));

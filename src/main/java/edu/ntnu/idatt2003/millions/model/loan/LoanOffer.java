@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.model.loan;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -36,5 +37,30 @@ public record LoanOffer(String id, BigDecimal weeklyInterestRate,
         if (maxPrincipal.signum() <= 0) {
             throw new IllegalArgumentException("Max principal must be greater than zero");
         }
+    }
+
+    /**
+     * Returns the minimum net worth a player must have to qualify for
+     * borrowing {@code principal} on this offer.
+     * The threshold is {@code principal × riskLevel.collateralRatio()}.
+     *
+     * @param principal the desired loan amount
+     * @return minimum required net worth, rounded to 2 decimal places
+     */
+    public BigDecimal minimumCollateral(BigDecimal principal) {
+        return principal.multiply(riskLevel.collateralRatio())
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Returns {@code true} if the player's net worth is sufficient to qualify
+     * for a loan of {@code principal} on this offer.
+     *
+     * @param netWorth  the player's current net worth in NOK
+     * @param principal the desired loan amount
+     * @return {@code true} if eligible
+     */
+    public boolean isEligible(BigDecimal netWorth, BigDecimal principal) {
+        return netWorth.compareTo(minimumCollateral(principal)) >= 0;
     }
 }
