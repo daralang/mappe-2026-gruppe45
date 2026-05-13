@@ -162,14 +162,21 @@ public class StocksSort {
     /**
      * Builds a sortable header button for the given column.
      *
+     * <p>When the column is the secondary sort, a {@code ²↓} or {@code ²↑}
+     * suffix is appended to the label to indicate its role as a tiebreaker.
+     *
      * @param labelKey  the i18n key for the column label
      * @param column    the sort column this header controls
      * @param onChanged callback invoked after the sort state changes
      * @return a styled sort header button
      */
     private Button buildSortableHeader(String labelKey, SortColumn column, Runnable onChanged) {
+        String label = LanguageManager.get(labelKey);
+        if (sortState.isSecondaryActive(column)) {
+            label += sortState.isSecondaryAscending() ? " ²↓" : " ²↑";
+        }
         return TableCells.sortHeader(
-                LanguageManager.get(labelKey),
+                label,
                 sortState.isActive(column),
                 sortState.isAscending(),
                 () -> {
