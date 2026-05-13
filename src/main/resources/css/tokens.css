@@ -7,11 +7,16 @@
     -danger-dark:      #b03a2e;
     -danger-text:      #c0392b;
     -danger-bg:        #fdecea;
+    -danger-border:    #F5B8B4;
 
     -success:          #27ae60;
     -success-bg:       #EAF3DE;
     -success-text:     #2E5A0E;
     -success-border:   #C4DDA0;
+
+    -warning-bg:       #FAEEDA;
+    -warning-text:     #854F0B;
+    -warning-border:   #F2D89C;
 
     -info-bg:          #E3EEF7;
     -info-text:        #1F4E79;
