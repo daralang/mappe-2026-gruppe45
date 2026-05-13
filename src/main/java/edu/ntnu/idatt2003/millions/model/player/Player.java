@@ -34,6 +34,7 @@ public class Player {
 
     private BigDecimal previousNetWorth;
     private List<BigDecimal> netWorthHistory;
+    private List<BigDecimal> totalDebtHistory = new ArrayList<>();
 
     /**
      * Constructs a new Player with the specified name and starting balance.
@@ -147,7 +148,7 @@ public class Player {
      */
     public BigDecimal getNetWorth(CurrencyConverter converter) {
         Objects.requireNonNull(converter, "Converter cannot be null");
-        return money.add(portfolio.getNetWorth(converter));
+        return money.add(portfolio.getNetWorth(converter)).subtract(getTotalDebt());
     }
 
     /**
@@ -223,6 +224,27 @@ public class Player {
     }
 
     /**
+     * Records the player's current total debt in the history.
+     * Called by {@link edu.ntnu.idatt2003.millions.service.GameService}
+     * before advancing the week.
+     */
+    public void recordTotalDebt() {
+        if (totalDebtHistory == null) totalDebtHistory = new ArrayList<>();
+        totalDebtHistory.add(getTotalDebt());
+    }
+
+    /**
+     * Returns a list of all recorded total-debt snapshots over time.
+     * Each entry corresponds to the debt at the end of a week.
+     *
+     * @return a defensive copy of the debt history
+     */
+    public List<BigDecimal> getTotalDebtHistory() {
+        if (totalDebtHistory == null) return List.of();
+        return new ArrayList<>(totalDebtHistory);
+    }
+
+    /**
      * Returns the maximum total debt the player may carry, equal to
      * {@link #MAX_DEBT_RATIO} of their current net worth.
      *
@@ -233,7 +255,8 @@ public class Player {
     public BigDecimal getLoanCapacity(CurrencyConverter converter) {
         return getNetWorth(converter)
                 .multiply(MAX_DEBT_RATIO)
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(2, RoundingMode.HALF_UP)
+                .max(BigDecimal.ZERO);
     }
 
     /**
