@@ -9,6 +9,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.LoanPreviewService;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanApplicationDialog;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.RepayLoanDialog;
+import edu.ntnu.idatt2003.millions.view.dialog.LoanDetailsModal;
 
 import java.math.BigDecimal;
 
@@ -61,8 +62,23 @@ public class LoanController {
         ref[0].show();
     }
 
-    public void openLoanDetailsModal(Loan loan) {
-        // TODO: implement loan details modal
+    /**
+     * Returns the current game week. Used by modals that need temporal context.
+     *
+     * @return the current exchange week
+     */
+    public int getCurrentWeek() {
+        return gameService.getExchange().getWeek();
+    }
+
+    /**
+     * Opens the read-only loan details modal for the given loan.
+     *
+     * @param loan      the loan to inspect
+     * @param loanIndex per-type display index (e.g. 2 → "Standard loan #2")
+     */
+    public void openLoanDetailsModal(Loan loan, int loanIndex) {
+        new LoanDetailsModal(loan, loanIndex, this).show();
     }
 
     private void handleConfirm(LoanApplicationDialog dialog, LoanOffer offer, BigDecimal amount) {

@@ -40,13 +40,13 @@ public class ActiveLoansCard extends Card {
     private final GameService gameService;
     private final LoanController controller;
     private final GridPane grid = new GridPane();
+    private final StyledText title = StyledText.sectionTitle();
 
     public ActiveLoansCard(GameService gameService, LoanController controller) {
         super(gameService);
         this.gameService = gameService;
         this.controller = controller;
 
-        StyledText title = StyledText.sectionTitle(LanguageManager.get("loans.active.title"));
         setSpacing(16);
 
         grid.setHgap(20);
@@ -67,6 +67,7 @@ public class ActiveLoansCard extends Card {
     }
 
     private void refresh() {
+        title.setText(LanguageManager.get("loans.active.title"));
         grid.getChildren().clear();
 
         List<Loan> loans = gameService.getPlayer().getActiveLoans();
@@ -158,7 +159,7 @@ public class ActiveLoansCard extends Card {
 
         Button details = new Button("❯");
         details.getStyleClass().add("holdings-details-chevron");
-        details.setOnAction(e -> controller.openLoanDetailsModal(loan));
+        details.setOnAction(e -> controller.openLoanDetailsModal(loan, loanIndex));
 
         HBox box = new HBox(24, repay, details);
         box.setAlignment(Pos.CENTER_RIGHT);
