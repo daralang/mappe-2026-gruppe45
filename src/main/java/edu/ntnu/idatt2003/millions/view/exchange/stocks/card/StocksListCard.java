@@ -4,6 +4,7 @@ import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort;
@@ -22,7 +23,7 @@ import java.util.List;
  */
 public class StocksListCard extends Card {
 
-    public static final int PAGE_SIZE = 20;
+    public static final int PAGE_SIZE = Pagination.DEFAULT_PAGE_SIZE;
 
     private final GameService gameService;
     private final StocksSort sort;
