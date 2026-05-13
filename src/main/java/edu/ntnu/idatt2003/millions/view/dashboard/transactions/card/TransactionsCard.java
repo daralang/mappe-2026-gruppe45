@@ -48,6 +48,7 @@ import java.util.List;
 public class TransactionsCard extends Card {
 
     private static final int PAGE_SIZE = Pagination.DEFAULT_PAGE_SIZE;
+    private static final double ROW_HEIGHT = 44.0;
 
     private final GameService gameService;
     private final TransactionStatsService statsService = new TransactionStatsService();
@@ -79,6 +80,7 @@ public class TransactionsCard extends Card {
         this.sort = new TransactionsSort(statsService, gameService.getCurrencyConverter());
         this.table = new SortColumnTable<>(sort::getColumnDefs);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
+        table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
 
         setSpacing(16);
 

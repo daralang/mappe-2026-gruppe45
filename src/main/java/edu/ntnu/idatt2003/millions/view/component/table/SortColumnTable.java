@@ -185,6 +185,16 @@ public class SortColumnTable<Column> {
     }
 
     /**
+     * Sets the minimum height of the table grid.
+     * Use this to keep the table at a consistent height when fewer rows are shown.
+     *
+     * @param height the minimum height in pixels
+     */
+    public void setMinHeight(double height) {
+        grid.setMinHeight(height);
+    }
+
+    /**
      * Returns the {@link SortState} owned by this table.
      *
      * <p>Pass this to a {@code *Sort} instance's {@code applySort} method so

@@ -32,7 +32,7 @@ import java.util.function.IntConsumer;
 public class Pagination extends HBox {
 
     /** Default number of table rows shown before pagination is needed. */
-    public static final int DEFAULT_PAGE_SIZE = 15;
+    public static final int DEFAULT_PAGE_SIZE = 8;
 
     private static final String PREV_KEY  = "pagination.prev";
     private static final String NEXT_KEY  = "pagination.next";
