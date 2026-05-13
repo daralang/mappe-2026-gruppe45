@@ -1,6 +1,8 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.loans;
 
+import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.ActiveLoansCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.AvailableLoansCard;
 import javafx.scene.layout.VBox;
 
@@ -20,18 +22,21 @@ public class LoansView extends VBox {
     private static final int VERTICAL_SPACING = 16;
 
     private final AvailableLoansCard availableLoansCard;
+    private final ActiveLoansCard activeLoansCard;
 
     /**
      * Constructs a new LoansView.
      *
-     * @param gameService the game manager containing player and exchange
+     * @param gameService    the game manager containing player and exchange
+     * @param loanController the controller for loan actions
      */
-    public LoansView(GameService gameService) {
+    public LoansView(GameService gameService, LoanController loanController) {
         setSpacing(VERTICAL_SPACING);
 
         availableLoansCard = new AvailableLoansCard(gameService);
+        activeLoansCard = new ActiveLoansCard(gameService, loanController);
 
-        getChildren().add(availableLoansCard);
+        getChildren().addAll(activeLoansCard, availableLoansCard);
     }
 
     /**

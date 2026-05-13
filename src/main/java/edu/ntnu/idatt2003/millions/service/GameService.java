@@ -255,6 +255,7 @@ public class GameService {
         CurrencyConverter converter = exchange.getCurrencyConverter();
         player.setPreviousNetWorth(player.getNetWorth(converter));
         exchange.advance();
+        player.collectWeeklyInterest(); // TODO: handle shortfall with forced share sales
         player.recordNetWorth(converter);
         notifyObservers();
     }
@@ -313,7 +314,7 @@ public class GameService {
     public Loan takeLoan(LoanOffer offer, BigDecimal amount) {
         Objects.requireNonNull(offer, "Offer cannot be null");
         Objects.requireNonNull(amount, "Amount cannot be null");
-        Loan loan = new Loan(offer, amount);
+        Loan loan = new Loan(offer, amount, exchange.getWeek());
         player.takeLoan(loan, exchange.getCurrencyConverter());
         notifyObservers();
         return loan;

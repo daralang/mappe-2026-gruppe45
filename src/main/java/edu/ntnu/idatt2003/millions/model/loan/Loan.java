@@ -6,10 +6,11 @@ import java.util.Objects;
 /**
  * An active loan taken by a player against a {@link LoanOffer}.
  *
- * @param offer     the offer this loan was issued under
- * @param principal the amount borrowed; must be positive
+ * @param offer        the offer this loan was issued under
+ * @param principal    the amount borrowed; must be positive
+ * @param takenAtWeek  the game week when the loan was taken; must be non-negative
  */
-public record Loan(LoanOffer offer, BigDecimal principal) {
+public record Loan(LoanOffer offer, BigDecimal principal, int takenAtWeek) {
 
     public Loan {
         Objects.requireNonNull(offer, "Offer cannot be null");
@@ -20,6 +21,9 @@ public record Loan(LoanOffer offer, BigDecimal principal) {
         if (principal.compareTo(offer.maxPrincipal()) > 0) {
             throw new IllegalArgumentException(
                     "Principal " + principal + " exceeds offer maximum " + offer.maxPrincipal());
+        }
+        if (takenAtWeek < 0) {
+            throw new IllegalArgumentException("takenAtWeek must be non-negative");
         }
     }
 }

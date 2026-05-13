@@ -30,7 +30,7 @@ public class Player {
 
     private final Portfolio portfolio;
     private final TransactionArchive transactionArchive;
-    private final List<Loan> activeLoans;
+    private List<Loan> activeLoans;
 
     private BigDecimal previousNetWorth;
     private List<BigDecimal> netWorthHistory;
@@ -202,8 +202,13 @@ public class Player {
      *
      * @return immutable snapshot of active loans
      */
+    private List<Loan> activeLoansInternal() {
+        if (activeLoans == null) activeLoans = new ArrayList<>();
+        return activeLoans;
+    }
+
     public List<Loan> getActiveLoans() {
-        return new ArrayList<>(activeLoans);
+        return new ArrayList<>(activeLoansInternal());
     }
 
     /**
@@ -212,7 +217,7 @@ public class Player {
      * @return total debt in NOK; zero if no active loans
      */
     public BigDecimal getTotalDebt() {
-        return activeLoans.stream()
+        return activeLoansInternal().stream()
                 .map(Loan::principal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
@@ -269,7 +274,27 @@ public class Player {
                     + "% capacity of " + capacity + " NOK.");
         }
         addMoney(loan.principal());
-        activeLoans.add(loan);
+        activeLoansInternal().add(loan);
+    }
+
+    /**
+     * Deducts one week's interest for every active loan from the player's
+     * cash balance. If the balance is insufficient to cover the full amount,
+     * the balance is reduced to zero and the unpaid shortfall is returned so
+     * the caller can trigger forced share sales.
+     *
+     * @return the interest amount that could not be paid; zero when fully covered
+     */
+    public BigDecimal collectWeeklyInterest() {
+        BigDecimal total = activeLoansInternal().stream()
+                .map(l -> l.principal()
+                        .multiply(l.offer().weeklyInterestRate())
+                        .setScale(2, RoundingMode.HALF_UP))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (total.signum() == 0) return BigDecimal.ZERO;
+        BigDecimal paid = total.min(money);
+        money = money.subtract(paid);
+        return total.subtract(paid);
     }
 
     /**

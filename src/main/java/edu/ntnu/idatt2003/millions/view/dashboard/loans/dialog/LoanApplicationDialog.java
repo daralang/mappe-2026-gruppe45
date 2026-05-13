@@ -55,7 +55,6 @@ public class LoanApplicationDialog extends Modal {
 
     private final LoanOffer offer;
     private final BigDecimal availableLoanCapacity;
-    private final BigDecimal effectiveMax;
     private final Function<BigDecimal, LoanPreview> previewCallback;
     private final Consumer<BigDecimal> confirmCallback;
 
@@ -78,7 +77,6 @@ public class LoanApplicationDialog extends Modal {
                                  Consumer<BigDecimal> confirmCallback) {
         this.offer = offer;
         this.availableLoanCapacity = availableLoanCapacity;
-        this.effectiveMax = offer.maxPrincipal().min(availableLoanCapacity);
         this.previewCallback = previewCallback;
         this.confirmCallback = confirmCallback;
     }
@@ -141,14 +139,14 @@ public class LoanApplicationDialog extends Modal {
                 MessageFormat.format(
                         LanguageManager.get("loans.dialog.amount.range"),
                         NUMBER_FORMAT.format(BigDecimal.ZERO),
-                        NUMBER_FORMAT.format(effectiveMax)));
+                        NUMBER_FORMAT.format(offer.maxPrincipal())));
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox labelRow = new HBox(labelLeft, spacer, labelRight);
 
         amountSlider.getStyleClass().add("loan-amount-slider");
         amountSlider.setMin(0);
-        amountSlider.setMax(effectiveMax.doubleValue());
+        amountSlider.setMax(offer.maxPrincipal().doubleValue());
         amountSlider.setValue(0);
         amountSlider.setMajorTickUnit(1000);
         amountSlider.setMinorTickCount(0);
