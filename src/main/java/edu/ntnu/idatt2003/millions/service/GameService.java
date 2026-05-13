@@ -257,6 +257,7 @@ public class GameService {
         exchange.advance();
         player.collectWeeklyInterest(); // TODO: handle shortfall with forced share sales
         player.recordNetWorth(converter);
+        player.recordTotalDebt();
         notifyObservers();
     }
 
