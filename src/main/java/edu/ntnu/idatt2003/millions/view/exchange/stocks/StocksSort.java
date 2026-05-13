@@ -65,19 +65,19 @@ public class StocksSort {
                         SortColumn.TICKER, 10, HPos.LEFT),
                 TableColumnDef.of(
                         LanguageManager.get("exchange.stocks.col.company"),
-                        22, HPos.LEFT),
+                        28, HPos.LEFT),
                 TableColumnDef.sortable(
                         LanguageManager.get("exchange.stocks.col.priceUSD"),
-                        SortColumn.PRICE_USD, 9, HPos.RIGHT),
+                        SortColumn.PRICE_USD, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
                         LanguageManager.get("exchange.stocks.col.priceNOK"),
-                        SortColumn.PRICE_NOK, 9, HPos.RIGHT),
+                        SortColumn.PRICE_NOK, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
                         LanguageManager.get("exchange.stocks.col.changeKr"),
-                        SortColumn.CHANGE_KR, 9, HPos.RIGHT),
+                        SortColumn.CHANGE_KR, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
                         LanguageManager.get("exchange.stocks.col.changePct"),
-                        SortColumn.CHANGE_PCT, 9, HPos.RIGHT),
+                        SortColumn.CHANGE_PCT, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
                         LanguageManager.get("exchange.stocks.col.highLow4"),
                         SortColumn.HIGH_LOW, 10, HPos.RIGHT),
@@ -86,7 +86,7 @@ public class StocksSort {
                         10, HPos.CENTER),
                 TableColumnDef.of(
                         LanguageManager.get("exchange.stocks.col.trade"),
-                        12, HPos.LEFT)
+                        6, HPos.LEFT)
         );
     }
 

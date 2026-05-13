@@ -64,7 +64,7 @@ public class StocksListCard extends Card {
         this.gameService = gameService;
         this.sort = new StocksSort(gameService.getCurrencyConverter());
         this.rowRenderer = new StocksRowRenderer(gameService, controller);
-        this.table = new SortColumnTable<>(sort::getColumnDefs, 16);
+        this.table = new SortColumnTable<>(sort::getColumnDefs, 10);
         this.title = StyledText.sectionTitle(LanguageManager.get("exchange.stocks.market"));
         this.clearSortButton = new Button(LanguageManager.get("exchange.stocks.sort.clear"));
 

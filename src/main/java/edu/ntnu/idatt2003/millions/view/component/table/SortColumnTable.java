@@ -61,6 +61,7 @@ public class SortColumnTable<Column> {
         this.columnCount = initial.size();
         grid.setHgap(gap);
         grid.setMinWidth(0);
+        grid.setMaxWidth(Double.MAX_VALUE);
         configureColumns(initial);
     }
 
