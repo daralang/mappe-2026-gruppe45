@@ -13,6 +13,7 @@ import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.HoldingsSort;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -107,7 +108,7 @@ public class HoldingsCard extends Card {
 
         Portfolio portfolio = gameService.getPlayer().getPortfolio();
         List<Share> shares = new ArrayList<>(portfolio.getShares().stream()
-                .filter(this::matchesSearch)
+                .filter(share -> currentSearchTerm.isBlank() || share.getStock().matches(currentSearchTerm))
                 .toList());
 
         if (shares.isEmpty()) {
@@ -125,17 +126,6 @@ public class HoldingsCard extends Card {
         }
 
         addTotalRow(row, portfolio);
-    }
-
-    private boolean matchesSearch(Share share) {
-        if (currentSearchTerm.isBlank()) {
-            return true;
-        }
-
-        String normalized = currentSearchTerm.toLowerCase();
-        Stock stock = share.getStock();
-        return stock.getSymbol().toLowerCase().contains(normalized)
-                || stock.getCompany().toLowerCase().contains(normalized);
     }
 
     /**

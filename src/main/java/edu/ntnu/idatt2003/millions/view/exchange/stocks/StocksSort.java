@@ -3,15 +3,15 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
+import java.util.List;
 import javafx.geometry.HPos;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Currency;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -21,11 +21,11 @@ import java.util.Objects;
  * can build a header row with the correct labels, widths, alignments and sort keys.
  * Resolves i18n labels on every call so language changes are picked up automatically.</p>
  *
- * <p>Sorting is applied via {@link #applySort(List, SortState)}, which reads the
- * active column and direction from the sort state owned by the table component.
- * This class owns no sort state itself, it is a pure sort-logic provider.</p>
+ * <p>Sorting is applied via the inherited {@link SortProvider#applySort} using the
+ * Template Method pattern. This class owns no sort state itself — it is a pure
+ * sort-logic provider.</p>
  */
-public class StocksSort {
+public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
 
     private static final int HIGH_LOW_WEEKS = 4;
     private static final Currency NOK = Currency.getInstance("NOK");
@@ -91,36 +91,13 @@ public class StocksSort {
     }
 
     /**
-     * Sorts the given stock list in-place according to the active column and
-     * direction in the provided {@link SortState}. When a secondary sort column
-     * is active, ties in the primary comparator are broken by the secondary via
-     * {@link Comparator#thenComparing}. No-op when no sort column is active.
-     *
-     * @param stocks the list to sort in-place
-     * @param state  the sort state read from the owning {@link SortColumnTable}
-     */
-    public void applySort(List<Stock> stocks, SortState<SortColumn> state) {
-        if (!state.hasActiveSort()) return;
-
-        Comparator<Stock> comparator = buildComparator(state.getActiveColumn());
-        if (!state.isAscending()) comparator = comparator.reversed();
-
-        if (state.hasSecondarySort()) {
-            Comparator<Stock> secondary = buildComparator(state.getSecondaryColumn());
-            if (!state.isSecondaryAscending()) secondary = secondary.reversed();
-            comparator = comparator.thenComparing(secondary);
-        }
-
-        stocks.sort(comparator);
-    }
-
-    /**
      * Builds a {@link Comparator} for the given sort column.
      *
      * @param column the column to build a comparator for
      * @return a comparator for the given column
      */
-    private Comparator<Stock> buildComparator(SortColumn column) {
+    @Override
+    protected Comparator<Stock> buildComparator(SortColumn column) {
         return switch (column) {
             case TICKER -> Comparator.comparing(Stock::getSymbol);
             case PRICE_USD -> Comparator.comparing(Stock::getSalesPrice);

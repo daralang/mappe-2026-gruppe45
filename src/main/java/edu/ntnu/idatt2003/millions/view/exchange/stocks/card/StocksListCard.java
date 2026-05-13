@@ -108,8 +108,16 @@ public class StocksListCard extends Card {
      *
      * @param term the search term to filter by
      */
+    /**
+     * Filters the table to stocks matching the given term and refreshes the display.
+     * Resets to the first page. An empty or blank term clears the filter.
+     *
+     * @param term the search term to filter by
+     */
     public void filter(String term) {
-        applyFilter(term);
+        currentFilterTerm = term == null ? "" : term;
+        syncFilteredList();
+        currentPage = 0;
         refresh();
     }
 
@@ -125,13 +133,14 @@ public class StocksListCard extends Card {
     /**
      * Rebuilds the table from the current filtered and sorted stock list.
      * If a sort is active, delegates sorting to {@link StocksSort#applySort}.
-     * If no sort is active, restores the original exchange order via {@link #restoreOrder()}.
+     * If no sort is active, syncs the filtered list to the original exchange order
+     * via {@link #syncFilteredList()}.
      */
     private void refresh() {
         if (table.isSortActive()) {
             sort.applySort(filteredStocks, table.getSortState());
         } else {
-            restoreOrder();
+            syncFilteredList();
         }
 
         table.clearRows();
@@ -179,25 +188,11 @@ public class StocksListCard extends Card {
     }
 
     /**
-     * Filters all stocks by the given term and resets {@link #currentPage} to 0.
-     * Delegates to the exchange's search when a term is present; uses the full list otherwise.
-     *
-     * @param term the search term, or blank to show all stocks
+     * Rebuilds {@link #filteredStocks} from {@link #allStocks} and the current filter
+     * term, then clamps {@link #currentPage} into the valid range. Does not reset the page.
+     * Used by {@link #applyFilter}, {@link #onGameUpdated} and sort-clear flows.
      */
-    private void applyFilter(String term) {
-        currentFilterTerm = term == null ? "" : term;
-        filteredStocks = currentFilterTerm.isBlank()
-                ? new ArrayList<>(allStocks)
-                : new ArrayList<>(gameService.getExchange().findStocks(currentFilterTerm));
-        currentPage = 0;
-    }
-
-    /**
-     * Restores {@link #filteredStocks} to the original exchange order without
-     * resetting {@link #currentPage}. Used when sort is cleared so the list
-     * returns to its pre-sort state while keeping the user on the current page.
-     */
-    private void restoreOrder() {
+    private void syncFilteredList() {
         filteredStocks = currentFilterTerm.isBlank()
                 ? new ArrayList<>(allStocks)
                 : new ArrayList<>(gameService.getExchange().findStocks(currentFilterTerm));
@@ -262,12 +257,13 @@ public class StocksListCard extends Card {
 
     /**
      * Called when the game state changes (week advanced, buy or sell).
-     * Reloads the stock list from the exchange and re-applies the current filter term.
+     * Reloads the stock list from the exchange and syncs the filtered list
+     * without resetting the current page.
      */
     @Override
     public void onGameUpdated() {
         allStocks = new ArrayList<>(gameService.getExchange().getStocks());
-        applyFilter(currentFilterTerm);
+        syncFilteredList();
         refresh();
     }
 
