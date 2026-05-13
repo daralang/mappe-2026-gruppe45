@@ -43,3 +43,24 @@
     -fx-text-fill: -danger-text;
     -fx-border-color: -danger-border;
 }
+
+/* Debt ratio progress bar */
+.debt-ratio-bar {
+    -fx-max-width: infinity;
+    -fx-pref-height: 8;
+}
+
+.debt-ratio-bar > .track {
+    -fx-background-color: -border-light;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+}
+
+.debt-ratio-bar > .bar {
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+}
+
+.debt-ratio-bar.debt-bar-ok > .bar      { -fx-background-color: -success; }
+.debt-ratio-bar.debt-bar-warning > .bar { -fx-background-color: -warning; }
+.debt-ratio-bar.debt-bar-danger > .bar  { -fx-background-color: -danger; }
