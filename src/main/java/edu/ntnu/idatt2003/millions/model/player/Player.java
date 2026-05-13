@@ -147,7 +147,7 @@ public class Player {
      */
     public BigDecimal getNetWorth(CurrencyConverter converter) {
         Objects.requireNonNull(converter, "Converter cannot be null");
-        return money.add(portfolio.getNetWorth(converter));
+        return money.add(portfolio.getNetWorth(converter)).subtract(getTotalDebt());
     }
 
     /**
@@ -233,7 +233,8 @@ public class Player {
     public BigDecimal getLoanCapacity(CurrencyConverter converter) {
         return getNetWorth(converter)
                 .multiply(MAX_DEBT_RATIO)
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(2, RoundingMode.HALF_UP)
+                .max(BigDecimal.ZERO);
     }
 
     /**
