@@ -92,7 +92,7 @@ public class DashboardView extends VBox {
 
     private void showLoans() {
         if (loansView == null) {
-            loansView = new LoansView(gameService);
+            loansView = new LoansView(gameService, loanController);
             loansView.getAvailableLoansCard().setOnApplyClicked(loanController::openLoanDialog);
         }
         contentArea.getChildren().setAll(loansView);

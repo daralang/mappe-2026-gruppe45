@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
+import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.service.GameService;
@@ -42,6 +43,14 @@ public class LoanController {
                 amount -> handleConfirm(ref[0], offer, amount)
         );
         ref[0].show();
+    }
+
+    public void openRepayDialog(Loan loan) {
+        // TODO: implement repay dialog
+    }
+
+    public void openLoanDetailsModal(Loan loan) {
+        // TODO: implement loan details modal
     }
 
     private void handleConfirm(LoanApplicationDialog dialog, LoanOffer offer, BigDecimal amount) {

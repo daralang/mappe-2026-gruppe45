@@ -609,9 +609,9 @@ class PlayerTest {
         @DisplayName("getTotalDebt() sums principals of multiple loans")
         void getTotalDebtSumsMultipleLoans() {
             // Arrange — player starts with 1000, capacity = 500
-            player.takeLoan(new Loan(offer, new BigDecimal("200.00")), converter);
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 0), converter);
             // After first loan: money=1200, capacity=600, available=400
-            player.takeLoan(new Loan(offer, new BigDecimal("150.00")), converter);
+            player.takeLoan(new Loan(offer, new BigDecimal("150.00"), 0), converter);
             // Assert
             assertEquals(0, new BigDecimal("350.00").compareTo(player.getTotalDebt()));
         }
@@ -641,7 +641,7 @@ class PlayerTest {
             // Arrange
             BigDecimal before = player.getAvailableLoanCapacity(converter);
             // Act
-            player.takeLoan(new Loan(offer, new BigDecimal("200.00")), converter);
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 0), converter);
             BigDecimal after = player.getAvailableLoanCapacity(converter);
             // Assert
             assertTrue(after.compareTo(before) < 0);
@@ -654,7 +654,7 @@ class PlayerTest {
             BigDecimal before = player.getMoney();
             BigDecimal principal = new BigDecimal("300.00");
             // Act
-            player.takeLoan(new Loan(offer, principal), converter);
+            player.takeLoan(new Loan(offer, principal, 0), converter);
             // Assert
             assertEquals(0, before.add(principal).compareTo(player.getMoney()));
         }
@@ -663,7 +663,7 @@ class PlayerTest {
         @DisplayName("takeLoan() adds the loan to active loans")
         void takeLoanAddsToActiveLoans() {
             // Arrange
-            Loan loan = new Loan(offer, new BigDecimal("300.00"));
+            Loan loan = new Loan(offer, new BigDecimal("300.00"), 0);
             // Act
             player.takeLoan(loan, converter);
             // Assert
@@ -675,7 +675,7 @@ class PlayerTest {
         void takeLoanThrowsWhenCapacityExceeded() {
             // Arrange — player starts with 1000, capacity = 500; request 600 > 500
             assertThrows(ExcessiveDebtException.class, () ->
-                    player.takeLoan(new Loan(offer, new BigDecimal("600.00")), converter));
+                    player.takeLoan(new Loan(offer, new BigDecimal("600.00"), 0), converter));
         }
 
         @Test
@@ -694,7 +694,7 @@ class PlayerTest {
             int loanCountBefore = player.getActiveLoans().size();
             // Act — request 600 > capacity 500 → throws
             assertThrows(ExcessiveDebtException.class, () ->
-                    player.takeLoan(new Loan(offer, new BigDecimal("600.00")), converter));
+                    player.takeLoan(new Loan(offer, new BigDecimal("600.00"), 0), converter));
             // Assert — state unchanged
             assertEquals(0, moneyBefore.compareTo(player.getMoney()));
             assertEquals(loanCountBefore, player.getActiveLoans().size());
