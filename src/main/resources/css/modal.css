@@ -120,7 +120,7 @@
 }
 
 .modal-summary-row .detail-label {
-    -fx-text-fill: -text-primary;
+    -fx-text-fill: -text-muted;
 }
 
 .modal-summary-total {
