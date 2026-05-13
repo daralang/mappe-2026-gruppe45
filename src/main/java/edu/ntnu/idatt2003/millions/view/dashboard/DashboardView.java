@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard;
 
+import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
@@ -22,11 +23,13 @@ public class DashboardView extends VBox {
 
     private final GameService gameService;
     private final PortfolioController portfolioController;
+    private final LoanController loanController;
     private final Runnable onExploreStocks;
     private final VBox contentArea;
 
     private PortfolioView portfolioView;
     private TransactionsView transactionsView;
+    private LoansView loansView;
 
     /**
      * Constructs a new DashboardView with a tab bar.
@@ -36,10 +39,12 @@ public class DashboardView extends VBox {
      */
     public DashboardView(GameService gameService,
                          PortfolioController portfolioController,
+                         LoanController loanController,
                          WeekBar weekBar,
                          Runnable onExploreStocks) {
         this.gameService = gameService;
         this.portfolioController = portfolioController;
+        this.loanController = loanController;
         this.onExploreStocks = onExploreStocks;
         getStyleClass().add("content-area");
 
@@ -86,6 +91,10 @@ public class DashboardView extends VBox {
     }
 
     private void showLoans() {
-        contentArea.getChildren().setAll(new LoansView(gameService));
+        if (loansView == null) {
+            loansView = new LoansView(gameService);
+            loansView.getAvailableLoansCard().setOnApplyClicked(loanController::openLoanDialog);
+        }
+        contentArea.getChildren().setAll(loansView);
     }
 }

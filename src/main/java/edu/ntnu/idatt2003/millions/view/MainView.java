@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view;
 
+import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.Header;
@@ -28,6 +29,7 @@ public class MainView {
 
     private final GameService gameService;
     private final PortfolioController portfolioController;
+    private final LoanController loanController;
     private final BorderPane root;
     private final Header header;
     private final WeekBar weekBar;
@@ -46,11 +48,13 @@ public class MainView {
     public MainView(Stage stage,
                     GameService gameService,
                     PortfolioController portfolioController,
+                    LoanController loanController,
                     Runnable onSaveGame,
                     Runnable onExitGame,
                     Runnable onAdvanceWeek) {
         this.gameService = gameService;
         this.portfolioController = portfolioController;
+        this.loanController = loanController;
         this.weekBar = new WeekBar(gameService, onAdvanceWeek);
         this.header = new Header(
                 this::showDashboard,
@@ -104,7 +108,7 @@ public class MainView {
      */
     private void showDashboard() {
         root.setCenter(wrapScrollable(
-                new DashboardView(gameService, portfolioController, weekBar, this::showExchangeOnStocksTab)));
+                new DashboardView(gameService, portfolioController, loanController, weekBar, this::showExchangeOnStocksTab)));
     }
 
     /**
