@@ -104,14 +104,35 @@ public class StocksSort {
 
     /**
      * Sorts the given stock list in-place according to the active sort column
-     * and direction. No-op when no sort column is active.
+     * and direction. When a secondary sort column is active, ties in the primary
+     * comparator are broken by the secondary using {@link Comparator#thenComparing}.
+     * No-op when no sort column is active.
      *
      * @param stocks the list to sort
      */
     public void applySort(List<Stock> stocks) {
         if (!sortState.hasActiveSort()) return;
 
-        Comparator<Stock> comparator = switch (sortState.getActiveColumn()) {
+        Comparator<Stock> comparator = buildComparator(sortState.getActiveColumn());
+        if (!sortState.isAscending()) comparator = comparator.reversed();
+
+        if (sortState.hasSecondarySort()) {
+            Comparator<Stock> secondary = buildComparator(sortState.getSecondaryColumn());
+            if (!sortState.isSecondaryAscending()) secondary = secondary.reversed();
+            comparator = comparator.thenComparing(secondary);
+        }
+
+        stocks.sort(comparator);
+    }
+
+    /**
+     * Builds a {@link Comparator} for the given sort column.
+     *
+     * @param column the column to build a comparator for
+     * @return a comparator for the given column
+     */
+    private Comparator<Stock> buildComparator(SortColumn column) {
+        return switch (column) {
             case TICKER -> Comparator.comparing(Stock::getSymbol);
             case PRICE_USD -> Comparator.comparing(Stock::getSalesPrice);
             case PRICE_NOK -> Comparator.comparing(this::priceInNok);
@@ -119,9 +140,6 @@ public class StocksSort {
             case CHANGE_PCT -> Comparator.comparing(Stock::getWeeklyChangePercent);
             case HIGH_LOW -> Comparator.comparing(this::highLowRange);
         };
-
-        if (!sortState.isAscending()) comparator = comparator.reversed();
-        stocks.sort(comparator);
     }
 
     /**
