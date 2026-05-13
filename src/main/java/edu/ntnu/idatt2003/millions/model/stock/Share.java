@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.model.stock;
 
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
@@ -7,6 +9,10 @@ import java.util.Objects;
 /**
  * Represents a player's ownership of a specific quantity of a stock.
  * A share records the stock owned, the quantity held, and the purchase price paid.
+ * When the same stock is bought more than once, the positions are consolidated by
+ * {@link edu.ntnu.idatt2003.millions.model.player.Portfolio} into a single Share
+ * whose {@code purchasePrice} is the weighted-average of all individual purchase
+ * prices (GAV = total cost / total quantity).
  * Shares are held in a player's portfolio and can be sold on an exchange.
  */
 public class Share {
@@ -56,9 +62,12 @@ public class Share {
     }
 
     /**
-     * Gets the purchase price per share.
+     * Gets the weighted-average purchase price (GAV) per share.
+     * For a position consolidated from multiple purchases this is the
+     * weighted-average of all individual purchase prices; for a single
+     * purchase it equals the original price paid.
      *
-     * @return the price paid per share
+     * @return the weighted-average price paid per share (GAV)
      */
     public BigDecimal getPurchasePrice() {
         return purchasePrice;
@@ -103,5 +112,40 @@ public class Share {
         if (cost.signum() == 0) return BigDecimal.ZERO;
         return getReturnNative().multiply(BigDecimal.valueOf(100))
                 .divide(cost, 2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Returns a new Share that consolidates this position with {@code other} using
+     * a weighted-average purchase price (GAV = total cost / total quantity).
+     * The returned Share uses this position's stock reference.
+     *
+     * @param other the position to merge into this one
+     * @return a new Share with summed quantity and weighted-average purchase price
+     * @throws NullPointerException     if other is null
+     * @throws IllegalArgumentException if other belongs to a different stock symbol
+     */
+    public Share mergedWith(Share other) {
+        Objects.requireNonNull(other, "Other share cannot be null");
+        if (!stock.getSymbol().equals(other.stock.getSymbol())) {
+            throw new IllegalArgumentException(
+                    "Cannot merge shares of different stocks: " + stock.getSymbol()
+                    + " vs " + other.stock.getSymbol());
+        }
+        BigDecimal newQuantity = quantity.add(other.quantity);
+        BigDecimal newCost = getCost().add(other.getCost());
+        BigDecimal newGav = newCost.divide(newQuantity, 4, RoundingMode.HALF_UP);
+        return new Share(stock, newQuantity, newGav);
+    }
+
+    /**
+     * Returns the net amount the player would receive if the entire position
+     * were sold at the current price, after commission and tax.
+     * Delegates to {@link SalesCalculator} so the business rules for fees
+     * remain in the domain model.
+     *
+     * @return liquidation value in the stock's native currency
+     */
+    public BigDecimal getLiquidationValue() {
+        return new SalesCalculator(this).calculateTotal();
     }
 }

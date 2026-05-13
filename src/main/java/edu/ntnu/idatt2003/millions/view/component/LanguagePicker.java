@@ -3,55 +3,55 @@ package edu.ntnu.idatt2003.millions.view.component;
 import edu.ntnu.idatt2003.millions.util.Language;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.application.Platform;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
+import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 
 /**
- * A reusable language picker component that displays available languages
- * as a dropdown with flag image and display name.
- * Changing the selected language updates the active language in LanguageManager.
+ * A reusable language picker that renders one flag button per supported language.
+ * The active language is shown at full opacity; others are dimmed.
  */
-public class LanguagePicker extends ComboBox<Language> {
+public class LanguagePicker extends HBox {
 
     public LanguagePicker() {
-        getItems().addAll(Language.values());
-        setValue(LanguageManager.getCurrentLanguage());
+        getStyleClass().add("language-picker");
 
-        setCellFactory(list -> createCell());
-        setButtonCell(createCell());
+        Language[] languages = Language.values();
+        for (Language lang : languages) {
+            ImageView flag = new ImageView(lang.flag);
+            flag.setFitWidth(22);
+            flag.setFitHeight(15);
+            flag.setPreserveRatio(false);
 
-        setOnAction(e -> {
-            LanguageManager.setLanguage(getValue());
-            Platform.runLater(() -> {
-                if (getScene() != null) {
-                    getScene().getRoot().requestFocus();
-                }
+            Button btn = new Button();
+            btn.setGraphic(flag);
+            btn.getStyleClass().add("language-picker-btn");
+            btn.setOnAction(e -> {
+                LanguageManager.setLanguage(lang);
+                Platform.runLater(() -> {
+                    if (getScene() != null) {
+                        getScene().getRoot().requestFocus();
+                    }
+                });
             });
-        });
+
+            getChildren().add(btn);
+        }
+
+        updateSelection();
+        LanguageManager.addObserver(this::updateSelection);
     }
 
-    private ListCell<Language> createCell() {
-        return new ListCell<>() {
-
-            private final ImageView flag = new ImageView();
-
-            @Override
-            protected void updateItem(Language language, boolean empty) {
-                super.updateItem(language, empty);
-
-                if (empty || language == null) {
-                    setText(null);
-                    setGraphic(null);
-                } else {
-                    flag.setImage(language.flag);
-                    flag.setFitHeight(16);
-                    flag.setFitWidth(24);
-
-                    setText(language.displayName);
-                    setGraphic(flag);
-                }
+    private void updateSelection() {
+        Language current = LanguageManager.getCurrentLanguage();
+        Language[] languages = Language.values();
+        for (int i = 0; i < languages.length; i++) {
+            Button btn = (Button) getChildren().get(i);
+            if (languages[i] == current) {
+                btn.getStyleClass().add("language-picker-btn-active");
+            } else {
+                btn.getStyleClass().remove("language-picker-btn-active");
             }
-        };
+        }
     }
 }

@@ -41,6 +41,15 @@ public class PortfolioService {
         return converter.convert(share.getReturnNative(), share.getStock().getCurrency(), NOK);
     }
 
+    /**
+     * Returns the liquidation value of a share position in NOK: what the player
+     * would actually receive after commission and tax if the entire position were
+     * sold now, converted to NOK at the current exchange rate.
+     */
+    public BigDecimal getLiquidationValueInNok(Share share, CurrencyConverter converter) {
+        return converter.convert(share.getLiquidationValue(), share.getStock().getCurrency(), NOK);
+    }
+
     /** Returns the total unrealized return across all portfolio positions in NOK. */
     public BigDecimal getTotalReturnInNok(Player player, CurrencyConverter converter) {
         return player.getPortfolio().getTotalReturnInNok(converter);

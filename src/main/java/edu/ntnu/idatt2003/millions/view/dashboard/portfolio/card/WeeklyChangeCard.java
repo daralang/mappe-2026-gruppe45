@@ -5,7 +5,11 @@ import edu.ntnu.idatt2003.millions.service.PlayerStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
+import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.component.card.WidgetCard;
+import javafx.geometry.Pos;
+import javafx.scene.layout.HBox;
 import edu.ntnu.idatt2003.millions.view.component.card.WidgetCard;
 
 import java.math.BigDecimal;
@@ -24,7 +28,11 @@ public class WeeklyChangeCard extends WidgetCard {
     public WeeklyChangeCard(GameService gameService) {
         super(gameService, "dashboard.weeklyChange");
         this.gameService = gameService;
-        getChildren().addAll(titleLabel, changeLabel);
+        InfoTooltip infoTooltip = new InfoTooltip("tooltip.dashboard.weeklyChange");
+        HBox titleRow = new HBox(5, titleLabel, infoTooltip);
+        titleRow.setAlignment(Pos.CENTER_LEFT);
+        infoTooltip.attachToParent(titleRow);
+        getChildren().addAll(titleRow, changeLabel);
         refreshDisplay();
     }
 

@@ -4,7 +4,7 @@
 
 Styling in this project is split across several CSS files loaded by `StylesheetLoader`. `tokens.css` is loaded first and defines design tokens. `style.css` is a manifest that imports all other files in order.
 
-Colors have one source of truth: `tokens.css`. Typography visual definitions have one source of truth: `typography.css`. `StyledText` is not a second source — it is the enforced access point that prevents raw `new Label()` + `getStyleClass().add()` calls in Java code. Component-specific rules live in their own file.
+Colors have one source of truth: `tokens.css`. Typography visual definitions have one source of truth: `typography.css`. `StyledText` is not a second source - it is the enforced access point that prevents raw `new Label()` + `getStyleClass().add()` calls in Java code. Component-specific rules live in their own file.
 
 ---
 
@@ -59,7 +59,7 @@ Add it to `tokens.css` under the relevant group (danger, success, surface, etc.)
 
 ## Typography - `StyledText` and `typography.css`
 
-`typography.css` is the source of truth for what each text role looks like. `StyledText` is the only way to apply a role in Java code — it ensures the correct CSS class is applied and prevents the class name from being scattered as raw strings across the codebase.
+`typography.css` is the source of truth for what each text role looks like. `StyledText` is the only way to apply a role in Java code - it ensures the correct CSS class is applied and prevents the class name from being scattered as raw strings across the codebase.
 
 ```java
 // Correct

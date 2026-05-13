@@ -5,6 +5,8 @@ import edu.ntnu.idatt2003.millions.service.RealizedReturnsService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -60,8 +62,12 @@ public class RealizedReturnsCard extends Card {
         emptyContainer.setPadding(new Insets(12, 0, 12, 0));
 
         valuesContainer.getChildren().addAll(
-                buildRow(gainLabel, gainValue, lossLabel, lossValue, netLabel, netValue),
-                buildRow(taxLabel, taxValue, commissionLabel, commissionValue, countLabel, countValue)
+                buildRow(gainLabel, gainValue, "tooltip.realized.gain",
+                         lossLabel, lossValue, "tooltip.realized.loss",
+                         netLabel, netValue, "tooltip.realized.net"),
+                buildRow(taxLabel, taxValue, "tooltip.realized.tax",
+                         commissionLabel, commissionValue, "tooltip.realized.commission",
+                         countLabel, countValue, null)
         );
 
         getChildren().addAll(title, emptyContainer, valuesContainer);
@@ -133,22 +139,32 @@ public class RealizedReturnsCard extends Card {
         countLabel.setText(LanguageManager.get("dashboard.realized.count"));
     }
 
-    private HBox buildRow(StyledText l1, StyledText v1,
-                          StyledText l2, StyledText v2,
-                          StyledText l3, StyledText v3) {
+    private HBox buildRow(StyledText l1, StyledText v1, String key1,
+                          StyledText l2, StyledText v2, String key2,
+                          StyledText l3, StyledText v3, String key3) {
         HBox row = new HBox(20);
-        row.getChildren().addAll(
-                buildCell(l1, v1),
-                buildCell(l2, v2),
-                buildCell(l3, v3)
-        );
+        VBox c1 = buildCell(l1, v1, key1);
+        VBox c2 = buildCell(l2, v2, key2);
+        VBox c3 = buildCell(l3, v3, key3);
+        row.getChildren().addAll(c1, c2, c3);
         return row;
     }
 
-    private VBox buildCell(StyledText label, StyledText value) {
-        VBox cell = new VBox(4, label, value);
+    private VBox buildCell(StyledText label, StyledText value, String tooltipKey) {
+        VBox cell;
+        if (tooltipKey != null) {
+            InfoTooltip infoTooltip = new InfoTooltip(tooltipKey);
+            HBox labelRow = new HBox(4, label, infoTooltip);
+            labelRow.setAlignment(Pos.CENTER_LEFT);
+            infoTooltip.attachToParent(labelRow);
+            cell = new VBox(4, labelRow, value);
+        } else {
+            cell = new VBox(4, label, value);
+        }
         HBox.setHgrow(cell, Priority.ALWAYS);
         cell.setMaxWidth(Double.MAX_VALUE);
+        cell.setMinWidth(0);
+        cell.setPrefWidth(1);
         return cell;
     }
 
