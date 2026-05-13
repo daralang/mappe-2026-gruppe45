@@ -4,6 +4,8 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel;
 import edu.ntnu.idatt2003.millions.model.player.Player;
@@ -800,7 +802,7 @@ class PlayerTest {
             Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
             player.takeLoan(loan, converter);
             // Act
-            player.repayLoan(loan);
+            player.repayLoan(loan, 1);
             // Assert
             assertFalse(player.getActiveLoans().contains(loan));
         }
@@ -813,7 +815,7 @@ class PlayerTest {
             player.takeLoan(loan, converter); // money: 1000 + 200 = 1200
             BigDecimal moneyAfterTake = player.getMoney();
             // Act
-            player.repayLoan(loan); // money: 1200 - 200 = 1000
+            player.repayLoan(loan, 1); // money: 1200 - 200 = 1000
             // Assert
             assertEquals(0, moneyAfterTake.subtract(new BigDecimal("200.00")).compareTo(player.getMoney()));
         }
@@ -831,7 +833,7 @@ class PlayerTest {
             broke.takeLoan(loan, converter); // money: 100 + 50 = 150
             broke.withdrawMoney(new BigDecimal("140.00")); // money: 10, principal: 50
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () -> broke.repayLoan(loan));
+            assertThrows(IllegalArgumentException.class, () -> broke.repayLoan(loan, 1));
         }
 
         @Test
@@ -840,7 +842,7 @@ class PlayerTest {
             // Arrange
             Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
             // Act & Assert — loan never taken, so not in active list
-            assertThrows(IllegalArgumentException.class, () -> player.repayLoan(loan));
+            assertThrows(IllegalArgumentException.class, () -> player.repayLoan(loan, 1));
         }
 
         @Test
@@ -872,7 +874,7 @@ class PlayerTest {
             player.takeLoan(loan, converter);
             BigDecimal before = player.getNetWorth(converter);
             // Act
-            player.repayLoan(loan);
+            player.repayLoan(loan, 1);
             // Assert — cash down by 300, debt down by 300: net effect is zero
             assertEquals(0, before.compareTo(player.getNetWorth(converter)));
         }
@@ -897,6 +899,49 @@ class PlayerTest {
             player.withdrawMoney(new BigDecimal("1390.00"));
             // Act & Assert
             assertEquals(0, BigDecimal.ZERO.compareTo(player.getLoanCapacity(converter)));
+        }
+
+        @Test
+        @DisplayName("takeLoan() appends a DISBURSEMENT ledger entry")
+        void takeLoanAppendsDisbursementEntry() {
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 1);
+            player.takeLoan(loan, converter);
+            List<LoanLedgerEntry> ledger = player.getLoanLedger();
+            assertEquals(1, ledger.size());
+            LoanLedgerEntry entry = ledger.getFirst();
+            assertEquals(LoanLedgerEntryType.DISBURSEMENT, entry.type());
+            assertEquals(0, new BigDecimal("200.00").compareTo(entry.amount()));
+            assertEquals(loan, entry.loan());
+        }
+
+        @Test
+        @DisplayName("repayLoan() appends a REPAYMENT ledger entry with negative amount")
+        void repayLoanAppendsRepaymentEntry() {
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 1);
+            player.takeLoan(loan, converter);
+            player.repayLoan(loan, 2);
+            List<LoanLedgerEntry> ledger = player.getLoanLedger();
+            assertEquals(2, ledger.size());
+            LoanLedgerEntry repayment = ledger.getLast();
+            assertEquals(LoanLedgerEntryType.REPAYMENT, repayment.type());
+            assertEquals(0, new BigDecimal("-200.00").compareTo(repayment.amount()));
+            assertEquals(2, repayment.week());
+        }
+
+        @Test
+        @DisplayName("getLoanLedger() returns a defensive copy")
+        void getLoanLedgerReturnsDefensiveCopy() {
+            Loan loan = new Loan(offer, new BigDecimal("100.00"), 1);
+            player.takeLoan(loan, converter);
+            List<LoanLedgerEntry> ledger = player.getLoanLedger();
+            ledger.clear();
+            assertEquals(1, player.getLoanLedger().size());
+        }
+
+        @Test
+        @DisplayName("Ledger is empty for a player with no loan activity")
+        void ledgerIsEmptyWithNoActivity() {
+            assertTrue(player.getLoanLedger().isEmpty());
         }
 
         @Test

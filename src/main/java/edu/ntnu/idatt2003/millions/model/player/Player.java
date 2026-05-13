@@ -3,6 +3,8 @@ package edu.ntnu.idatt2003.millions.model.player;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 
 import java.math.BigDecimal;
@@ -35,6 +37,7 @@ public class Player {
     private BigDecimal previousNetWorth;
     private List<BigDecimal> netWorthHistory;
     private List<BigDecimal> totalDebtHistory = new ArrayList<>();
+    private List<LoanLedgerEntry> loanLedger = new ArrayList<>();
 
     /**
      * Constructs a new Player with the specified name and starting balance.
@@ -245,6 +248,17 @@ public class Player {
     }
 
     /**
+     * Returns a defensive copy of all loan-related ledger entries.
+     * Each entry records a disbursement, interest deduction, or repayment.
+     *
+     * @return copy of the loan ledger; empty if no loan activity has occurred
+     */
+    public List<LoanLedgerEntry> getLoanLedger() {
+        if (loanLedger == null) return List.of();
+        return new ArrayList<>(loanLedger);
+    }
+
+    /**
      * Returns the maximum total debt the player may carry, equal to
      * {@link #MAX_DEBT_RATIO} of their current net worth.
      *
@@ -298,18 +312,23 @@ public class Player {
         }
         addMoney(loan.principal());
         activeLoansInternal().add(loan);
+        if (loanLedger == null) loanLedger = new ArrayList<>();
+        loanLedger.add(new LoanLedgerEntry(
+                Math.max(loan.takenAtWeek(), 1), loan,
+                LoanLedgerEntryType.DISBURSEMENT, loan.principal()));
     }
 
     /**
      * Repays a loan in full: withdraws the principal from the player's cash
      * balance and removes the loan from the active list.
      *
-     * @param loan the loan to repay; must be an active loan owned by this player
+     * @param loan        the loan to repay; must be an active loan owned by this player
+     * @param currentWeek the game week in which the repayment occurs; used for the ledger entry
      * @throws NullPointerException     if loan is null
      * @throws IllegalArgumentException if the player cannot afford the repayment
      * @throws IllegalArgumentException if the loan is not in the active list
      */
-    public void repayLoan(Loan loan) {
+    public void repayLoan(Loan loan, int currentWeek) {
         Objects.requireNonNull(loan, "Loan cannot be null");
         if (money.compareTo(loan.principal()) < 0) {
             throw new IllegalArgumentException(
@@ -319,22 +338,40 @@ public class Player {
             throw new IllegalArgumentException("Loan is not an active loan for this player");
         }
         money = money.subtract(loan.principal());
+        if (loanLedger == null) loanLedger = new ArrayList<>();
+        loanLedger.add(new LoanLedgerEntry(
+                Math.max(currentWeek, 1), loan,
+                LoanLedgerEntryType.REPAYMENT, loan.principal().negate()));
     }
 
     /**
      * Deducts one week's interest for every active loan from the player's
-     * cash balance. If the balance is insufficient to cover the full amount,
-     * the balance is reduced to zero and the unpaid shortfall is returned so
-     * the caller can trigger forced share sales.
+     * cash balance and records an INTEREST ledger entry for each loan.
      *
+     * <p>If the balance is insufficient to cover the full amount, the balance
+     * is reduced to zero and the unpaid shortfall is returned so the caller
+     * can trigger forced share sales. The ledger entries always record the
+     * full owed amount regardless of whether the player could cover it;
+     * the forced-sale flow that handles shortfalls is tracked separately.</p>
+     *
+     * @param week the game week in which interest is collected; used for ledger entries
      * @return the interest amount that could not be paid; zero when fully covered
      */
-    public BigDecimal collectWeeklyInterest() {
-        BigDecimal total = activeLoansInternal().stream()
-                .map(l -> l.principal()
-                        .multiply(l.offer().weeklyInterestRate())
-                        .setScale(2, RoundingMode.HALF_UP))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    public BigDecimal collectWeeklyInterest(int week) {
+        List<Loan> loans = activeLoansInternal();
+        BigDecimal total = BigDecimal.ZERO;
+        if (loanLedger == null) loanLedger = new ArrayList<>();
+        for (Loan loan : loans) {
+            BigDecimal interest = loan.principal()
+                    .multiply(loan.offer().weeklyInterestRate())
+                    .setScale(2, RoundingMode.HALF_UP);
+            total = total.add(interest);
+            if (interest.signum() > 0) {
+                loanLedger.add(new LoanLedgerEntry(
+                        Math.max(week, 1), loan,
+                        LoanLedgerEntryType.INTEREST, interest.negate()));
+            }
+        }
         if (total.signum() == 0) return BigDecimal.ZERO;
         BigDecimal paid = total.min(money);
         money = money.subtract(paid);
