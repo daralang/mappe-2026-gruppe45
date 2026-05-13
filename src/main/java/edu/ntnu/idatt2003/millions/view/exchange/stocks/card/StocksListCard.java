@@ -31,7 +31,8 @@ import java.util.List;
  */
 public class StocksListCard extends Card {
 
-    public static final int PAGE_SIZE = Pagination.DEFAULT_PAGE_SIZE;
+    public static final int PAGE_SIZE = 20;
+    private static final double ROW_HEIGHT = 44.0;
 
     private final GameService gameService;
     private final StocksSort sort;
@@ -70,6 +71,7 @@ public class StocksListCard extends Card {
 
         setSpacing(12);
         setMinWidth(0);
+        table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
 
         configureClearSortButton();
         getChildren().addAll(title, createSearchBar(), table.asNode());

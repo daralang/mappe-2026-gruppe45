@@ -55,11 +55,11 @@
 }
 
 .search-clear-button:hover {
-    -fx-background-color: -primary-dark;
+    -fx-background-color:  -info-border;
 }
 
 .search-clear-button {
-    -fx-background-color: #CECECE;
+    -fx-background-color: -primary-dark;
     -fx-text-fill: -surface;
 }
 
