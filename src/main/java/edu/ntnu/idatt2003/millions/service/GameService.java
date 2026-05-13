@@ -255,7 +255,7 @@ public class GameService {
         CurrencyConverter converter = exchange.getCurrencyConverter();
         player.setPreviousNetWorth(player.getNetWorth(converter));
         exchange.advance();
-        player.collectWeeklyInterest(); // TODO: handle shortfall with forced share sales
+        player.collectWeeklyInterest(exchange.getWeek()); // TODO: handle shortfall with forced share sales
         player.recordNetWorth(converter);
         player.recordTotalDebt();
         notifyObservers();
@@ -331,7 +331,7 @@ public class GameService {
      */
     public void repayLoan(Loan loan) {
         Objects.requireNonNull(loan, "Loan cannot be null");
-        player.repayLoan(loan);
+        player.repayLoan(loan, exchange.getWeek());
         notifyObservers();
     }
 
