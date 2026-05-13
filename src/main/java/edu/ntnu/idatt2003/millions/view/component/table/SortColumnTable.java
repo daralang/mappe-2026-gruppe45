@@ -1,0 +1,233 @@
+package edu.ntnu.idatt2003.millions.view.component.table;
+
+import edu.ntnu.idatt2003.millions.util.SortState;
+import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Reusable sortable table component backed by a {@link GridPane}.
+ *
+ * <p>Encapsulates the table infrastructure across every table card: column configuration,
+ * header-row rendering (static and sortable), empty-state display,
+ * and sort state management. Cards retain responsibility for data fetching,
+ * filtering, sorting and cell construction.</p>
+ *
+ * @param <Column> the sort-column enum type; use a wildcard or {@code Object}
+ *            when no column is sortable
+ */
+public class SortColumnTable<Column> {
+
+    private static final double DEFAULT_HGAP = 20;
+
+    private final List<TableColumnDef<Column>> columns;
+    private final SortState<Column> sortState = new SortState<>();
+    private final GridPane grid = new GridPane();
+
+    /**
+     * Constructs a sortable table with default horizontal gap of 20px.
+     *
+     * @param columns the ordered list of column definitions
+     * @throws NullPointerException if {@code columns} is null
+     */
+    public SortColumnTable(List<TableColumnDef<Column>> columns) {
+        this(columns, DEFAULT_HGAP);
+    }
+
+    /**
+     * Constructs a sortable table with the given horizontal gap between columns.
+     *
+     * @param columns the ordered list of column definitions
+     * @param gap    the horizontal gap between columns in pixels
+     * @throws NullPointerException if {@code columns} is null
+     */
+    public SortColumnTable(List<TableColumnDef<Column>> columns, double gap) {
+        this.columns = List.copyOf(Objects.requireNonNull(columns, "columns cannot be null"));
+        grid.setHgap(gap);
+        grid.setMinWidth(0);
+        configureColumns();
+    }
+
+    /**
+     * Configures the grid's column constraints from the column definitions.
+     * Called once during construction.
+     */
+    private void configureColumns() {
+        for (TableColumnDef<Column> col : columns) {
+            ColumnConstraints cc = new ColumnConstraints();
+            cc.setPercentWidth(col.percentWidth());
+            cc.setHalignment(col.alignment());
+            grid.getColumnConstraints().add(cc);
+        }
+    }
+
+    /**
+     * Clears all nodes from the grid, including any previously rendered
+     * header and data rows. Call this at the start of every refresh before
+     * calling {@link #refreshHeader}.
+     */
+    public void clearRows() {
+        grid.getChildren().clear();
+    }
+
+    /**
+     * Builds the header row into row 0 of the grid.
+     *
+     * <p>Sortable columns render as clickable {@link Button}s with a
+     * directional indicator (↓↑ / ↓ / ↑). Clicking a button activates
+     * ascending sort, or toggles direction if already active; a second
+     * active column shifts to secondary sort with a "²" prefix. Static
+     * columns render as plain. Columns with a tooltip key get an {@link InfoTooltip}
+     * icon attached to the right of the header text.</p>
+     *
+     * @param onChanged callback invoked after any sort-state change so the
+     *                  owning card can trigger a data refresh
+     */
+    public void refreshHeader(Runnable onChanged) {
+        for (int i = 0; i < columns.size(); i++) {
+            grid.add(buildHeaderCell(columns.get(i), onChanged), i, 0);
+        }
+    }
+
+    /**
+     * Adds a standard data row where each supplied node maps to the next
+     * column in order, starting from column 0.
+     *
+     * @param rowIndex the grid row to write to (row 0 is reserved for the header)
+     * @param cells    the nodes to place, one per column
+     */
+    public void addRow(int rowIndex, Node... cells) {
+        for (int i = 0; i < cells.length; i++) {
+            grid.add(cells[i], i, rowIndex);
+        }
+    }
+
+    /**
+     * Adds a single cell at an explicit column and row position.
+     *
+     * <p>Use this when a cell needs constraints that cannot be expressed by
+     * {@link #addRow}, for example {@code GridPane.setValignment(node, VPos.TOP)}
+     * set directly after this call.</p>
+     *
+     * @param cell   the node to add
+     * @param column the zero-based column index
+     * @param row    the zero-based row index
+     */
+    public void addCell(Node cell, int column, int row) {
+        grid.add(cell, column, row);
+    }
+
+    /**
+     * Adds a node that spans the full table width at the given row.
+     *
+     * <p>Intended for structural rows such as dividers between data and
+     * totals, or summary labels that should cover all columns.</p>
+     *
+     * @param node the node to add
+     * @param row  the zero-based row index
+     */
+    public void addFullWidthRow(Node node, int row) {
+        GridPane.setColumnSpan(node, columns.size());
+        grid.add(node, 0, row);
+    }
+
+    /**
+     * Renders a centred empty-state message spanning all columns on row 1.
+     *
+     * <p>Delegates to {@link TableCells#renderEmptyState} so the message
+     * inherits the shared {@code holdings-empty} style.</p>
+     *
+     * @param message the localised empty-state text to display
+     */
+    public void renderEmptyState(String message) {
+        TableCells.renderEmptyState(grid, message, columns.size());
+    }
+
+    /**
+     * Returns the {@link SortState} owned by this table.
+     *
+     * <p>Pass this to a {@code *Sort} instance's {@code applySort} method so
+     * sort direction and column selection are driven by what the user clicked
+     * in the header.</p>
+     *
+     * @return the sort state
+     */
+    public SortState<Column> getSortState() {
+        return sortState;
+    }
+
+    /**
+     * Returns this table as a {@link Node} for embedding in a parent layout.
+     *
+     * <p>The underlying {@link GridPane} is not exposed directly to prevent
+     * callers from bypassing the controlled insertion API.</p>
+     *
+     * @return the table node
+     */
+    public Node asNode() {
+        return grid;
+    }
+
+    /**
+     * Builds the header cell for the given column definition.
+     * Delegates to {@link #buildSortableButton} for sortable columns and
+     * wraps both variants in a tooltip {@link HBox} when a tooltip key is set.
+     *
+     * @param col       the column definition
+     * @param onChanged the sort-change callback
+     * @return the header node to add at row 0
+     */
+    private Node buildHeaderCell(TableColumnDef<Column> col, Runnable onChanged) {
+        Node base = col.isSortable()
+                ? buildSortableButton(col, onChanged)
+                : TableCells.header(col.label());
+
+        if (!col.hasTooltip()) {
+            return base;
+        }
+
+        InfoTooltip icon = new InfoTooltip(col.tooltipKey());
+        icon.getStyleClass().add("holdings-header-icon");
+        HBox wrapper = new HBox(6, base, icon);
+        wrapper.setAlignment(Pos.CENTER_RIGHT);
+        GridPane.setFillWidth(wrapper, false);
+        icon.attachToParent(wrapper);
+        return wrapper;
+    }
+
+    /**
+     * Builds a sort button for the given column.
+     *
+     * <p>When the column is the secondary sort, a {@code ²} prefix is appended
+     * to indicate its tiebreaker role. The button delegates to
+     * {@link SortState#toggle} on click, then fires {@code onChanged}.</p>
+     *
+     * @param col       the sortable column definition
+     * @param onChanged the sort-change callback
+     * @return a styled sort header button via {@link TableCells#sortHeader}
+     */
+    private Button buildSortableButton(TableColumnDef<Column> col, Runnable onChanged) {
+        Column sortColumn = col.sortColumn();
+        Runnable action = () -> {
+            sortState.toggle(sortColumn);
+            onChanged.run();
+        };
+        if (sortState.isSecondaryActive(sortColumn)) {
+            return TableCells.sortHeader(
+                    "² " + col.label(), true, sortState.isSecondaryAscending(), action);
+        }
+        return TableCells.sortHeader(
+                col.label(),
+                sortState.isActive(sortColumn),
+                sortState.isAscending(),
+                action);
+    }
+}
