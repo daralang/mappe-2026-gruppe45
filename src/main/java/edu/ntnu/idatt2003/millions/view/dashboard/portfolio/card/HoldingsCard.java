@@ -9,6 +9,7 @@ import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
@@ -24,8 +25,8 @@ import java.util.List;
 
 /**
  * Card displaying the player's holdings (shares owned), with sortable column
- * headers, action buttons for buy / sell / sell all / details, and a total row
- * at the bottom.
+ * headers, search, action buttons for buy / sell / sell all / details, and a
+ * total row at the bottom.
  *
  * <p>Column structure, sort state and header rendering are owned by
  * {@link SortColumnTable}. Domain-specific sort logic is delegated to
@@ -39,6 +40,7 @@ public class HoldingsCard extends Card {
     private final PortfolioController controller;
     private final HoldingsSort sort;
     private final SortColumnTable<HoldingsSort.SortColumn> table;
+    private String currentSearchTerm = "";
 
     /**
      * Constructs a new HoldingsCard.
@@ -60,8 +62,20 @@ public class HoldingsCard extends Card {
         StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
         setSpacing(16);
 
-        getChildren().addAll(title, table.asNode());
+        getChildren().addAll(title, createSearchBar(), table.asNode());
         refresh();
+    }
+
+    private SearchBar createSearchBar() {
+        SearchBar searchBar = new SearchBar(
+                "search.placeholder",
+                "search.button",
+                term -> {
+                    currentSearchTerm = term == null ? "" : term;
+                    refresh();
+                });
+        searchBar.setMaxWidth(Double.MAX_VALUE);
+        return searchBar;
     }
 
     /**
@@ -92,7 +106,9 @@ public class HoldingsCard extends Card {
         table.refreshHeader(this::refresh);
 
         Portfolio portfolio = gameService.getPlayer().getPortfolio();
-        List<Share> shares = new ArrayList<>(portfolio.getShares());
+        List<Share> shares = new ArrayList<>(portfolio.getShares().stream()
+                .filter(this::matchesSearch)
+                .toList());
 
         if (shares.isEmpty()) {
             table.renderEmptyState(LanguageManager.get("dashboard.portfolio.empty"));
@@ -109,6 +125,17 @@ public class HoldingsCard extends Card {
         }
 
         addTotalRow(row, portfolio);
+    }
+
+    private boolean matchesSearch(Share share) {
+        if (currentSearchTerm.isBlank()) {
+            return true;
+        }
+
+        String normalized = currentSearchTerm.toLowerCase();
+        Stock stock = share.getStock();
+        return stock.getSymbol().toLowerCase().contains(normalized)
+                || stock.getCompany().toLowerCase().contains(normalized);
     }
 
     /**
