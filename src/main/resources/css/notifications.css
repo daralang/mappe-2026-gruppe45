@@ -66,6 +66,11 @@
     -fx-border-width: 0 0 0 4;
 }
 
+.notification-milestone {
+    -fx-border-color: -success;
+    -fx-border-width: 0 0 0 4;
+}
+
 /* Unread: tinted background per severity */
 .notification-row.unread.notification-severe {
     -fx-background-color: -danger-bg;
@@ -75,6 +80,9 @@
 }
 .notification-row.unread.notification-info {
     -fx-background-color: -info-bg;
+}
+.notification-row.unread.notification-milestone {
+    -fx-background-color: -success-bg;
 }
 
 /* Unread hover: restore neutral surface */
@@ -91,6 +99,9 @@
 }
 .notification-row.read.notification-info {
     -fx-border-color: -border-light;
+}
+.notification-row.read.notification-milestone {
+    -fx-border-color: -success-border;
 }
 
 /* Read: drop bold only — severity colour is preserved by the title-severity classes */
@@ -114,6 +125,10 @@
     -fx-text-fill: -border-strong;
 }
 
+.notification-icon-milestone {
+    -fx-text-fill: -success;
+}
+
 .notification-title {
     -fx-font-size: 13px;
     -fx-font-weight: bold;
@@ -130,6 +145,15 @@
 
 .notification-title-info {
     -fx-text-fill: -text-primary;
+}
+
+.notification-title-milestone {
+    -fx-text-fill: -success-text;
+}
+
+.notification-row.read.notification-milestone .notification-title {
+    -fx-text-fill: -success-text;
+    -fx-font-weight: normal;
 }
 
 .notification-body {
@@ -164,6 +188,11 @@
 .notification-warning .notification-toast-title,
 .notification-warning-title {
     -fx-text-fill: -warning-text;
+}
+
+.notification-milestone .notification-toast-title,
+.notification-milestone-title {
+    -fx-text-fill: -success-text;
 }
 
 .notification-toast-body {

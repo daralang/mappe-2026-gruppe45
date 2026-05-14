@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel;
 import edu.ntnu.idatt2003.millions.model.notification.Notification;
 import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import org.junit.jupiter.api.BeforeEach;
@@ -309,6 +310,94 @@ class NotificationServiceTest {
             // Assert
             assertTrue(player.getNotifications().stream().noneMatch(n ->
                     n.titleKey().equals("notification.loanRepaid.title")));
+        }
+    }
+
+    @Nested
+    @DisplayName("Status change notifications")
+    class StatusChange {
+
+        @Test
+        @DisplayName("Does not push when status is unchanged")
+        void onWeekAdvanced_doesNotPushWhenStatusUnchanged() {
+            // Fresh player: previousStatus=NOVICE, getStatus()=NOVICE
+            service.onWeekAdvanced(player, exchange, converter);
+
+            assertTrue(player.getNotifications().stream().noneMatch(n ->
+                    n.titleKey().startsWith("notification.status")));
+        }
+
+        @Test
+        @DisplayName("Pushes MILESTONE on upgrade (NOVICE → INVESTOR)")
+        void onWeekAdvanced_pushesMilestoneOnStatusUpgrade() {
+            makePlayerQualifyForInvestor();
+            player.setPreviousStatus(PlayerStatusLevel.NOVICE);
+
+            service.onWeekAdvanced(player, exchange, converter);
+
+            assertTrue(player.getNotifications().stream().anyMatch(n ->
+                    n.severity() == Notification.Severity.MILESTONE
+                    && n.titleKey().equals("notification.statusUpgrade.title")));
+        }
+
+        @Test
+        @DisplayName("Pushes INFO on downgrade (SPECULATOR → NOVICE)")
+        void onWeekAdvanced_pushesInfoOnStatusDowngrade() {
+            // Fresh player has no trades → status = NOVICE
+            player.setPreviousStatus(PlayerStatusLevel.SPECULATOR);
+
+            service.onWeekAdvanced(player, exchange, converter);
+
+            assertTrue(player.getNotifications().stream().anyMatch(n ->
+                    n.severity() == Notification.Severity.INFO
+                    && n.titleKey().equals("notification.statusDowngrade.title")));
+        }
+
+        @Test
+        @DisplayName("Pushes exactly one MILESTONE when jumping from NOVICE directly to SPECULATOR")
+        void onWeekAdvanced_pushesOneUpgradeWhenJumpingMultipleTiers() {
+            makePlayerQualifyForSpeculator();
+            player.setPreviousStatus(PlayerStatusLevel.NOVICE);
+
+            service.onWeekAdvanced(player, exchange, converter);
+
+            long count = player.getNotifications().stream()
+                    .filter(n -> n.titleKey().equals("notification.statusUpgrade.title"))
+                    .count();
+            assertEquals(1, count);
+        }
+
+        @Test
+        @DisplayName("Pushes exactly one INFO when dropping from SPECULATOR directly to NOVICE")
+        void onWeekAdvanced_pushesOneDowngradeWhenDroppingMultipleTiers() {
+            player.setPreviousStatus(PlayerStatusLevel.SPECULATOR);
+
+            service.onWeekAdvanced(player, exchange, converter);
+
+            long count = player.getNotifications().stream()
+                    .filter(n -> n.titleKey().equals("notification.statusDowngrade.title"))
+                    .count();
+            assertEquals(1, count);
+        }
+
+        private void makePlayerQualifyForInvestor() {
+            String symbol = exchange.getStocks().get(0).getSymbol();
+            for (int i = 0; i < 10; i++) {
+                exchange.advance();
+                exchange.buy(symbol, new BigDecimal("1"), player);
+            }
+            // Ensure net worth >= startingMoney * 1.20 (100000 -> 120000)
+            player.addMoney(new BigDecimal("25000"));
+        }
+
+        private void makePlayerQualifyForSpeculator() {
+            String symbol = exchange.getStocks().get(0).getSymbol();
+            for (int i = 0; i < 20; i++) {
+                exchange.advance();
+                exchange.buy(symbol, new BigDecimal("1"), player);
+            }
+            // Ensure net worth >= startingMoney * 2.00 (100000 -> 200000)
+            player.addMoney(new BigDecimal("110000"));
         }
     }
 

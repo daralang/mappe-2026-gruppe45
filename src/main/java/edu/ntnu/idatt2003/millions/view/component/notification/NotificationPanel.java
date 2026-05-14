@@ -166,6 +166,7 @@ public class NotificationPanel {
         return switch (s) {
             case SEVERE -> "⛔";
             case WARNING -> "⚠";
+            case MILESTONE -> "🏆";
             case INFO -> "ℹ";
         };
     }
@@ -174,6 +175,7 @@ public class NotificationPanel {
         return switch (s) {
             case SEVERE -> "notification-icon-severe";
             case WARNING -> "notification-icon-warning";
+            case MILESTONE -> "notification-icon-milestone";
             case INFO -> "notification-icon-info";
         };
     }
@@ -182,6 +184,7 @@ public class NotificationPanel {
         return switch (s) {
             case SEVERE -> "notification-title-severe";
             case WARNING -> "notification-title-warning";
+            case MILESTONE -> "notification-title-milestone";
             case INFO -> "notification-title-info";
         };
     }
@@ -190,6 +193,7 @@ public class NotificationPanel {
         return switch (s) {
             case SEVERE -> "notification-severe";
             case WARNING -> "notification-warning";
+            case MILESTONE -> "notification-milestone";
             case INFO -> "notification-info";
         };
     }
