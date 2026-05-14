@@ -1,13 +1,10 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.transactions;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
-<<<<<<< HEAD
 import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
-=======
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.LoanLedgerCard;
->>>>>>> origin/main
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.TransactionsActivityCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.TransactionsCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.TransactionsSummaryCard;
@@ -48,14 +45,8 @@ public class TransactionsView extends VBox {
         int currentWeek = Math.max(gameService.getExchange().getWeek(), 1);
         WeekRangeFilter sharedFilter = new WeekRangeFilter(1, currentWeek);
 
-<<<<<<< HEAD
-        TransactionsCard transactionsCard = new TransactionsCard(gameService, sharedFilter, new TransactionStatsService());
-        TransactionsSummaryCard summaryCard = new TransactionsSummaryCard(gameService, sharedFilter);
-        TransactionsActivityCard activityCard = new TransactionsActivityCard(gameService, sharedFilter);
-=======
-        tradesBody     = new TransactionsCard(gameService, sharedFilter);
+        tradesBody     = new TransactionsCard(gameService, sharedFilter, new TransactionStatsService());
         loanLedgerBody = new LoanLedgerCard(gameService);
->>>>>>> origin/main
 
         // ── Outer card ──────────────────────────────────────────────────────
         StyledText title = StyledText.sectionTitle(LanguageManager.get("transactions.title"));
