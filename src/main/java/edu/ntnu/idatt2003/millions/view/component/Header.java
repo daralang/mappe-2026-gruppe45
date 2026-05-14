@@ -80,6 +80,7 @@ public class Header extends HBox {
 
         StackPane bellWrapper = new StackPane(bellButton, badge);
         bellWrapper.setAlignment(Pos.CENTER);
+        bellWrapper.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
         notificationPanel = new NotificationPanel(gameService, this::onGameUpdated);
         popupOverlay = new NotificationPopupOverlay(gameService);
