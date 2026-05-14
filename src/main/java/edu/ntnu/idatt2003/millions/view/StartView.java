@@ -361,15 +361,6 @@ public class StartView implements StartScreenInputs {
     }
 
     /**
-     * Sets the player name input field.
-     *
-     * @param name the player name to display; {@code null} clears the field
-     */
-    public void setName(String name) {
-        nameField.setText(name == null ? "" : name);
-    }
-
-    /**
      * Returns the trimmed player name entered by the user.
      *
      * @return trimmed player name
@@ -377,15 +368,6 @@ public class StartView implements StartScreenInputs {
     @Override
     public String getName() {
         return nameField.getText().trim();
-    }
-
-    /**
-     * Sets the starting capital input field.
-     *
-     * @param capital the starting capital to display; {@code null} clears the field
-     */
-    public void setCapital(String capital) {
-        capitalField.setText(capital == null ? "" : capital);
     }
 
     /**
@@ -408,53 +390,6 @@ public class StartView implements StartScreenInputs {
     @Override
     public Currency getSelectedCurrency() {
         return currencySelector.getValue();
-    }
-
-    /**
-     * Returns the stock file drop zone so the controller can bind drag-and-drop
-     * and browse handlers without depending on the internal layout structure.
-     *
-     * @return the {@link FileDropZone} for stock CSV upload
-     */
-    public FileDropZone getStockFileDropZone() {
-        return stockFileDropZone;
-    }
-
-    /**
-     * Returns the save file drop zone so the controller can bind drag-and-drop
-     * and browse handlers for the resume game tab.
-     *
-     * @return the {@link FileDropZone} for JSON save-file upload
-     */
-    public FileDropZone getSaveFileDropZone() {
-        return saveFileDropZone;
-    }
-
-    /**
-     * Returns the button that starts a new game.
-     *
-     * @return the start button
-     */
-    public Button getStartButton() {
-        return startButton;
-    }
-
-    /**
-     * Returns the button that loads a saved game.
-     *
-     * @return the load button
-     */
-    public Button getLoadButton() {
-        return loadButton;
-    }
-
-    /**
-     * Returns the tab pane containing the new and load game tabs.
-     *
-     * @return the tab pane
-     */
-    public TabPane getTabPane() {
-        return tabPane;
     }
 
     /**
