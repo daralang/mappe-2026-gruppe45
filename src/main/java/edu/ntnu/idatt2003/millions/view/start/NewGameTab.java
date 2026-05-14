@@ -2,22 +2,13 @@ package edu.ntnu.idatt2003.millions.view.start;
 
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.CurrencySelector;
-import edu.ntnu.idatt2003.millions.view.component.FileDropZone;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.PauseTransition;
-import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
-import javafx.util.Duration;
 
 import java.util.Currency;
 
@@ -27,19 +18,14 @@ import java.util.Currency;
  * <p>Extends {@link FileDropTab} with fields for player name, starting capital,
  * and currency selection. The optional stock CSV upload area opens automatically
  * from a collapsed state when the view is first shown, while the start button is
- * pushed downward by normal {@link VBox} layout. The tab content also animates
- * its own preferred height so the surrounding start card can follow the change.
+ * pushed downward by normal {@link VBox} layout. The animation is delegated to
+ * {@link StartLayoutAnimator} so this class can focus on composing controls.
  * The currency selector is disabled when no file is selected and re-enabled via
  * {@link #onFileSelected()} and {@link #onFileCleared()}.</p>
  */
 public class NewGameTab extends FileDropTab {
 
     private static final double LABEL_WIDTH = 120;
-    private static final double UPLOAD_DROP_ZONE_HEIGHT = 190;
-    private static final double UPLOAD_SECTION_EXPANDED_HEIGHT = 250;
-    private static final double CONTENT_WIDTH = CARD_WIDTH + 48;
-    private static final Duration UPLOAD_REVEAL_DELAY = Duration.millis(380);
-    private static final Duration UPLOAD_REVEAL_DURATION = Duration.millis(820);
 
     private final StyledText nameLabel;
     private final StyledText capitalLabel;
@@ -48,13 +34,13 @@ public class NewGameTab extends FileDropTab {
     private final TextField nameField;
     private final TextField capitalField;
     private final CurrencySelector currencySelector;
-    private final VBox uploadSection;
 
     /**
      * Creates the new game tab, builds its layout, and registers
      * an i18n observer so labels update on language changes.
      * The optional upload section starts collapsed and is revealed by
-     * {@link #animateUploadIntro()} after the first layout pass.
+     * {@link StartLayoutAnimator#playUploadIntro(VBox, VBox, double)} after the
+     * first layout pass.
      */
     public NewGameTab() {
         nameLabel = StyledText.paragraphOne();
@@ -69,20 +55,8 @@ public class NewGameTab extends FileDropTab {
         HBox nameRow = buildFormRow(nameLabel, nameField);
         HBox capitalRow = buildFormRow(capitalLabel, capitalField);
         HBox currencyRow = buildFormRow(currencyLabel, currencySelector);
-        getFileDropZone().setMinHeight(UPLOAD_DROP_ZONE_HEIGHT);
-        getFileDropZone().setPrefHeight(UPLOAD_DROP_ZONE_HEIGHT);
-
-        uploadSection = new VBox(16, getFileDropZone(), currencyRow);
-        uploadSection.setMaxWidth(CARD_WIDTH);
-        uploadSection.setMinHeight(0);
-        uploadSection.setPrefHeight(0);
-        uploadSection.setMaxHeight(0);
-        uploadSection.setOpacity(0);
-
-        Rectangle uploadClip = new Rectangle();
-        uploadClip.widthProperty().bind(uploadSection.widthProperty());
-        uploadClip.heightProperty().bind(uploadSection.heightProperty());
-        uploadSection.setClip(uploadClip);
+        VBox uploadSection = StartLayoutAnimator.createCollapsedUploadSection(
+                getFileDropZone(), currencyRow, CARD_WIDTH);
 
         VBox uploadArea = new VBox(10, fileLabel, uploadSection);
         uploadArea.setMaxWidth(CARD_WIDTH);
@@ -91,54 +65,7 @@ public class NewGameTab extends FileDropTab {
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
-        Platform.runLater(this::animateUploadIntro);
-    }
-
-    /**
-     * Reveals the optional upload controls with a slow downward animation.
-     * The section animates to a fixed expanded height sized for the
-     * {@link FileDropZone} and currency row.
-     * The surrounding {@link NewGameTab} height is animated in
-     * parallel so parent containers can resize the card during the reveal.
-     */
-    private void animateUploadIntro() {
-        applyCss();
-        double collapsedHeight = prefHeight(CONTENT_WIDTH);
-        double expandedHeight = collapsedHeight + UPLOAD_SECTION_EXPANDED_HEIGHT;
-
-        setMinHeight(collapsedHeight);
-        setPrefHeight(collapsedHeight);
-        setMaxHeight(expandedHeight);
-
-        PauseTransition delay = new PauseTransition(UPLOAD_REVEAL_DELAY);
-        delay.setOnFinished(event -> {
-            Timeline reveal = new Timeline(
-                    new KeyFrame(Duration.ZERO,
-                            new KeyValue(uploadSection.prefHeightProperty(), 0),
-                            new KeyValue(uploadSection.maxHeightProperty(), 0),
-                            new KeyValue(uploadSection.opacityProperty(), 0),
-                            new KeyValue(minHeightProperty(), collapsedHeight),
-                            new KeyValue(prefHeightProperty(), collapsedHeight)),
-                    new KeyFrame(UPLOAD_REVEAL_DURATION,
-                            new KeyValue(uploadSection.prefHeightProperty(),
-                                    UPLOAD_SECTION_EXPANDED_HEIGHT, Interpolator.EASE_BOTH),
-                            new KeyValue(uploadSection.maxHeightProperty(),
-                                    UPLOAD_SECTION_EXPANDED_HEIGHT, Interpolator.EASE_BOTH),
-                            new KeyValue(uploadSection.opacityProperty(), 1, Interpolator.EASE_OUT),
-                            new KeyValue(minHeightProperty(), expandedHeight, Interpolator.EASE_BOTH),
-                            new KeyValue(prefHeightProperty(), expandedHeight, Interpolator.EASE_BOTH))
-            );
-            reveal.setOnFinished(finished -> {
-                uploadSection.setPrefHeight(UPLOAD_SECTION_EXPANDED_HEIGHT);
-                uploadSection.setMaxHeight(UPLOAD_SECTION_EXPANDED_HEIGHT);
-                uploadSection.setOpacity(1);
-                setMinHeight(expandedHeight);
-                setPrefHeight(expandedHeight);
-                setMaxHeight(expandedHeight);
-            });
-            reveal.play();
-        });
-        delay.play();
+        StartLayoutAnimator.playUploadIntro(this, uploadSection, CARD_WIDTH);
     }
 
     /**
