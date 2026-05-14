@@ -28,4 +28,19 @@ public final class TitleBarFactory {
         }
         return new WindowsTitleBar(stage);
     }
+
+    /**
+     * Returns a title bar for the start screen.
+     * On Windows/Linux: a transparent controls-only strip (no nav header).
+     * On macOS: a no-op (the OS supplies native traffic-light controls).
+     *
+     * @param stage the primary stage
+     * @return the platform-appropriate title bar for the start screen
+     */
+    public static TitleBar createForStartScreen(Stage stage) {
+        if (OsDetector.isMac()) {
+            return new NoOpTitleBar();
+        }
+        return new WindowsTitleBar(stage, "title-bar-light", false);
+    }
 }

@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import edu.ntnu.idatt2003.millions.view.StartView;
+import edu.ntnu.idatt2003.millions.view.titlebar.TitleBarFactory;
 import java.io.File;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
@@ -66,7 +67,8 @@ public class StartController {
      * @throws NullPointerException if stage or game manager is null
      */
     public StartController(Stage stage, GameService gameService) {
-        this(stage, gameService, new StartView(),
+        this(stage, gameService,
+                new StartView(TitleBarFactory.createForStartScreen(stage).getNode()),
                 () -> new MainController(stage, gameService).show(),
                 StartController::showAlert);
     }
