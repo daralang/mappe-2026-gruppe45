@@ -49,7 +49,7 @@ public class NewGameTab extends FileDropTab {
         HBox capitalRow = buildFormRow(capitalLabel, capitalField);
         HBox currencyRow = buildFormRow(currencyLabel, currencySelector);
 
-        getChildren().addAll(nameRow, capitalRow, fileLabel, fileDropZone, currencyRow, actionButton);
+        getChildren().addAll(nameRow, capitalRow, fileLabel, getFileDropZone(), currencyRow, getActionButton());
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
@@ -95,10 +95,10 @@ public class NewGameTab extends FileDropTab {
         capitalLabel.setText(LanguageManager.get("start.new.capitalLabel"));
         currencyLabel.setText(LanguageManager.get("start.new.currencyLabel"));
         fileLabel.setText(LanguageManager.get("start.new.fileLabel"));
-        fileDropZone.setHintText(LanguageManager.get("start.new.dropZoneHint"));
-        fileDropZone.setOrText(LanguageManager.get("start.new.dropZoneOr"));
-        fileDropZone.setBrowseText(LanguageManager.get("start.file.browse"));
-        actionButton.setText(LanguageManager.get("start.startButton"));
+        getFileDropZone().setHintText(LanguageManager.get("start.new.dropZoneHint"));
+        getFileDropZone().setOrText(LanguageManager.get("start.new.dropZoneOr"));
+        getFileDropZone().setBrowseText(LanguageManager.get("start.file.browse"));
+        setActionButtonText(LanguageManager.get("start.startButton"));
         nameField.setPromptText("");
         capitalField.setPromptText("");
     }

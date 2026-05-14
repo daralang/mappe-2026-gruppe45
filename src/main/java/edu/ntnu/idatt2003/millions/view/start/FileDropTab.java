@@ -25,8 +25,8 @@ public abstract class FileDropTab extends VBox {
     protected static final double CARD_WIDTH = 460;
     private static final double FORM_SPACING = 16;
 
-    protected final FileDropZone fileDropZone;
-    protected final Button actionButton;
+    private final FileDropZone fileDropZone;
+    private final Button actionButton;
 
     private String filePath = "";
     private Runnable onBrowse;
@@ -95,6 +95,39 @@ public abstract class FileDropTab extends VBox {
     }
 
     /**
+     * Returns the {@link FileDropZone} owned by this tab.
+     * Subclasses use this to place the drop zone in their layout and to update
+     * its display texts in {@code updateTexts()}.
+     *
+     * @return the shared {@link FileDropZone} instance
+     */
+    protected FileDropZone getFileDropZone() {
+        return fileDropZone;
+    }
+
+    /**
+     * Returns the action {@link Button} owned by this tab.
+     * Subclasses use this to place the button in their layout.
+     * To update the button label, use {@link #setActionButtonText(String)}.
+     *
+     * @return the shared action {@link Button} instance
+     */
+    protected Button getActionButton() {
+        return actionButton;
+    }
+
+    /**
+     * Sets the label text on the action button.
+     * Provided so subclasses can update the button text in {@code updateTexts()}
+     * without holding a direct reference to the button.
+     *
+     * @param text the button label to display
+     */
+    protected void setActionButtonText(String text) {
+        actionButton.setText(text);
+    }
+
+    /**
      * Called by {@link #setFilePath(String)} when the path is cleared.
      * Override to react to file removal, for example disabling dependent controls.
      */
@@ -110,7 +143,7 @@ public abstract class FileDropTab extends VBox {
      * Registers the callback invoked when the user clicks the browse button
      * on the {@link FileDropZone}.
      *
-     * @param callback the action to run on browse; {@code null} disables the handler
+     * @param callback the action to run on browse
      */
     public void setOnBrowse(Runnable callback) {
         this.onBrowse = callback;
@@ -120,7 +153,7 @@ public abstract class FileDropTab extends VBox {
      * Registers the callback invoked when the user drops a file onto the
      * {@link FileDropZone}.
      *
-     * @param callback the action to run with the dropped file; {@code null} disables the handler
+     * @param callback the action to run with the dropped file
      */
     public void setOnFileDrop(Consumer<File> callback) {
         this.onFileDrop = callback;
@@ -129,7 +162,7 @@ public abstract class FileDropTab extends VBox {
     /**
      * Registers the callback invoked when the user clicks the action button.
      *
-     * @param callback the action to run; {@code null} disables the handler
+     * @param callback the action to run
      */
     public void setOnAction(Runnable callback) {
         this.onAction = callback;
