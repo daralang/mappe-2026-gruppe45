@@ -379,6 +379,50 @@ public class Player {
     }
 
     /**
+     * Returns the total weekly interest owed across all active loans this week.
+     *
+     * @return sum of each active loan's weekly interest; zero when no loans are active
+     */
+    public BigDecimal getWeeklyInterestDue() {
+        return activeLoansInternal().stream()
+                .map(loan -> loan.principal()
+                        .multiply(loan.offer().weeklyInterestRate())
+                        .setScale(2, RoundingMode.HALF_UP))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Returns {@code true} iff the player's current cash balance is at least
+     * equal to {@link #getWeeklyInterestDue()}.
+     *
+     * @return true if the player can cover this week's interest without selling shares
+     */
+    public boolean canCoverInterestThisWeek() {
+        return money.compareTo(getWeeklyInterestDue()) >= 0;
+    }
+
+    /**
+     * Appends an INTEREST {@link LoanLedgerEntry} for every active loan without
+     * touching the cash balance. Called by the forced-sale path after the player's
+     * cash has already been adjusted separately via {@link #withdrawMoney}.
+     *
+     * @param week the game week in which interest is recorded; must be &gt;= 1
+     */
+    public void writeInterestLedgerEntries(int week) {
+        if (loanLedger == null) loanLedger = new ArrayList<>();
+        for (Loan loan : activeLoansInternal()) {
+            BigDecimal interest = loan.principal()
+                    .multiply(loan.offer().weeklyInterestRate())
+                    .setScale(2, RoundingMode.HALF_UP);
+            if (interest.signum() > 0) {
+                loanLedger.add(new LoanLedgerEntry(
+                        Math.max(week, 1), loan,
+                        LoanLedgerEntryType.INTEREST, interest.negate()));
+            }
+        }
+    }
+
+    /**
      * Returns the absolute change in net worth since the start of the game.
      *
      * @param converter the currency converter used to compute the current net worth

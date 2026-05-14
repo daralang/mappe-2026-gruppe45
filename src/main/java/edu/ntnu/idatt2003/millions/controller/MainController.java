@@ -21,6 +21,7 @@ public class MainController {
     private final Stage stage;
     private final MainView view;
     private final GameService gameService;
+    private final ForcedSaleController forcedSaleController;
 
     /**
      * Constructs a new MainController and creates the main view.
@@ -31,6 +32,7 @@ public class MainController {
     public MainController(Stage stage, GameService gameService) {
         this.stage = stage;
         this.gameService = gameService;
+        this.forcedSaleController = new ForcedSaleController(gameService);
         PortfolioController portfolioController = new PortfolioController(gameService);
         LoanController loanController = new LoanController(gameService);
         this.view = new MainView(
@@ -45,12 +47,15 @@ public class MainController {
     }
 
     /**
-     * Advances the game by one week.
-     * Registered {@link GameObserver}s are notified automatically by
-     * {@link GameService}.
+     * Advances the game by one week. If the player cannot cover weekly interest
+     * from cash, opens the forced-sale dialog instead of advancing directly.
      */
     private void handleAdvanceWeek() {
-        gameService.advanceWeek();
+        if (gameService.getPlayer().canCoverInterestThisWeek()) {
+            gameService.advanceWeek();
+        } else {
+            forcedSaleController.open(gameService.getPlayer().getWeeklyInterestDue());
+        }
     }
 
     /**
