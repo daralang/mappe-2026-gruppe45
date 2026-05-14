@@ -37,6 +37,6 @@
 
 .browse-button:hover {
     -fx-text-fill: -info-text;
-    -fx-border-color: -info-border;
+    -fx-border-color: -info-text;
     -fx-background-color: -info-border;
 }

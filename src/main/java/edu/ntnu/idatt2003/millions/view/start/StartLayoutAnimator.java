@@ -32,7 +32,7 @@ public final class StartLayoutAnimator {
     private static final double START_GROUP_HEIGHT_RATIO = 0.72;
     private static final double START_TAB_HEADER_HEIGHT = 104;
     private static final double UPLOAD_DROP_ZONE_HEIGHT = 190;
-    private static final double UPLOAD_SECTION_EXPANDED_HEIGHT = 250;
+    private static final double UPLOAD_SECTION_EXPANDED_HEIGHT = 240;
     private static final double CONTENT_WIDTH_EXTRA = 48;
     private static final Duration UPLOAD_REVEAL_DELAY = Duration.millis(380);
     private static final Duration UPLOAD_REVEAL_DURATION = Duration.millis(820);

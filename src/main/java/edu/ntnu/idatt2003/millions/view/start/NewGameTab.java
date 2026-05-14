@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.start;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.CurrencySelector;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import java.util.stream.Stream;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
@@ -51,6 +52,8 @@ public class NewGameTab extends FileDropTab {
         capitalField = new TextField();
         currencySelector = new CurrencySelector();
         currencySelector.setDisable(false);
+
+        Stream.of(nameField, capitalField).forEach(f -> f.getStyleClass().add("start-field"));
 
         HBox nameRow = buildFormRow(nameLabel, nameField);
         HBox capitalRow = buildFormRow(capitalLabel, capitalField);
@@ -112,8 +115,8 @@ public class NewGameTab extends FileDropTab {
         getFileDropZone().setOrText(LanguageManager.get("start.new.dropZoneOr"));
         getFileDropZone().setBrowseText(LanguageManager.get("start.file.browse"));
         setActionButtonText(LanguageManager.get("start.startButton"));
-        nameField.setPromptText("");
-        capitalField.setPromptText("");
+        nameField.setPromptText(LanguageManager.get("start.new.namePlaceholder"));
+        capitalField.setPromptText(LanguageManager.get("start.new.capitalPlaceholder"));
     }
 
     /**
