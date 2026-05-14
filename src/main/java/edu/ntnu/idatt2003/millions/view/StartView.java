@@ -4,6 +4,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.StylesheetLoader;
 import edu.ntnu.idatt2003.millions.view.component.AppTabPane;
 import edu.ntnu.idatt2003.millions.view.component.CurrencySelector;
+import edu.ntnu.idatt2003.millions.view.component.FileDropZone;
 import edu.ntnu.idatt2003.millions.view.component.LanguagePicker;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Insets;
@@ -11,11 +12,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -28,8 +27,9 @@ import java.util.Currency;
  *
  * <p>Contains a tab-based layout for either creating a new game
  * or loading an existing saved game. The new game tab shows a centered
- * card with inline label-field rows, a drag-and-drop file zone,
- * and a currency selector that activates once a file is chosen.
+ * card with inline label-field rows, a {@link FileDropZone} for stock CSV
+ * upload, and a currency selector that activates once a file is chosen.
+ * The resume game tab shows a {@link FileDropZone} for JSON save-file upload.</p>
  */
 public class StartView implements StartScreenInputs {
 
@@ -39,7 +39,6 @@ public class StartView implements StartScreenInputs {
     private static final double FORM_SPACING = 16;
     private static final double CARD_WIDTH = 460;
     private static final double LABEL_WIDTH = 120;
-    private static final double DROP_ZONE_HEIGHT = 160;
 
     private final Scene scene;
     private final StyledText title;
@@ -56,19 +55,15 @@ public class StartView implements StartScreenInputs {
     private final TextField nameField;
     private final TextField capitalField;
     private final CurrencySelector currencySelector;
-    private final Label dropZoneHint;
-    private final Label dropZoneOr;
-    private final Button browseStockFileButton;
-    private final Label stockFileNameLabel;
-    private final VBox dropZone;
+    private final FileDropZone stockFileDropZone;
     private final Button startButton;
     private String stockFilePath = "";
 
-    // Load game tab
+    // Resume game tab
     private final StyledText saveFileLabel;
-    private final TextField saveFileField;
-    private final Button browseSaveFileButton;
+    private final FileDropZone saveFileDropZone;
     private final Button loadButton;
+    private String saveFilePath = "";
 
     /**
      * Creates the start view with two tabs:
@@ -97,17 +92,13 @@ public class StartView implements StartScreenInputs {
         currencySelector = new CurrencySelector();
         currencySelector.setDisable(false);
 
-        dropZoneHint = new Label();
-        dropZoneOr = new Label();
-        browseStockFileButton = new Button();
-        stockFileNameLabel = new Label();
-        stockFileNameLabel.setVisible(false);
-        dropZone = buildDropZone();
+        stockFileDropZone = new FileDropZone();
+        stockFileDropZone.setMaxWidth(CARD_WIDTH);
         startButton = new Button();
 
         saveFileLabel = StyledText.paragraphOne();
-        saveFileField = new TextField();
-        browseSaveFileButton = new Button();
+        saveFileDropZone = new FileDropZone();
+        saveFileDropZone.setMaxWidth(CARD_WIDTH);
         loadButton = new Button();
 
         VBox newGameContent = createNewGameContent();
@@ -156,47 +147,13 @@ public class StartView implements StartScreenInputs {
      * @param field the input node
      * @return an {@link HBox} with label and field on the same line
      */
-    private HBox buildFormRow(Label label, Node field) {
+    private HBox buildFormRow(javafx.scene.control.Label label, Node field) {
         label.setMinWidth(LABEL_WIDTH);
         HBox.setHgrow(field, Priority.ALWAYS);
         HBox row = new HBox(12, label, field);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMaxWidth(CARD_WIDTH);
         return row;
-    }
-
-    /**
-     * Builds the dashed drop zone for stock file upload.
-     * Supports both drag-and-drop and click-to-browse.
-     *
-     * @return a styled {@link VBox} acting as the drop zone
-     */
-    private VBox buildDropZone() {
-        dropZoneHint.getStyleClass().add("drop-zone-hint");
-        dropZoneOr.getStyleClass().add("drop-zone-or");
-        browseStockFileButton.getStyleClass().add("browse-button");
-
-        VBox zone =
-                new VBox(10, dropZoneHint, dropZoneOr, browseStockFileButton, stockFileNameLabel);
-        zone.setAlignment(Pos.CENTER);
-        zone.setMaxWidth(CARD_WIDTH);
-        zone.setPrefHeight(DROP_ZONE_HEIGHT);
-        zone.setPadding(new Insets(20));
-        zone.getStyleClass().add("drop-zone");
-
-        // Highlight on drag over
-        zone.setOnDragOver(e -> {
-            if (e.getDragboard().hasFiles()) {
-                e.acceptTransferModes(TransferMode.COPY);
-                zone.getStyleClass().add("drop-zone-highlight");
-            }
-            e.consume();
-        });
-
-        // Reset style on drag exit
-        zone.setOnDragExited(_ -> zone.getStyleClass().add("drop-zone"));
-
-        return zone;
     }
 
     /**
@@ -216,7 +173,7 @@ public class StartView implements StartScreenInputs {
                 nameRow,
                 capitalRow,
                 fileLabel,
-                dropZone,
+                stockFileDropZone,
                 currencyRow,
                 startButton
         );
@@ -226,21 +183,17 @@ public class StartView implements StartScreenInputs {
     }
 
     /**
-     * Builds the layout for the "load game" tab.
+     * Builds the layout for the "resume game" tab.
      *
      * @return the assembled layout node
      */
     private VBox createLoadGameContent() {
-        saveFileField.setEditable(false);
-        saveFileField.setMaxWidth(CARD_WIDTH);
-        fileLabel.setMaxWidth(CARD_WIDTH);
-        browseSaveFileButton.setMaxWidth(CARD_WIDTH);
         loadButton.setMaxWidth(CARD_WIDTH);
 
         VBox content = new VBox(
                 FORM_SPACING,
-                saveFileLabel, saveFileField,
-                browseSaveFileButton,
+                saveFileLabel,
+                saveFileDropZone,
                 loadButton
         );
         content.setAlignment(Pos.CENTER);
@@ -261,13 +214,16 @@ public class StartView implements StartScreenInputs {
         capitalLabel.setText(LanguageManager.get("start.new.capitalLabel"));
         currencyLabel.setText(LanguageManager.get("start.new.currencyLabel"));
         fileLabel.setText(LanguageManager.get("start.new.fileLabel"));
-        dropZoneHint.setText(LanguageManager.get("start.new.dropZoneHint"));
-        dropZoneOr.setText(LanguageManager.get("start.new.dropZoneOr"));
-        browseStockFileButton.setText(LanguageManager.get("start.file.browse"));
+
+        stockFileDropZone.setHintText(LanguageManager.get("start.new.dropZoneHint"));
+        stockFileDropZone.setOrText(LanguageManager.get("start.new.dropZoneOr"));
+        stockFileDropZone.setBrowseText(LanguageManager.get("start.file.browse"));
         startButton.setText(LanguageManager.get("start.startButton"));
 
         saveFileLabel.setText(LanguageManager.get("start.resume.fileLabel"));
-        browseSaveFileButton.setText(LanguageManager.get("start.file.browse"));
+        saveFileDropZone.setHintText(LanguageManager.get("start.resume.dropZoneHint"));
+        saveFileDropZone.setOrText(LanguageManager.get("start.resume.dropZoneOr"));
+        saveFileDropZone.setBrowseText(LanguageManager.get("start.file.browse"));
         loadButton.setText(LanguageManager.get("start.loadButton"));
 
         nameField.setPromptText("");
@@ -281,39 +237,56 @@ public class StartView implements StartScreenInputs {
      *
      * @return stock file path, or empty string when none is selected
      */
+    @Override
     public String getStockFilePath() {
         return stockFilePath;
     }
 
     /**
      * Sets the stock file path. Updates the internal data field, mirrors the
-     * filename in the drop-zone label, and enables or disables the currency
-     * selector accordingly. The data field is the source of truth for
-     * {@link #getStockFilePath()}.
+     * filename in the {@link #stockFileDropZone}, and enables or disables the
+     * currency selector accordingly.
      *
      * @param path the absolute file path; {@code null} or blank resets the zone
      */
+    @Override
     public void setStockFilePath(String path) {
         if (path == null || path.isBlank()) {
             this.stockFilePath = "";
-            stockFileNameLabel.setText("");
-            stockFileNameLabel.setVisible(false);
+            stockFileDropZone.setFileName("");
             currencySelector.setDisable(true);
         } else {
             this.stockFilePath = path;
-            stockFileNameLabel.setText(path);
-            stockFileNameLabel.setVisible(true);
+            stockFileDropZone.setFileName(path);
             currencySelector.setDisable(false);
         }
     }
 
     /**
-     * Sets the save file path in the read-only field.
+     * Returns the path to the save file selected by the user.
      *
-     * @param path save file path to display
+     * @return save file path, or empty string when none is selected
      */
+    @Override
+    public String getSaveFilePath() {
+        return saveFilePath;
+    }
+
+    /**
+     * Sets the save file path. Updates the internal data field and mirrors the
+     * filename in the {@link #saveFileDropZone}.
+     *
+     * @param path save file path to display; {@code null} clears the field
+     */
+    @Override
     public void setSaveFilePath(String path) {
-        saveFileField.setText(path == null ? "" : path);
+        if (path == null || path.isBlank()) {
+            this.saveFilePath = "";
+            saveFileDropZone.setFileName("");
+        } else {
+            this.saveFilePath = path;
+            saveFileDropZone.setFileName(path);
+        }
     }
 
     /**
@@ -339,6 +312,7 @@ public class StartView implements StartScreenInputs {
      *
      * @return trimmed player name
      */
+    @Override
     public String getName() {
         return nameField.getText().trim();
     }
@@ -357,6 +331,7 @@ public class StartView implements StartScreenInputs {
      *
      * @return trimmed starting capital
      */
+    @Override
     public String getCapital() {
         return capitalField.getText().trim();
     }
@@ -368,26 +343,29 @@ public class StartView implements StartScreenInputs {
      *
      * @return the selected currency, or {@code null} if none is selected
      */
+    @Override
     public Currency getSelectedCurrency() {
         return currencySelector.getValue();
     }
 
     /**
-     * @return save file path, or empty string
+     * Returns the stock file drop zone so the controller can bind drag-and-drop
+     * and browse handlers without depending on the internal layout structure.
      *
+     * @return the {@link FileDropZone} for stock CSV upload
      */
-    public String getSaveFilePath() {
-        return saveFileField.getText().trim();
+    public FileDropZone getStockFileDropZone() {
+        return stockFileDropZone;
     }
 
     /**
-     * Returns the drop zone node so the controller can bind drag-and-drop
-     * handlers without depending on the internal layout structure.
+     * Returns the save file drop zone so the controller can bind drag-and-drop
+     * and browse handlers for the resume game tab.
      *
-     * @return the drop zone node
+     * @return the {@link FileDropZone} for JSON save-file upload
      */
-    public VBox getDropZone() {
-        return dropZone;
+    public FileDropZone getSaveFileDropZone() {
+        return saveFileDropZone;
     }
 
     /**
@@ -397,24 +375,6 @@ public class StartView implements StartScreenInputs {
      */
     public Button getStartButton() {
         return startButton;
-    }
-
-    /**
-     * Returns the button that opens the stock file browser.
-     *
-     * @return the browse button for stock files
-     */
-    public Button getBrowseStockFileButton() {
-        return browseStockFileButton;
-    }
-
-    /**
-     * Returns the button that opens the save file browser.
-     *
-     * @return the browse button for save files
-     */
-    public Button getBrowseSaveFileButton() {
-        return browseSaveFileButton;
     }
 
     /**
