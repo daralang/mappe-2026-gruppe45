@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
+import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
@@ -11,6 +12,7 @@ import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import javafx.scene.control.Alert;
 import javafx.stage.FileChooser;
@@ -135,7 +137,7 @@ public class StartController {
         view.getDropZone().setOnDragDropped(e -> {
             var db = e.getDragboard();
             if (db.hasFiles()) {
-                inputs.setStockFilePath(db.getFiles().getFirst().getAbsolutePath());
+                validateAndSetStockFile(db.getFiles().getFirst());
                 e.setDropCompleted(true);
             }
             e.consume();
@@ -144,7 +146,9 @@ public class StartController {
 
     /**
      * Opens a file chooser for selecting a stock data file (CSV).
-     * If a file is chosen, the path is shown in the view.
+     * If a file is chosen, it is validated immediately via
+     * {@link #validateAndSetStockFile(File)}. The file path is only
+     * stored if the file parses without errors.
      */
     private void handleBrowseStockFile() {
         FileChooser chooser = new FileChooser();
@@ -153,7 +157,32 @@ public class StartController {
                 new FileChooser.ExtensionFilter("Data files", "*.csv"));
         File file = chooser.showOpenDialog(stage);
         if (file != null) {
-            inputs.setStockFilePath(file.getAbsolutePath());
+            validateAndSetStockFile(file);
+        }
+    }
+
+    /**
+     * Validates the given stock file by attempting to parse it immediately.
+     * If parsing succeeds, the file path is stored in the view. If parsing
+     * fails, the file path is cleared and the error is shown to the user
+     * via the {@link #errorSink} so they cannot proceed with an invalid file.
+     *
+     * <p>The currency currently selected in the view is used for parsing.
+     * If no currency is selected yet, USD is used as a fallback so that
+     * structural errors (wrong field count, blank fields, invalid price) are
+     * still caught regardless of the currency choice.</p>
+     *
+     * @param file the CSV file to validate and register
+     */
+    private void validateAndSetStockFile(File file) {
+        inputs.setStockFilePath(file.getAbsolutePath());
+        Currency currency = Optional.ofNullable(inputs.getSelectedCurrency())
+                .orElse(Currency.getInstance("USD"));
+        try {
+            new CsvStockFileHandler().readStocks(file.toPath(), currency);
+        } catch (InvalidStockDataException | UncheckedIOException e) {
+            inputs.setStockFilePath("");
+            errorSink.accept(e.getMessage());
         }
     }
 
