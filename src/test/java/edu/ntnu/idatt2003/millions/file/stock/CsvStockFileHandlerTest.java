@@ -10,6 +10,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -98,15 +99,36 @@ class CsvStockFileHandlerTest {
         }
 
         @Test
-        @DisplayName("Should skip lines with invalid format when file contains invalid lines")
-        void skipsInvalidLines() throws Exception {
+        @DisplayName("Should throw InvalidStockDataException for wrong column count")
+        void throwsForWrongColumnCount() throws Exception {
             // Arrange
             Path file = tempDir.resolve("stocks.csv");
             Files.writeString(file, "AAPL,Apple Inc.,276.43\nINVALID_LINE\n");
+            // Act & Assert
+            assertThrows(InvalidStockDataException.class, () -> handler.readStocks(file));
+        }
+
+        @Test
+        @DisplayName("Should throw InvalidStockDataException for non-numeric price")
+        void throwsForNonNumericPrice() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "AAPL,Apple Inc.,abc\n");
+            // Act & Assert
+            assertThrows(InvalidStockDataException.class, () -> handler.readStocks(file));
+        }
+
+        @Test
+        @DisplayName("Should report the correct line number when a data line is malformed")
+        void reportsCorrectLineNumberOnMalformedLine() throws Exception {
+            // Arrange — line 1 is a comment, line 2 is valid, line 3 is malformed
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "# comment\nAAPL,Apple Inc.,276.43\nBAD\n");
             // Act
-            List<Stock> stocks = handler.readStocks(file);
-            // Assert
-            assertEquals(1, stocks.size());
+            InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
+                    () -> handler.readStocks(file));
+            // Assert — line 3 in the file is the bad one
+            assertEquals(3, ex.getLineNumber());
         }
 
         @Test
@@ -123,7 +145,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should throw exception when path is null")
-        void throwsExceptionWhenPathIsNull() {
+        void throwsExceptionWhenPathIsNull() throws InvalidStockDataException {
             // Arrange
             Path nullPath = null;
             // Act & Assert
@@ -133,7 +155,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should throw exception when file does not exist")
-        void throwsExceptionWhenFileDoesNotExist() {
+        void throwsExceptionWhenFileDoesNotExist() throws InvalidStockDataException {
             // Arrange
             Path file = tempDir.resolve("nonexistent.csv");
             // Act & Assert
@@ -186,7 +208,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should throw exception when path is null")
-        void throwsExceptionWhenPathIsNull() {
+        void throwsExceptionWhenPathIsNull() throws InvalidStockDataException {
             // Arrange
             Currency usd = Currency.getInstance("USD");
             // Act & Assert
@@ -212,7 +234,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should parse stocks from input stream")
-        void parsesStocksFromStream() {
+        void parsesStocksFromStream() throws InvalidStockDataException {
             // Arrange
             InputStream stream = new ByteArrayInputStream(
                     "AAPL,Apple Inc.,276.43\nMSFT,Microsoft,404.68\n".getBytes(StandardCharsets.UTF_8));
@@ -225,7 +247,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should default stock currency to USD when no currency is supplied")
-        void defaultsCurrencyToUsd() {
+        void defaultsCurrencyToUsd() throws InvalidStockDataException {
             // Arrange
             InputStream stream = new ByteArrayInputStream(
                     "AAPL,Apple Inc.,276.43\n".getBytes(StandardCharsets.UTF_8));
@@ -237,7 +259,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should return empty list when stream is empty")
-        void returnsEmptyListWhenStreamIsEmpty() {
+        void returnsEmptyListWhenStreamIsEmpty() throws InvalidStockDataException {
             // Arrange
             InputStream stream = new ByteArrayInputStream(new byte[0]);
             // Act
@@ -248,7 +270,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should throw exception when stream is null")
-        void throwsExceptionWhenStreamIsNull() {
+        void throwsExceptionWhenStreamIsNull() throws InvalidStockDataException {
             // Arrange
             InputStream nullStream = null;
             // Act & Assert
@@ -263,7 +285,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should tag every parsed stock with the supplied currency")
-        void tagsStocksWithSuppliedCurrency() {
+        void tagsStocksWithSuppliedCurrency() throws InvalidStockDataException {
             // Arrange
             InputStream stream = new ByteArrayInputStream(
                     "AAPL,Apple Inc.,276.43\nMSFT,Microsoft,404.68\n".getBytes(StandardCharsets.UTF_8));
@@ -277,7 +299,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should throw exception when stream is null")
-        void throwsExceptionWhenStreamIsNull() {
+        void throwsExceptionWhenStreamIsNull() throws InvalidStockDataException {
             // Arrange
             Currency usd = Currency.getInstance("USD");
             // Act & Assert
@@ -287,7 +309,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should throw exception when currency is null")
-        void throwsExceptionWhenCurrencyIsNull() {
+        void throwsExceptionWhenCurrencyIsNull() throws InvalidStockDataException {
             // Arrange
             InputStream stream = new ByteArrayInputStream(
                     "AAPL,Apple Inc.,276.43\n".getBytes(StandardCharsets.UTF_8));
@@ -368,7 +390,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should return same number of stocks after write and read")
-        void returnsSameNumberOfStocks() {
+        void returnsSameNumberOfStocks() throws InvalidStockDataException {
             // Arrange
             Path file = tempDir.resolve("stocks.csv");
             List<Stock> original = List.of(
@@ -384,7 +406,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should return same symbol after write and read")
-        void returnsSameSymbol() {
+        void returnsSameSymbol() throws InvalidStockDataException {
             // Arrange
             Path file = tempDir.resolve("stocks.csv");
             List<Stock> original = List.of(
@@ -399,7 +421,7 @@ class CsvStockFileHandlerTest {
 
         @Test
         @DisplayName("Should return same price after write and read")
-        void returnsSamePrice() {
+        void returnsSamePrice() throws InvalidStockDataException {
             // Arrange
             Path file = tempDir.resolve("stocks.csv");
             List<Stock> original = List.of(

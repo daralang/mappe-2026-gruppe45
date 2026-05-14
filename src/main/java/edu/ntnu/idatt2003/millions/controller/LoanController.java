@@ -115,7 +115,7 @@ public class LoanController {
         try {
             gameService.repayLoan(loan);
             dialog.close();
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             dialog.showError(e.getMessage());
         }
     }
