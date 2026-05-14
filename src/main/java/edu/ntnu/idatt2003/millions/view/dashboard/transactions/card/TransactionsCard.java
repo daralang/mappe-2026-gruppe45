@@ -60,6 +60,7 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     public TransactionsCard(GameService gameService, WeekRangeFilter weekRangeFilter,
                             TransactionStatsService statsService) {
         super(gameService, PAGE_SIZE, "transactions.status", "transactions.empty");
+        getStyleClass().remove("card");
         this.gameService = gameService;
         this.weekRangeFilter = weekRangeFilter;
         this.statsService = statsService;
