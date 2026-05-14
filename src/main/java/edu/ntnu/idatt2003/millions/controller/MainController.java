@@ -39,9 +39,10 @@ public class MainController {
                 () -> new StartController(stage, gameService).show());
         TradeController tradeController = new TradeController(gameService);
         LoanController loanController = new LoanController(gameService);
-        TitleBar titleBar = TitleBarFactory.create(stage);
+        TitleBar titleBar = TitleBarFactory.create(stage, gameService);
         titleBar.setOnSave(this::handleSaveGame);
         titleBar.setOnExit(this::handleExitGame);
+        gameService.addObserver(titleBar::onGameUpdated);
         this.view = new MainView(
                 stage,
                 gameService,

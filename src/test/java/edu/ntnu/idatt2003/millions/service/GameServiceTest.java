@@ -708,4 +708,45 @@ class GameServiceTest {
         Files.writeString(file, content);
         return file.toFile();
     }
+
+    @Nested
+    @DisplayName("Notification triggers")
+    class NotificationTriggers {
+
+        @Test
+        @DisplayName("advanceWeek pushes notifications via service")
+        void advanceWeek_pushesNotificationsViaService() {
+            // Give the player a loan expiring in 3 weeks
+            LoanOffer offer = new LoanOffer("std", new BigDecimal("0.001"), 3,
+                    new BigDecimal("50000"), LoanRiskLevel.LOW);
+            assertDoesNotThrow(() -> gameService.takeLoan(offer, new BigDecimal("1000")));
+            int sizeBefore = gameService.getPlayer().getNotifications().size();
+
+            gameService.advanceWeek();
+
+            // At least loan-maturity notification should be pushed
+            assertTrue(gameService.getPlayer().getNotifications().size() > sizeBefore);
+        }
+
+        @Test
+        @DisplayName("advanceWeek does not push when game is over")
+        void advanceWeek_doesNotPushWhenGameOver() {
+            gameService.declareGameOver();
+
+            assertThrows(IllegalStateException.class, () -> gameService.advanceWeek());
+            assertEquals(0, gameService.getPlayer().getNotifications().size());
+        }
+
+        @Test
+        @DisplayName("takeLoan pushes debt ratio notification when appropriate")
+        void takeLoan_pushesDebtRatioNotificationWhenAppropriate() {
+            // player netWorth ≈ 10000, capacity = 5000, 85% = 4250
+            LoanOffer offer = new LoanOffer("std", new BigDecimal("0.001"), 20,
+                    new BigDecimal("50000"), LoanRiskLevel.LOW);
+            assertDoesNotThrow(() -> gameService.takeLoan(offer, new BigDecimal("4300")));
+
+            assertTrue(gameService.getPlayer().getNotifications().stream()
+                    .anyMatch(n -> n.titleKey().equals("notification.debtRatio.high.title")));
+        }
+    }
 }

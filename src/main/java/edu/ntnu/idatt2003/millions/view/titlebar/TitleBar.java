@@ -13,6 +13,9 @@ public interface TitleBar {
     /** The root node to place at the top of the main layout. */
     Node getNode();
 
+    /** The toast overlay node to layer over the main layout. Returns null if not applicable. */
+    default Node getOverlayNode() { return null; }
+
     void setOnDashboard(Runnable callback);
     void setOnExchange(Runnable callback);
     void setOnSave(Runnable callback);
