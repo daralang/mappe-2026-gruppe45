@@ -157,13 +157,14 @@ public class HoldingsCard extends PaginatedCard {
     @Override
     protected void refresh() {
         table.clearRows();
-        table.refreshHeader(this::refresh);
 
         Portfolio portfolio = gameService.getPlayer().getPortfolio();
         List<Share> allShares = new ArrayList<>(portfolio.getShares());
         List<Share> shares = new ArrayList<>(allShares.stream()
                 .filter(share -> currentSearchTerm.isBlank() || share.getStock().matches(currentSearchTerm))
                 .toList());
+
+        table.refreshHeader(this::refresh, !shares.isEmpty());
         metadataRow.update("dashboard.portfolio.holdings.status", shares.size(), allShares.size());
 
         boolean hasPortfolioShares = !allShares.isEmpty();

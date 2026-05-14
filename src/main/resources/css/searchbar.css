@@ -64,7 +64,7 @@
 }
 
 .search-metadata {
-    -fx-padding: 10 10 0 10;
+    -fx-padding: 10 0 0 10;
     -fx-text-fill: -text-muted;
     -fx-font-size: 12;
 }

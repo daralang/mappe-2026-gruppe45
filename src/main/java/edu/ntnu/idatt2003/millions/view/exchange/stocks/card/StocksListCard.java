@@ -34,7 +34,7 @@ import java.util.List;
 public class StocksListCard extends PaginatedCard {
 
     public static final int PAGE_SIZE = 20;
-    private static final double ROW_HEIGHT = 44.0;
+    private static final double ROW_HEIGHT = 34.0;
 
     private final GameService gameService;
     private final StocksSort sort;
@@ -138,7 +138,7 @@ public class StocksListCard extends PaginatedCard {
         }
 
         table.clearRows();
-        table.refreshHeader(this::refresh);
+        table.refreshHeader(this::refresh, !filteredStocks.isEmpty());
         metadataRow.update("exchange.stocks.status", filteredStocks.size(), allStocks.size());
 
         int fromIndex = currentPage * PAGE_SIZE;

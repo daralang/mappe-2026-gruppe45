@@ -12,6 +12,8 @@ import javafx.scene.layout.HBox;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Package-private helper that builds and updates the header row for a {@link SortColumnTable}.
@@ -20,6 +22,10 @@ import java.util.List;
  * recreated on every refresh. On the first call to {@link #renderInto} the cells are
  * built and stored; subsequent calls update label text, sort indicators and button
  * actions in place.</p>
+ *
+ * <p>Owns the optional clear-sort button: created via {@link #createClearSortButton},
+ * placed by the owning card, and kept in sync automatically on every
+ * {@link #renderInto} call without any extra bookkeeping in {@link SortColumnTable}.</p>
  *
  * <p>Receives a shared {@link SortState} from the owning {@link SortColumnTable} so
  * that sort indicators always reflect the current state without an extra indirection.</p>
@@ -30,6 +36,9 @@ class TableHeaderRenderer<Column> {
 
     private final SortState<Column> sortState;
     private final List<HeaderCell<Column>> headerCells = new ArrayList<>();
+
+    private Button clearSortButton;
+    private Supplier<String> clearSortLabelSupplier;
 
     /**
      * Constructs a renderer backed by the given sort state.
@@ -45,20 +54,51 @@ class TableHeaderRenderer<Column> {
      *
      * <p>On the first call the header cells are created and cached. On every call
      * the cached cells are updated with the latest i18n labels and sort indicators,
-     * then placed into row 0.</p>
+     * then placed into row 0. Sort buttons are disabled when {@code sortable} is
+     * {@code false}, e.g. when the table has no data rows to sort.</p>
+     *
+     * <p>If a clear-sort button has been registered via
+     * {@link #createClearSortButton}, its visibility and label are also kept in sync.</p>
      *
      * @param grid      the grid to render the header into
      * @param columns   the current column definitions, resolved fresh on every call
      * @param onChanged callback invoked after any sort-state change so the owning
      *                  card can trigger a data refresh
+     * @param sortable  {@code true} to allow sorting; {@code false} to disable all
+     *                  sort buttons (e.g. when the filtered result set is empty)
      */
-    void renderInto(GridPane grid, List<TableColumnDef<Column>> columns, Runnable onChanged) {
+    void renderInto(GridPane grid, List<TableColumnDef<Column>> columns, Runnable onChanged, boolean sortable) {
         ensureHeaderCells(columns, onChanged);
         for (int i = 0; i < columns.size(); i++) {
             HeaderCell<Column> cell = headerCells.get(i);
-            updateHeaderCell(cell, columns.get(i), onChanged);
+            updateHeaderCell(cell, columns.get(i), onChanged, sortable);
             grid.add(cell.root(), i, 0);
         }
+        updateClearSortButton();
+    }
+
+    /**
+     * Creates and returns a clear-sort button managed by this renderer.
+     *
+     * @param labelSupplier supplier that returns the current button label, called on
+     *                      every header refresh so i18n updates are picked up automatically
+     * @param onClear       callback invoked after the sort is cleared, typically
+     *                      {@code this::refresh} in the owning card
+     * @return the configured button, ready to place in the card's search row
+     * @throws NullPointerException if {@code labelSupplier} or {@code onClear} is null
+     */
+    Button createClearSortButton(Supplier<String> labelSupplier, Runnable onClear) {
+        this.clearSortLabelSupplier = Objects.requireNonNull(labelSupplier, "labelSupplier cannot be null");
+        Objects.requireNonNull(onClear, "onClear cannot be null");
+        clearSortButton = new Button(labelSupplier.get());
+        clearSortButton.getStyleClass().add("clear-sort-button");
+        clearSortButton.setVisible(false);
+        clearSortButton.setManaged(false);
+        clearSortButton.setOnAction(e -> {
+            sortState.clear();
+            onClear.run();
+        });
+        return clearSortButton;
     }
 
     /**
@@ -106,20 +146,23 @@ class TableHeaderRenderer<Column> {
     }
 
     /**
-     * Updates a cached header cell with the latest label text and sort state.
-     *
-     * <p>The column supplier may resolve localised labels on every call, so this
-     * method keeps reused header nodes in sync with the current language and
-     * {@link SortState}.</p>
+     * Updates a cached header cell with the latest label text, sort state and
+     * sortable flag.
      *
      * @param cell      the cached header cell to update
      * @param col       the latest column definition
      * @param onChanged callback invoked after any sort-state change
+     * @param sortable  {@code false} disables the sort button
      */
-    private void updateHeaderCell(HeaderCell<Column> cell, TableColumnDef<Column> col, Runnable onChanged) {
+    private void updateHeaderCell(
+            HeaderCell<Column> cell,
+            TableColumnDef<Column> col,
+            Runnable onChanged,
+            boolean sortable) {
         Labeled label = cell.label();
         if (label instanceof Button button && col.isSortable()) {
             button.setText(sortHeaderText(col));
+            button.setDisable(!sortable);
             button.setOnAction(e -> {
                 sortState.toggle(col.sortColumn());
                 onChanged.run();
@@ -127,6 +170,20 @@ class TableHeaderRenderer<Column> {
         } else {
             label.setText(col.label());
         }
+    }
+
+    /**
+     * Updates the clear-sort button's text and visibility to match the current
+     * sort state. No-op if {@link #createClearSortButton} has not been called.
+     */
+    private void updateClearSortButton() {
+        if (clearSortButton == null) {
+            return;
+        }
+        boolean active = sortState.hasActiveSort();
+        clearSortButton.setVisible(active);
+        clearSortButton.setManaged(active);
+        clearSortButton.setText(clearSortLabelSupplier.get());
     }
 
     /**

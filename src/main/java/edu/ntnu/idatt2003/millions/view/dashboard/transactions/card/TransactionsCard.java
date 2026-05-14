@@ -50,7 +50,7 @@ import java.util.List;
 public class TransactionsCard extends PaginatedCard {
 
     private static final int PAGE_SIZE = Pagination.DEFAULT_PAGE_SIZE;
-    private static final double ROW_HEIGHT = 44.0;
+    private static final double ROW_HEIGHT = 34.0;
 
     private final GameService gameService;
     private final TransactionStatsService statsService = new TransactionStatsService();
@@ -164,7 +164,6 @@ public class TransactionsCard extends PaginatedCard {
             pagination.update(0, 0);
             return;
         }
-        table.refreshHeader(this::refresh);
 
         TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
         int fromWeek = weekRangeFilter.getFromWeek();
@@ -179,6 +178,8 @@ public class TransactionsCard extends PaginatedCard {
                 searchableTransactions.stream()
                         .filter(t -> currentSearchTerm.isBlank() || t.getShare().getStock().matches(currentSearchTerm))
                         .toList());
+
+        table.refreshHeader(this::refresh, !transactions.isEmpty());
         metadataRow.update("transactions.status", transactions.size(), searchableTransactions.size());
 
         if (table.isSortActive()) {
