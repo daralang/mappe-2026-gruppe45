@@ -50,6 +50,7 @@ public class GameService {
 
     private Player player;
     private Exchange exchange;
+    private boolean gameOver = false;
     private final GameFileHandler gameFileHandler;
     private final List<GameObserver> observers = new ArrayList<>();
 
@@ -70,6 +71,26 @@ public class GameService {
     public void addObserver(GameObserver observer) {
         Objects.requireNonNull(observer, "Observer cannot be null");
         observers.add(observer);
+    }
+
+    /**
+     * Returns whether the game has ended.
+     *
+     * @return true if the game is over; false otherwise
+     */
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    /**
+     * Marks the game as over and notifies observers.
+     * Call this when the player cannot cover obligations even through full liquidation.
+     * After this call, all trading and week-advance operations will throw
+     * {@link IllegalStateException}.
+     */
+    public void declareGameOver() {
+        this.gameOver = true;
+        notifyObservers();
     }
 
     /**
@@ -162,6 +183,7 @@ public class GameService {
     private void activate(Player newPlayer, List<Stock> stocks) {
         this.player = newPlayer;
         this.exchange = new Exchange(DEFAULT_EXCHANGE_NAME, stocks, new FixedRateCurrencyConverter());
+        this.gameOver = false;
         notifyObservers();
     }
 
@@ -205,6 +227,7 @@ public class GameService {
         this.player = state.player();
         this.exchange = state.exchange();
         this.exchange.reinitialize(new FixedRateCurrencyConverter());
+        this.gameOver = false;
         notifyObservers();
     }
 
@@ -218,6 +241,7 @@ public class GameService {
      * @return the completed purchase transaction
      */
     public Transaction buy(String symbol, BigDecimal quantity) {
+        if (gameOver) throw new IllegalStateException("Game is over");
         Transaction transaction = exchange.buy(symbol, quantity, player);
         notifyObservers();
         return transaction;
@@ -248,6 +272,7 @@ public class GameService {
      * @return the completed sale transaction
      */
     public Transaction sell(Share share, BigDecimal quantity) {
+        if (gameOver) throw new IllegalStateException("Game is over");
         Transaction transaction = exchange.sell(share, quantity, player);
         notifyObservers();
         return transaction;
@@ -260,6 +285,7 @@ public class GameService {
      * when they cannot.
      */
     public void advanceWeek() {
+        if (gameOver) throw new IllegalStateException("Game is over");
         CurrencyConverter converter = exchange.getCurrencyConverter();
         player.setPreviousNetWorth(player.getNetWorth(converter));
         exchange.advance();
@@ -286,6 +312,7 @@ public class GameService {
      */
     public void executeForcedSale(List<Share> shares, int currentWeek)
             throws InsufficientSaleProceedsException {
+        if (gameOver) throw new IllegalStateException("Game is over");
         CurrencyConverter converter = exchange.getCurrencyConverter();
 
         List<Loan> maturingLoans = player.getLoansDueThisWeek(currentWeek);
@@ -373,6 +400,7 @@ public class GameService {
      *         if the loan would breach the player's debt-to-net-worth limit
      */
     public Loan takeLoan(LoanOffer offer, BigDecimal amount) throws ExcessiveDebtException {
+        if (gameOver) throw new IllegalStateException("Game is over");
         Objects.requireNonNull(offer, "Offer cannot be null");
         Objects.requireNonNull(amount, "Amount cannot be null");
         Loan loan = new Loan(offer, amount, exchange.getWeek());
@@ -390,6 +418,7 @@ public class GameService {
      * @throws IllegalArgumentException if the player cannot afford the repayment
      */
     public void repayLoan(Loan loan) {
+        if (gameOver) throw new IllegalStateException("Game is over");
         Objects.requireNonNull(loan, "Loan cannot be null");
         player.repayLoan(loan, exchange.getWeek());
         notifyObservers();

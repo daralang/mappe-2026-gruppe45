@@ -143,6 +143,7 @@ public class ActiveLoansCard extends Card {
     private HBox buildActionCell(Loan loan, int loanIndex) {
         Button repay = new Button(LanguageManager.get("loans.active.button.repay"));
         repay.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
+        repay.setDisable(gameService.isGameOver());
         repay.setOnAction(e -> controller.openRepayDialog(loan, loanIndex));
 
         Button details = new Button("❯");
