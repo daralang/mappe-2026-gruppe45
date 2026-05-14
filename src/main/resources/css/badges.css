@@ -1,4 +1,5 @@
-.transaction-type-badge {
+.transaction-type-badge,
+.badge-owner {
     -fx-font-size: 11;
     -fx-font-weight: bold;
     -fx-padding: 2 10 2 10;
@@ -18,4 +19,10 @@
     -fx-background-color: -success-bg;
     -fx-text-fill: -success-text;
     -fx-border-color: -success-border;
+}
+
+.badge-owner {
+    -fx-background-color: #C3FFBE;
+    -fx-border-color: #55D84C;
+    -fx-text-fill: #039C00;
 }

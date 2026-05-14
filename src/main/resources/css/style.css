@@ -6,7 +6,7 @@
 @import "chart.css";
 @import "holdings.css";
 @import "portfolio.css";
-@import "transactions.css";
+@import "badges.css";
 @import "footer.css";
 @import "loans.css";
 @import "modal.css";
@@ -14,5 +14,4 @@
 @import "tooltip.css";
 @import "filters.css";
 @import "searchbar.css";
-@import "label.css";
 @import "buttons.css";
