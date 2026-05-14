@@ -8,6 +8,8 @@ import edu.ntnu.idatt2003.millions.file.stock.StockFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.loan.InsufficientSaleProceedsException;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.player.Player;
@@ -245,17 +247,69 @@ public class GameService {
 
     /**
      * Advances the game by one week and notifies all registered observers.
-     * Records the player's current net worth before advancing so that
-     * weekly change and historical net worth data are available after
-     * the week has passed. The {@link CurrencyConverter} is fetched from
-     * the {@link Exchange} so the player's portfolio value can be translated
-     * to NOK.
+     * Assumes the player has enough cash to cover all obligations (interest +
+     * any maturing loan principals); use {@link #executeForcedSale} instead
+     * when they cannot.
      */
     public void advanceWeek() {
         CurrencyConverter converter = exchange.getCurrencyConverter();
         player.setPreviousNetWorth(player.getNetWorth(converter));
         exchange.advance();
-        player.collectWeeklyInterest(); // TODO: handle shortfall with forced share sales
+        int week = exchange.getWeek();
+        player.collectWeeklyInterest(week);
+        for (Loan loan : player.getLoansDueThisWeek(week)) {
+            player.repayLoan(loan, week);
+        }
+        finishWeekAdvance();
+    }
+
+    /**
+     * Sells the given shares, deducts all weekly obligations (interest plus any
+     * maturing loan principals) from the player's cash, advances the week, and
+     * notifies observers.
+     *
+     * <p>All-or-nothing: if the combined net sale value (after commission and tax,
+     * converted to NOK) is less than the total obligations for {@code currentWeek},
+     * an {@link InsufficientSaleProceedsException} is thrown and no state is mutated.
+     *
+     * @param shares      the shares the player has chosen to sell
+     * @param currentWeek the game week being processed (the week after the current one)
+     * @throws InsufficientSaleProceedsException if the net sale total is less than total obligations
+     */
+    public void executeForcedSale(List<Share> shares, int currentWeek)
+            throws InsufficientSaleProceedsException {
+        CurrencyConverter converter = exchange.getCurrencyConverter();
+
+        List<Loan> maturingLoans = player.getLoansDueThisWeek(currentWeek);
+        BigDecimal totalObligations = player.getTotalObligationsThisWeek(currentWeek);
+
+        BigDecimal netTotal = shares.stream()
+                .map(s -> SalesCalculator.calculateNetNok(s, converter))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (netTotal.compareTo(totalObligations) < 0) {
+            throw new InsufficientSaleProceedsException(
+                    "Net sale proceeds (" + netTotal + " NOK) are less than required obligations ("
+                    + totalObligations + " NOK).");
+        }
+
+        player.setPreviousNetWorth(player.getNetWorth(converter));
+
+        for (Share share : shares) {
+            exchange.sell(share, player);
+        }
+        player.withdrawMoney(totalObligations);
+
+        exchange.advance();
+        int week = exchange.getWeek();
+        player.writeInterestLedgerEntries(week);
+        for (Loan loan : maturingLoans) {
+            player.settleMatureLoan(loan, week);
+        }
+        finishWeekAdvance();
+    }
+
+    private void finishWeekAdvance() {
+        CurrencyConverter converter = exchange.getCurrencyConverter();
         player.recordNetWorth(converter);
         player.recordTotalDebt();
         notifyObservers();
@@ -331,7 +385,7 @@ public class GameService {
      */
     public void repayLoan(Loan loan) {
         Objects.requireNonNull(loan, "Loan cannot be null");
-        player.repayLoan(loan);
+        player.repayLoan(loan, exchange.getWeek());
         notifyObservers();
     }
 
