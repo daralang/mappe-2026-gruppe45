@@ -19,7 +19,7 @@ public class LoadGameTab extends FileDropTab {
      */
     public LoadGameTab() {
         saveFileLabel = StyledText.paragraphOne();
-        getChildren().addAll(saveFileLabel, fileDropZone, actionButton);
+        getChildren().addAll(saveFileLabel, getFileDropZone(), getActionButton());
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
@@ -30,9 +30,9 @@ public class LoadGameTab extends FileDropTab {
      */
     private void updateTexts() {
         saveFileLabel.setText(LanguageManager.get("start.resume.fileLabel"));
-        fileDropZone.setHintText(LanguageManager.get("start.resume.dropZoneHint"));
-        fileDropZone.setOrText(LanguageManager.get("start.resume.dropZoneOr"));
-        fileDropZone.setBrowseText(LanguageManager.get("start.file.browse"));
-        actionButton.setText(LanguageManager.get("start.loadButton"));
+        getFileDropZone().setHintText(LanguageManager.get("start.resume.dropZoneHint"));
+        getFileDropZone().setOrText(LanguageManager.get("start.resume.dropZoneOr"));
+        getFileDropZone().setBrowseText(LanguageManager.get("start.file.browse"));
+        setActionButtonText(LanguageManager.get("start.loadButton"));
     }
 }
