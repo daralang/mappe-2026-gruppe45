@@ -20,6 +20,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -98,7 +99,7 @@ public class ForcedSaleDialog extends Modal {
     }
 
     private VBox buildHeader() {
-        Label iconLabel = new Label("⚠");
+        FontIcon iconLabel = new FontIcon("fth-alert-triangle");
         iconLabel.getStyleClass().add("forced-sale-warning-icon");
 
         Label titleLabel = new Label(LanguageManager.get("forcedSale.title"));

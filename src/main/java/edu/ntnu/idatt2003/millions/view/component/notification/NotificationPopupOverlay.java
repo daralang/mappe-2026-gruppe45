@@ -16,6 +16,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.util.Duration;
 
 import java.util.ArrayDeque;
@@ -92,10 +93,9 @@ public class NotificationPopupOverlay {
     }
 
     private Region buildToast(Notification n) {
-        Label icon = new Label(NotificationPanel.iconFor(n.severity()));
+        FontIcon icon = new FontIcon(NotificationPanel.iconFor(n.severity()));
         icon.getStyleClass().addAll("notification-icon",
                 NotificationPanel.severityIconClass(n.severity()));
-        icon.setMinWidth(Region.USE_PREF_SIZE);
 
         Label title = new Label(LanguageManager.get(n.titleKey()));
         title.getStyleClass().addAll("notification-toast-title",
@@ -113,7 +113,10 @@ public class NotificationPopupOverlay {
         VBox content = new VBox(4, titleRow, body);
         content.setPadding(new Insets(12, 32, 12, 16));
 
-        Button closeBtn = new Button("✕");
+        FontIcon closeBtnIcon = new FontIcon("fth-x");
+        closeBtnIcon.getStyleClass().add("notification-toast-close-icon");
+        Button closeBtn = new Button();
+        closeBtn.setGraphic(closeBtnIcon);
         closeBtn.getStyleClass().add("notification-toast-close");
 
         StackPane toast = new StackPane(content, closeBtn);

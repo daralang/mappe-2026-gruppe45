@@ -31,6 +31,16 @@
     -fx-font-size: 18px;
 }
 
+.title-bar-close-icon {
+    -fx-icon-size: 14;
+    -fx-icon-color: white;
+}
+
+.title-bar-close-icon-light {
+    -fx-icon-size: 14;
+    -fx-icon-color: -text-primary;
+}
+
 .title-bar-btn-close:hover {
     -fx-background-color: -danger;
 }
@@ -50,6 +60,7 @@
 .title-bar-light .title-bar-btn:hover {
     -fx-background-color: -surface-alt;
 }
+
 
 .title-bar-light .title-bar-btn-close:hover {
     -fx-background-color: -danger-bg;
