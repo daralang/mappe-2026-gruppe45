@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
@@ -25,7 +25,7 @@ public class PortfolioView extends VBox {
      * @param onExploreStocks callback invoked when the user clicks the explore-stocks button
      */
     public PortfolioView(GameService gameService,
-                         PortfolioController controller,
+                         TradeController controller,
                          Runnable onExploreStocks) {
         setSpacing(16);
 

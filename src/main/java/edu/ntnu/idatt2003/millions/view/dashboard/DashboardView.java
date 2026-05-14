@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard;
 
 import edu.ntnu.idatt2003.millions.controller.LoanController;
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
@@ -22,7 +22,7 @@ import java.util.List;
 public class DashboardView extends VBox {
 
     private final GameService gameService;
-    private final PortfolioController portfolioController;
+    private final TradeController tradeController;
     private final LoanController loanController;
     private final Runnable onExploreStocks;
     private final VBox contentArea;
@@ -38,12 +38,12 @@ public class DashboardView extends VBox {
      * @param weekBar     the week bar shared with the rest of the application
      */
     public DashboardView(GameService gameService,
-                         PortfolioController portfolioController,
+                         TradeController tradeController,
                          LoanController loanController,
                          WeekBar weekBar,
                          Runnable onExploreStocks) {
         this.gameService = gameService;
-        this.portfolioController = portfolioController;
+        this.tradeController = tradeController;
         this.loanController = loanController;
         this.onExploreStocks = onExploreStocks;
         getStyleClass().add("content-area");
@@ -73,7 +73,7 @@ public class DashboardView extends VBox {
 
     private void showPortfolio() {
         if (portfolioView == null) {
-            portfolioView = new PortfolioView(gameService, portfolioController, onExploreStocks);
+            portfolioView = new PortfolioView(gameService, tradeController, onExploreStocks);
         }
         contentArea.getChildren().setAll(portfolioView);
     }

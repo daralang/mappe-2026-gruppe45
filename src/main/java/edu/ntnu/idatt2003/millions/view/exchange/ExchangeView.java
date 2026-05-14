@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.exchange;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
@@ -19,7 +19,7 @@ import java.util.List;
 public class ExchangeView extends VBox {
 
     private final GameService gameService;
-    private final PortfolioController controller;
+    private final TradeController controller;
     private final ViewHeader viewHeader;
     private final VBox contentArea;
 
@@ -30,7 +30,7 @@ public class ExchangeView extends VBox {
      * @param weekBar     the week bar shared with the rest of the application
      * @param controller  the portfolio controller used to open buy/sell dialogs
      */
-    public ExchangeView(GameService gameService, WeekBar weekBar, PortfolioController controller) {
+    public ExchangeView(GameService gameService, WeekBar weekBar, TradeController controller) {
         this.gameService = gameService;
         this.controller = controller;
         getStyleClass().add("content-area");

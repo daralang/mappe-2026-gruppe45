@@ -23,7 +23,7 @@ import java.util.Optional;
  * and {@link #getCurrentBalance()} for views that need to display
  * derived data without performing a mutation.</p>
  */
-public class PortfolioController {
+public class TradeController {
 
     private static final int MAX_QUANTITY_SCALE = 4;
     private static final BigDecimal MIN_TRANSACTION_VALUE_NOK = BigDecimal.ONE;
@@ -36,7 +36,7 @@ public class PortfolioController {
      *
      * @param gameService the game manager containing player and exchange
      */
-    public PortfolioController(GameService gameService) {
+    public TradeController(GameService gameService) {
         this.gameService = gameService;
         this.previewService = new TransactionPreviewService();
     }
