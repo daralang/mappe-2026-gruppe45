@@ -281,16 +281,6 @@
     -fx-font-size: 18;
 }
 
-/* ─── Forced sale holdings list ─────────────────────────────────────── */
-
-.forced-sale-scroll {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-}
-
-.forced-sale-scroll > .viewport {
-    -fx-background-color: transparent;
-}
 
 .forced-sale-holding-row {
     -fx-padding: 12 16 12 16;

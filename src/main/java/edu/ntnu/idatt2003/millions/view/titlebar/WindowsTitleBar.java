@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.titlebar;
 
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.Header;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -9,16 +10,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-/**
- * Title bar for Windows and Linux.
- *
- * <p>Renders a thin black strip with custom minimize / maximize / close buttons
- * and a draggable spacer, stacked above the shared {@link Header} navbar.
- * The combined {@link VBox} is the node placed at the top of the main layout.</p>
- *
- * <p>Requires {@link javafx.stage.StageStyle#TRANSPARENT} to be set on the stage
- * before the scene is attached — the factory handles this.</p>
- */
 public class WindowsTitleBar implements TitleBar {
 
     private static final String ICON_MAXIMIZE = "▢";
@@ -33,32 +24,42 @@ public class WindowsTitleBar implements TitleBar {
     private Runnable onExit      = () -> {};
 
     private final Node node;
+    private Header header;
 
-    public WindowsTitleBar(Stage stage) {
-        this(stage, "title-bar", true);
+    public WindowsTitleBar(Stage stage, GameService gameService) {
+        this(stage, gameService, "title-bar", true);
     }
 
     WindowsTitleBar(Stage stage, String controlsStyleClass, boolean includeNavHeader) {
+        this(stage, null, controlsStyleClass, includeNavHeader);
+    }
+
+    WindowsTitleBar(Stage stage, GameService gameService,
+                    String controlsStyleClass, boolean includeNavHeader) {
         HBox controls = buildControls(stage, controlsStyleClass);
-        if (includeNavHeader) {
-            Header header = new Header(
+        if (includeNavHeader && gameService != null) {
+            header = new Header(
                     () -> onDashboard.run(),
                     () -> onExchange.run(),
                     () -> onSave.run(),
-                    () -> onExit.run()
+                    () -> onExit.run(),
+                    gameService
             );
             node = new VBox(controls, header);
+        } else if (includeNavHeader) {
+            node = new VBox(controls);
         } else {
             node = controls;
         }
     }
 
     @Override public Node getNode()                    { return node; }
+    @Override public Node getOverlayNode()             { return header != null ? header.getOverlayNode() : null; }
     @Override public void setOnDashboard(Runnable r)   { onDashboard = r; }
     @Override public void setOnExchange(Runnable r)    { onExchange = r; }
     @Override public void setOnSave(Runnable r)        { onSave = r; }
     @Override public void setOnExit(Runnable r)        { onExit = r; }
-    @Override public void onGameUpdated()              {}
+    @Override public void onGameUpdated()              { if (header != null) header.onGameUpdated(); }
     @Override public void onLanguageChanged()          {}
 
     private HBox buildControls(Stage stage, String styleClass) {

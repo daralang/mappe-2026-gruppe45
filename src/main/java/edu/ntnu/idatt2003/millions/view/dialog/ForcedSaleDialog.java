@@ -162,7 +162,7 @@ public class ForcedSaleDialog extends Modal {
         }
 
         ScrollPane scroll = new ScrollPane(rows);
-        scroll.getStyleClass().add("forced-sale-scroll");
+        scroll.getStyleClass().add("content-scroll");
         scroll.setMaxHeight(240);
         scroll.setFitToWidth(true);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);

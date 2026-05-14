@@ -6,11 +6,13 @@ import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
 import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
+import edu.ntnu.idatt2003.millions.model.notification.Notification;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -39,6 +41,12 @@ public class Player {
     private List<BigDecimal> netWorthHistory;
     private List<BigDecimal> totalDebtHistory = new ArrayList<>();
     private List<LoanLedgerEntry> loanLedger = new ArrayList<>();
+
+    private List<Notification> notifications = new ArrayList<>();
+    private int nextNotificationId = 1;
+    private boolean wasAboveDebtThreshold = false;
+    private boolean wasLowOnCash = false;
+    private PlayerStatusLevel previousStatus = PlayerStatusLevel.NOVICE;
 
     /**
      * Constructs a new Player with the specified name and starting balance.
@@ -580,6 +588,64 @@ public class Player {
                 .divide(previousNetWorth, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(1, RoundingMode.HALF_UP);
+    }
+
+    public List<Notification> getNotifications() {
+        if (notifications == null) notifications = new ArrayList<>();
+        return Collections.unmodifiableList(notifications);
+    }
+
+    public int getUnreadNotificationCount() {
+        if (notifications == null) return 0;
+        return (int) notifications.stream().filter(n -> !n.read()).count();
+    }
+
+    public boolean wasAboveDebtThreshold() {
+        return wasAboveDebtThreshold;
+    }
+
+    public boolean wasLowOnCash() {
+        return wasLowOnCash;
+    }
+
+    public int nextNotificationId() {
+        if (nextNotificationId <= 0) nextNotificationId = 1;
+        return nextNotificationId++;
+    }
+
+    public void addNotification(Notification notification) {
+        if (notifications == null) notifications = new ArrayList<>();
+        notifications.add(notification);
+    }
+
+    public void markAllNotificationsAsRead() {
+        if (notifications == null) return;
+        for (int i = 0; i < notifications.size(); i++) {
+            if (!notifications.get(i).read()) {
+                notifications.set(i, notifications.get(i).markAsRead());
+            }
+        }
+    }
+
+    public void clearAllNotifications() {
+        if (notifications == null) notifications = new ArrayList<>();
+        notifications.clear();
+    }
+
+    public void setWasAboveDebtThreshold(boolean value) {
+        this.wasAboveDebtThreshold = value;
+    }
+
+    public void setWasLowOnCash(boolean value) {
+        this.wasLowOnCash = value;
+    }
+
+    public PlayerStatusLevel getPreviousStatus() {
+        return previousStatus == null ? PlayerStatusLevel.NOVICE : previousStatus;
+    }
+
+    public void setPreviousStatus(PlayerStatusLevel status) {
+        this.previousStatus = status;
     }
 
     /***

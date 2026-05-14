@@ -212,4 +212,17 @@ public class Stock {
         return change.multiply(BigDecimal.valueOf(100))
                 .divide(previous, 2, java.math.RoundingMode.HALF_UP);
     }
+
+    /**
+     * Returns the week-over-week price change as a decimal fraction.
+     * Returns zero if there is no previous price to compare against.
+     *
+     * @return e.g. 0.12 for +12%, -0.10 for -10%
+     */
+    public BigDecimal getLatestPercentChange() {
+        BigDecimal change = getLatestPriceChange();
+        BigDecimal previous = getSalesPrice().subtract(change);
+        if (previous.signum() == 0) return BigDecimal.ZERO;
+        return change.divide(previous, 4, java.math.RoundingMode.HALF_UP);
+    }
 }
