@@ -428,6 +428,12 @@ public class GameService {
         notifyObservers();
     }
 
+    public void clearAllNotifications() {
+        if (player == null) return;
+        player.clearAllNotifications();
+        notifyObservers();
+    }
+
     /**
      * Notifies all registered observers that the game state has changed.
      */
