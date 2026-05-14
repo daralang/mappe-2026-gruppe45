@@ -3,6 +3,8 @@ package edu.ntnu.idatt2003.millions.service.notification;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
 import edu.ntnu.idatt2003.millions.model.notification.Notification;
 import edu.ntnu.idatt2003.millions.model.notification.Notification.Severity;
 import edu.ntnu.idatt2003.millions.model.player.Player;
@@ -22,6 +24,7 @@ public class NotificationService {
 
     public void onWeekAdvanced(Player player, Exchange exchange, CurrencyConverter converter) {
         int currentWeek = exchange.getWeek();
+        checkLoanRepayments(player, currentWeek);
         checkLoanMaturities(player, currentWeek);
         checkDebtRatio(player, currentWeek, converter);
         checkLowCash(player, currentWeek);
@@ -30,6 +33,22 @@ public class NotificationService {
 
     public void onLoanTaken(Player player, int currentWeek, CurrencyConverter converter) {
         checkDebtRatio(player, currentWeek, converter);
+    }
+
+    private void checkLoanRepayments(Player player, int currentWeek) {
+        List<LoanLedgerEntry> repaymentsThisWeek = player.getLoanLedger().stream()
+                .filter(e -> e.week() == currentWeek)
+                .filter(e -> e.type() == LoanLedgerEntryType.REPAYMENT)
+                .toList();
+
+        for (LoanLedgerEntry entry : repaymentsThisWeek) {
+            push(player, Severity.INFO,
+                    "notification.loanRepaid.title",
+                    "notification.loanRepaid.body",
+                    List.of("@loans.offer." + entry.loan().offer().id() + ".name",
+                            entry.amount().abs().toPlainString()),
+                    currentWeek);
+        }
     }
 
     private void checkLoanMaturities(Player player, int currentWeek) {

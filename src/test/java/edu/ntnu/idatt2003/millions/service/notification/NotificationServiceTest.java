@@ -277,6 +277,41 @@ class NotificationServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("Loan repayment notifications")
+    class LoanRepayment {
+
+        @Test
+        @DisplayName("Pushes INFO when a loan is repaid this week")
+        void onWeekAdvanced_pushesLoanRepaidWhenLoanMaturesAtWeek() {
+            // Arrange: take a fast loan (term=15), advance to maturity week and repay
+            Loan loan = new Loan(FAST_OFFER, new BigDecimal("5000"), 0);
+            try { player.takeLoan(loan, converter); } catch (Exception ignored) {}
+            advanceExchangeTo(15);
+            player.repayLoan(loan, exchange.getWeek());
+            // Act
+            service.onWeekAdvanced(player, exchange, converter);
+            // Assert
+            assertTrue(player.getNotifications().stream().anyMatch(n ->
+                    n.severity() == Notification.Severity.INFO
+                    && n.titleKey().equals("notification.loanRepaid.title")));
+        }
+
+        @Test
+        @DisplayName("Does not push loan-repaid when no repayment this week")
+        void onWeekAdvanced_doesNotPushLoanRepaidIfNoMaturityThisWeek() {
+            // Arrange: loan active but not yet at maturity week
+            Loan loan = new Loan(FAST_OFFER, new BigDecimal("5000"), 0);
+            try { player.takeLoan(loan, converter); } catch (Exception ignored) {}
+            advanceExchangeTo(5);
+            // Act: no repayment happens
+            service.onWeekAdvanced(player, exchange, converter);
+            // Assert
+            assertTrue(player.getNotifications().stream().noneMatch(n ->
+                    n.titleKey().equals("notification.loanRepaid.title")));
+        }
+    }
+
     @Test
     @DisplayName("onLoanTaken pushes debt ratio notification when crossing threshold")
     void onLoanTaken_pushesDebtRatioWhenAppropriate() {
