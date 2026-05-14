@@ -68,6 +68,10 @@ public class LoanController {
         return gameService.getExchange().getWeek();
     }
 
+    public boolean isGameOver() {
+        return gameService.isGameOver();
+    }
+
     /**
      * Opens the read-only loan details modal for the given loan.
      *

@@ -252,6 +252,15 @@
     -fx-text-fill: -success-text;
 }
 
+/* ─── Game over modal ───────────────────────────────────────────────── */
+
+.game-over-title {
+    -fx-font-size: 52;
+    -fx-font-weight: 700;
+    -fx-text-fill: -text-primary;
+    -fx-padding: 0;
+}
+
 /* ─── Forced sale header ─────────────────────────────────────────────── */
 
 .forced-sale-header {

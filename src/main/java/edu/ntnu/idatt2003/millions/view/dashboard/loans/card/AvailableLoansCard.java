@@ -42,6 +42,7 @@ public class AvailableLoansCard extends Card {
 
     private static final int OFFER_COUNT = 3;
 
+    private final GameService gameService;
     private final StyledText title = StyledText.sectionTitle();
     private final GridPane offersGrid = new GridPane();
 
@@ -55,6 +56,7 @@ public class AvailableLoansCard extends Card {
 
     public AvailableLoansCard(GameService gameService) {
         super(gameService);
+        this.gameService = gameService;
         setSpacing(16);
 
         offersGrid.setHgap(16);
@@ -85,7 +87,8 @@ public class AvailableLoansCard extends Card {
 
     @Override
     public void onGameUpdated() {
-        // Loan catalog is static — no response to game-state changes needed
+        boolean gameOver = gameService.isGameOver();
+        applyButtons.forEach(btn -> btn.setDisable(gameOver));
     }
 
     @Override

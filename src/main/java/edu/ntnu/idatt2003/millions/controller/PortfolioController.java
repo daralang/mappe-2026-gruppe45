@@ -62,6 +62,10 @@ public class PortfolioController {
         return gameService.getCurrencyConverter();
     }
 
+    public boolean isGameOver() {
+        return gameService.isGameOver();
+    }
+
     /**
      * Returns a preview of buying the given quantity of a stock.
      *

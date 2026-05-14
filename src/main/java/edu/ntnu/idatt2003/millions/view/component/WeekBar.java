@@ -54,11 +54,12 @@ public class WeekBar extends HBox implements GameObserver {
     }
 
     /**
-     * Updates the week label when the game state changes.
+     * Updates the week label and disables the advance button when the game is over.
      */
     @Override
     public void onGameUpdated() {
         weekLabel.setText(LanguageManager.get("app.week") + " "
                 + gameService.getExchange().getWeek());
+        advanceButton.setDisable(gameService.isGameOver());
     }
 }

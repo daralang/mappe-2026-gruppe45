@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.model.player;
 
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
@@ -480,6 +481,43 @@ public class Player {
                         LoanLedgerEntryType.INTEREST, interest.negate()));
             }
         }
+    }
+
+    /**
+     * Returns the total liquidation value of all portfolio positions plus cash, in NOK.
+     * Liquidation value per share is the net payout after commission and tax,
+     * converted to NOK via the given converter.
+     *
+     * @param converter the currency converter used to translate share values to NOK
+     * @return cash plus net liquidation value of all holdings, in NOK
+     * @throws NullPointerException if converter is null
+     */
+    public BigDecimal getTotalLiquidationValue(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        BigDecimal portfolioLiquidation = portfolio.getShares().stream()
+                .map(s -> SalesCalculator.calculateNetNok(s, converter))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return money.add(portfolioLiquidation);
+    }
+
+    /**
+     * Returns {@code true} iff the player's total liquidation value
+     * (cash plus net sale proceeds from all holdings) is enough to cover
+     * {@link #getTotalObligationsThisWeek(int)}.
+     *
+     * <p>When this returns {@code false} and
+     * {@link #canCoverObligationsThisWeek(int)} is also {@code false}, a
+     * forced sale cannot save the player — the game is over.</p>
+     *
+     * @param currentWeek the game week to evaluate
+     * @param converter   the currency converter used to compute liquidation value
+     * @return true if forced-sale is viable; false if game over
+     * @throws NullPointerException if converter is null
+     */
+    public boolean canCoverWithFullLiquidation(int currentWeek, CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        return getTotalLiquidationValue(converter)
+                .compareTo(getTotalObligationsThisWeek(currentWeek)) >= 0;
     }
 
     /**

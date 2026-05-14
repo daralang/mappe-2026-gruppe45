@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
@@ -1050,6 +1051,50 @@ class PlayerTest {
             player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
             player.withdrawMoney(new BigDecimal("997.00")); // money = 403.00 < 404.00
             assertFalse(player.canCoverObligationsThisWeek(11));
+        }
+    }
+
+    @Nested
+    @DisplayName("getTotalLiquidationValue() and canCoverWithFullLiquidation()")
+    class LiquidationMethods {
+
+        @Test
+        @DisplayName("getTotalLiquidationValue() equals cash when portfolio is empty")
+        void liquidationValueEqualsCashWhenPortfolioEmpty() {
+            // Arrange — fresh player with no shares
+            // Act
+            BigDecimal result = player.getTotalLiquidationValue(converter);
+            // Assert
+            assertEquals(0, player.getMoney().compareTo(result));
+        }
+
+        @Test
+        @DisplayName("getTotalLiquidationValue() includes net share proceeds plus cash")
+        void liquidationValueIncludesShareProceeds() {
+            // Arrange — add a NOK share; compute expected net via SalesCalculator
+            Stock stock = nokStock("AAPL", "Apple", new BigDecimal("200.00"));
+            Share share = new Share(stock, new BigDecimal("2"), new BigDecimal("100.00"));
+            player.getPortfolio().addShare(share);
+            BigDecimal expectedNet = SalesCalculator.calculateNetNok(share, converter);
+            BigDecimal expected = player.getMoney().add(expectedNet);
+            // Act
+            BigDecimal result = player.getTotalLiquidationValue(converter);
+            // Assert
+            assertEquals(0, expected.compareTo(result));
+        }
+
+        @Test
+        @DisplayName("canCoverWithFullLiquidation() returns false when liquidation value is less than obligations")
+        void canCoverWithFullLiquidation_falseWhenTotalBelowObligations() throws ExcessiveDebtException {
+            // Arrange — drain cash and create a large loan obligation
+            LoanOffer highRisk = new LoanOffer("hr", new BigDecimal("0.05"), 2,
+                    new BigDecimal("500.00"), LoanRiskLevel.HIGH);
+            player.takeLoan(new Loan(highRisk, new BigDecimal("500.00"), 1), converter);
+            // obligations at week 2 = interest 25 + principal 500 = 525
+            // player has 1500 cash → can cover from cash; drain to 0 to force game-over scenario
+            player.withdrawMoney(player.getMoney()); // money = 0
+            // Liquidation value = 0 (no shares) < 525 obligations → false
+            assertFalse(player.canCoverWithFullLiquidation(2, converter));
         }
     }
 }
