@@ -1,9 +1,11 @@
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
 import edu.ntnu.idatt2003.millions.model.loan.InsufficientSaleProceedsException;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
@@ -151,7 +153,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("Should create player and exchange from stock file")
-        void createsPlayerAndExchangeFromStockFile() throws IOException {
+        void createsPlayerAndExchangeFromStockFile() throws IOException, InvalidStockDataException {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,276.43\nMSFT,Microsoft,404.68\n");
             CountingObserver observer = new CountingObserver();
@@ -244,7 +246,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("Should tag uploaded stocks with the selected currency")
-        void tagsUploadedStocksWithSelectedCurrency() throws IOException {
+        void tagsUploadedStocksWithSelectedCurrency() throws IOException, InvalidStockDataException {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
             Currency selectedCurrency = Currency.getInstance("EUR");
@@ -258,7 +260,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("Should convert purchase cost from selected currency to NOK")
-        void convertsPurchaseCostFromSelectedCurrencyToNok() throws IOException {
+        void convertsPurchaseCostFromSelectedCurrencyToNok() throws IOException, InvalidStockDataException {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
             Currency usd = Currency.getInstance("USD");
@@ -287,7 +289,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("Should default stock currency to USD when no currency is supplied")
-        void defaultsStockCurrencyToUsdForCustomFile() throws IOException {
+        void defaultsStockCurrencyToUsdForCustomFile() throws IOException, InvalidStockDataException {
             // Arrange
             File stockFile = createStockFile("AAPL,Apple Inc.,100.00\n");
             GameService newGameService = new GameService();
@@ -431,7 +433,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("sells shares and deducts obligations from cash")
-        void executeForcedSale_sellsSharesAndPaysObligations() throws InsufficientSaleProceedsException {
+        void executeForcedSale_sellsSharesAndPaysObligations() throws InsufficientSaleProceedsException, ExcessiveDebtException {
             // Arrange — buy shares then take a loan so there is interest due
             gameService.takeLoan(offer, new BigDecimal("500.00"));
             Share share = buyAndGetShare();
@@ -448,7 +450,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("writes INTEREST ledger entries for each active loan")
-        void executeForcedSale_writesInterestLedgerEntries() throws InsufficientSaleProceedsException {
+        void executeForcedSale_writesInterestLedgerEntries() throws InsufficientSaleProceedsException, ExcessiveDebtException {
             // Arrange
             gameService.takeLoan(offer, new BigDecimal("500.00"));
             Share share = buyAndGetShare();
@@ -463,7 +465,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("throws InsufficientSaleProceedsException when proceeds < obligations")
-        void executeForcedSale_throwsWhenSharesDontCover() {
+        void executeForcedSale_throwsWhenSharesDontCover() throws ExcessiveDebtException {
             // Arrange — player: 10000 NOK, capacity = 5000.
             // Loan: 4000 NOK at 50%/week → interest = 2000 NOK.
             // Selling 5 shares at 100 NOK (NOK stock): net ≈ 495 NOK < 2000 → throws.
@@ -478,7 +480,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("is all-or-nothing: no mutations happen when proceeds are insufficient")
-        void executeForcedSale_isAllOrNothingOnInsufficientSale() {
+        void executeForcedSale_isAllOrNothingOnInsufficientSale() throws ExcessiveDebtException {
             // Arrange — same as above: obligations >> share net sale value
             LoanOffer bigRate = new LoanOffer("big", new BigDecimal("0.50"), 10,
                     new BigDecimal("50000.00"), LoanRiskLevel.HIGH);
@@ -499,7 +501,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("advances the week and records total debt after forced sale")
-        void executeForcedSale_advancesWeekAndRecordsTotalDebt() throws InsufficientSaleProceedsException {
+        void executeForcedSale_advancesWeekAndRecordsTotalDebt() throws InsufficientSaleProceedsException, ExcessiveDebtException {
             // Arrange
             gameService.takeLoan(offer, new BigDecimal("200.00"));
             Share share = buyAndGetShare();
@@ -513,7 +515,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("repays maturing loan and removes it from active loans")
-        void executeForcedSale_repaysMaturingLoanOnDueWeek() throws InsufficientSaleProceedsException {
+        void executeForcedSale_repaysMaturingLoanOnDueWeek() throws InsufficientSaleProceedsException, ExcessiveDebtException {
             // Arrange — offer has term 10; loan taken at week 1, due at week 11 (nextWeek = 2 here)
             // Use a short-term offer instead: term = 1 so due at week 2 (nextWeek after setUp)
             LoanOffer shortOffer = new LoanOffer("short", new BigDecimal("0.01"), 1,
@@ -528,7 +530,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("writes REPAYMENT ledger entry for maturing loan")
-        void executeForcedSale_writesRepaymentEntryForMaturingLoan() throws InsufficientSaleProceedsException {
+        void executeForcedSale_writesRepaymentEntryForMaturingLoan() throws InsufficientSaleProceedsException, ExcessiveDebtException {
             LoanOffer shortOffer = new LoanOffer("short", new BigDecimal("0.01"), 1,
                     new BigDecimal("50000.00"), LoanRiskLevel.LOW);
             gameService.takeLoan(shortOffer, new BigDecimal("200.00"));
@@ -547,7 +549,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("repays maturing loan and removes it from active loans")
-        void advanceWeek_repaysMaturingLoan() {
+        void advanceWeek_repaysMaturingLoan() throws ExcessiveDebtException {
             // Arrange — term 1 loan taken at week 1, due at week 2
             LoanOffer shortOffer = new LoanOffer("short", new BigDecimal("0.01"), 1,
                     new BigDecimal("50000.00"), LoanRiskLevel.LOW);
@@ -561,7 +563,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("writes INTEREST and REPAYMENT entries for maturing loan")
-        void advanceWeek_writesInterestAndRepaymentForMaturingLoan() {
+        void advanceWeek_writesInterestAndRepaymentForMaturingLoan() throws ExcessiveDebtException {
             LoanOffer shortOffer = new LoanOffer("short", new BigDecimal("0.01"), 1,
                     new BigDecimal("50000.00"), LoanRiskLevel.LOW);
             gameService.takeLoan(shortOffer, new BigDecimal("200.00"));
@@ -576,7 +578,7 @@ class GameServiceTest {
 
         @Test
         @DisplayName("deducts interest plus principal from cash on maturity week")
-        void advanceWeek_deductsInterestAndPrincipalOnMaturityWeek() {
+        void advanceWeek_deductsInterestAndPrincipalOnMaturityWeek() throws ExcessiveDebtException {
             LoanOffer shortOffer = new LoanOffer("short", new BigDecimal("0.01"), 1,
                     new BigDecimal("50000.00"), LoanRiskLevel.LOW);
             BigDecimal principal = new BigDecimal("200.00");
