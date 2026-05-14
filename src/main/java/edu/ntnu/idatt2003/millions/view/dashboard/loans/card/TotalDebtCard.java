@@ -50,7 +50,7 @@ public class TotalDebtCard extends Card {
         setSpacing(4);
 
         CategoryAxis xAxis = new CategoryAxis();
-        xAxis.setLabel(LanguageManager.get("app.week"));
+        xAxis.setLabel(LanguageManager.get("app.week").toUpperCase());
 
         NumberAxis yAxis = new NumberAxis();
         yAxis.setAutoRanging(true);

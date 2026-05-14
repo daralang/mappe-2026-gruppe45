@@ -250,7 +250,7 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
             case INTEREST     -> "badge-interest";
             case REPAYMENT    -> "badge-repayment";
         };
-        Label badge = new Label(LanguageManager.get(labelKey));
+        Label badge = new Label(LanguageManager.get(labelKey).toUpperCase());
         badge.getStyleClass().addAll("transaction-type-badge", cssClass);
         return badge;
     }
