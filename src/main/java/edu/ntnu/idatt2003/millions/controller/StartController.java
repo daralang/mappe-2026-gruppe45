@@ -130,33 +130,17 @@ public class StartController {
     }
 
     /**
-     * Registers event handlers for all interactive controls in the view.
-     * Stock file and save file drop zones each get a browse handler and a
-     * drag-dropped handler that validate the chosen file immediately.
+     * Injects callbacks into the view for all interactive controls.
+     * The view wires these callbacks to its own controls internally,
+     * so the controller never accesses individual UI components directly.
      */
     private void bindEvents() {
-        view.getStockFileDropZone().getBrowseButton().setOnAction(e -> handleBrowseStockFile());
-        view.getSaveFileDropZone().getBrowseButton().setOnAction(e -> handleBrowseSaveFile());
-        view.getStartButton().setOnAction(e -> handleStartGame());
-        view.getLoadButton().setOnAction(e -> handleLoadGame());
-
-        view.getStockFileDropZone().setOnDragDropped(e -> {
-            var db = e.getDragboard();
-            if (db.hasFiles()) {
-                validateAndSetStockFile(db.getFiles().getFirst());
-                e.setDropCompleted(true);
-            }
-            e.consume();
-        });
-
-        view.getSaveFileDropZone().setOnDragDropped(e -> {
-            var db = e.getDragboard();
-            if (db.hasFiles()) {
-                validateAndSetSaveFile(db.getFiles().getFirst());
-                e.setDropCompleted(true);
-            }
-            e.consume();
-        });
+        view.setOnStartGame(this::handleStartGame);
+        view.setOnLoadGame(this::handleLoadGame);
+        view.setOnBrowseStockFile(this::handleBrowseStockFile);
+        view.setOnBrowseSaveFile(this::handleBrowseSaveFile);
+        view.setOnStockFileDrop(this::validateAndSetStockFile);
+        view.setOnSaveFileDrop(this::validateAndSetSaveFile);
     }
 
     /**
