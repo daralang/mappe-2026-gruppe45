@@ -133,6 +133,7 @@ public class LoanDetailsModal extends Modal {
 
         Button repayBtn = new Button(LanguageManager.get("loans.details.button.repay"));
         repayBtn.getStyleClass().addAll("modal-button", "modal-button-primary");
+        repayBtn.setDisable(controller.isGameOver());
         repayBtn.setOnAction(e -> {
             close();
             Platform.runLater(() -> controller.openRepayDialog(loan, loanIndex));

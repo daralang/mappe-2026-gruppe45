@@ -169,9 +169,15 @@ public class HoldingsCard extends Card {
     }
 
     private HBox buildActionButtons(Share share) {
+        boolean gameOver = gameService.isGameOver();
+
         Button buy = actionButton(LanguageManager.get("dashboard.portfolio.buy"), "holdings-action-buy");
         Button sell = actionButton(LanguageManager.get("dashboard.portfolio.sell"), "holdings-action-sell");
         Button sellAll = actionButton(LanguageManager.get("dashboard.portfolio.sellAll"), "holdings-action-sell");
+
+        buy.setDisable(gameOver);
+        sell.setDisable(gameOver);
+        sellAll.setDisable(gameOver);
 
         buy.setOnAction(e -> controller.openBuyDialog(share.getStock()));
         sell.setOnAction(e -> controller.openSellDialog(share));

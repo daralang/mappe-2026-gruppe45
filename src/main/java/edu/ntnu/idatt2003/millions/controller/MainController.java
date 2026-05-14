@@ -22,6 +22,7 @@ public class MainController {
     private final MainView view;
     private final GameService gameService;
     private final ForcedSaleController forcedSaleController;
+    private final GameOverController gameOverController;
 
     /**
      * Constructs a new MainController and creates the main view.
@@ -33,6 +34,8 @@ public class MainController {
         this.stage = stage;
         this.gameService = gameService;
         this.forcedSaleController = new ForcedSaleController(gameService);
+        this.gameOverController = new GameOverController(gameService, stage,
+                () -> new StartController(stage, gameService).show());
         PortfolioController portfolioController = new PortfolioController(gameService);
         LoanController loanController = new LoanController(gameService);
         this.view = new MainView(
@@ -55,8 +58,12 @@ public class MainController {
         int nextWeek = gameService.getExchange().getWeek() + 1;
         if (gameService.getPlayer().canCoverObligationsThisWeek(nextWeek)) {
             gameService.advanceWeek();
-        } else {
+        } else if (gameService.getPlayer().canCoverWithFullLiquidation(
+                nextWeek, gameService.getCurrencyConverter())) {
             forcedSaleController.open(nextWeek);
+        } else {
+            gameService.declareGameOver();
+            gameOverController.open(nextWeek);
         }
     }
 

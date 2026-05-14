@@ -161,8 +161,11 @@ class StocksRowRenderer {
      * @return an {@link HBox} containing the action buttons
      */
     private HBox buildTradeButtons(Stock stock) {
+        boolean gameOver = gameService.isGameOver();
+
         Button buyButton = new Button(LanguageManager.get("exchange.stocks.buy"));
         buyButton.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
+        buyButton.setDisable(gameOver);
         buyButton.setOnAction(e -> controller.openBuyDialog(stock));
 
         HBox buttons = new HBox(4, buyButton);
@@ -172,6 +175,7 @@ class StocksRowRenderer {
             Share share = shares.getFirst();
             Button sellButton = new Button(LanguageManager.get("exchange.stocks.sell"));
             sellButton.getStyleClass().addAll("holdings-action-link", "holdings-action-sell");
+            sellButton.setDisable(gameOver);
             sellButton.setOnAction(e -> controller.openSellDialog(share));
             buttons.getChildren().add(sellButton);
         }
