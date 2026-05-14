@@ -24,7 +24,7 @@
 }
 
 .title-bar-btn:hover {
-    -fx-background-color: #333333;
+    -fx-background-color: -surface-dark-hover;
 }
 
 .title-bar-btn-max {
