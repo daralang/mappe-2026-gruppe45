@@ -62,4 +62,9 @@ public record Loan(LoanOffer offer, BigDecimal principal, int takenAtWeek) {
     public BigDecimal interestSaved(int currentWeek) {
         return weeklyInterest().multiply(BigDecimal.valueOf(weeksRemaining(currentWeek)));
     }
+
+    /** True when {@code currentWeek} is the week this loan's principal becomes due. */
+    public boolean isDueThisWeek(int currentWeek) {
+        return weeksRemaining(currentWeek) == 0;
+    }
 }

@@ -990,5 +990,65 @@ class PlayerTest {
             player.withdrawMoney(new BigDecimal("1397.00")); // money = 3.00 < 4.00 interest
             assertFalse(player.canCoverInterestThisWeek());
         }
+
+        @Test
+        @DisplayName("getMaturityDueThisWeek() returns zero when no loans are maturing")
+        void getMaturityDueThisWeek_zeroWhenNoneAreMaturing() {
+            // Arrange — loan taken at week 1, term 10: due at week 11, not week 2
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getMaturityDueThisWeek(2)));
+        }
+
+        @Test
+        @DisplayName("getMaturityDueThisWeek() returns principal of maturing loan")
+        void getMaturityDueThisWeek_returnsPrincipalOfMaturingLoan() {
+            // Arrange — offer has term 10: taken at week 1, due at week 11
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            assertEquals(0, new BigDecimal("200.00").compareTo(player.getMaturityDueThisWeek(11)));
+        }
+
+        @Test
+        @DisplayName("getMaturityDueThisWeek() sums principals of multiple maturing loans")
+        void getMaturityDueThisWeek_sumsBothMaturingLoans() {
+            // Both loans taken at week 1 with term 10 → both mature at week 11
+            // player starts with 1000, capacity 500; two loans sum to 350 which is within limit
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            player.takeLoan(new Loan(offer, new BigDecimal("150.00"), 1), converter);
+            assertEquals(0, new BigDecimal("350.00").compareTo(player.getMaturityDueThisWeek(11)));
+        }
+
+        @Test
+        @DisplayName("getTotalObligationsThisWeek() equals interest-only when no loans mature")
+        void getTotalObligationsThisWeek_equalsInterestWhenNoMaturity() {
+            // Arrange — 400 NOK at 1% = 4.00 weekly; loan matures at week 11, not week 2
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertEquals(0, new BigDecimal("4.00").compareTo(player.getTotalObligationsThisWeek(2)));
+        }
+
+        @Test
+        @DisplayName("getTotalObligationsThisWeek() includes maturity principal when loan matures")
+        void getTotalObligationsThisWeek_includesMaturityPrincipal() {
+            // 400 NOK at 1%/week: interest = 4.00, maturity = 400.00 → obligations = 404.00
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertEquals(0, new BigDecimal("404.00").compareTo(player.getTotalObligationsThisWeek(11)));
+        }
+
+        @Test
+        @DisplayName("canCoverObligationsThisWeek() returns true when cash covers interest only")
+        void canCoverObligationsThisWeek_trueForInterestOnly() {
+            // 400 NOK loan at 1%: money=1400, interest=4.00, no maturity at week 2 → true
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertTrue(player.canCoverObligationsThisWeek(2));
+        }
+
+        @Test
+        @DisplayName("canCoverObligationsThisWeek() returns false when cash cannot cover interest + maturity")
+        void canCoverObligationsThisWeek_falseWhenObligationsExceedCash() {
+            // 400 NOK loan at 1%: money=1400 initially.
+            // At week 11, obligations = 4.00 + 400.00 = 404.00. Drain to 403.00.
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            player.withdrawMoney(new BigDecimal("997.00")); // money = 403.00 < 404.00
+            assertFalse(player.canCoverObligationsThisWeek(11));
+        }
     }
 }

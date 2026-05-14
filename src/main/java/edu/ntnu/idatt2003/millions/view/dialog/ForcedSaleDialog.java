@@ -39,6 +39,8 @@ public class ForcedSaleDialog extends Modal {
 
     private final List<Share> shares;
     private final BigDecimal interestDue;
+    private final BigDecimal maturityDue;
+    private final BigDecimal totalObligations;
     private final BigDecimal availableCash;
     private final CurrencyConverter converter;
     private final int currentWeek;
@@ -53,12 +55,15 @@ public class ForcedSaleDialog extends Modal {
 
     public ForcedSaleDialog(List<Share> shares,
                             BigDecimal interestDue,
+                            BigDecimal maturityDue,
                             BigDecimal availableCash,
                             CurrencyConverter converter,
                             int currentWeek,
                             Consumer<List<Share>> onConfirm) {
         this.shares = shares;
         this.interestDue = interestDue;
+        this.maturityDue = maturityDue;
+        this.totalObligations = interestDue.add(maturityDue);
         this.availableCash = availableCash;
         this.converter = converter;
         this.currentWeek = currentWeek;
@@ -116,37 +121,40 @@ public class ForcedSaleDialog extends Modal {
         VBox body = new VBox(16);
         body.getStyleClass().add("modal-body");
         body.getChildren().addAll(
-                buildInterestSummaryBox(),
+                buildObligationsSummaryBox(),
                 buildHoldingsSection(),
                 buildStatusSection()
         );
         return body;
     }
 
-    private SummaryBox buildInterestSummaryBox() {
+    private SummaryBox buildObligationsSummaryBox() {
         SummaryBox box = new SummaryBox();
-        box.setSectionTitle(LanguageManager.get("forcedSale.interest.header"));
+        box.setSectionTitle(LanguageManager.get("forcedSale.obligations.header"));
 
-        box.addRow(LanguageManager.get("forcedSale.interest.sum"),
-                CurrencyFormatter.format(interestDue));
-        box.addRow(LanguageManager.get("forcedSale.interest.availableCash"),
+        if (interestDue.signum() > 0) {
+            box.addRow(LanguageManager.get("forcedSale.obligations.interest"),
+                    CurrencyFormatter.format(interestDue));
+        }
+        if (maturityDue.signum() > 0) {
+            box.addRow(LanguageManager.get("forcedSale.obligations.maturity"),
+                    CurrencyFormatter.format(maturityDue));
+        }
+        box.addRow(LanguageManager.get("forcedSale.obligations.total"),
+                CurrencyFormatter.format(totalObligations));
+        box.addRow(LanguageManager.get("forcedSale.obligations.availableCash"),
                 CurrencyFormatter.format(availableCash));
 
-        BigDecimal shortfall = interestDue.subtract(availableCash).max(BigDecimal.ZERO);
-        box.addRow(LanguageManager.get("forcedSale.interest.toBeCovered"),
+        BigDecimal shortfall = totalObligations.subtract(availableCash).max(BigDecimal.ZERO);
+        box.addRow(LanguageManager.get("forcedSale.obligations.toBeCovered"),
                 CurrencyFormatter.format(shortfall), "negative");
 
         return box;
     }
 
     private VBox buildHoldingsSection() {
-        HBox headerRow = new HBox();
         Label holdingsHeader = StyledText.detailLabel(LanguageManager.get("forcedSale.holdings.header"));
         holdingsHeader.getStyleClass().add("modal-summary-section-title");
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label sortHint = StyledText.detailLabel(LanguageManager.get("forcedSale.holdings.sortHint"));
-        headerRow.getChildren().addAll(holdingsHeader, spacer, sortHint);
 
         VBox rows = new VBox(0);
         for (Share share : shares) {
@@ -155,11 +163,11 @@ public class ForcedSaleDialog extends Modal {
 
         ScrollPane scroll = new ScrollPane(rows);
         scroll.getStyleClass().add("forced-sale-scroll");
-        scroll.setMaxHeight(320);
+        scroll.setMaxHeight(240);
         scroll.setFitToWidth(true);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        return new VBox(12, headerRow, scroll);
+        return new VBox(12, holdingsHeader, scroll);
     }
 
     private HBox buildHoldingRow(Share share) {
@@ -257,9 +265,9 @@ public class ForcedSaleDialog extends Modal {
         selectedTotalLabel.setText(
                 LanguageManager.get("forcedSale.selected") + ": " + CurrencyFormatter.format(selectedTotal));
 
-        int cmp = selectedTotal.compareTo(interestDue);
+        int cmp = selectedTotal.compareTo(totalObligations);
         if (cmp < 0) {
-            BigDecimal missing = interestDue.subtract(selectedTotal).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal missing = totalObligations.subtract(selectedTotal).setScale(2, RoundingMode.HALF_UP);
             statusLabel.setText(MessageFormat.format(
                     LanguageManager.get("forcedSale.status.short"),
                     ChangeFormatter.formatPlain(missing)));
@@ -272,7 +280,7 @@ public class ForcedSaleDialog extends Modal {
             statusLabel.getStyleClass().add("positive");
             confirmBtn.setDisable(false);
         } else {
-            BigDecimal surplus = selectedTotal.subtract(interestDue).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal surplus = selectedTotal.subtract(totalObligations).setScale(2, RoundingMode.HALF_UP);
             statusLabel.setText(MessageFormat.format(
                     LanguageManager.get("forcedSale.status.over"),
                     ChangeFormatter.formatPlain(surplus)));

@@ -25,32 +25,33 @@ public class ForcedSaleController {
     }
 
     /**
-     * Opens the forced-sale dialog for the given required interest amount.
-     * Holdings are sorted ascending by return percentage (worst-performing first).
+     * Opens the forced-sale dialog for the given upcoming week. Holdings are
+     * sorted ascending by return percentage (worst-performing first).
      *
-     * @param interestDue total weekly interest the player must cover by selling shares
+     * @param currentWeek the week whose obligations (interest + any maturity) must be covered
      */
-    public void open(BigDecimal interestDue) {
+    public void open(int currentWeek) {
         Player player = gameService.getPlayer();
         CurrencyConverter converter = gameService.getCurrencyConverter();
 
+        BigDecimal interestDue = player.getWeeklyInterestDue();
+        BigDecimal maturityDue = player.getMaturityDueThisWeek(currentWeek);
+
         List<Share> shares = player.getPortfolio().getShares().stream()
-                .sorted(Comparator.comparing(Share::getReturnPercent))
+                .sorted(Comparator.comparing(s -> s.getStock().getWeeklyChangePercent()))
                 .toList();
 
         ForcedSaleDialog[] ref = new ForcedSaleDialog[1];
         ref[0] = new ForcedSaleDialog(
-                shares, interestDue, player.getMoney(), converter,
-                gameService.getExchange().getWeek(),
-                selectedShares -> handleConfirm(ref[0], selectedShares, interestDue)
+                shares, interestDue, maturityDue, player.getMoney(), converter, currentWeek,
+                selectedShares -> handleConfirm(ref[0], selectedShares, currentWeek)
         );
         ref[0].show();
     }
 
-    private void handleConfirm(ForcedSaleDialog dialog, List<Share> selectedShares,
-                                BigDecimal interestAmount) {
+    private void handleConfirm(ForcedSaleDialog dialog, List<Share> selectedShares, int currentWeek) {
         try {
-            gameService.executeForcedSale(selectedShares, interestAmount);
+            gameService.executeForcedSale(selectedShares, currentWeek);
             dialog.closeOnConfirm();
         } catch (InsufficientSaleProceedsException e) {
             dialog.showError(e.getMessage());
