@@ -98,13 +98,18 @@ public class MainController {
      * by the callbacks passed to {@link ExitDialog}.
      */
     private void handleExitGame() {
-        new ExitDialog(this::handleSaveAndExit, stage::close).show();
+        new ExitDialog(this::handleSaveAndExit, this::handleExitWithoutSaving).show();
     }
 
     private void handleSaveAndExit() {
         if (handleSaveGame()) {
             stage.close();
         }
+    }
+
+    private void handleExitWithoutSaving() {
+        gameService.recordLeaderboardEntry();
+        stage.close();
     }
 
     /**
