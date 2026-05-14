@@ -106,6 +106,8 @@ public class StartView implements StartScreenInputs {
                 ROOT_SPACING);
 
         BorderPane root = new BorderPane();
+        root.getStyleClass().add("start-root");
+
         if (titleBarControls != null) {
             root.setTop(new VBox(titleBarControls, topBar));
         } else {
