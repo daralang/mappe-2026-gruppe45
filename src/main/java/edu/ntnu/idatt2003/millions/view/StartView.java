@@ -3,21 +3,17 @@ package edu.ntnu.idatt2003.millions.view;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.StylesheetLoader;
 import edu.ntnu.idatt2003.millions.view.component.AppTabPane;
-import edu.ntnu.idatt2003.millions.view.component.CurrencySelector;
-import edu.ntnu.idatt2003.millions.view.component.FileDropZone;
 import edu.ntnu.idatt2003.millions.view.component.LanguagePicker;
+import edu.ntnu.idatt2003.millions.view.start.LoadGameTab;
+import edu.ntnu.idatt2003.millions.view.start.NewGameTab;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.io.File;
@@ -27,59 +23,28 @@ import java.util.function.Consumer;
 /**
  * Start view for the application.
  *
- * <p>Contains a tab-based layout for either creating a new game
- * or loading an existing saved game. The new game tab shows a centered
- * card with inline label-field rows, a {@link FileDropZone} for stock CSV
- * upload, and a currency selector that activates once a file is chosen.
- * The resume game tab shows a {@link FileDropZone} for JSON save-file upload.</p>
+ * <p>Composes a tab-based layout from {@link NewGameTab} and {@link LoadGameTab},
+ * each of which owns its own fields, layout, i18n updates, and event wiring.
+ * This class is a thin shell: it builds the scene structure, delegates all
+ * user input and callbacks to the tab components, and exposes the
+ * {@link StartScreenInputs} contract to the controller.</p>
  *
- * <p>User interactions are forwarded to the controller via callbacks registered
- * through setter methods such as {@link #setOnStartGame(Runnable)},
- * {@link #setOnBrowseStockFile(Runnable)}, and {@link #setOnStockFileDrop(Consumer)}.
- * The view wires these callbacks to its own controls in {@code wireEvents()},
- * which is called once during construction.</p>
+ * <p>User interactions are forwarded to the controller via callback setters such as
+ * {@link #setOnStartGame(Runnable)} and {@link #setOnStockFileDrop(Consumer)},
+ * which in turn delegate to the relevant tab component.</p>
  */
 public class StartView implements StartScreenInputs {
 
     private static final double SCENE_WIDTH = 900;
     private static final double SCENE_HEIGHT = 700;
     private static final double ROOT_SPACING = 24;
-    private static final double FORM_SPACING = 16;
-    private static final double CARD_WIDTH = 460;
-    private static final double LABEL_WIDTH = 120;
 
     private final Scene scene;
     private final StyledText title;
-
-    private final TabPane tabPane;
     private final Tab newGameTab;
     private final Tab loadGameTab;
-
-    // New game tab
-    private final StyledText nameLabel;
-    private final StyledText capitalLabel;
-    private final StyledText fileLabel;
-    private final StyledText currencyLabel;
-    private final TextField nameField;
-    private final TextField capitalField;
-    private final CurrencySelector currencySelector;
-    private final FileDropZone stockFileDropZone;
-    private final Button startButton;
-    private String stockFilePath = "";
-
-    // Resume game tab
-    private final StyledText saveFileLabel;
-    private final FileDropZone saveFileDropZone;
-    private final Button loadButton;
-    private String saveFilePath = "";
-
-    // Callbacks wired by the controller
-    private Runnable onStartGame;
-    private Runnable onLoadGame;
-    private Runnable onBrowseStockFile;
-    private Runnable onBrowseSaveFile;
-    private Consumer<File> onStockFileDrop;
-    private Consumer<File> onSaveFileDrop;
+    private final NewGameTab newGameTabContent;
+    private final LoadGameTab loadGameContent;
 
     /**
      * Creates the start view with two tabs:
@@ -99,33 +64,15 @@ public class StartView implements StartScreenInputs {
         LanguagePicker languagePicker = new LanguagePicker();
         title = StyledText.headingOne(LanguageManager.get("app.title"));
 
-        nameLabel = StyledText.paragraphOne();
-        capitalLabel = StyledText.paragraphOne();
-        currencyLabel = StyledText.paragraphOne();
-        fileLabel = StyledText.paragraphOne();
-        nameField = new TextField();
-        capitalField = new TextField();
-        currencySelector = new CurrencySelector();
-        currencySelector.setDisable(false);
-
-        stockFileDropZone = new FileDropZone();
-        stockFileDropZone.setMaxWidth(CARD_WIDTH);
-        startButton = new Button();
-
-        saveFileLabel = StyledText.paragraphOne();
-        saveFileDropZone = new FileDropZone();
-        saveFileDropZone.setMaxWidth(CARD_WIDTH);
-        loadButton = new Button();
-
-        VBox newGameContent = createNewGameContent();
-        VBox loadGameContent = createLoadGameContent();
+        newGameTabContent = new NewGameTab();
+        loadGameContent = new LoadGameTab();
 
         newGameTab = AppTabPane.createTab(
-                LanguageManager.get("start.tab.newGame"), newGameContent);
+                LanguageManager.get("start.tab.newGame"), newGameTabContent);
         loadGameTab = AppTabPane.createTab(
                 LanguageManager.get("start.tab.loadGame"), loadGameContent);
 
-        tabPane = new AppTabPane();
+        AppTabPane tabPane = new AppTabPane();
         tabPane.getTabs().addAll(newGameTab, loadGameTab);
         tabPane.setMaxWidth(540);
 
@@ -152,203 +99,18 @@ public class StartView implements StartScreenInputs {
                 StylesheetLoader.Stylesheet.DROP_ZONE,
                 StylesheetLoader.Stylesheet.OTHER);
 
-        wireEvents();
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
     }
 
     /**
-     * Builds an inline label + field row where the label has a fixed width.
-     *
-     * @param label the label node
-     * @param field the input node
-     * @return an {@link HBox} with label and field on the same line
-     */
-    private HBox buildFormRow(javafx.scene.control.Label label, Node field) {
-        label.setMinWidth(LABEL_WIDTH);
-        HBox.setHgrow(field, Priority.ALWAYS);
-        HBox row = new HBox(12, label, field);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(CARD_WIDTH);
-        return row;
-    }
-
-    /**
-     * Wires all interactive controls to their respective callback fields.
-     * Called once from the constructor after all UI components are initialised.
-     * Each handler delegates to the registered callback if one has been set,
-     * so the view remains functional even before the controller injects its callbacks.
-     */
-    private void wireEvents() {
-        startButton.setOnAction(e -> {
-            if (onStartGame != null) {
-                onStartGame.run();
-            }
-        });
-        loadButton.setOnAction(e -> {
-            if (onLoadGame != null) {
-                onLoadGame.run();
-            }
-        });
-        stockFileDropZone.getBrowseButton().setOnAction(e -> {
-            if (onBrowseStockFile != null) {
-                onBrowseStockFile.run();
-            }
-        });
-        saveFileDropZone.getBrowseButton().setOnAction(e -> {
-            if (onBrowseSaveFile != null) {
-                onBrowseSaveFile.run();
-            }
-        });
-        stockFileDropZone.setOnDragDropped(event -> {
-            var db = event.getDragboard();
-            if (db.hasFiles() && onStockFileDrop != null) {
-                onStockFileDrop.accept(db.getFiles().getFirst());
-                event.setDropCompleted(true);
-            }
-            event.consume();
-        });
-        saveFileDropZone.setOnDragDropped(event -> {
-            var db = event.getDragboard();
-            if (db.hasFiles() && onSaveFileDrop != null) {
-                onSaveFileDrop.accept(db.getFiles().getFirst());
-                event.setDropCompleted(true);
-            }
-            event.consume();
-        });
-    }
-
-    /**
-     * Builds the layout for the "new game" tab.
-     *
-     * @return the assembled layout node
-     */
-    private VBox createNewGameContent() {
-        HBox nameRow = buildFormRow(nameLabel, nameField);
-        HBox capitalRow = buildFormRow(capitalLabel, capitalField);
-        HBox currencyRow = buildFormRow(currencyLabel, currencySelector);
-
-        startButton.setMaxWidth(CARD_WIDTH);
-
-        VBox content = new VBox(
-                FORM_SPACING,
-                nameRow,
-                capitalRow,
-                fileLabel,
-                stockFileDropZone,
-                currencyRow,
-                startButton
-        );
-        content.setAlignment(Pos.CENTER);
-        content.setPadding(new Insets(24));
-        return content;
-    }
-
-    /**
-     * Builds the layout for the "resume game" tab.
-     *
-     * @return the assembled layout node
-     */
-    private VBox createLoadGameContent() {
-        loadButton.setMaxWidth(CARD_WIDTH);
-
-        VBox content = new VBox(
-                FORM_SPACING,
-                saveFileLabel,
-                saveFileDropZone,
-                loadButton
-        );
-        content.setAlignment(Pos.CENTER);
-        content.setPadding(new Insets(24));
-        return content;
-    }
-
-    /**
-     * Refreshes all visible UI texts from the current {@link LanguageManager} bundle.
+     * Refreshes the title and tab labels from the current {@link LanguageManager} bundle.
+     * Each tab component manages its own internal texts independently.
      */
     private void updateTexts() {
         title.setText(LanguageManager.get("app.title"));
-
         newGameTab.setText(LanguageManager.get("start.tab.newGame"));
         loadGameTab.setText(LanguageManager.get("start.tab.loadGame"));
-
-        nameLabel.setText(LanguageManager.get("start.new.nameLabel"));
-        capitalLabel.setText(LanguageManager.get("start.new.capitalLabel"));
-        currencyLabel.setText(LanguageManager.get("start.new.currencyLabel"));
-        fileLabel.setText(LanguageManager.get("start.new.fileLabel"));
-
-        stockFileDropZone.setHintText(LanguageManager.get("start.new.dropZoneHint"));
-        stockFileDropZone.setOrText(LanguageManager.get("start.new.dropZoneOr"));
-        stockFileDropZone.setBrowseText(LanguageManager.get("start.file.browse"));
-        startButton.setText(LanguageManager.get("start.startButton"));
-
-        saveFileLabel.setText(LanguageManager.get("start.resume.fileLabel"));
-        saveFileDropZone.setHintText(LanguageManager.get("start.resume.dropZoneHint"));
-        saveFileDropZone.setOrText(LanguageManager.get("start.resume.dropZoneOr"));
-        saveFileDropZone.setBrowseText(LanguageManager.get("start.file.browse"));
-        loadButton.setText(LanguageManager.get("start.loadButton"));
-
-        nameField.setPromptText("");
-        capitalField.setPromptText("");
-    }
-
-    /**
-     * Returns the path to the stock data file selected by the user.
-     * The path is stored independently of any UI label so changes to the
-     * drop-zone presentation do not affect the controller's contract.
-     *
-     * @return stock file path, or empty string when none is selected
-     */
-    @Override
-    public String getStockFilePath() {
-        return stockFilePath;
-    }
-
-    /**
-     * Sets the stock file path. Updates the internal data field, mirrors the
-     * filename in the {@link #stockFileDropZone}, and enables or disables the
-     * currency selector accordingly.
-     *
-     * @param path the absolute file path; {@code null} or blank resets the zone
-     */
-    @Override
-    public void setStockFilePath(String path) {
-        if (path == null || path.isBlank()) {
-            this.stockFilePath = "";
-            stockFileDropZone.setFileName("");
-            currencySelector.setDisable(true);
-        } else {
-            this.stockFilePath = path;
-            stockFileDropZone.setFileName(path);
-            currencySelector.setDisable(false);
-        }
-    }
-
-    /**
-     * Returns the path to the save file selected by the user.
-     *
-     * @return save file path, or empty string when none is selected
-     */
-    @Override
-    public String getSaveFilePath() {
-        return saveFilePath;
-    }
-
-    /**
-     * Sets the save file path. Updates the internal data field and mirrors the
-     * filename in the {@link #saveFileDropZone}.
-     *
-     * @param path save file path to display; {@code null} clears the field
-     */
-    @Override
-    public void setSaveFilePath(String path) {
-        if (path == null || path.isBlank()) {
-            this.saveFilePath = "";
-            saveFileDropZone.setFileName("");
-        } else {
-            this.saveFilePath = path;
-            saveFileDropZone.setFileName(path);
-        }
     }
 
     /**
@@ -360,36 +122,40 @@ public class StartView implements StartScreenInputs {
         return scene;
     }
 
-    /**
-     * Returns the trimmed player name entered by the user.
-     *
-     * @return trimmed player name
-     */
+
     @Override
     public String getName() {
-        return nameField.getText().trim();
+        return newGameTabContent.getName();
     }
 
-    /**
-     * Returns the trimmed starting capital entered by the user.
-     *
-     * @return trimmed starting capital
-     */
     @Override
     public String getCapital() {
-        return capitalField.getText().trim();
+        return newGameTabContent.getCapital();
     }
 
-    /**
-     * Returns the currency currently selected in the currency selector.
-     * Used when uploading custom stock data so the controller can pass the
-     * chosen currency to the {@code GameService}.
-     *
-     * @return the selected currency, or {@code null} if none is selected
-     */
     @Override
     public Currency getSelectedCurrency() {
-        return currencySelector.getValue();
+        return newGameTabContent.getSelectedCurrency();
+    }
+
+    @Override
+    public String getStockFilePath() {
+        return newGameTabContent.getFilePath();
+    }
+
+    @Override
+    public void setStockFilePath(String path) {
+        newGameTabContent.setFilePath(path);
+    }
+
+    @Override
+    public String getSaveFilePath() {
+        return loadGameContent.getFilePath();
+    }
+
+    @Override
+    public void setSaveFilePath(String path) {
+        loadGameContent.setFilePath(path);
     }
 
     /**
@@ -398,7 +164,7 @@ public class StartView implements StartScreenInputs {
      * @param callback the action to run on start; {@code null} disables the handler
      */
     public void setOnStartGame(Runnable callback) {
-        this.onStartGame = callback;
+        newGameTabContent.setOnAction(callback);
     }
 
     /**
@@ -407,48 +173,46 @@ public class StartView implements StartScreenInputs {
      * @param callback the action to run on load; {@code null} disables the handler
      */
     public void setOnLoadGame(Runnable callback) {
-        this.onLoadGame = callback;
+        loadGameContent.setOnAction(callback);
     }
 
     /**
      * Registers the callback invoked when the user clicks the browse button
-     * on the stock file {@link FileDropZone}.
+     * on the stock file drop zone.
      *
      * @param callback the action to run on browse; {@code null} disables the handler
      */
     public void setOnBrowseStockFile(Runnable callback) {
-        this.onBrowseStockFile = callback;
+        newGameTabContent.setOnBrowse(callback);
     }
 
     /**
      * Registers the callback invoked when the user clicks the browse button
-     * on the save file {@link FileDropZone}.
+     * on the save file drop zone.
      *
      * @param callback the action to run on browse; {@code null} disables the handler
      */
     public void setOnBrowseSaveFile(Runnable callback) {
-        this.onBrowseSaveFile = callback;
+        loadGameContent.setOnBrowse(callback);
     }
 
     /**
      * Registers the callback invoked when the user drops a file onto the
-     * stock file {@link FileDropZone}. The view extracts the first dropped
-     * file from the dragboard before passing it to the callback.
+     * stock file drop zone.
      *
      * @param callback the action to run with the dropped file; {@code null} disables the handler
      */
     public void setOnStockFileDrop(Consumer<File> callback) {
-        this.onStockFileDrop = callback;
+        newGameTabContent.setOnFileDrop(callback);
     }
 
     /**
      * Registers the callback invoked when the user drops a file onto the
-     * save file {@link FileDropZone}. The view extracts the first dropped
-     * file from the dragboard before passing it to the callback.
+     * save file drop zone.
      *
      * @param callback the action to run with the dropped file; {@code null} disables the handler
      */
     public void setOnSaveFileDrop(Consumer<File> callback) {
-        this.onSaveFileDrop = callback;
+        loadGameContent.setOnFileDrop(callback);
     }
 }
