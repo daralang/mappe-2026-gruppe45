@@ -30,8 +30,10 @@ public class SearchMetadataRow extends HBox {
     /**
      * Updates the result count label from the given i18n pattern.
      *
-     * <p>The label is hidden when the filtered count is zero, leaving only the
-     * clear-sort button when sorting is active.</p>
+     * <p>The label is visible whenever the total count is greater than zero,
+     * including when the filtered count is zero (e.g. a search with no matches).
+     * This lets the user see "Showing 0 of X" rather than a blank row.
+     * The label is hidden only when the table itself is empty.</p>
      *
      * @param patternKey    the i18n key with two positional arguments
      * @param filteredCount the number of rows currently shown after filtering
@@ -43,7 +45,7 @@ public class SearchMetadataRow extends HBox {
                 LanguageManager.get(patternKey),
                 filteredCount,
                 totalCount));
-        setStatusVisible(filteredCount > 0);
+        setStatusVisible(totalCount > 0);
     }
 
     private void setStatusVisible(boolean visible) {
