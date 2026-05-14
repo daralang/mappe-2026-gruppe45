@@ -159,6 +159,21 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     }
 
     /**
+     * Returns a localised empty-state message that includes the search term when active.
+     *
+     * @param term the active search term; may be blank
+     * @return the localised empty-state message
+     */
+    @Override
+    protected String emptyStateMessage(String term) {
+        if (!term.isBlank()) {
+            return MessageFormat.format(
+                    LanguageManager.get("transactions.empty.search"), term);
+        }
+        return LanguageManager.get("transactions.empty");
+    }
+
+    /**
      * Refreshes the section title and rebuilds the table for the active language.
      */
     @Override

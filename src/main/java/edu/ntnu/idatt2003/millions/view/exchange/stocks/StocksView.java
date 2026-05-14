@@ -5,7 +5,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
 import edu.ntnu.idatt2003.millions.view.component.card.PortfolioValueCard;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksInvestedCard;
-import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksListCard;
+import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksCard;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksUnrealizedReturnCard;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -15,7 +15,7 @@ import javafx.scene.layout.VBox;
  * View for the exchange stocks tab.
  *
  * <p>Assembles four portfolio summary cards and a sortable, searchable,
- * paginated {@link StocksListCard}.
+ * paginated {@link StocksCard}.
  */
 public class StocksView extends VBox {
 
@@ -29,9 +29,9 @@ public class StocksView extends VBox {
         getStyleClass().add("content-area");
 
         HBox summaryCards = createSummaryCards(gameService);
-        StocksListCard stocksListCard = new StocksListCard(gameService, controller);
+        StocksCard stocksCard = new StocksCard(gameService, controller);
 
-        getChildren().addAll(summaryCards, stocksListCard);
+        getChildren().addAll(summaryCards, stocksCard);
     }
 
     private HBox createSummaryCards(GameService gameService) {
