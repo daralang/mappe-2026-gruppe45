@@ -72,7 +72,7 @@ class StocksRowRenderer {
         tickerCell.setAlignment(Pos.CENTER_LEFT);
         if (!ownedShares.isEmpty()) {
             Label ownerBadge = new Label(LanguageManager.get("exchange.stocks.badge.owner"));
-            ownerBadge.getStyleClass().add("owner-cell");
+            ownerBadge.getStyleClass().add("badge-owner");
             tickerCell.getChildren().add(ownerBadge);
         }
 

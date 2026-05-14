@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class StocksListCard extends SortableTableCard<Stock, StocksSort.SortColumn> {
 
-    public static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 20;
     private static final double ROW_HEIGHT = 34.0;
 
     private final GameService gameService;
