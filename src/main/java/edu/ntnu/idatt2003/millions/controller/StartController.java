@@ -25,13 +25,15 @@ import javafx.stage.Stage;
  * file selection for stock data and saved games, as well as
  * starting or loading a game session.</p>
  *
- * <p>All UI-input validation is delegated to {@link StartInputValidator}
- * so the controller keeps a single, consistent validation strategy and
- * stays free of domain rules.</p>
+ * <p>UI-input validation (name, capital, file extension) is delegated to
+ * {@link StartInputValidator}. Stock CSV files are validated immediately on
+ * selection, which attempts a full parse via {@link CsvStockFileHandler} and
+ * clears the file path if the file is invalid, preventing the user from starting
+ * with a bad file.</p>
  *
  * <p>Errors from the start flow are translated to user-facing messages by
  * a shared error-handling helper that catches the concrete exception types
- * the flow can legitimately produce (input validation, missing game state
+ * the flow can legitimately produce (input validation, missing game state,
  * and file I/O), while letting programming errors surface as crashes.</p>
  */
 public class StartController {
@@ -103,7 +105,7 @@ public class StartController {
     /**
      * Test-only seam that constructs the controller without requiring a
      * {@link Stage} or a fully built {@link StartView}. The controller
-     * reads user input. reports errors to {@code errorSink} and navigates
+     * reads user input, reports errors to {@code errorSink} and navigates
      * through {@code showMainViewAction}.
      * {@link #show()} and the file-chooser handlers are not safe to call
      * on instances created through this constructor.
@@ -243,6 +245,15 @@ public class StartController {
     }
 
     /**
+     * Functional interface for start-flow actions that may throw checked
+     * file-parsing exceptions.
+     */
+    @FunctionalInterface
+    private interface GameAction {
+        void execute() throws InvalidStockDataException, GameSaveCorruptException;
+    }
+
+    /**
      * Runs the given action and translates expected game errors to a user-facing
      * error dialog. Catches the specific exception types that the start flow can
      * legitimately produce: input validation failures, missing game state, and
@@ -251,11 +262,6 @@ public class StartController {
      *
      * @param action the start-flow action to execute
      */
-    @FunctionalInterface
-    private interface GameAction {
-        void execute() throws InvalidStockDataException, GameSaveCorruptException;
-    }
-
     private void runOrShowError(GameAction action) {
         try {
             action.execute();
