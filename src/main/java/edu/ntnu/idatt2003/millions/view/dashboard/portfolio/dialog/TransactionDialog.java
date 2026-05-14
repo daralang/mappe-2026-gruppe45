@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Modal;
@@ -36,7 +36,7 @@ public abstract class TransactionDialog extends Modal {
         NUMBER_FORMAT = new DecimalFormat("#,##0.00", symbols);
     }
 
-    protected final PortfolioController controller;
+    protected final TradeController controller;
     protected final Stock stock;
 
     protected final TextField quantityInput = new TextField();
@@ -52,7 +52,7 @@ public abstract class TransactionDialog extends Modal {
      * @param stock      the stock involved in the transaction
      * @param controller the controller used for previews and balance lookup
      */
-    protected TransactionDialog(Stock stock, PortfolioController controller) {
+    protected TransactionDialog(Stock stock, TradeController controller) {
         this.stock = stock;
         this.controller = controller;
     }

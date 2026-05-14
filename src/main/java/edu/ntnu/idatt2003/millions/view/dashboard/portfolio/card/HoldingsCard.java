@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.player.Portfolio;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -57,7 +57,7 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
 
     private final GameService gameService;
     private final PortfolioService portfolioService;
-    private final PortfolioController controller;
+    private final TradeController controller;
     private final HoldingsSort sort;
     private final Region totalDivider = new Region();
     private final GridPane totalGrid = new GridPane();
@@ -69,7 +69,7 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
      * @param controller       the controller handling portfolio actions
      * @param portfolioService the service used to compute share values and returns
      */
-    public HoldingsCard(GameService gameService, PortfolioController controller,
+    public HoldingsCard(GameService gameService, TradeController controller,
                         PortfolioService portfolioService) {
         super(gameService, PAGE_SIZE,
                 "dashboard.portfolio.holdings.status", "dashboard.portfolio.empty");
