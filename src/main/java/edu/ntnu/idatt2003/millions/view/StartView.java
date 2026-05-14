@@ -75,6 +75,7 @@ public class StartView implements StartScreenInputs {
         AppTabPane tabPane = new AppTabPane();
         tabPane.getTabs().addAll(newGameTab, loadGameTab);
         tabPane.setMaxWidth(540);
+        tabPane.getStyleClass().add("start-tab-pane");
 
         HBox topBar = new HBox(languagePicker);
         topBar.setAlignment(Pos.CENTER_RIGHT);
