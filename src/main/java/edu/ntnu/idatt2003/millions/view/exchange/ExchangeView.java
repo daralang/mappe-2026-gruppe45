@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * The exchange view of the application.
- * Contains a tab bar for navigating between overview, stocks and analysis.
+ * Contains a tab bar for navigating between overview and stocks.
  * Tab navigation is purely visual state and handled internally by this view.
  */
 public class ExchangeView extends VBox {
@@ -39,8 +39,7 @@ public class ExchangeView extends VBox {
                 "exchange.title",
                 List.of(
                         "exchange.tab.overview",
-                        "exchange.tab.stocks",
-                        "exchange.tab.analysis"
+                        "exchange.tab.stocks"
                 ),
                 weekBar
         );
@@ -50,7 +49,6 @@ public class ExchangeView extends VBox {
 
         viewHeader.setTabAction(0, this::showOverview);
         viewHeader.setTabAction(1, this::showStocks);
-        viewHeader.setTabAction(2, this::showAnalysis);
 
         getChildren().addAll(viewHeader, contentArea);
         showOverview();
@@ -72,10 +70,5 @@ public class ExchangeView extends VBox {
 
     private void showStocks() {
         contentArea.getChildren().setAll(new StocksView(gameService, controller));
-    }
-
-    private void showAnalysis() {
-        contentArea.getChildren().clear(); // remove this when implementing setAll
-        // contentArea.getChildren().setAll(new AnalysisView(gameService));
     }
 }
