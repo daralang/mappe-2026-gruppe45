@@ -31,9 +31,9 @@ import java.util.function.Consumer;
  * This class is a thin shell: it builds the scene structure, delegates all
  * user input and callbacks to the tab components, and exposes the
  * {@link StartScreenInputs} contract to the controller. The title and start
- * card sit inside a proportionally sized frame that is centered on the screen
- * and top-anchored internally, so the animated {@link NewGameTab} reveal grows
- * downward without shifting upward.</p>
+ * card sit inside a responsive frame that is centered on the screen and
+ * top-anchored internally, so the animated {@link NewGameTab} reveal grows
+ * downward without shifting upward on different window sizes.</p>
  *
  * <p>User interactions are forwarded to the controller via callback setters such as
  * {@link #setOnStartGame(Runnable)} and {@link #setOnStockFileDrop(Consumer)},
@@ -45,6 +45,7 @@ public class StartView implements StartScreenInputs {
     private static final double SCENE_HEIGHT = 700;
     private static final double ROOT_SPACING = 24;
     private static final double START_CARD_WIDTH = 540;
+    private static final double START_TITLE_ESTIMATED_HEIGHT = 72;
     private static final double START_GROUP_HEIGHT_RATIO = 0.72;
     private static final double START_TAB_HEADER_HEIGHT = 82;
 
@@ -100,9 +101,9 @@ public class StartView implements StartScreenInputs {
         StackPane center = new StackPane(reservedStartGroup);
         center.setAlignment(Pos.CENTER);
         center.setPadding(new Insets(0, 24, 24, 24));
-        reservedStartGroup.minHeightProperty().bind(center.heightProperty().multiply(START_GROUP_HEIGHT_RATIO));
-        reservedStartGroup.prefHeightProperty().bind(center.heightProperty().multiply(START_GROUP_HEIGHT_RATIO));
-        reservedStartGroup.maxHeightProperty().bind(center.heightProperty().multiply(START_GROUP_HEIGHT_RATIO));
+        reservedStartGroup.prefHeightProperty().bind(createResponsiveStartGroupHeight(center, tabPane));
+        reservedStartGroup.minHeightProperty().bind(reservedStartGroup.prefHeightProperty());
+        reservedStartGroup.maxHeightProperty().bind(reservedStartGroup.prefHeightProperty());
 
         BorderPane root = new BorderPane();
         if (titleBarControls != null) {
@@ -146,6 +147,32 @@ public class StartView implements StartScreenInputs {
         tabPane.minHeightProperty().bind(selectedTabHeight);
         tabPane.prefHeightProperty().bind(selectedTabHeight);
         tabPane.maxHeightProperty().bind(selectedTabHeight);
+    }
+
+    /**
+     * Creates a responsive height for the centered start group frame.
+     *
+     * @param center  the available center area
+     * @param tabPane the start card whose selected content determines minimum height
+     * @return a height binding for the reserved start group frame
+     */
+    private DoubleBinding createResponsiveStartGroupHeight(StackPane center, AppTabPane tabPane) {
+        return Bindings.createDoubleBinding(
+                () -> {
+                    double availableHeight = center.getHeight();
+                    double proportionalHeight = availableHeight * START_GROUP_HEIGHT_RATIO;
+                    double contentHeight = START_TITLE_ESTIMATED_HEIGHT
+                            + ROOT_SPACING
+                            + getSelectedTabHeight(tabPane);
+                    return Math.min(availableHeight, Math.max(proportionalHeight, contentHeight));
+                },
+                center.heightProperty(),
+                tabPane.getSelectionModel().selectedItemProperty(),
+                tabPane.widthProperty(),
+                newGameTabContent.minHeightProperty(),
+                newGameTabContent.prefHeightProperty(),
+                loadGameContent.minHeightProperty(),
+                loadGameContent.prefHeightProperty());
     }
 
     /**
