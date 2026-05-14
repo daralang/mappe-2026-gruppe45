@@ -51,7 +51,7 @@ public class SearchBar extends VBox {
      * @param buttonKey      the i18n key for the button text
      * @param onSearch       callback receiving the current search term on each
      *                       triggered search or clear action
-     * @param metadata       optional metadata shown below the search row, such as a {@link Label}
+     * @param metadata       optional metadata shown below the search row
      * @throws NullPointerException if placeholder key, button key or callback is null
      */
     public SearchBar(String placeholderKey, String buttonKey, Consumer<String> onSearch, Node metadata) {
