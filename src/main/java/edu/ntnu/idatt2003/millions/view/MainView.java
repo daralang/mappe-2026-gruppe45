@@ -3,10 +3,9 @@ package edu.ntnu.idatt2003.millions.view;
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.view.component.Header;
 import edu.ntnu.idatt2003.millions.view.component.StatusFooter;
-import edu.ntnu.idatt2003.millions.view.component.TitleBar;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
+import edu.ntnu.idatt2003.millions.view.titlebar.TitleBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.DashboardView;
 import edu.ntnu.idatt2003.millions.view.exchange.ExchangeView;
 import javafx.scene.Node;
@@ -31,41 +30,34 @@ public class MainView {
     private final PortfolioController portfolioController;
     private final LoanController loanController;
     private final BorderPane root;
-    private final Header header;
     private final WeekBar weekBar;
     private final StatusFooter footer;
 
     /**
-     * Constructs a new MainView with a custom title bar, header, and dashboard
-     * as the default content.
+     * Constructs a new MainView with a platform-appropriate title bar and
+     * dashboard as the default content.
      *
-     * @param stage          the primary stage, used by the title bar for window controls
+     * @param stage          the primary stage, used for window-state listeners
      * @param gameService    the game manager containing player and exchange
-     * @param onSaveGame     callback invoked when the user clicks "Save game"
-     * @param onExitGame     callback invoked when the user clicks "Exit game"
+     * @param titleBar       the platform title bar; save/exit callbacks already wired by the controller
      * @param onAdvanceWeek  callback invoked when the user clicks "Advance week"
      */
     public MainView(Stage stage,
                     GameService gameService,
                     PortfolioController portfolioController,
                     LoanController loanController,
-                    Runnable onSaveGame,
-                    Runnable onExitGame,
+                    TitleBar titleBar,
                     Runnable onAdvanceWeek) {
         this.gameService = gameService;
         this.portfolioController = portfolioController;
         this.loanController = loanController;
         this.weekBar = new WeekBar(gameService, onAdvanceWeek);
-        this.header = new Header(
-                this::showDashboard,
-                this::showExchange,
-                onSaveGame,
-                onExitGame
-        );
+        titleBar.setOnDashboard(this::showDashboard);
+        titleBar.setOnExchange(this::showExchange);
         this.footer = new StatusFooter(gameService);
         this.root = new BorderPane();
         root.getStyleClass().add("main-root");
-        root.setTop(new VBox(new TitleBar(stage), header));
+        root.setTop(titleBar.getNode());
         root.setBottom(footer);
 
         // Clip all children to the rounded corner shape so no child

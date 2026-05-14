@@ -5,6 +5,8 @@ import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.MainView;
 import edu.ntnu.idatt2003.millions.view.dialog.ExitDialog;
+import edu.ntnu.idatt2003.millions.view.titlebar.TitleBar;
+import edu.ntnu.idatt2003.millions.view.titlebar.TitleBarFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -38,13 +40,15 @@ public class MainController {
                 () -> new StartController(stage, gameService).show());
         PortfolioController portfolioController = new PortfolioController(gameService);
         LoanController loanController = new LoanController(gameService);
+        TitleBar titleBar = TitleBarFactory.create(stage);
+        titleBar.setOnSave(this::handleSaveGame);
+        titleBar.setOnExit(this::handleExitGame);
         this.view = new MainView(
                 stage,
                 gameService,
                 portfolioController,
                 loanController,
-                this::handleSaveGame,
-                this::handleExitGame,
+                titleBar,
                 this::handleAdvanceWeek
         );
     }
