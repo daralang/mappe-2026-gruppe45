@@ -42,7 +42,15 @@
 
     /* Status colors */
     -status-novice:          #4ade80;
+    -status-novice-bg:       rgba(74, 222, 128, 0.12);
+    -status-novice-text:     #15803d;
+    -status-novice-border:   #4ade80;
+
     -status-investor:        #fbbf24;
+    -status-investor-bg:     rgba(251, 191, 36, 0.12);
+    -status-investor-text:   #92400e;
+    -status-investor-border: #fbbf24;
+
     -status-speculator:      #a78bfa;
     -status-speculator-bg:   rgba(167, 139, 250, 0.15);
 
