@@ -26,6 +26,7 @@ public class NotificationPanel {
     private static final double SCROLL_MAX_HEIGHT = 420;
 
     private final GameService gameService;
+    private final Runnable onBadgeRefresh;
     private final Popup popup;
     private final VBox listBox;
     private final Label headerLabel;
@@ -33,6 +34,7 @@ public class NotificationPanel {
 
     public NotificationPanel(GameService gameService, Runnable onBadgeRefresh) {
         this.gameService = gameService;
+        this.onBadgeRefresh = onBadgeRefresh;
         this.popup = new Popup();
         popup.setAutoHide(true);
 
@@ -50,7 +52,8 @@ public class NotificationPanel {
         clearButton = new Button();
         clearButton.getStyleClass().add("notification-clear-btn");
         clearButton.setOnAction(e -> {
-            gameService.getPlayer().clearAllNotifications();
+            gameService.clearAllNotifications();
+            onBadgeRefresh.run();
             refresh();
         });
 
