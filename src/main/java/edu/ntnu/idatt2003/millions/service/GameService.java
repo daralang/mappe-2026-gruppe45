@@ -20,6 +20,8 @@ import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
+import edu.ntnu.idatt2003.millions.model.leaderboard.Outcome;
+import edu.ntnu.idatt2003.millions.service.LeaderboardService;
 import edu.ntnu.idatt2003.millions.service.notification.NotificationService;
 
 import java.io.File;
@@ -55,12 +57,27 @@ public class GameService {
     private final GameFileHandler gameFileHandler;
     private final List<GameObserver> observers = new ArrayList<>();
     private final NotificationService notificationService = new NotificationService();
+    private final LeaderboardService leaderboardService;
 
     /**
-     * Constructs a new GameService.
-     * Initializes the file handler for JSON serialization.
+     * Default constructor — uses production {@link LeaderboardService}
+     * that reads and writes {@code leaderboard.json} in the project root.
      */
     public GameService() {
+        this(new LeaderboardService());
+    }
+
+    /**
+     * Test-friendly constructor — accepts an injected
+     * {@link LeaderboardService} so tests can redirect leaderboard
+     * persistence to a temporary file.
+     *
+     * @param leaderboardService the leaderboard service to use
+     * @throws NullPointerException if {@code leaderboardService} is null
+     */
+    public GameService(LeaderboardService leaderboardService) {
+        this.leaderboardService = Objects.requireNonNull(
+                leaderboardService, "leaderboardService cannot be null");
         this.gameFileHandler = new JsonGameFileHandler();
     }
 
@@ -92,6 +109,10 @@ public class GameService {
      */
     public void declareGameOver() {
         this.gameOver = true;
+        if (player != null && exchange != null) {
+            leaderboardService.recordOrUpdate(
+                    player, exchange, exchange.getCurrencyConverter(), Outcome.GAME_OVER);
+        }
         notifyObservers();
     }
 
@@ -109,6 +130,7 @@ public class GameService {
             throw new IllegalStateException("No active game to save");
         }
         gameFileHandler.saveGame(player, exchange, file);
+        leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(), Outcome.ACTIVE);
     }
 
     /**
