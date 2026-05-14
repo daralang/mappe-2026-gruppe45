@@ -20,7 +20,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -103,10 +102,8 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
                 "search.button",
                 searchCallback(),
                 metadataRow);
-        searchBar.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(searchBar, Priority.ALWAYS);
-        HBox row = new HBox(16, searchBar, typeFilter, weekRangeFilter, clearSortButton);
-        row.setAlignment(Pos.CENTER_LEFT);
+        HBox row = new HBox(36, searchBar, typeFilter, weekRangeFilter, clearSortButton);
+        row.setAlignment(Pos.TOP_LEFT);
         row.getStyleClass().add("transactions-filter-row");
         return row;
     }
