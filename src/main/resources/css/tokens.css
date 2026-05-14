@@ -23,9 +23,16 @@
     -info-text:        #1F4E79;
     -info-border:      #B4CCE3;
 
+    -highlight-bg:      #BFD6EA;
+    -highlight-text:    #0F3556;
+    -highlight-border:  #6E9BC2;
+
+
     -purple-bg:        rgba(167, 139, 250, 0.15);
     -purple-text:      #6d28d9;
     -purple-border:    #c4b5fd;
+
+
 
     /*-pink-bg:
     -pink-text:

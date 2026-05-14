@@ -30,7 +30,7 @@ public final class StartLayoutAnimator {
 
     private static final double START_TITLE_ESTIMATED_HEIGHT = 72;
     private static final double START_GROUP_HEIGHT_RATIO = 0.72;
-    private static final double START_TAB_HEADER_HEIGHT = 82;
+    private static final double START_TAB_HEADER_HEIGHT = 104;
     private static final double UPLOAD_DROP_ZONE_HEIGHT = 190;
     private static final double UPLOAD_SECTION_EXPANDED_HEIGHT = 250;
     private static final double CONTENT_WIDTH_EXTRA = 48;

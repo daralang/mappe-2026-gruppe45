@@ -69,6 +69,7 @@ public class StartView implements StartScreenInputs {
     public StartView(Node titleBarControls) {
         LanguagePicker languagePicker = new LanguagePicker();
         title = StyledText.headingOne(LanguageManager.get("app.title"));
+        title.getStyleClass().add("start-title");
 
         newGameTabContent = new NewGameTab();
         loadGameContent = new LoadGameTab();
