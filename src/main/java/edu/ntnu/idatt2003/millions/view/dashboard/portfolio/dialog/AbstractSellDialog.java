@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
@@ -26,7 +26,7 @@ public abstract class AbstractSellDialog extends TransactionDialog {
     protected final Share share;
     protected Consumer<BigDecimal> onConfirmCallback;
 
-    protected AbstractSellDialog(Share share, PortfolioController controller) {
+    protected AbstractSellDialog(Share share, TradeController controller) {
         super(share.getStock(), controller);
         this.share = share;
     }

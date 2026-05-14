@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.exchange.stocks.card;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
@@ -39,7 +39,7 @@ public class StocksCard extends SortableTableCard<Stock, StocksSort.SortColumn> 
      * @param gameService the game service containing exchange and player state
      * @param controller  the controller used to open buy/sell dialogs
      */
-    public StocksCard(GameService gameService, PortfolioController controller) {
+    public StocksCard(GameService gameService, TradeController controller) {
         super(gameService, PAGE_SIZE, "exchange.stocks.status", "exchange.stocks.empty");
         this.gameService = gameService;
         this.sort = new StocksSort(gameService.getCurrencyConverter());

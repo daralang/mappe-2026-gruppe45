@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.PortfolioService;
@@ -37,10 +37,10 @@ public class ShareDetailsModal extends Modal {
     }
 
     private final Share share;
-    private final PortfolioController controller;
+    private final TradeController controller;
     private final PortfolioService portfolioService = new PortfolioService();
 
-    public ShareDetailsModal(Share share, PortfolioController controller) {
+    public ShareDetailsModal(Share share, TradeController controller) {
         this.share = share;
         this.controller = controller;
     }

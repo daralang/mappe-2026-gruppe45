@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view;
 
 import edu.ntnu.idatt2003.millions.controller.LoanController;
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.StatusFooter;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
@@ -11,7 +11,6 @@ import edu.ntnu.idatt2003.millions.view.exchange.ExchangeView;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
@@ -27,7 +26,7 @@ import javafx.stage.Stage;
 public class MainView {
 
     private final GameService gameService;
-    private final PortfolioController portfolioController;
+    private final TradeController tradeController;
     private final LoanController loanController;
     private final BorderPane root;
     private final WeekBar weekBar;
@@ -44,12 +43,12 @@ public class MainView {
      */
     public MainView(Stage stage,
                     GameService gameService,
-                    PortfolioController portfolioController,
+                    TradeController tradeController,
                     LoanController loanController,
                     TitleBar titleBar,
                     Runnable onAdvanceWeek) {
         this.gameService = gameService;
-        this.portfolioController = portfolioController;
+        this.tradeController = tradeController;
         this.loanController = loanController;
         this.weekBar = new WeekBar(gameService, onAdvanceWeek);
         titleBar.setOnDashboard(this::showDashboard);
@@ -100,18 +99,18 @@ public class MainView {
      */
     private void showDashboard() {
         root.setCenter(wrapScrollable(
-                new DashboardView(gameService, portfolioController, loanController, weekBar, this::showExchangeOnStocksTab)));
+                new DashboardView(gameService, tradeController, loanController, weekBar, this::showExchangeOnStocksTab)));
     }
 
     /**
      * Switches the content area to the exchange view.
      */
     private void showExchange() {
-        root.setCenter(wrapScrollable(new ExchangeView(gameService, weekBar, portfolioController)));
+        root.setCenter(wrapScrollable(new ExchangeView(gameService, weekBar, tradeController)));
     }
 
     private void showExchangeOnStocksTab() {
-        ExchangeView exchangeView = new ExchangeView(gameService, weekBar, portfolioController);
+        ExchangeView exchangeView = new ExchangeView(gameService, weekBar, tradeController);
         exchangeView.selectStocksTab();
         root.setCenter(wrapScrollable(exchangeView));
     }

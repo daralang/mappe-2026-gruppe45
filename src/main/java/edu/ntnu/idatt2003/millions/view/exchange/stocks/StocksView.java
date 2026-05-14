@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
 import edu.ntnu.idatt2003.millions.view.component.card.PortfolioValueCard;
@@ -25,7 +25,7 @@ public class StocksView extends VBox {
      * @param gameService the game service containing player and exchange state
      * @param controller  the controller used to open buy/sell dialogs
      */
-    public StocksView(GameService gameService, PortfolioController controller) {
+    public StocksView(GameService gameService, TradeController controller) {
         getStyleClass().add("content-area");
 
         HBox summaryCards = createSummaryCards(gameService);
