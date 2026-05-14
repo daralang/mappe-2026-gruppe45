@@ -47,6 +47,15 @@ public class NetWorthCard extends WidgetCard {
         xAxis.setLowerBound(1);
         xAxis.setUpperBound(Math.max(2, historySize));
         xAxis.setTickUnit(1);
+        xAxis.setTickLabelFormatter(new StringConverter<>() {
+            @Override
+            public String toString(Number n) {
+                double v = n.doubleValue();
+                return v == Math.floor(v) ? String.valueOf((int) v) : "";
+            }
+            @Override
+            public Number fromString(String s) { return null; }
+        });
 
         NumberAxis yAxis = new NumberAxis();
         yAxis.setAutoRanging(true);
@@ -97,7 +106,7 @@ public class NetWorthCard extends WidgetCard {
         int weeks = series.getData().size();
         xAxis.setAutoRanging(false);
         xAxis.setLowerBound(1);
-        xAxis.setUpperBound(Math.max(2, weeks));
+        xAxis.setUpperBound(Math.max(2, weeks) + 0.5);
         xAxis.setTickUnit(1);
         xAxis.requestAxisLayout();
     }
