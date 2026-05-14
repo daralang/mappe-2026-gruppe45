@@ -24,6 +24,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,6 +124,22 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
         for (Share share : page) {
             addDataRow(row++, share);
         }
+    }
+
+    /**
+     * Returns a localised empty-state message that includes the search term when active.
+     *
+     *
+     * @param term the active search term; may be blank
+     * @return the localised empty-state message
+     */
+    @Override
+    protected String emptyStateMessage(String term) {
+        if (!term.isBlank()) {
+            return MessageFormat.format(
+                    LanguageManager.get("dashboard.portfolio.empty.search"), term);
+        }
+        return LanguageManager.get("dashboard.portfolio.empty");
     }
 
     /**

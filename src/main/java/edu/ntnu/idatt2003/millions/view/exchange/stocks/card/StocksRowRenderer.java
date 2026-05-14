@@ -12,6 +12,7 @@ import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.layout.Priority;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -67,9 +68,13 @@ class StocksRowRenderer {
         Label tickerLabel = new Label(stock.getSymbol());
         tickerLabel.getStyleClass().add("holdings-cell");
 
+        HBox.setHgrow(tickerLabel, Priority.ALWAYS);
+        tickerLabel.setMaxWidth(Double.MAX_VALUE);
+
         List<Share> ownedShares = gameService.getPlayer().getPortfolio().getShares(stock.getSymbol());
         HBox tickerCell = new HBox(4, tickerLabel);
-        tickerCell.setAlignment(Pos.CENTER_LEFT);
+        tickerCell.setAlignment(Pos.BASELINE_LEFT);
+        tickerCell.setMaxWidth(Double.MAX_VALUE);
         if (!ownedShares.isEmpty()) {
             Label ownerBadge = new Label(LanguageManager.get("exchange.stocks.badge.owner"));
             ownerBadge.getStyleClass().add("badge-owner");

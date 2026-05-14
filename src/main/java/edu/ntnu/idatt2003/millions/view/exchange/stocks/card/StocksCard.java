@@ -23,7 +23,7 @@ import java.util.List;
  * domain-specific sort logic is delegated to {@link StocksSort};
  * row rendering is delegated to {@link StocksRowRenderer}.</p>
  */
-public class StocksListCard extends SortableTableCard<Stock, StocksSort.SortColumn> {
+public class StocksCard extends SortableTableCard<Stock, StocksSort.SortColumn> {
 
     private static final int PAGE_SIZE = 20;
     private static final double ROW_HEIGHT = 34.0;
@@ -39,7 +39,7 @@ public class StocksListCard extends SortableTableCard<Stock, StocksSort.SortColu
      * @param gameService the game service containing exchange and player state
      * @param controller  the controller used to open buy/sell dialogs
      */
-    public StocksListCard(GameService gameService, PortfolioController controller) {
+    public StocksCard(GameService gameService, PortfolioController controller) {
         super(gameService, PAGE_SIZE, "exchange.stocks.status", "exchange.stocks.empty");
         this.gameService = gameService;
         this.sort = new StocksSort(gameService.getCurrencyConverter());
