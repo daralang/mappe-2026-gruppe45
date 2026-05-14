@@ -249,8 +249,8 @@ class StartInputValidatorTest {
             String path = "/path/to/stocks.csv";
             // Act
             File file = StartInputValidator.requireCsvFilePath(path);
-            // Assert
-            assertEquals(path, file.getPath());
+            // Assert — normalize both sides so the test passes on Windows and Unix
+            assertEquals(new File(path).getPath(), file.getPath());
         }
     }
 }
