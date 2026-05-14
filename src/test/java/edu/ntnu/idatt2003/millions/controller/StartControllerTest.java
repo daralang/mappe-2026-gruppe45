@@ -22,8 +22,11 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * <p>Uses the test seam constructor that takes a {@link StartScreenInputs}
  * and a string {@link java.util.function.Consumer} so the start flow can be
- * exercised without initialising the JavaFX toolkit. All tests follow the
- * AAA pattern.</p>
+ * exercised without initialising the JavaFX toolkit.</p>
+ *
+ * <p>{@link StubInputs} simulates the view's state and records path changes
+ * written back by the controller. {@link RecordingGameService} records every
+ * call made to the service layer and optionally throws a configured failure.</p>
  */
 class StartControllerTest {
 
@@ -179,6 +182,48 @@ class StartControllerTest {
             assertEquals(1, errors.size());
             assertFalse(showMainCalled);
         }
+
+        @Test
+        @DisplayName("Should report error and not navigate when capital is zero")
+        void reportsErrorWhenCapitalIsZero() {
+            // Arrange
+            inputs.name = "Dara";
+            inputs.capital = "0";
+            // Act
+            controller.handleStartGame();
+            // Assert
+            assertEquals(1, errors.size());
+            assertEquals(0, gameService.createNewGameCalls);
+            assertFalse(showMainCalled);
+        }
+
+        @Test
+        @DisplayName("Should report error and not navigate when capital is negative")
+        void reportsErrorWhenCapitalIsNegative() {
+            // Arrange
+            inputs.name = "Dara";
+            inputs.capital = "-500";
+            // Act
+            controller.handleStartGame();
+            // Assert
+            assertEquals(1, errors.size());
+            assertEquals(0, gameService.createNewGameCalls);
+            assertFalse(showMainCalled);
+        }
+
+        @Test
+        @DisplayName("Should report error and not navigate when player name is only whitespace")
+        void reportsErrorWhenPlayerNameIsOnlyWhitespace() {
+            // Arrange
+            inputs.name = "   ";
+            inputs.capital = "10000.00";
+            // Act
+            controller.handleStartGame();
+            // Assert
+            assertEquals(1, errors.size());
+            assertEquals(0, gameService.createNewGameCalls);
+            assertFalse(showMainCalled);
+        }
     }
 
     @Nested
@@ -222,6 +267,20 @@ class StartControllerTest {
             // Assert
             assertEquals(1, errors.size());
             assertEquals("corrupt save file", errors.getFirst());
+            assertFalse(showMainCalled);
+        }
+
+        @Test
+        @DisplayName("Should report error and not navigate when game manager throws UncheckedIOException on load")
+        void reportsErrorWhenGameServiceThrowsIoExceptionOnLoad() {
+            // Arrange
+            inputs.saveFilePath = "/tmp/save.json";
+            gameService.failNextLoad =
+                    new UncheckedIOException("read failed", new java.io.IOException("disk error"));
+            // Act
+            controller.handleLoadGame();
+            // Assert
+            assertEquals(1, errors.size());
             assertFalse(showMainCalled);
         }
     }
