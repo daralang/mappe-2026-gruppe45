@@ -1097,4 +1097,55 @@ class PlayerTest {
             assertFalse(player.canCoverWithFullLiquidation(2, converter));
         }
     }
+
+    @Nested
+    @DisplayName("Notification storage")
+    class NotificationStorage {
+
+        @Test
+        @DisplayName("addNotification appends to list")
+        void addNotification_appendsToList() {
+            edu.ntnu.idatt2003.millions.model.notification.Notification n =
+                    new edu.ntnu.idatt2003.millions.model.notification.Notification(
+                            1, edu.ntnu.idatt2003.millions.model.notification.Notification.Severity.INFO,
+                            "t", "b", List.of(), 1, false);
+            player.addNotification(n);
+            assertEquals(1, player.getNotifications().size());
+        }
+
+        @Test
+        @DisplayName("getUnreadNotificationCount excludes read notifications")
+        void getUnreadNotificationCount_excludesReadNotifications() {
+            player.addNotification(new edu.ntnu.idatt2003.millions.model.notification.Notification(
+                    1, edu.ntnu.idatt2003.millions.model.notification.Notification.Severity.INFO,
+                    "t", "b", List.of(), 1, false));
+            player.addNotification(new edu.ntnu.idatt2003.millions.model.notification.Notification(
+                    2, edu.ntnu.idatt2003.millions.model.notification.Notification.Severity.INFO,
+                    "t", "b", List.of(), 1, true));
+            assertEquals(1, player.getUnreadNotificationCount());
+        }
+
+        @Test
+        @DisplayName("markAllAsRead marks every notification")
+        void markAllAsRead_marksEveryNotification() {
+            player.addNotification(new edu.ntnu.idatt2003.millions.model.notification.Notification(
+                    1, edu.ntnu.idatt2003.millions.model.notification.Notification.Severity.WARNING,
+                    "t", "b", List.of(), 1, false));
+            player.addNotification(new edu.ntnu.idatt2003.millions.model.notification.Notification(
+                    2, edu.ntnu.idatt2003.millions.model.notification.Notification.Severity.INFO,
+                    "t", "b", List.of(), 2, false));
+            player.markAllNotificationsAsRead();
+            assertEquals(0, player.getUnreadNotificationCount());
+        }
+
+        @Test
+        @DisplayName("clearAllNotifications empties the list")
+        void clearAllNotifications_emptiesList() {
+            player.addNotification(new edu.ntnu.idatt2003.millions.model.notification.Notification(
+                    1, edu.ntnu.idatt2003.millions.model.notification.Notification.Severity.INFO,
+                    "t", "b", List.of(), 1, false));
+            player.clearAllNotifications();
+            assertEquals(0, player.getNotifications().size());
+        }
+    }
 }

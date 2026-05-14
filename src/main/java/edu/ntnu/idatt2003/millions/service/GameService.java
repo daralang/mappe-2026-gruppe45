@@ -20,6 +20,7 @@ import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
+import edu.ntnu.idatt2003.millions.service.notification.NotificationService;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +54,7 @@ public class GameService {
     private boolean gameOver = false;
     private final GameFileHandler gameFileHandler;
     private final List<GameObserver> observers = new ArrayList<>();
+    private final NotificationService notificationService = new NotificationService();
 
     /**
      * Constructs a new GameService.
@@ -345,6 +347,7 @@ public class GameService {
         CurrencyConverter converter = exchange.getCurrencyConverter();
         player.recordNetWorth(converter);
         player.recordTotalDebt();
+        notificationService.onWeekAdvanced(player, exchange, converter);
         notifyObservers();
     }
 
@@ -405,6 +408,7 @@ public class GameService {
         Objects.requireNonNull(amount, "Amount cannot be null");
         Loan loan = new Loan(offer, amount, exchange.getWeek());
         player.takeLoan(loan, exchange.getCurrencyConverter());
+        notificationService.onLoanTaken(player, exchange.getWeek(), exchange.getCurrencyConverter());
         notifyObservers();
         return loan;
     }

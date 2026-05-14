@@ -16,6 +16,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import edu.ntnu.idatt2003.millions.model.notification.Notification;
+
+import java.io.File;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -450,6 +453,48 @@ class JsonGameFileHandlerTest {
 
             // Act & Assert
             assertDoesNotThrow(() -> exchange.advance());
+        }
+    }
+
+    @Nested
+    @DisplayName("Notification round-trip")
+    class NotificationRoundTrip {
+
+        @Test
+        @DisplayName("Saves and loads notifications")
+        void savesAndLoadsNotifications() throws GameSaveCorruptException {
+            player.addNotification(new Notification(
+                    1, Notification.Severity.WARNING,
+                    "notification.loanMaturity.soon.title",
+                    "notification.loanMaturity.soon.body",
+                    List.of("@loans.offer.fast.name", "2", "5000.00"),
+                    3, false
+            ));
+            File file = tempDir.resolve("notif-save.json").toFile();
+
+            handler.saveGame(player, exchange, file);
+            GameState loaded = handler.loadGame(file);
+
+            assertEquals(1, loaded.player().getNotifications().size());
+            Notification n = loaded.player().getNotifications().get(0);
+            assertEquals(Notification.Severity.WARNING, n.severity());
+            assertEquals("notification.loanMaturity.soon.title", n.titleKey());
+            assertEquals(3, n.week());
+            assertFalse(n.read());
+        }
+
+        @Test
+        @DisplayName("Saves and loads threshold flags")
+        void savesAndLoadsThresholdFlags() throws GameSaveCorruptException {
+            player.setWasAboveDebtThreshold(true);
+            player.setWasLowOnCash(true);
+            File file = tempDir.resolve("flags-save.json").toFile();
+
+            handler.saveGame(player, exchange, file);
+            GameState loaded = handler.loadGame(file);
+
+            assertTrue(loaded.player().wasAboveDebtThreshold());
+            assertTrue(loaded.player().wasLowOnCash());
         }
     }
 }

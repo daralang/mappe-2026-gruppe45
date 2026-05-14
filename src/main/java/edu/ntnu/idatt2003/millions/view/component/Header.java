@@ -1,19 +1,21 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
+import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.notification.NotificationPanel;
+import edu.ntnu.idatt2003.millions.view.component.notification.NotificationPopupOverlay;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-/**
- * The persistent navigation header displayed at the top of the main view.
- * Contains navigation links, save/exit game buttons, a language picker, and a notification bell.
- */
 public class Header extends HBox {
 
     private final Button dashboardButton;
@@ -23,19 +25,17 @@ public class Header extends HBox {
     private final Button bellButton;
     private final Button saveButton;
     private final Button exitButton;
+    private final Label badge;
+    private final NotificationPanel notificationPanel;
+    private final NotificationPopupOverlay popupOverlay;
+    private final GameService gameService;
 
-    /**
-     * Constructs a new Header with navigation and action buttons.
-     *
-     * @param onDashboard callback invoked when the user clicks "Mine sider"
-     * @param onExchange  callback invoked when the user clicks "Børs"
-     * @param onSaveGame  callback invoked when the user clicks "Lagre spill"
-     * @param onExitGame  callback invoked when the user clicks "Avslutt spill"
-     */
     public Header(Runnable onDashboard,
                   Runnable onExchange,
                   Runnable onSaveGame,
-                  Runnable onExitGame) {
+                  Runnable onExitGame,
+                  GameService gameService) {
+        this.gameService = gameService;
         getStyleClass().add("navbar");
 
         Label title = new Label(LanguageManager.get("app.title"));
@@ -70,10 +70,25 @@ public class Header extends HBox {
 
         bellButton = new Button("🔔");
         bellButton.getStyleClass().add("navbar-icon");
+        Tooltip.install(bellButton, new Tooltip(LanguageManager.get("notification.bell.tooltip")));
+
+        badge = new Label();
+        badge.getStyleClass().add("notification-bell-badge");
+        badge.setVisible(false);
+        StackPane.setAlignment(badge, Pos.TOP_RIGHT);
+        StackPane.setMargin(badge, new Insets(0, -4, 0, 0));
+
+        StackPane bellWrapper = new StackPane(bellButton, badge);
+        bellWrapper.setAlignment(Pos.CENTER);
+
+        notificationPanel = new NotificationPanel(gameService, this::onGameUpdated);
+        popupOverlay = new NotificationPopupOverlay(gameService);
+
+        bellButton.setOnAction(e -> notificationPanel.toggle(bellButton));
 
         LanguagePicker languagePicker = new LanguagePicker();
 
-        HBox bottomRight = new HBox(12, languagePicker, bellButton);
+        HBox bottomRight = new HBox(12, languagePicker, bellWrapper);
         bottomRight.setAlignment(Pos.CENTER_RIGHT);
         bottomRight.setPadding(new Insets(0, 0, 4, 0));
 
@@ -93,10 +108,18 @@ public class Header extends HBox {
         LanguageManager.addObserver(this::updateTexts);
     }
 
-    /**
-     * Updates all text elements to the current language.
-     * Called automatically when the language changes.
-     */
+    public void onGameUpdated() {
+        if (gameService.getPlayer() == null) return;
+        int unread = gameService.getPlayer().getUnreadNotificationCount();
+        badge.setText(String.valueOf(unread));
+        badge.setVisible(unread > 0);
+        popupOverlay.onGameUpdated();
+    }
+
+    public Node getOverlayNode() {
+        return popupOverlay.getNode();
+    }
+
     private void updateTexts() {
         dashboardButton.setText(LanguageManager.get("nav.mySides"));
         exchangeButton.setText(LanguageManager.get("nav.exchange"));
