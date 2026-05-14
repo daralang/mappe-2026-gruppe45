@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
+import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
 import edu.ntnu.idatt2003.millions.file.game.GameState;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
@@ -195,9 +196,10 @@ public class GameService {
      * once the loaded state is in place.
      *
      * @param file the file to load the game state from
-     * @throws NullPointerException if the file is null
+     * @throws NullPointerException     if the file is null
+     * @throws GameSaveCorruptException if the save file is corrupt or has missing fields
      */
-    public void loadGame(File file) {
+    public void loadGame(File file) throws GameSaveCorruptException {
         Objects.requireNonNull(file, "File cannot be null");
         GameState state = gameFileHandler.loadGame(file);
         this.player = state.player();

@@ -85,21 +85,44 @@ public class JsonGameFileHandler implements GameFileHandler {
      *
      * @param file the file to load the game state from
      * @return a {@link GameState} containing the deserialized player and exchange
-     * @throws NullPointerException if the file is null
-     * @throws UncheckedIOException if the file cannot be read
+     * @throws NullPointerException     if the file is null
+     * @throws UncheckedIOException     if the file cannot be read
+     * @throws GameSaveCorruptException if the file is not valid JSON or is missing
+     *                                  required top-level fields
      */
     @Override
-    public GameState loadGame(File file) {
+    public GameState loadGame(File file) throws GameSaveCorruptException {
         Objects.requireNonNull(file, "File cannot be null");
 
         try (FileReader reader = new FileReader(file)) {
-            JsonObject gameState = gson.fromJson(reader, JsonObject.class);
+            JsonObject gameState;
+            try {
+                gameState = gson.fromJson(reader, JsonObject.class);
+            } catch (JsonParseException e) {
+                throw new GameSaveCorruptException(
+                        "Save file contains invalid JSON: " + file.getName(), e);
+            }
 
-            Exchange exchange = gson.fromJson(gameState.get("exchange"), Exchange.class);
-            Player player = gson.fromJson(gameState.get("player"), Player.class);
+            if (gameState == null
+                    || !gameState.has("player")
+                    || !gameState.has("exchange")) {
+                throw new GameSaveCorruptException(
+                        "Save file is missing required fields 'player' or 'exchange': " + file.getName());
+            }
+
+            Exchange exchange;
+            Player player;
+            try {
+                exchange = gson.fromJson(gameState.get("exchange"), Exchange.class);
+                player = gson.fromJson(gameState.get("player"), Player.class);
+            } catch (JsonParseException e) {
+                throw new GameSaveCorruptException(
+                        "Save file has an unreadable structure: " + file.getName(), e);
+            }
 
             relinkShares(player, exchange);
             mergeSharesBySymbol(player);
+            relinkArchive(player, exchange);
 
             return new GameState(player, exchange);
 
@@ -156,6 +179,26 @@ public class JsonGameFileHandler implements GameFileHandler {
         }
     }
 
+
+    /**
+     * Relinks each share in every archived transaction to the canonical
+     * Stock object from the exchange after deserialization.
+     * Gson creates fresh Stock instances per JSON object; without relinking,
+     * archived transactions hold orphan Stock copies that diverge from the
+     * exchange's live instances.
+     *
+     * @param player   the player whose transaction archive should be relinked
+     * @param exchange the exchange containing the correct stock references
+     */
+    private void relinkArchive(Player player, Exchange exchange) {
+        for (Transaction transaction : player.getTransactionArchive().getAll()) {
+            Share oldShare = transaction.getShare();
+            var canonicalStock = exchange.getStock(oldShare.getStock().getSymbol());
+            if (canonicalStock != null) {
+                transaction.relinkShare(new Share(canonicalStock, oldShare.getQuantity(), oldShare.getPurchasePrice()));
+            }
+        }
+    }
 
     /**
      * Relinks each share in the player's portfolio to the correct

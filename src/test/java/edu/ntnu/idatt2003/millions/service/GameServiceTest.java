@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.service;
 
+import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
@@ -59,7 +60,7 @@ class GameServiceTest {
     Path tempDir;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws GameSaveCorruptException {
         Stock stock = new Stock("EQNR", "Equinor ASA",
                 new ArrayList<>(List.of(STOCK_PRICE)),
                 Currency.getInstance("NOK"));
