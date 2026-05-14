@@ -113,6 +113,10 @@ public class Header extends HBox {
         LanguageManager.addObserver(this::updateTexts);
     }
 
+    public void setOnLeaderboard(Runnable callback) {
+        leaderboardButton.setOnAction(e -> callback.run());
+    }
+
     public void onGameUpdated() {
         if (gameService.getPlayer() == null) return;
         int unread = gameService.getPlayer().getUnreadNotificationCount();
