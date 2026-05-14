@@ -10,10 +10,8 @@ import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
-import edu.ntnu.idatt2003.millions.view.component.SearchBar;
-import edu.ntnu.idatt2003.millions.view.component.SearchMetadataRow;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.card.PaginatedCard;
+import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.HoldingsSort;
@@ -23,7 +21,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 import java.math.BigDecimal;
@@ -35,14 +32,13 @@ import java.util.List;
  * headers, search, pagination, action buttons for buy / sell / sell all / details,
  * and a persistent total row below the pagination.
  *
- * <p>Extends {@link edu.ntnu.idatt2003.millions.view.component.card.PaginatedCard} for
- * shared pagination state and behaviour. Column structure, sort state and header
- * rendering are owned by {@link SortColumnTable}. Domain-specific sort logic is
- * delegated to {@link HoldingsSort}. The total row lives in a separate {@link GridPane}
- * with the same column constraints as the table, so values align regardless
- * of which page is active.</p>
+ * <p>Extends {@link SortableTableCard} for shared pagination, search, sort state,
+ * and the common refresh Template Method. The total row lives in a separate
+ * {@link GridPane} with the same column constraints as the table, so values align
+ * regardless of which page is active. The {@link #afterFilter} hook is overridden
+ * to update the total row's visibility and values after each filter pass.</p>
  */
-public class HoldingsCard extends PaginatedCard {
+public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColumn> {
 
     private static final int PAGE_SIZE = 9;
 
@@ -50,22 +46,11 @@ public class HoldingsCard extends PaginatedCard {
     private final PortfolioService portfolioService = new PortfolioService();
     private final PortfolioController controller;
     private final HoldingsSort sort;
-    private final SortColumnTable<HoldingsSort.SortColumn> table;
-    private final Pagination pagination;
     private final Region totalDivider = new Region();
     private final GridPane totalGrid = new GridPane();
-    private final SearchMetadataRow metadataRow;
-
-    private String currentSearchTerm = "";
 
     /**
      * Constructs a new HoldingsCard.
-     *
-     * <p>Column definitions, widths, alignments and tooltip keys are read from
-     * {@link HoldingsSort} via a method reference so that
-     * {@link SortColumnTable} can resolve fresh i18n labels on every header refresh.
-     * The total grid is initialised with the same column constraints so values
-     * align with the table above it.</p>
      *
      * @param gameService the game manager containing player and exchange
      * @param controller  the controller handling portfolio actions
@@ -79,7 +64,6 @@ public class HoldingsCard extends PaginatedCard {
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
-        this.metadataRow = new SearchMetadataRow();
 
         totalDivider.getStyleClass().add("holdings-total-divider");
         totalGrid.setHgap(20);
@@ -93,28 +77,59 @@ public class HoldingsCard extends PaginatedCard {
         refresh();
     }
 
-    /**
-     * Builds a row containing the search bar (expanding) and the clear-sort button
-     * (right-aligned, visible only when a sort is active).
-     *
-     * @param clearSortButton the button returned by {@link edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable#createClearSortButton}
-     * @return the configured search row
-     */
-    private HBox buildSearchRow(Button clearSortButton) {
-        SearchBar searchBar = new SearchBar(
-                "search.placeholder",
-                "search.button",
-                term -> {
-                    currentSearchTerm = term == null ? "" : term;
-                    resetPageAndRefresh();
-                },
-                metadataRow);
-        searchBar.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(searchBar, Priority.ALWAYS);
+    @Override
+    protected List<Share> fetchAll() {
+        return new ArrayList<>(gameService.getPlayer().getPortfolio().getShares());
+    }
 
-        HBox row = new HBox(8, searchBar, clearSortButton);
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+    @Override
+    protected List<Share> applySearch(List<Share> all, String term) {
+        if (term.isBlank()) {
+            return new ArrayList<>(all);
+        }
+        return new ArrayList<>(all.stream()
+                .filter(share -> share.getStock().matches(term))
+                .toList());
+    }
+
+    @Override
+    protected void applySort(List<Share> items) {
+        sort.applySort(items, table.getSortState());
+    }
+
+    @Override
+    protected void renderPage(List<Share> page) {
+        int row = 1;
+        for (Share share : page) {
+            addDataRow(row++, share);
+        }
+    }
+
+    @Override
+    protected String statusKey() {
+        return "dashboard.portfolio.holdings.status";
+    }
+
+    @Override
+    protected String emptyStateMessage(String term) {
+        return LanguageManager.get("dashboard.portfolio.empty");
+    }
+
+    /**
+     * Updates the total row visibility and values after the filter pass.
+     * The total row is shown whenever the unfiltered portfolio has shares,
+     * regardless of the active search term.
+     *
+     * @param all      unfiltered share list
+     * @param filtered text-filtered share list
+     */
+    @Override
+    protected void afterFilter(List<Share> all, List<Share> filtered) {
+        boolean hasPortfolioShares = !all.isEmpty();
+        setTotalVisible(hasPortfolioShares);
+        if (hasPortfolioShares) {
+            refreshTotal(gameService.getPlayer().getPortfolio());
+        }
     }
 
     /**
@@ -127,72 +142,6 @@ public class HoldingsCard extends PaginatedCard {
             cc.setPercentWidth(col.percentWidth());
             cc.setHalignment(col.alignment());
             totalGrid.getColumnConstraints().add(cc);
-        }
-    }
-
-    /**
-     * Called when the game state changes (week advanced, buy or sell).
-     * Rebuilds the holdings table to reflect the current portfolio.
-     */
-    @Override
-    public void onGameUpdated() {
-        refresh();
-    }
-
-    /**
-     * Called when the application language changes.
-     * Rebuilds the table so column headers and labels are re-resolved.
-     */
-    @Override
-    protected void onLanguageChanged() {
-        refresh();
-    }
-
-    /**
-     * Rebuilds the table contents based on the player's current portfolio.
-     * Applies search filtering, optional sort, and renders the current page.
-     * The total row is always shown below the pagination when the portfolio
-     * has any shares.
-     */
-    @Override
-    protected void refresh() {
-        table.clearRows();
-
-        Portfolio portfolio = gameService.getPlayer().getPortfolio();
-        List<Share> allShares = new ArrayList<>(portfolio.getShares());
-        List<Share> shares = new ArrayList<>(allShares.stream()
-                .filter(share -> currentSearchTerm.isBlank() || share.getStock().matches(currentSearchTerm))
-                .toList());
-
-        table.refreshHeader(this::refresh, !shares.isEmpty());
-        metadataRow.update("dashboard.portfolio.holdings.status", shares.size(), allShares.size());
-
-        boolean hasPortfolioShares = !allShares.isEmpty();
-        setTotalVisible(hasPortfolioShares);
-        if (hasPortfolioShares) {
-            refreshTotal(portfolio);
-        }
-
-        if (shares.isEmpty()) {
-            table.renderEmptyState(LanguageManager.get("dashboard.portfolio.empty"));
-            pagination.update(0, 0);
-            return;
-        }
-
-        if (table.isSortActive()) {
-            sort.applySort(shares, table.getSortState());
-        }
-
-        clampCurrentPage(shares.size());
-        pagination.update(currentPage, shares.size());
-
-        int fromIndex = currentPage * PAGE_SIZE;
-        int toIndex = Math.min(fromIndex + PAGE_SIZE, shares.size());
-        List<Share> page = shares.subList(fromIndex, toIndex);
-
-        int row = 1;
-        for (Share share : page) {
-            addDataRow(row++, share);
         }
     }
 

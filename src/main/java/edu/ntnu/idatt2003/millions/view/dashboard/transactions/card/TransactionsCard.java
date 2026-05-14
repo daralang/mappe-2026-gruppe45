@@ -11,9 +11,8 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
-import edu.ntnu.idatt2003.millions.view.component.SearchMetadataRow;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.card.PaginatedCard;
+import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.TransactionsSort;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.TransactionTypeFilter;
@@ -30,24 +29,16 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Dashboard card for the transactions tab. Extends
- * {@link PaginatedCard} for shared pagination state and behaviour.
+ * Dashboard card for the transactions tab. Extends {@link SortableTableCard}
+ * for shared pagination, search, sort state, and the common refresh Template Method.
  *
- * <p>Renders the section title, a search and filter row, and a sortable
- * paginated table of every committed transaction within the current filter selection. The default order
- * is chronological (oldest first); clicking a column header activates
- * ascending sort on that column, toggling to descending on a second click.</p>
- *
- * <p>The filter row holds a {@link SearchBar}, a {@link TransactionTypeFilter}
- * (all / buy / sell), and a {@link WeekRangeFilter}. The {@link WeekRangeFilter}
- * is shared with {@code TransactionsSummaryCard} so both cards show data for the same period.</p>
- *
- * <p>Column structure, sort state and header rendering are owned by
- * {@link SortColumnTable}. Domain-specific sort logic is delegated to
- * {@link TransactionsSort}. This card is responsible for data fetching,
- * filtering, sort orchestration and cell construction only.</p>
+ * <p>The default order is chronological (oldest first). The filter row holds a
+ * {@link SearchBar}, a {@link TransactionTypeFilter} (all / buy / sell), and a
+ * {@link WeekRangeFilter} shared with {@code TransactionsSummaryCard} so both
+ * cards show data for the same period. {@link #buildSearchRow} is overridden to
+ * include these extra filters.</p>
  */
-public class TransactionsCard extends PaginatedCard {
+public class TransactionsCard extends SortableTableCard<Transaction, TransactionsSort.SortColumn> {
 
     private static final int PAGE_SIZE = Pagination.DEFAULT_PAGE_SIZE;
     private static final double ROW_HEIGHT = 34.0;
@@ -55,21 +46,12 @@ public class TransactionsCard extends PaginatedCard {
     private final GameService gameService;
     private final TransactionStatsService statsService = new TransactionStatsService();
     private final TransactionsSort sort;
-    private final SortColumnTable<TransactionsSort.SortColumn> table;
     private final StyledText title;
     private final TransactionTypeFilter typeFilter;
     private final WeekRangeFilter weekRangeFilter;
-    private final Pagination pagination;
-    private final SearchMetadataRow metadataRow;
-
-    private String currentSearchTerm = "";
 
     /**
      * Constructs a new TransactionsCard.
-     *
-     * <p>Column definitions, widths and alignments are read from
-     * {@link TransactionsSort#getColumnDefs()} via a method reference so that
-     * {@link SortColumnTable} can resolve fresh i18n labels on every header refresh.</p>
      *
      * @param gameService     the game manager containing player and exchange
      * @param weekRangeFilter the shared filter that scopes both this card's
@@ -84,7 +66,6 @@ public class TransactionsCard extends PaginatedCard {
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
-        this.metadataRow = new SearchMetadataRow();
         table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
 
         setSpacing(16);
@@ -97,29 +78,24 @@ public class TransactionsCard extends PaginatedCard {
         weekRangeFilter.fromWeekProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
         weekRangeFilter.toWeekProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
 
-        getChildren().addAll(title, buildFilterRow(clearSortButton), table.asNode(), pagination);
+        getChildren().addAll(title, buildSearchRow(clearSortButton), table.asNode(), pagination);
         refresh();
     }
 
     /**
-     * Builds the filter row that sits between the title and the table.
+     * Overrides the default search row to include {@link TransactionTypeFilter}
+     * and {@link WeekRangeFilter} alongside the search bar.
      *
-     * <p>The search bar expands to fill available space. The type filter,
-     * week range filter and clear-sort button follow on the right.</p>
-     *
-     * @param clearSortButton the button returned by
-     *                        {@link edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable#createClearSortButton},
-     *                        visible only when a sort is active
+     * @param clearSortButton the button from
+     *        {@link SortColumnTable#createClearSortButton}
      * @return the configured filter row
      */
-    private HBox buildFilterRow(Button clearSortButton) {
+    @Override
+    protected HBox buildSearchRow(Button clearSortButton) {
         SearchBar searchBar = new SearchBar(
                 "search.placeholder",
                 "search.button",
-                term -> {
-                    currentSearchTerm = term == null ? "" : term;
-                    resetPageAndRefresh();
-                },
+                searchCallback(),
                 metadataRow);
         searchBar.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(searchBar, Priority.ALWAYS);
@@ -131,8 +107,61 @@ public class TransactionsCard extends PaginatedCard {
     }
 
     /**
-     * Picks up new transactions and extends the week range filter's upper bound
-     * whenever the model changes.
+     * Returns transactions scoped to the active week range and type filter,
+     * sorted chronologically. Returns an empty list when the player is null.
+     *
+     * @return mutable list of pre-filtered transactions, oldest first
+     */
+    @Override
+    protected List<Transaction> fetchAll() {
+        if (gameService.getPlayer() == null) {
+            return new ArrayList<>();
+        }
+        TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
+        int fromWeek = weekRangeFilter.getFromWeek();
+        int toWeek = weekRangeFilter.getToWeek();
+        Class<? extends Transaction> selectedType = typeFilter.getSelectedType();
+
+        return new ArrayList<>(collectRange(archive, fromWeek, toWeek).stream()
+                .filter(t -> selectedType == null || selectedType.isInstance(t))
+                .toList());
+    }
+
+    @Override
+    protected List<Transaction> applySearch(List<Transaction> all, String term) {
+        if (term.isBlank()) {
+            return new ArrayList<>(all);
+        }
+        return new ArrayList<>(all.stream()
+                .filter(t -> t.getShare().getStock().matches(term))
+                .toList());
+    }
+
+    @Override
+    protected void applySort(List<Transaction> items) {
+        sort.applySort(items, table.getSortState());
+    }
+
+    @Override
+    protected void renderPage(List<Transaction> page) {
+        int row = 1;
+        for (Transaction transaction : page) {
+            addDataRow(row++, transaction);
+        }
+    }
+
+    @Override
+    protected String statusKey() {
+        return "transactions.status";
+    }
+
+    @Override
+    protected String emptyStateMessage(String term) {
+        return LanguageManager.get("transactions.empty");
+    }
+
+    /**
+     * Extends the week range filter's upper bound whenever the model changes.
      */
     @Override
     public void onGameUpdated() {
@@ -141,68 +170,12 @@ public class TransactionsCard extends PaginatedCard {
     }
 
     /**
-     * Refreshes the section title and rebuilds the table so column headers,
-     * badge labels and the empty-state message follow the active language.
+     * Refreshes the section title and rebuilds the table for the active language.
      */
     @Override
     protected void onLanguageChanged() {
         title.setText(LanguageManager.get("transactions.title"));
         refresh();
-    }
-
-    /**
-     * Rebuilds the table: clears, rebuilds the header, collects and filters
-     * transactions, optionally sorts them, then renders the current page or an empty state.
-     *
-     * <p>When no sort is active the default chronological order from
-     * {@link #collectRange} is preserved.</p>
-     */
-    @Override
-    protected void refresh() {
-        table.clearRows();
-        if (gameService.getPlayer() == null) {
-            pagination.update(0, 0);
-            return;
-        }
-
-        TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
-        int fromWeek = weekRangeFilter.getFromWeek();
-        int toWeek = weekRangeFilter.getToWeek();
-        Class<? extends Transaction> selectedType = typeFilter.getSelectedType();
-
-        List<Transaction> searchableTransactions = new ArrayList<>(
-                collectRange(archive, fromWeek, toWeek).stream()
-                        .filter(t -> selectedType == null || selectedType.isInstance(t))
-                        .toList());
-        List<Transaction> transactions = new ArrayList<>(
-                searchableTransactions.stream()
-                        .filter(t -> currentSearchTerm.isBlank() || t.getShare().getStock().matches(currentSearchTerm))
-                        .toList());
-
-        table.refreshHeader(this::refresh, !transactions.isEmpty());
-        metadataRow.update("transactions.status", transactions.size(), searchableTransactions.size());
-
-        if (table.isSortActive()) {
-            sort.applySort(transactions, table.getSortState());
-        }
-
-        if (transactions.isEmpty()) {
-            table.renderEmptyState(LanguageManager.get("transactions.empty"));
-            pagination.update(0, 0);
-            return;
-        }
-
-        clampCurrentPage(transactions.size());
-        pagination.update(currentPage, transactions.size());
-
-        int fromIndex = currentPage * PAGE_SIZE;
-        int toIndex = Math.min(fromIndex + PAGE_SIZE, transactions.size());
-        List<Transaction> page = transactions.subList(fromIndex, toIndex);
-
-        int row = 1;
-        for (Transaction transaction : page) {
-            addDataRow(row++, transaction);
-        }
     }
 
     /**
@@ -224,9 +197,7 @@ public class TransactionsCard extends PaginatedCard {
     }
 
     /**
-     * Renders one transaction as a data row in the table. Delegates value
-     * computation to {@link TransactionStatsService#getStats} so this method
-     * only deals with cell construction and placement.
+     * Renders one transaction as a data row in the table.
      *
      * @param row         the table row index to write to
      * @param transaction the transaction to render
@@ -252,7 +223,6 @@ public class TransactionsCard extends PaginatedCard {
 
     /**
      * Creates the pill-shaped type badge for a transaction.
-     * Purchases get a light-blue colour scheme, sales a light-green one.
      *
      * @param transaction the transaction to label
      * @return a styled badge label
@@ -267,8 +237,7 @@ public class TransactionsCard extends PaginatedCard {
     }
 
     /**
-     * Renders the tax cell. Purchases have no tax, so the column shows
-     * an en,-dash for visual cleanliness instead of "0,00 NOK".
+     * Renders the tax cell. Purchases show an en-dash instead of "0,00 NOK".
      *
      * @param stats the row stats supplying the NOK tax amount
      * @return a styled cell label
