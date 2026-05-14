@@ -46,6 +46,7 @@ public class Player {
     private int nextNotificationId = 1;
     private boolean wasAboveDebtThreshold = false;
     private boolean wasLowOnCash = false;
+    private PlayerStatusLevel previousStatus = PlayerStatusLevel.NOVICE;
 
     /**
      * Constructs a new Player with the specified name and starting balance.
@@ -637,6 +638,14 @@ public class Player {
 
     public void setWasLowOnCash(boolean value) {
         this.wasLowOnCash = value;
+    }
+
+    public PlayerStatusLevel getPreviousStatus() {
+        return previousStatus == null ? PlayerStatusLevel.NOVICE : previousStatus;
+    }
+
+    public void setPreviousStatus(PlayerStatusLevel status) {
+        this.previousStatus = status;
     }
 
     /***

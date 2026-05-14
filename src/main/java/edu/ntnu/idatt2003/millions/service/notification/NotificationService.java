@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
 import edu.ntnu.idatt2003.millions.model.notification.Notification;
 import edu.ntnu.idatt2003.millions.model.notification.Notification.Severity;
 import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 
 import java.math.BigDecimal;
@@ -29,6 +30,7 @@ public class NotificationService {
         checkDebtRatio(player, currentWeek, converter);
         checkLowCash(player, currentWeek);
         checkStockMovements(player, exchange, currentWeek);
+        checkStatusChange(player, currentWeek, converter);
     }
 
     public void onLoanTaken(Player player, int currentWeek, CurrencyConverter converter) {
@@ -147,6 +149,27 @@ public class NotificationService {
                         currentWeek);
             }
         }
+    }
+
+    private void checkStatusChange(Player player, int currentWeek, CurrencyConverter converter) {
+        PlayerStatusLevel current = player.getStatus(converter);
+        PlayerStatusLevel previous = player.getPreviousStatus();
+
+        if (current.ordinal() > previous.ordinal()) {
+            push(player, Severity.MILESTONE,
+                    "notification.statusUpgrade.title",
+                    "notification.statusUpgrade.body",
+                    List.of(current.name()),
+                    currentWeek);
+        } else if (current.ordinal() < previous.ordinal()) {
+            push(player, Severity.INFO,
+                    "notification.statusDowngrade.title",
+                    "notification.statusDowngrade.body",
+                    List.of(current.name()),
+                    currentWeek);
+        }
+
+        player.setPreviousStatus(current);
     }
 
     private void push(Player player, Severity severity, String titleKey,

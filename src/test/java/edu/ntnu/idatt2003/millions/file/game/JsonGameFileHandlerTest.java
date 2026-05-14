@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import edu.ntnu.idatt2003.millions.model.notification.Notification;
+import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 
 import java.io.File;
 import java.io.UncheckedIOException;
@@ -495,6 +496,18 @@ class JsonGameFileHandlerTest {
 
             assertTrue(loaded.player().wasAboveDebtThreshold());
             assertTrue(loaded.player().wasLowOnCash());
+        }
+
+        @Test
+        @DisplayName("Saves and loads previousStatus")
+        void savesAndLoadsPreviousStatus() throws GameSaveCorruptException {
+            player.setPreviousStatus(PlayerStatusLevel.INVESTOR);
+            File file = tempDir.resolve("status-save.json").toFile();
+
+            handler.saveGame(player, exchange, file);
+            GameState loaded = handler.loadGame(file);
+
+            assertEquals(PlayerStatusLevel.INVESTOR, loaded.player().getPreviousStatus());
         }
     }
 }

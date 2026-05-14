@@ -14,6 +14,7 @@ public record Notification(
     public enum Severity {
         SEVERE,
         WARNING,
+        MILESTONE,
         INFO
     }
 
