@@ -7,6 +7,8 @@ import edu.ntnu.idatt2003.millions.view.component.LanguagePicker;
 import edu.ntnu.idatt2003.millions.view.start.LoadGameTab;
 import edu.ntnu.idatt2003.millions.view.start.NewGameTab;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -14,6 +16,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.io.File;
@@ -27,7 +30,10 @@ import java.util.function.Consumer;
  * each of which owns its own fields, layout, i18n updates, and event wiring.
  * This class is a thin shell: it builds the scene structure, delegates all
  * user input and callbacks to the tab components, and exposes the
- * {@link StartScreenInputs} contract to the controller.</p>
+ * {@link StartScreenInputs} contract to the controller. The title and start
+ * card sit inside a proportionally sized frame that is centered on the screen
+ * and top-anchored internally, so the animated {@link NewGameTab} reveal grows
+ * downward without shifting upward.</p>
  *
  * <p>User interactions are forwarded to the controller via callback setters such as
  * {@link #setOnStartGame(Runnable)} and {@link #setOnStockFileDrop(Consumer)},
@@ -38,6 +44,9 @@ public class StartView implements StartScreenInputs {
     private static final double SCENE_WIDTH = 900;
     private static final double SCENE_HEIGHT = 700;
     private static final double ROOT_SPACING = 24;
+    private static final double START_CARD_WIDTH = 540;
+    private static final double START_GROUP_HEIGHT_RATIO = 0.72;
+    private static final double START_TAB_HEADER_HEIGHT = 82;
 
     private final Scene scene;
     private final StyledText title;
@@ -74,16 +83,26 @@ public class StartView implements StartScreenInputs {
 
         AppTabPane tabPane = new AppTabPane();
         tabPane.getTabs().addAll(newGameTab, loadGameTab);
-        tabPane.setMaxWidth(540);
+        tabPane.setMaxWidth(START_CARD_WIDTH);
         tabPane.getStyleClass().add("start-tab-pane");
+        configureStartCardSizing(tabPane);
 
         HBox topBar = new HBox(languagePicker);
         topBar.setAlignment(Pos.CENTER_RIGHT);
         topBar.setPadding(new Insets(16, 24, 0, 24));
 
-        VBox center = new VBox(ROOT_SPACING, title, tabPane);
+        VBox startGroup = new VBox(ROOT_SPACING, title, tabPane);
+        startGroup.setAlignment(Pos.TOP_CENTER);
+
+        StackPane reservedStartGroup = new StackPane(startGroup);
+        reservedStartGroup.setAlignment(Pos.TOP_CENTER);
+
+        StackPane center = new StackPane(reservedStartGroup);
         center.setAlignment(Pos.CENTER);
         center.setPadding(new Insets(0, 24, 24, 24));
+        reservedStartGroup.minHeightProperty().bind(center.heightProperty().multiply(START_GROUP_HEIGHT_RATIO));
+        reservedStartGroup.prefHeightProperty().bind(center.heightProperty().multiply(START_GROUP_HEIGHT_RATIO));
+        reservedStartGroup.maxHeightProperty().bind(center.heightProperty().multiply(START_GROUP_HEIGHT_RATIO));
 
         BorderPane root = new BorderPane();
         if (titleBarControls != null) {
@@ -102,6 +121,44 @@ public class StartView implements StartScreenInputs {
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
+    }
+
+    /**
+     * Binds the start card height to the selected tab content.
+     *
+     * <p>The {@link NewGameTab} animates its preferred height during the
+     * automatic upload reveal, so binding the surrounding {@link AppTabPane}
+     * height lets the white card grow with that animation. Switching to
+     * {@link LoadGameTab} recalculates the card from that tab's own content.</p>
+     *
+     * @param tabPane the start card tab pane to size
+     */
+    private void configureStartCardSizing(AppTabPane tabPane) {
+        DoubleBinding selectedTabHeight = Bindings.createDoubleBinding(
+                () -> getSelectedTabHeight(tabPane),
+                tabPane.getSelectionModel().selectedItemProperty(),
+                tabPane.widthProperty(),
+                newGameTabContent.minHeightProperty(),
+                newGameTabContent.prefHeightProperty(),
+                loadGameContent.minHeightProperty(),
+                loadGameContent.prefHeightProperty());
+
+        tabPane.minHeightProperty().bind(selectedTabHeight);
+        tabPane.prefHeightProperty().bind(selectedTabHeight);
+        tabPane.maxHeightProperty().bind(selectedTabHeight);
+    }
+
+    /**
+     * Calculates the card height for the currently selected tab.
+     *
+     * @param tabPane the tab pane whose selected content should be measured
+     * @return selected content height plus the tab header area height
+     */
+    private double getSelectedTabHeight(AppTabPane tabPane) {
+        Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+        Node content = selectedTab == null ? newGameTabContent : selectedTab.getContent();
+        double contentWidth = tabPane.getWidth() > 0 ? tabPane.getWidth() : START_CARD_WIDTH;
+        return content.prefHeight(contentWidth) + START_TAB_HEADER_HEIGHT;
     }
 
     /**
