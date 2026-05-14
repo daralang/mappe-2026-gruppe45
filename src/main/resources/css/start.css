@@ -8,10 +8,58 @@
     -fx-background-color: -surface;
     -fx-prompt-text-fill: -text-secondary;
     -fx-border-color: -border;
-    -fx-border-radius: 5;
-    -fx-background-radius: 5;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
 }
 .start-field:focused {
     -fx-border-color: -primary;
+}
 
+.start-label {
+    -fx-font-size: 18px;
+    -fx-text-fill: black;
+    -fx-font-weight: 600;
+}
+
+.start-info-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: -text-secondary;
+}
+
+.currency-selector {
+    -fx-font-size: 14px;
+    -fx-background-color: transparent;
+    -fx-border-color: -border;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+}
+.currency-selector:hover,
+.currency-selector:focused {
+    -fx-background-color: -primary;
+    -fx-border-color: -primary;
+}
+.currency-selector:hover > .list-cell {
+    -fx-text-fill: white;
+    -fx-background-color: transparent;
+}
+
+.currency-selector:hover .arrow {
+    -fx-background-color: white;
+}
+
+
+.currency-label {
+    -fx-font-size: 16px;
+}
+
+.start-action-button {
+    -fx-font-size: 16;
+    -fx-background-radius: 15;
+    -fx-background-color: -primary;
+    -fx-text-fill: white;
+}
+
+.start-action-button:hover,
+.start-action-button:focused {
+    -fx-background-color: -primary-dark;
 }

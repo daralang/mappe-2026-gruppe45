@@ -34,7 +34,7 @@
 
 /* === Start === */
 .start-root {
-    -fx-background-color: black;
+    -fx-background-color: -footer-bg;
 }
 
 

@@ -48,6 +48,7 @@ public abstract class FileDropTab extends VBox {
 
         actionButton = new Button();
         actionButton.setMaxWidth(CARD_WIDTH);
+        actionButton.getStyleClass().add("start-action-button");
 
         fileDropZone.getBrowseButton().setOnAction(e -> {
             if (onBrowse != null) {
