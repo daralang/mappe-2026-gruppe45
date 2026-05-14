@@ -4,11 +4,13 @@ import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
 import edu.ntnu.idatt2003.millions.file.game.GameState;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
+import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.file.stock.StockFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
 import edu.ntnu.idatt2003.millions.model.loan.InsufficientSaleProceedsException;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
@@ -119,7 +121,8 @@ public class GameService {
      * @throws IllegalArgumentException if name is blank, capital is negative,
      *                                  or the file contains no stocks
      */
-    public void createNewGame(String name, BigDecimal capital, File stockFile) {
+    public void createNewGame(String name, BigDecimal capital, File stockFile)
+            throws InvalidStockDataException {
         createNewGame(name, capital, stockFile, DEFAULT_STOCK_CURRENCY);
     }
 
@@ -137,7 +140,8 @@ public class GameService {
      * @throws IllegalArgumentException if name is blank, capital is negative,
      *                                  or the file contains no stocks
      */
-    public void createNewGame(String name, BigDecimal capital, File stockFile, Currency currency) {
+    public void createNewGame(String name, BigDecimal capital, File stockFile, Currency currency)
+            throws InvalidStockDataException {
         Objects.requireNonNull(stockFile, "Stock file cannot be null");
         Objects.requireNonNull(currency, "Currency cannot be null");
         Player newPlayer = new Player(name, capital);
@@ -178,6 +182,8 @@ public class GameService {
             return stockFileHandler.readStocks(inputStream, DEFAULT_STOCK_CURRENCY);
         } catch (IOException e) {
             throw new UncheckedIOException("Could not read default stock data", e);
+        } catch (InvalidStockDataException e) {
+            throw new IllegalStateException("Default stock data is malformed: " + e.getMessage(), e);
         }
     }
 
@@ -287,9 +293,7 @@ public class GameService {
                 .map(s -> SalesCalculator.calculateNetNok(s, converter))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         if (netTotal.compareTo(totalObligations) < 0) {
-            throw new InsufficientSaleProceedsException(
-                    "Net sale proceeds (" + netTotal + " NOK) are less than required obligations ("
-                    + totalObligations + " NOK).");
+            throw new InsufficientSaleProceedsException(totalObligations.subtract(netTotal));
         }
 
         player.setPreviousNetWorth(player.getNetWorth(converter));
@@ -366,7 +370,7 @@ public class GameService {
      * @throws edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException
      *         if the loan would breach the player's debt-to-net-worth limit
      */
-    public Loan takeLoan(LoanOffer offer, BigDecimal amount) {
+    public Loan takeLoan(LoanOffer offer, BigDecimal amount) throws ExcessiveDebtException {
         Objects.requireNonNull(offer, "Offer cannot be null");
         Objects.requireNonNull(amount, "Amount cannot be null");
         Loan loan = new Loan(offer, amount, exchange.getWeek());

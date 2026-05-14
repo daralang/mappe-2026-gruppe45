@@ -15,6 +15,11 @@ import java.util.List;
  * <p>Reading is exposed for both file paths and arbitrary input streams,
  * which lets callers parse classpath resources or in-memory data without
  * routing them through the filesystem.</p>
+ *
+ * <p>All read methods throw {@link InvalidStockDataException} when the file
+ * contains a line that cannot be parsed. The entire parse is aborted on the
+ * first bad line; the exception carries the line number and raw content so
+ * the caller can report a precise error to the user.
  */
 public interface StockFileHandler {
 
@@ -24,8 +29,9 @@ public interface StockFileHandler {
      *
      * @param path the path to the file to read from
      * @return a list of stocks parsed from the file
+     * @throws InvalidStockDataException if any data line cannot be parsed
      */
-    List<Stock> readStocks(Path path);
+    List<Stock> readStocks(Path path) throws InvalidStockDataException;
 
     /**
      * Reads stock data from the file at the given path and tags each stock
@@ -34,8 +40,9 @@ public interface StockFileHandler {
      * @param path     the path to the file to read from
      * @param currency the currency to assign to every parsed stock
      * @return a list of stocks parsed from the file
+     * @throws InvalidStockDataException if any data line cannot be parsed
      */
-    List<Stock> readStocks(Path path, Currency currency);
+    List<Stock> readStocks(Path path, Currency currency) throws InvalidStockDataException;
 
     /**
      * Reads stock data from the given input stream. Useful for parsing
@@ -46,8 +53,9 @@ public interface StockFileHandler {
      *
      * @param inputStream the input stream to read from
      * @return a list of stocks parsed from the stream
+     * @throws InvalidStockDataException if any data line cannot be parsed
      */
-    List<Stock> readStocks(InputStream inputStream);
+    List<Stock> readStocks(InputStream inputStream) throws InvalidStockDataException;
 
     /**
      * Reads stock data from the given input stream and tags each stock
@@ -57,8 +65,9 @@ public interface StockFileHandler {
      * @param inputStream the input stream to read from
      * @param currency    the currency to assign to every parsed stock
      * @return a list of stocks parsed from the stream
+     * @throws InvalidStockDataException if any data line cannot be parsed
      */
-    List<Stock> readStocks(InputStream inputStream, Currency currency);
+    List<Stock> readStocks(InputStream inputStream, Currency currency) throws InvalidStockDataException;
 
     /**
      * Writes stock data to the file at the given path.

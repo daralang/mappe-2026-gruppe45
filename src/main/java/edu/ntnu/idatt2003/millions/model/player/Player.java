@@ -298,17 +298,13 @@ public class Player {
      * @throws NullPointerException    if loan or converter is null
      * @throws ExcessiveDebtException  if taking the loan would breach the debt ratio
      */
-    public void takeLoan(Loan loan, CurrencyConverter converter) {
+    public void takeLoan(Loan loan, CurrencyConverter converter) throws ExcessiveDebtException {
         Objects.requireNonNull(loan, "Loan cannot be null");
         Objects.requireNonNull(converter, "Converter cannot be null");
         BigDecimal newTotalDebt = getTotalDebt().add(loan.principal());
         BigDecimal capacity = getLoanCapacity(converter);
         if (newTotalDebt.compareTo(capacity) > 0) {
-            throw new ExcessiveDebtException(
-                    "Loan of " + loan.principal() + " NOK would bring total debt to "
-                    + newTotalDebt + " NOK, exceeding the "
-                    + MAX_DEBT_RATIO.multiply(BigDecimal.valueOf(100)).stripTrailingZeros().toPlainString()
-                    + "% capacity of " + capacity + " NOK.");
+            throw new ExcessiveDebtException(newTotalDebt, capacity);
         }
         addMoney(loan.principal());
         activeLoansInternal().add(loan);
