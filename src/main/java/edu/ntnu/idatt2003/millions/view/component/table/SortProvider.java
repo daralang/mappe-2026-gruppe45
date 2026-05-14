@@ -10,7 +10,8 @@ import java.util.List;
  *
  * <p>Implements the Template Method pattern: {@link #applySort} contains the
  * general algorithm for primary/secondary sorting, while subclasses supply
- * column-specific comparators via {@link #buildComparator}.</p>
+ * column-specific comparators via {@link #buildComparator} and column metadata
+ * via {@link #getColumnDefs}.</p>
  *
  * @param <T> the type of item being sorted
  * @param <C> the enum type identifying sort columns
@@ -40,6 +41,16 @@ public abstract class SortProvider<T, C> {
 
         items.sort(comparator);
     }
+
+    /**
+     * Returns the ordered column definitions for the table.
+     *
+     * <p>Called by {@link SortColumnTable} on every header refresh so that
+     * column labels are re-resolved from the active language automatically.</p>
+     *
+     * @return a fresh list of {@link TableColumnDef} in display order
+     */
+    public abstract List<TableColumnDef<C>> getColumnDefs();
 
     /**
      * Builds a comparator for the given sort column.
