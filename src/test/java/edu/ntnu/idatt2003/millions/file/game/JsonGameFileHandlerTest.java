@@ -2,9 +2,14 @@ package edu.ntnu.idatt2003.millions.file.game;
 
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
+import edu.ntnu.idatt2003.millions.model.loan.Loan;
+import edu.ntnu.idatt2003.millions.model.loan.LoanCatalog;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.model.transaction.Sale;
+import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -150,7 +155,7 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should return correct player name after load")
-        void returnsCorrectPlayerNameAfterLoad() {
+        void returnsCorrectPlayerNameAfterLoad() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
             handler.saveGame(player, exchange, file.toFile());
@@ -162,7 +167,7 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should return correct player money after load")
-        void returnsCorrectPlayerMoneyAfterLoad() {
+        void returnsCorrectPlayerMoneyAfterLoad() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
             handler.saveGame(player, exchange, file.toFile());
@@ -175,7 +180,7 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should return correct exchange name after load")
-        void returnsCorrectExchangeNameAfterLoad() {
+        void returnsCorrectExchangeNameAfterLoad() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
             handler.saveGame(player, exchange, file.toFile());
@@ -187,7 +192,7 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should return correct week after load")
-        void returnsCorrectWeekAfterLoad() {
+        void returnsCorrectWeekAfterLoad() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
             exchange.advance();
@@ -200,7 +205,7 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should return correct number of shares in portfolio after load")
-        void returnsCorrectNumberOfSharesAfterLoad() {
+        void returnsCorrectNumberOfSharesAfterLoad() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
             exchange.buy("EQNR", new BigDecimal("5"), player);
@@ -213,7 +218,7 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should relink share stock reference to exchange stock after load")
-        void relinksShareStockReferenceAfterLoad() {
+        void relinksShareStockReferenceAfterLoad() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
             exchange.buy("EQNR", new BigDecimal("5"), player);
@@ -228,7 +233,7 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should return correct number of transactions in archive after load")
-        void returnsCorrectNumberOfTransactionsAfterLoad() {
+        void returnsCorrectNumberOfTransactionsAfterLoad() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
             exchange.buy("EQNR", new BigDecimal("5"), player);
@@ -241,7 +246,7 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should return empty portfolio when no shares were owned")
-        void returnsEmptyPortfolioWhenNoSharesOwned() {
+        void returnsEmptyPortfolioWhenNoSharesOwned() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
             handler.saveGame(player, exchange, file.toFile());
@@ -253,7 +258,7 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should return empty transaction archive when no transactions were made")
-        void returnsEmptyTransactionArchiveWhenNoTransactionsMade() {
+        void returnsEmptyTransactionArchiveWhenNoTransactionsMade() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
             handler.saveGame(player, exchange, file.toFile());
@@ -265,7 +270,7 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should preserve price history after load")
-        void preservesPriceHistoryAfterLoad() {
+        void preservesPriceHistoryAfterLoad() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
             exchange.advance();
@@ -280,7 +285,7 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should merge shares with the same stock symbol from a legacy save on load")
-        void mergesSharesWithSameSymbolFromLegacySaveOnLoad() {
+        void mergesSharesWithSameSymbolFromLegacySaveOnLoad() throws GameSaveCorruptException {
             // Arrange: bypass addShare to simulate a legacy file with two entries for same stock
             Path file = tempDir.resolve("legacy_save.json");
             Share share1 = new Share(stock, new BigDecimal("5"), new BigDecimal("276.43"));
@@ -293,6 +298,28 @@ class JsonGameFileHandlerTest {
             assertEquals(1, state.player().getPortfolio().getShares().size());
             Share merged = state.player().getPortfolio().getShares().getFirst();
             assertEquals(0, new BigDecimal("8").compareTo(merged.getQuantity()));
+        }
+
+        @Test
+        @DisplayName("Should throw GameSaveCorruptException when file contains invalid JSON")
+        void throwsGameSaveCorruptExceptionForInvalidJson() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("corrupt.json");
+            Files.writeString(file, "{ this is not valid json }");
+            // Act & Assert
+            assertThrows(GameSaveCorruptException.class, () ->
+                    handler.loadGame(file.toFile()));
+        }
+
+        @Test
+        @DisplayName("Should throw GameSaveCorruptException when file is missing required fields")
+        void throwsGameSaveCorruptExceptionForMissingFields() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("incomplete.json");
+            Files.writeString(file, "{ \"player\": {} }");
+            // Act & Assert
+            assertThrows(GameSaveCorruptException.class, () ->
+                    handler.loadGame(file.toFile()));
         }
 
         @Test
@@ -314,8 +341,92 @@ class JsonGameFileHandlerTest {
         }
 
         @Test
+        @DisplayName("Should preserve active loans after round-trip save/load")
+        void preservesActiveLoansAfterRoundTrip() throws ExcessiveDebtException, GameSaveCorruptException {
+            // Arrange
+            Path file = tempDir.resolve("save.json");
+            Loan loan = new Loan(LoanCatalog.getOffers().get(0), new BigDecimal("4000.00"), 1);
+            player.takeLoan(loan, new FixedRateCurrencyConverter());
+            handler.saveGame(player, exchange, file.toFile());
+            // Act
+            GameState state = handler.loadGame(file.toFile());
+            // Assert
+            assertEquals(1, state.player().getActiveLoans().size());
+            Loan loadedLoan = state.player().getActiveLoans().get(0);
+            assertEquals(0, new BigDecimal("4000.00").compareTo(loadedLoan.principal()));
+            assertEquals(1, loadedLoan.takenAtWeek());
+        }
+
+        @Test
+        @DisplayName("Should preserve loan ledger entries after round-trip save/load")
+        void preservesLoanLedgerAfterRoundTrip() throws ExcessiveDebtException, GameSaveCorruptException {
+            // Arrange
+            Path file = tempDir.resolve("save.json");
+            Loan loan = new Loan(LoanCatalog.getOffers().get(0), new BigDecimal("4000.00"), 1);
+            player.takeLoan(loan, new FixedRateCurrencyConverter());
+            handler.saveGame(player, exchange, file.toFile());
+            // Act
+            GameState state = handler.loadGame(file.toFile());
+            // Assert
+            assertEquals(1, state.player().getLoanLedger().size());
+            assertEquals(0, new BigDecimal("4000.00")
+                    .compareTo(state.player().getLoanLedger().get(0).amount()));
+        }
+
+        @Test
+        @DisplayName("Should preserve total debt history after round-trip save/load")
+        void preservesTotalDebtHistoryAfterRoundTrip() throws ExcessiveDebtException, GameSaveCorruptException {
+            // Arrange
+            Path file = tempDir.resolve("save.json");
+            Loan loan = new Loan(LoanCatalog.getOffers().get(0), new BigDecimal("4000.00"), 1);
+            player.takeLoan(loan, new FixedRateCurrencyConverter());
+            player.recordTotalDebt();
+            handler.saveGame(player, exchange, file.toFile());
+            // Act
+            GameState state = handler.loadGame(file.toFile());
+            // Assert
+            assertEquals(1, state.player().getTotalDebtHistory().size());
+            assertEquals(0, new BigDecimal("4000.00")
+                    .compareTo(state.player().getTotalDebtHistory().get(0)));
+        }
+
+        @Test
+        @DisplayName("Should relink archived transaction shares to canonical exchange stocks after load")
+        void relinksArchivedTransactionShareAfterLoad() throws GameSaveCorruptException {
+            // Arrange
+            Path file = tempDir.resolve("save.json");
+            exchange.buy("EQNR", new BigDecimal("5"), player);
+            handler.saveGame(player, exchange, file.toFile());
+            // Act
+            GameState state = handler.loadGame(file.toFile());
+            // Assert
+            Stock canonicalStock = state.exchange().getStock("EQNR");
+            for (Transaction transaction : state.player().getTransactionArchive().getAll()) {
+                assertSame(canonicalStock, transaction.getShare().getStock());
+            }
+        }
+
+        @Test
+        @DisplayName("Should relink archived sale transaction share after load")
+        void relinksArchivedSaleShareAfterLoad() throws GameSaveCorruptException {
+            // Arrange
+            Path file = tempDir.resolve("save.json");
+            exchange.buy("EQNR", new BigDecimal("5"), player);
+            Share portfolioShare = player.getPortfolio().getShares().getFirst();
+            new Sale(portfolioShare, 1).commit(player);
+            handler.saveGame(player, exchange, file.toFile());
+            // Act
+            GameState state = handler.loadGame(file.toFile());
+            // Assert
+            Stock canonicalStock = state.exchange().getStock("EQNR");
+            for (Transaction transaction : state.player().getTransactionArchive().getAll()) {
+                assertSame(canonicalStock, transaction.getShare().getStock());
+            }
+        }
+
+        @Test
         @DisplayName("Should be able to advance week after loading game and reinitializing exchange")
-        void canAdvanceWeekAfterLoadingGameAndReinitialize() {
+        void canAdvanceWeekAfterLoadingGameAndReinitialize() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
             handler.saveGame(player, exchange, file.toFile());

@@ -44,6 +44,16 @@ public class TransactionArchive {
     }
 
     /**
+     * Returns all transactions in the archive regardless of week.
+     * Used by the file handler to iterate every archived transaction during relinking.
+     *
+     * @return a defensive copy of all transactions
+     */
+    public List<Transaction> getAll() {
+        return new ArrayList<>(transactions);
+    }
+
+    /**
      * Returns all transactions that took place in the specified week.
      *
      * @param week the week number to filter by
