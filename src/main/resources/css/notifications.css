@@ -1,0 +1,186 @@
+.notification-bell-badge {
+    -fx-background-color: -danger;
+    -fx-background-radius: 8;
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 5 2 5;
+    -fx-min-width: 16;
+    -fx-alignment: center;
+}
+
+/* Panel */
+.notification-panel {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 12, 0.2, 0, 4);
+}
+
+.notification-panel-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-primary;
+}
+
+.notification-clear-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-padding: 2 4;
+}
+
+.notification-clear-btn:hover {
+    -fx-text-fill: -danger;
+}
+
+.notification-empty {
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 13px;
+    -fx-alignment: center;
+}
+
+/* Rows */
+.notification-row {
+    -fx-background-color: -surface;
+}
+
+.notification-row:hover {
+    -fx-background-color: -surface-alt;
+}
+
+.notification-severe {
+    -fx-border-color: -danger;
+    -fx-border-width: 0 0 0 4;
+}
+
+.notification-warning {
+    -fx-border-color: -warning;
+    -fx-border-width: 0 0 0 4;
+}
+
+.notification-info {
+    -fx-border-color: -border-strong;
+    -fx-border-width: 0 0 0 4;
+}
+
+/* Unread: tinted background per severity */
+.notification-row.unread.notification-severe {
+    -fx-background-color: -danger-bg;
+}
+.notification-row.unread.notification-warning {
+    -fx-background-color: -warning-bg;
+}
+.notification-row.unread.notification-info {
+    -fx-background-color: -info-bg;
+}
+
+/* Unread hover: restore neutral surface */
+.notification-row.unread:hover {
+    -fx-background-color: -surface-alt;
+}
+
+/* Read: muted border */
+.notification-row.read.notification-severe {
+    -fx-border-color: -danger-border;
+}
+.notification-row.read.notification-warning {
+    -fx-border-color: -warning-border;
+}
+.notification-row.read.notification-info {
+    -fx-border-color: -border-light;
+}
+
+/* Read: drop bold only — severity colour is preserved by the title-severity classes */
+.notification-row.read .notification-title {
+    -fx-font-weight: normal;
+}
+
+.notification-icon {
+    -fx-font-size: 16px;
+}
+
+.notification-icon-severe {
+    -fx-text-fill: -danger;
+}
+
+.notification-icon-warning {
+    -fx-text-fill: -warning;
+}
+
+.notification-icon-info {
+    -fx-text-fill: -border-strong;
+}
+
+.notification-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-primary;
+}
+
+.notification-title-severe {
+    -fx-text-fill: -danger-text;
+}
+
+.notification-title-warning {
+    -fx-text-fill: -warning-text;
+}
+
+.notification-title-info {
+    -fx-text-fill: -text-primary;
+}
+
+.notification-body {
+    -fx-font-size: 12px;
+    -fx-text-fill: -text-secondary;
+}
+
+.notification-week {
+    -fx-font-size: 11px;
+    -fx-text-fill: -text-muted;
+}
+
+/* Toasts */
+.notification-toast {
+    -fx-background-color: -surface;
+    -fx-background-radius: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0.2, 0, 3);
+}
+
+.notification-toast-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-primary;
+    -fx-wrap-text: true;
+}
+
+.notification-severe .notification-toast-title,
+.notification-severe-title {
+    -fx-text-fill: -danger-text;
+}
+
+.notification-warning .notification-toast-title,
+.notification-warning-title {
+    -fx-text-fill: -warning-text;
+}
+
+.notification-toast-body {
+    -fx-font-size: 12px;
+    -fx-text-fill: -text-secondary;
+    -fx-wrap-text: true;
+}
+
+.notification-toast-close {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 11px;
+    -fx-cursor: hand;
+    -fx-padding: 0 2;
+    -fx-min-width: 16;
+}
+
+.notification-toast-close:hover {
+    -fx-text-fill: -text-primary;
+}
