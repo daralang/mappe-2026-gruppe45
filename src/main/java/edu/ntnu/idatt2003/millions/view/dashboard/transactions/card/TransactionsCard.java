@@ -74,8 +74,8 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
 
         typeFilter = new LedgerTypeFilter<>(List.of(
                 new LedgerTypeFilter.TypeOption<>("transactions.type.all", null),
-                new LedgerTypeFilter.TypeOption<>("transactions.type.buy.label", Purchase.class),
-                new LedgerTypeFilter.TypeOption<>("transactions.type.sell.label",
+                new LedgerTypeFilter.TypeOption<>("transactions.type.buy", Purchase.class),
+                new LedgerTypeFilter.TypeOption<>("transactions.type.sell",
                         edu.ntnu.idatt2003.millions.model.transaction.Sale.class)
         ));
         typeFilter.selectedValueProperty().addListener((_, _, _) -> resetPageAndRefresh());
@@ -238,7 +238,7 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     private Label typeBadge(Transaction transaction) {
         boolean isPurchase = transaction instanceof Purchase;
         String key = isPurchase ? "transactions.type.buy" : "transactions.type.sell";
-        Label badge = new Label(LanguageManager.get(key));
+        Label badge = new Label(LanguageManager.get(key).toUpperCase());
         badge.getStyleClass().add("transaction-type-badge");
         badge.getStyleClass().add(isPurchase ? "badge-buy" : "badge-sell");
         return badge;
