@@ -40,7 +40,7 @@ public abstract class FileDropTab extends VBox {
      */
     protected FileDropTab() {
         setSpacing(FORM_SPACING);
-        setAlignment(Pos.CENTER);
+        setAlignment(Pos.TOP_CENTER);
         setPadding(new Insets(24));
 
         fileDropZone = new FileDropZone();
