@@ -15,6 +15,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 public class Header extends HBox {
 
@@ -68,15 +69,18 @@ public class Header extends HBox {
         HBox actions = new HBox(16, saveButton, exitButton);
         actions.setAlignment(Pos.CENTER_RIGHT);
 
-        bellButton = new Button("🔔");
+        FontIcon bellIcon = new FontIcon("fth-bell");
+        bellIcon.getStyleClass().add("navbar-bell-icon");
+        bellButton = new Button();
+        bellButton.setGraphic(bellIcon);
         bellButton.getStyleClass().add("navbar-icon");
         Tooltip.install(bellButton, new Tooltip(LanguageManager.get("notification.bell.tooltip")));
 
         badge = new Label();
         badge.getStyleClass().add("notification-bell-badge");
         badge.setVisible(false);
-        StackPane.setAlignment(badge, Pos.TOP_RIGHT);
-        StackPane.setMargin(badge, new Insets(0, -4, 0, 0));
+        StackPane.setAlignment(badge, Pos.TOP_LEFT);
+        StackPane.setMargin(badge, new Insets(-2, 0, 0, 22));
 
         StackPane bellWrapper = new StackPane(bellButton, badge);
         bellWrapper.setAlignment(Pos.CENTER);

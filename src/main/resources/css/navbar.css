@@ -29,10 +29,13 @@
 }
 
 .navbar-icon {
-    -fx-text-fill: white;
-    -fx-font-size: 18;
     -fx-background-color: transparent;
     -fx-cursor: hand;
+}
+
+.navbar-bell-icon {
+    -fx-icon-size: 20;
+    -fx-icon-color: white;
 }
 
 /* Language picker */

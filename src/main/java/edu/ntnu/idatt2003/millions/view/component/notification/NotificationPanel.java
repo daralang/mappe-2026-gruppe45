@@ -13,9 +13,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -124,9 +124,8 @@ public class NotificationPanel {
     }
 
     private HBox buildRow(Notification n) {
-        Label icon = new Label(iconFor(n.severity()));
+        FontIcon icon = new FontIcon(iconFor(n.severity()));
         icon.getStyleClass().addAll("notification-icon", severityIconClass(n.severity()));
-        icon.setMinWidth(Region.USE_PREF_SIZE);
 
         Label title = new Label(LanguageManager.get(n.titleKey()));
         title.getStyleClass().addAll("notification-title", severityTitleClass(n.severity()));
@@ -164,10 +163,10 @@ public class NotificationPanel {
 
     static String iconFor(Notification.Severity s) {
         return switch (s) {
-            case SEVERE -> "⛔";
-            case WARNING -> "⚠";
-            case MILESTONE -> "🏆";
-            case INFO -> "ℹ";
+            case SEVERE -> "fth-alert-octagon";
+            case WARNING -> "fth-alert-triangle";
+            case MILESTONE -> "fth-award";
+            case INFO -> "fth-info";
         };
     }
 

@@ -9,6 +9,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -71,7 +72,8 @@ public abstract class TransactionReceipt extends Modal {
     }
 
     private HBox buildHeader() {
-        Label icon = new Label("✓");
+        Label icon = new Label();
+        icon.setGraphic(new FontIcon("fth-check"));
         icon.getStyleClass().add("modal-success-icon");
 
         Label title = new Label(getTitle());
