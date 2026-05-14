@@ -32,17 +32,25 @@ public class WindowsTitleBar implements TitleBar {
     private Runnable onSave      = () -> {};
     private Runnable onExit      = () -> {};
 
-    private final VBox node;
+    private final Node node;
 
     public WindowsTitleBar(Stage stage) {
-        HBox controls = buildControls(stage);
-        Header header = new Header(
-                () -> onDashboard.run(),
-                () -> onExchange.run(),
-                () -> onSave.run(),
-                () -> onExit.run()
-        );
-        node = new VBox(controls, header);
+        this(stage, "title-bar", true);
+    }
+
+    WindowsTitleBar(Stage stage, String controlsStyleClass, boolean includeNavHeader) {
+        HBox controls = buildControls(stage, controlsStyleClass);
+        if (includeNavHeader) {
+            Header header = new Header(
+                    () -> onDashboard.run(),
+                    () -> onExchange.run(),
+                    () -> onSave.run(),
+                    () -> onExit.run()
+            );
+            node = new VBox(controls, header);
+        } else {
+            node = controls;
+        }
     }
 
     @Override public Node getNode()                    { return node; }
@@ -53,7 +61,7 @@ public class WindowsTitleBar implements TitleBar {
     @Override public void onGameUpdated()              {}
     @Override public void onLanguageChanged()          {}
 
-    private HBox buildControls(Stage stage) {
+    private HBox buildControls(Stage stage, String styleClass) {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         spacer.getStyleClass().add("title-bar-drag-area");
@@ -92,7 +100,7 @@ public class WindowsTitleBar implements TitleBar {
         close.setOnAction(e -> stage.close());
 
         HBox controls = new HBox(spacer, minimize, maximize, close);
-        controls.getStyleClass().add("title-bar");
+        controls.getStyleClass().add(styleClass);
         return controls;
     }
 }

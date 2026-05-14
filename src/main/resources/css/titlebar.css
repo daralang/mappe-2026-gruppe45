@@ -34,3 +34,23 @@
 .title-bar-btn-close:hover {
     -fx-background-color: -danger;
 }
+
+.title-bar-light {
+    -fx-background-color: transparent;
+    -fx-min-height: 30;
+    -fx-max-height: 30;
+    -fx-pref-height: 30;
+    -fx-alignment: center-right;
+}
+
+.title-bar-light .title-bar-btn {
+    -fx-text-fill: -text-primary;
+}
+
+.title-bar-light .title-bar-btn:hover {
+    -fx-background-color: -surface-alt;
+}
+
+.title-bar-light .title-bar-btn-close:hover {
+    -fx-background-color: -danger-bg;
+}

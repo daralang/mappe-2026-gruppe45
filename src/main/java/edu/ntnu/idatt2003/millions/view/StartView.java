@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.view.component.LanguagePicker;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -74,6 +75,16 @@ public class StartView implements StartScreenInputs {
      * one for creating a new game and one for loading a saved game.
      */
     public StartView() {
+        this(null);
+    }
+
+    /**
+     * Creates the start view, optionally adding a platform title bar controls node
+     * at the very top (above the language picker row).
+     *
+     * @param titleBarControls the title bar controls node, or {@code null} to omit
+     */
+    public StartView(Node titleBarControls) {
         LanguagePicker languagePicker = new LanguagePicker();
         title = StyledText.headingOne(LanguageManager.get("app.title"));
 
@@ -120,7 +131,11 @@ public class StartView implements StartScreenInputs {
         center.setPadding(new Insets(0, 24, 24, 24));
 
         BorderPane root = new BorderPane();
-        root.setTop(topBar);
+        if (titleBarControls != null) {
+            root.setTop(new VBox(titleBarControls, topBar));
+        } else {
+            root.setTop(topBar);
+        }
         root.setCenter(center);
 
         scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
@@ -141,7 +156,7 @@ public class StartView implements StartScreenInputs {
      * @param field the input node
      * @return an {@link HBox} with label and field on the same line
      */
-    private HBox buildFormRow(Label label, javafx.scene.Node field) {
+    private HBox buildFormRow(Label label, Node field) {
         label.setMinWidth(LABEL_WIDTH);
         HBox.setHgrow(field, Priority.ALWAYS);
         HBox row = new HBox(12, label, field);
