@@ -15,13 +15,12 @@ import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 /**
  * The main view of the application.
- * Contains a persistent {@link Header} and a content area that switches
+ * Contains a persistent {@link TitleBar} and a content area that switches
  * between different views depending on user navigation.
  *
  * <p>Navigation between Dashboard and Exchange is handled internally as
@@ -119,14 +118,14 @@ public class MainView {
      */
     private void showDashboard() {
         content.setCenter(wrapScrollable(
-                new DashboardView(gameService, portfolioController, loanController, weekBar, this::showExchangeOnStocksTab)));
+                new DashboardView(gameService, tradeController, loanController, weekBar, this::showExchangeOnStocksTab)));
     }
 
     /**
      * Switches the content area to the exchange view.
      */
     private void showExchange() {
-        content.setCenter(wrapScrollable(new ExchangeView(gameService, weekBar, portfolioController)));
+        content.setCenter(wrapScrollable(new ExchangeView(gameService, weekBar, tradeController)));
     }
 
     private void showExchangeOnStocksTab() {
