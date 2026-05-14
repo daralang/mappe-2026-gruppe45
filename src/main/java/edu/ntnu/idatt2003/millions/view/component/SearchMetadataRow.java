@@ -12,10 +12,6 @@ import java.util.Objects;
  * <p>Displays a left-aligned result count label that is hidden when the
  * filtered count is zero. Cards call {@link #update(String, int, int)}
  * after each filter operation to keep the label in sync.</p>
- *
- * <p>The clear-sort button is intentionally <em>not</em> part of this row.
- * It lives in the card's outer layout on the same line as the search bar
- * so it is always visible alongside the other table controls.</p>
  */
 public class SearchMetadataRow extends HBox {
 

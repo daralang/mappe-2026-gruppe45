@@ -19,10 +19,6 @@ import java.util.Objects;
  * <p>Provides {@link #getColumnDefs()} so {@link SortColumnTable} can build a
  * header row with correct labels, widths, alignments and sort keys. Labels are
  * resolved on every call so language changes are picked up automatically.</p>
- *
- * <p>Sorting is applied via the inherited {@link SortProvider#applySort} using the
- * Template Method pattern. This class owns no sort state itself — it is a pure
- * sort-logic provider.</p>
  */
 public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
 

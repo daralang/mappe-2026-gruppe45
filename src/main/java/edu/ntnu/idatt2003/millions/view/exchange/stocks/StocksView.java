@@ -2,7 +2,6 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
 import edu.ntnu.idatt2003.millions.view.component.card.PortfolioValueCard;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksInvestedCard;
@@ -31,13 +30,8 @@ public class StocksView extends VBox {
 
         HBox summaryCards = createSummaryCards(gameService);
         StocksListCard stocksListCard = new StocksListCard(gameService, controller);
-        Pagination pagination = new Pagination(StocksListCard.PAGE_SIZE, stocksListCard::setPage);
-        stocksListCard.setOnRefreshed(() -> pagination.update(
-                stocksListCard.getCurrentPage(),
-                stocksListCard.getFilteredCount()));
-        pagination.update(stocksListCard.getCurrentPage(), stocksListCard.getFilteredCount());
 
-        getChildren().addAll(summaryCards, stocksListCard, pagination);
+        getChildren().addAll(summaryCards, stocksListCard);
     }
 
     private HBox createSummaryCards(GameService gameService) {
