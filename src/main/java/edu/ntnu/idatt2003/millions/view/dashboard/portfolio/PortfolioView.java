@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 
 import edu.ntnu.idatt2003.millions.controller.PortfolioController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
 import edu.ntnu.idatt2003.millions.view.component.card.PortfolioValueCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.*;
@@ -29,7 +30,7 @@ public class PortfolioView extends VBox {
         setSpacing(16);
 
         HBox topRow = buildTopRow(gameService);
-        HoldingsCard holdingsCard = new HoldingsCard(gameService, controller);
+        HoldingsCard holdingsCard = new HoldingsCard(gameService, controller, new PortfolioService());
         ExploreStocksButton exploreButton = new ExploreStocksButton(onExploreStocks);
         RealizedReturnsCard realizedReturnsCard = new RealizedReturnsCard(gameService);
 

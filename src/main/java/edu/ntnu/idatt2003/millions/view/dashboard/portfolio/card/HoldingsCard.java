@@ -43,7 +43,7 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     private static final int PAGE_SIZE = 9;
 
     private final GameService gameService;
-    private final PortfolioService portfolioService = new PortfolioService();
+    private final PortfolioService portfolioService;
     private final PortfolioController controller;
     private final HoldingsSort sort;
     private final Region totalDivider = new Region();
@@ -52,14 +52,17 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     /**
      * Constructs a new HoldingsCard.
      *
-     * @param gameService the game manager containing player and exchange
-     * @param controller  the controller handling portfolio actions
+     * @param gameService      the game manager containing player and exchange
+     * @param controller       the controller handling portfolio actions
+     * @param portfolioService the service used to compute share values and returns
      */
-    public HoldingsCard(GameService gameService, PortfolioController controller) {
+    public HoldingsCard(GameService gameService, PortfolioController controller,
+                        PortfolioService portfolioService) {
         super(gameService, PAGE_SIZE,
                 "dashboard.portfolio.holdings.status", "dashboard.portfolio.empty");
         this.gameService = gameService;
         this.controller = controller;
+        this.portfolioService = portfolioService;
         this.sort = new HoldingsSort(portfolioService, gameService.getCurrencyConverter());
         this.sortProvider = sort;
         this.table = new SortColumnTable<>(sort::getColumnDefs);
@@ -79,8 +82,16 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
         refresh();
     }
 
+    /**
+     * Returns all shares in the player's portfolio, or an empty list if no player is active.
+     *
+     * @return mutable list of all {@link Share} objects owned by the player
+     */
     @Override
     protected List<Share> fetchAll() {
+        if (gameService.getPlayer() == null) {
+            return new ArrayList<>();
+        }
         return new ArrayList<>(gameService.getPlayer().getPortfolio().getShares());
     }
 
