@@ -1,0 +1,17 @@
+.start-title {
+    -fx-font-size: 64px;
+    -fx-text-fill: white;
+}
+
+.start-field {
+    -fx-font-size: 14px;
+    -fx-background-color: -surface;
+    -fx-prompt-text-fill: -text-secondary;
+    -fx-border-color: -border;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+.start-field:focused {
+    -fx-border-color: -primary;
+
+}
