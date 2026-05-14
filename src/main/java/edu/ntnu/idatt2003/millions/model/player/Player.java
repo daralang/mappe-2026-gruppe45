@@ -398,6 +398,76 @@ public class Player {
     }
 
     /**
+     * Returns loans whose principal becomes due at {@code currentWeek}
+     * (i.e., {@link Loan#isDueThisWeek(int)} is true for each).
+     *
+     * @param currentWeek the game week to evaluate
+     * @return immutable list of maturing loans; empty if none are due
+     */
+    public List<Loan> getLoansDueThisWeek(int currentWeek) {
+        return activeLoansInternal().stream()
+                .filter(loan -> loan.isDueThisWeek(currentWeek))
+                .toList();
+    }
+
+    /**
+     * Returns the sum of principals for all loans maturing at {@code currentWeek}.
+     *
+     * @param currentWeek the game week to evaluate
+     * @return total maturity principal in NOK; zero if no loans are due
+     */
+    public BigDecimal getMaturityDueThisWeek(int currentWeek) {
+        return getLoansDueThisWeek(currentWeek).stream()
+                .map(Loan::principal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Returns the total amount the player must pay this week: weekly interest
+     * across all active loans plus the principal of any maturing loans.
+     *
+     * @param currentWeek the game week to evaluate
+     * @return interest + maturity principal in NOK; zero if no loans are active
+     */
+    public BigDecimal getTotalObligationsThisWeek(int currentWeek) {
+        return getWeeklyInterestDue().add(getMaturityDueThisWeek(currentWeek));
+    }
+
+    /**
+     * Returns {@code true} iff the player's current cash covers
+     * {@link #getTotalObligationsThisWeek(int)}.
+     *
+     * @param currentWeek the game week to evaluate
+     * @return true if no forced share sale is required
+     */
+    public boolean canCoverObligationsThisWeek(int currentWeek) {
+        return money.compareTo(getTotalObligationsThisWeek(currentWeek)) >= 0;
+    }
+
+    /**
+     * Removes a matured loan from the active list and writes a REPAYMENT
+     * ledger entry, without touching the cash balance.
+     *
+     * <p>Used by the forced-sale path where the total obligation has already
+     * been withdrawn from cash in a single {@link #withdrawMoney} call.</p>
+     *
+     * @param loan the loan to close; must be an active loan owned by this player
+     * @param week the game week in which settlement occurs; used for the ledger entry
+     * @throws NullPointerException     if loan is null
+     * @throws IllegalArgumentException if the loan is not in the active list
+     */
+    public void settleMatureLoan(Loan loan, int week) {
+        Objects.requireNonNull(loan, "Loan cannot be null");
+        if (!activeLoansInternal().remove(loan)) {
+            throw new IllegalArgumentException("Loan is not an active loan for this player");
+        }
+        if (loanLedger == null) loanLedger = new ArrayList<>();
+        loanLedger.add(new LoanLedgerEntry(
+                Math.max(week, 1), loan,
+                LoanLedgerEntryType.REPAYMENT, loan.principal().negate()));
+    }
+
+    /**
      * Appends an INTEREST {@link LoanLedgerEntry} for every active loan without
      * touching the cash balance. Called by the forced-sale path after the player's
      * cash has already been adjusted separately via {@link #withdrawMoney}.

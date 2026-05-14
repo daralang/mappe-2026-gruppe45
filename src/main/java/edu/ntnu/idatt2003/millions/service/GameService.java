@@ -247,41 +247,49 @@ public class GameService {
 
     /**
      * Advances the game by one week and notifies all registered observers.
-     * Assumes the player has enough cash to cover weekly interest; use
-     * {@link #executeForcedSale} instead when they cannot.
+     * Assumes the player has enough cash to cover all obligations (interest +
+     * any maturing loan principals); use {@link #executeForcedSale} instead
+     * when they cannot.
      */
     public void advanceWeek() {
         CurrencyConverter converter = exchange.getCurrencyConverter();
         player.setPreviousNetWorth(player.getNetWorth(converter));
         exchange.advance();
-        player.collectWeeklyInterest(exchange.getWeek());
+        int week = exchange.getWeek();
+        player.collectWeeklyInterest(week);
+        for (Loan loan : player.getLoansDueThisWeek(week)) {
+            player.repayLoan(loan, week);
+        }
         finishWeekAdvance();
     }
 
     /**
-     * Sells the given shares, deducts the weekly interest from the player's cash,
-     * writes INTEREST ledger entries for every active loan, advances the week, and
+     * Sells the given shares, deducts all weekly obligations (interest plus any
+     * maturing loan principals) from the player's cash, advances the week, and
      * notifies observers.
      *
      * <p>All-or-nothing: if the combined net sale value (after commission and tax,
-     * converted to NOK) is less than {@code interestAmount}, an
-     * {@link InsufficientSaleProceedsException} is thrown and no state is mutated.
+     * converted to NOK) is less than the total obligations for {@code currentWeek},
+     * an {@link InsufficientSaleProceedsException} is thrown and no state is mutated.
      *
-     * @param shares         the shares the player has chosen to sell
-     * @param interestAmount the total weekly interest owed
-     * @throws InsufficientSaleProceedsException if the net sale total is less than interestAmount
+     * @param shares      the shares the player has chosen to sell
+     * @param currentWeek the game week being processed (the week after the current one)
+     * @throws InsufficientSaleProceedsException if the net sale total is less than total obligations
      */
-    public void executeForcedSale(List<Share> shares, BigDecimal interestAmount)
+    public void executeForcedSale(List<Share> shares, int currentWeek)
             throws InsufficientSaleProceedsException {
         CurrencyConverter converter = exchange.getCurrencyConverter();
+
+        List<Loan> maturingLoans = player.getLoansDueThisWeek(currentWeek);
+        BigDecimal totalObligations = player.getTotalObligationsThisWeek(currentWeek);
 
         BigDecimal netTotal = shares.stream()
                 .map(s -> SalesCalculator.calculateNetNok(s, converter))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (netTotal.compareTo(interestAmount) < 0) {
+        if (netTotal.compareTo(totalObligations) < 0) {
             throw new InsufficientSaleProceedsException(
-                    "Net sale proceeds (" + netTotal + " NOK) are less than required interest ("
-                    + interestAmount + " NOK).");
+                    "Net sale proceeds (" + netTotal + " NOK) are less than required obligations ("
+                    + totalObligations + " NOK).");
         }
 
         player.setPreviousNetWorth(player.getNetWorth(converter));
@@ -289,10 +297,14 @@ public class GameService {
         for (Share share : shares) {
             exchange.sell(share, player);
         }
-        player.withdrawMoney(interestAmount);
+        player.withdrawMoney(totalObligations);
 
         exchange.advance();
-        player.writeInterestLedgerEntries(exchange.getWeek());
+        int week = exchange.getWeek();
+        player.writeInterestLedgerEntries(week);
+        for (Loan loan : maturingLoans) {
+            player.settleMatureLoan(loan, week);
+        }
         finishWeekAdvance();
     }
 

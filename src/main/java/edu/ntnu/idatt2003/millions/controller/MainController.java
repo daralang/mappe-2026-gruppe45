@@ -47,14 +47,16 @@ public class MainController {
     }
 
     /**
-     * Advances the game by one week. If the player cannot cover weekly interest
-     * from cash, opens the forced-sale dialog instead of advancing directly.
+     * Advances the game by one week. If the player cannot cover all obligations
+     * (interest + any maturing loan principals) from cash, opens the forced-sale
+     * dialog instead of advancing directly.
      */
     private void handleAdvanceWeek() {
-        if (gameService.getPlayer().canCoverInterestThisWeek()) {
+        int nextWeek = gameService.getExchange().getWeek() + 1;
+        if (gameService.getPlayer().canCoverObligationsThisWeek(nextWeek)) {
             gameService.advanceWeek();
         } else {
-            forcedSaleController.open(gameService.getPlayer().getWeeklyInterestDue());
+            forcedSaleController.open(nextWeek);
         }
     }
 
