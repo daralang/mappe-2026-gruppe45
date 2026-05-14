@@ -31,7 +31,7 @@ public class WeekBar extends HBox implements GameObserver {
         setSpacing(24);
         setAlignment(Pos.CENTER_RIGHT);
 
-        weekLabel = StyledText.weekLabel(LanguageManager.get("app.week") + " "
+        weekLabel = StyledText.weekLabel(LanguageManager.get("app.week").toUpperCase() + " "
                 + gameService.getExchange().getWeek());
 
         advanceButton = new Button(LanguageManager.get("app.advanceWeek"));
@@ -49,7 +49,7 @@ public class WeekBar extends HBox implements GameObserver {
      */
     private void onLanguageChanged() {
         advanceButton.setText(LanguageManager.get("app.advanceWeek"));
-        weekLabel.setText(LanguageManager.get("app.week") + " "
+        weekLabel.setText(LanguageManager.get("app.week").toUpperCase() + " "
                 + gameService.getExchange().getWeek());
     }
 
@@ -58,7 +58,7 @@ public class WeekBar extends HBox implements GameObserver {
      */
     @Override
     public void onGameUpdated() {
-        weekLabel.setText(LanguageManager.get("app.week") + " "
+        weekLabel.setText(LanguageManager.get("app.week").toUpperCase() + " "
                 + gameService.getExchange().getWeek());
         advanceButton.setDisable(gameService.isGameOver());
     }
