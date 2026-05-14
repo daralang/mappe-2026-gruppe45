@@ -35,9 +35,6 @@ public class SortColumnTable<Column> {
     private final GridPane grid = new GridPane();
     private final TableHeaderRenderer<Column> headerRenderer = new TableHeaderRenderer<>(sortState);
 
-    private Button clearSortButton;
-    private Supplier<String> clearSortLabelSupplier;
-
     /**
      * Constructs a sortable table with default horizontal gap of 20px.
      *
@@ -74,17 +71,26 @@ public class SortColumnTable<Column> {
     }
 
     /**
-     * Builds or refreshes the header row into row 0 of the grid.
-     *
-     * <p>Delegates to {@link TableHeaderRenderer} which caches header cells and
-     * updates label text, sort indicators and button actions on each call.</p>
+     * Builds or refreshes the header row into row 0 of the grid, with sort buttons
+     * always enabled.
      *
      * @param onChanged callback invoked after any sort-state change so the
      *                  owning card can trigger a data refresh
      */
     public void refreshHeader(Runnable onChanged) {
-        headerRenderer.renderInto(grid, columnSupplier.get(), onChanged);
-        updateClearSortButton();
+        refreshHeader(onChanged, true);
+    }
+
+    /**
+     * Builds or refreshes the header row into row 0 of the grid.
+     *
+     * @param onChanged callback invoked after any sort-state change so the
+     *                  owning card can trigger a data refresh
+     * @param sortable  {@code true} to allow sorting; {@code false} to disable all
+     *                  sort buttons (e.g. when the filtered result set is empty)
+     */
+    public void refreshHeader(Runnable onChanged, boolean sortable) {
+        headerRenderer.renderInto(grid, columnSupplier.get(), onChanged, sortable);
     }
 
     /**
@@ -168,35 +174,22 @@ public class SortColumnTable<Column> {
     }
 
     /**
-     * Creates a clear-sort button managed by this table and returns it for placement
-     * in the owning card's layout.
+     * Creates a clear-sort button managed by the internal {@link TableHeaderRenderer}
+     * and returns it for placement in the owning card's layout.
      *
-     * <p>The button is hidden ({@code setVisible(false)}, {@code setManaged(false)}) until
-     * a sort becomes active. On every call to {@link #refreshHeader} the button's text
-     * and visibility are updated automatically, so the owning card does not need to
+     * <p>The button is hidde. until a sort becomes active. On every call to {@link #refreshHeader}
+     * the button's text and visibility are updated automatically, so the owning card does not need to
      * manage this state manually.</p>
-     *
-     * <p>Calling this method more than once replaces the previously created button.</p>
      *
      * @param labelSupplier supplier that returns the current button label, called on
      *                      every header refresh so i18n updates are picked up automatically
      * @param onClear       callback invoked after the sort is cleared, typically
      *                      {@code this::refresh} in the owning card
-     * @return the configured button, ready to place in a metadata row
+     * @return the configured button, ready to place in the card's search row
      * @throws NullPointerException if {@code labelSupplier} or {@code onClear} is null
      */
     public Button createClearSortButton(Supplier<String> labelSupplier, Runnable onClear) {
-        this.clearSortLabelSupplier = Objects.requireNonNull(labelSupplier, "labelSupplier cannot be null");
-        Objects.requireNonNull(onClear, "onClear cannot be null");
-        clearSortButton = new Button(labelSupplier.get());
-        clearSortButton.getStyleClass().add("clear-sort-button");
-        clearSortButton.setVisible(false);
-        clearSortButton.setManaged(false);
-        clearSortButton.setOnAction(e -> {
-            clearSort();
-            onClear.run();
-        });
-        return clearSortButton;
+        return headerRenderer.createClearSortButton(labelSupplier, onClear);
     }
 
     /**
@@ -214,20 +207,6 @@ public class SortColumnTable<Column> {
      */
     public boolean isSortActive() {
         return sortState.hasActiveSort();
-    }
-
-    /**
-     * Updates the clear-sort button's text and visibility to match the current sort state.
-     * No-op if {@link #createClearSortButton} has not been called.
-     */
-    private void updateClearSortButton() {
-        if (clearSortButton == null) {
-            return;
-        }
-        boolean active = sortState.hasActiveSort();
-        clearSortButton.setVisible(active);
-        clearSortButton.setManaged(active);
-        clearSortButton.setText(clearSortLabelSupplier.get());
     }
 
     /**
