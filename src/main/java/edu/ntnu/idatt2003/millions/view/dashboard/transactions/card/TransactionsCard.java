@@ -238,7 +238,7 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     private Label typeBadge(Transaction transaction) {
         boolean isPurchase = transaction instanceof Purchase;
         String key = isPurchase ? "transactions.type.buy" : "transactions.type.sell";
-        Label badge = new Label(LanguageManager.get(key));
+        Label badge = new Label(LanguageManager.get(key).toUpperCase());
         badge.getStyleClass().add("transaction-type-badge");
         badge.getStyleClass().add(isPurchase ? "badge-buy" : "badge-sell");
         return badge;
