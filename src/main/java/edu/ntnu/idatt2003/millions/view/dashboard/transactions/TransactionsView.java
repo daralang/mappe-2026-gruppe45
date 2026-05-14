@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.transactions;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.TransactionsActivityCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.TransactionsCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.TransactionsSummaryCard;
@@ -52,7 +53,7 @@ public class TransactionsView extends VBox {
         int currentWeek = Math.max(gameService.getExchange().getWeek(), 1);
         WeekRangeFilter sharedFilter = new WeekRangeFilter(1, currentWeek);
 
-        TransactionsCard transactionsCard = new TransactionsCard(gameService, sharedFilter);
+        TransactionsCard transactionsCard = new TransactionsCard(gameService, sharedFilter, new TransactionStatsService());
         TransactionsSummaryCard summaryCard = new TransactionsSummaryCard(gameService, sharedFilter);
         TransactionsActivityCard activityCard = new TransactionsActivityCard(gameService, sharedFilter);
 

@@ -44,7 +44,7 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     private static final double ROW_HEIGHT = 34.0;
 
     private final GameService gameService;
-    private final TransactionStatsService statsService = new TransactionStatsService();
+    private final TransactionStatsService statsService;
     private final TransactionsSort sort;
     private final StyledText title;
     private final TransactionTypeFilter typeFilter;
@@ -56,11 +56,14 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
      * @param gameService     the game manager containing player and exchange
      * @param weekRangeFilter the shared filter that scopes both this card's
      *                        table and the summary card's totals
+     * @param statsService    the service used to compute per-transaction stats for display and sorting
      */
-    public TransactionsCard(GameService gameService, WeekRangeFilter weekRangeFilter) {
+    public TransactionsCard(GameService gameService, WeekRangeFilter weekRangeFilter,
+                            TransactionStatsService statsService) {
         super(gameService, PAGE_SIZE, "transactions.status", "transactions.empty");
         this.gameService = gameService;
         this.weekRangeFilter = weekRangeFilter;
+        this.statsService = statsService;
         this.sort = new TransactionsSort(statsService, gameService.getCurrencyConverter());
         this.sortProvider = sort;
         this.table = new SortColumnTable<>(sort::getColumnDefs);
