@@ -107,7 +107,7 @@ public class Player {
      * @return the session UUID as a string
      */
     public String getSessionId() {
-        return sessionId == null ? "legacy-" + name : sessionId;
+        return sessionId;
     }
 
     /**
