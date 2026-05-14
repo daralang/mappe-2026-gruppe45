@@ -60,7 +60,16 @@
 
 .search-clear-button {
     -fx-background-color: -primary-dark;
-    -fx-text-fill: -surface;
+}
+
+.search-clear-icon {
+    -fx-icon-size: 14;
+    -fx-icon-color: -surface;
+}
+
+.search-icon {
+    -fx-icon-size: 16;
+    -fx-icon-color: -text-secondary;
 }
 
 .search-metadata {

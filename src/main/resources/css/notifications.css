@@ -110,23 +110,23 @@
 }
 
 .notification-icon {
-    -fx-font-size: 16px;
+    -fx-icon-size: 16;
 }
 
 .notification-icon-severe {
-    -fx-text-fill: -danger;
+    -fx-icon-color: -danger;
 }
 
 .notification-icon-warning {
-    -fx-text-fill: -warning;
+    -fx-icon-color: -warning;
 }
 
 .notification-icon-info {
-    -fx-text-fill: -border-strong;
+    -fx-icon-color: -border-strong;
 }
 
 .notification-icon-milestone {
-    -fx-text-fill: -success;
+    -fx-icon-color: -success;
 }
 
 .notification-title {
@@ -203,13 +203,12 @@
 
 .notification-toast-close {
     -fx-background-color: transparent;
-    -fx-text-fill: -text-secondary;
-    -fx-font-size: 11px;
     -fx-cursor: hand;
     -fx-padding: 0 2;
     -fx-min-width: 16;
 }
 
-.notification-toast-close:hover {
-    -fx-text-fill: -text-primary;
+.notification-toast-close-icon {
+    -fx-icon-size: 12;
+    -fx-icon-color: -text-secondary;
 }

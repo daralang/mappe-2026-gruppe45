@@ -13,6 +13,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.stage.Stage;
 
 import java.math.BigDecimal;
@@ -67,7 +68,8 @@ public class GameOverModal extends Modal {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button closeBtn = new Button("✕");
+        Button closeBtn = new Button();
+        closeBtn.setGraphic(new FontIcon("fth-x"));
         closeBtn.getStyleClass().add("modal-close");
         closeBtn.setOnAction(e -> stage.close());
 
