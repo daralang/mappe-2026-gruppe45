@@ -1,0 +1,71 @@
+package edu.ntnu.idatt2003.millions.view.leaderboard;
+
+import edu.ntnu.idatt2003.millions.model.leaderboard.LeaderboardEntry;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
+import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
+import javafx.geometry.HPos;
+
+import java.util.Comparator;
+import java.util.List;
+
+/**
+ * Defines sortable columns and comparators for the leaderboard table.
+ *
+ * <p>Labels are resolved on every call so language changes are picked up automatically.</p>
+ */
+public class LeaderboardSort extends SortProvider<LeaderboardEntry, LeaderboardSort.SortColumn> {
+
+    /** Columns that support ascending/descending sort in the leaderboard table. */
+    public enum SortColumn {
+        RANK, PLAYER, RETURN, NET_WORTH, WEEKS, STATUS, OUTCOME
+    }
+
+    @Override
+    public List<TableColumnDef<SortColumn>> getColumnDefs() {
+        return List.of(
+                TableColumnDef.sortable(
+                        LanguageManager.get("leaderboard.col.rank"),
+                        SortColumn.RANK, 8, HPos.LEFT),
+                TableColumnDef.sortable(
+                        LanguageManager.get("leaderboard.col.player"),
+                        SortColumn.PLAYER, 20, HPos.LEFT),
+                TableColumnDef.sortable(
+                        LanguageManager.get("leaderboard.col.return"),
+                        SortColumn.RETURN, 14, HPos.RIGHT),
+                TableColumnDef.sortable(
+                        LanguageManager.get("leaderboard.col.netWorth"),
+                        SortColumn.NET_WORTH, 14, HPos.RIGHT),
+                TableColumnDef.sortable(
+                        LanguageManager.get("leaderboard.col.weeks"),
+                        SortColumn.WEEKS, 12, HPos.RIGHT),
+                TableColumnDef.sortable(
+                        LanguageManager.get("leaderboard.col.status"),
+                        SortColumn.STATUS, 16, HPos.LEFT),
+                TableColumnDef.sortable(
+                        LanguageManager.get("leaderboard.col.outcome"),
+                        SortColumn.OUTCOME, 16, HPos.LEFT)
+        );
+    }
+
+    @Override
+    protected Comparator<LeaderboardEntry> buildComparator(SortColumn column) {
+        return switch (column) {
+            case RANK ->
+                    Comparator.comparing(LeaderboardEntry::returnPercent)
+                              .thenComparing(LeaderboardEntry::finalNetWorth);
+            case PLAYER ->
+                    Comparator.comparing(LeaderboardEntry::playerName, String.CASE_INSENSITIVE_ORDER);
+            case RETURN ->
+                    Comparator.comparing(LeaderboardEntry::returnPercent);
+            case NET_WORTH ->
+                    Comparator.comparing(LeaderboardEntry::finalNetWorth);
+            case WEEKS ->
+                    Comparator.comparingInt(LeaderboardEntry::weeksPlayed);
+            case STATUS ->
+                    Comparator.comparing(LeaderboardEntry::status);
+            case OUTCOME ->
+                    Comparator.comparing(LeaderboardEntry::outcome);
+        };
+    }
+}

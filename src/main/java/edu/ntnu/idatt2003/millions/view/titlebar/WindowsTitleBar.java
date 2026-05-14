@@ -19,10 +19,11 @@ public class WindowsTitleBar implements TitleBar {
     private double dragStartX;
     private double dragStartY;
 
-    private Runnable onDashboard = () -> {};
-    private Runnable onExchange  = () -> {};
-    private Runnable onSave      = () -> {};
-    private Runnable onExit      = () -> {};
+    private Runnable onDashboard   = () -> {};
+    private Runnable onExchange    = () -> {};
+    private Runnable onLeaderboard = () -> {};
+    private Runnable onSave        = () -> {};
+    private Runnable onExit        = () -> {};
 
     private final Node node;
     private Header header;
@@ -46,6 +47,7 @@ public class WindowsTitleBar implements TitleBar {
                     () -> onExit.run(),
                     gameService
             );
+            header.setOnLeaderboard(() -> onLeaderboard.run());
             node = new VBox(controls, header);
         } else if (includeNavHeader) {
             node = new VBox(controls);
@@ -54,14 +56,15 @@ public class WindowsTitleBar implements TitleBar {
         }
     }
 
-    @Override public Node getNode()                    { return node; }
-    @Override public Node getOverlayNode()             { return header != null ? header.getOverlayNode() : null; }
-    @Override public void setOnDashboard(Runnable r)   { onDashboard = r; }
-    @Override public void setOnExchange(Runnable r)    { onExchange = r; }
-    @Override public void setOnSave(Runnable r)        { onSave = r; }
-    @Override public void setOnExit(Runnable r)        { onExit = r; }
-    @Override public void onGameUpdated()              { if (header != null) header.onGameUpdated(); }
-    @Override public void onLanguageChanged()          {}
+    @Override public Node getNode()                       { return node; }
+    @Override public Node getOverlayNode()                { return header != null ? header.getOverlayNode() : null; }
+    @Override public void setOnDashboard(Runnable r)      { onDashboard = r; }
+    @Override public void setOnExchange(Runnable r)       { onExchange = r; }
+    @Override public void setOnLeaderboard(Runnable r)    { onLeaderboard = r; if (header != null) header.setOnLeaderboard(r); }
+    @Override public void setOnSave(Runnable r)           { onSave = r; }
+    @Override public void setOnExit(Runnable r)           { onExit = r; }
+    @Override public void onGameUpdated()                 { if (header != null) header.onGameUpdated(); }
+    @Override public void onLanguageChanged()             {}
 
     private HBox buildControls(Stage stage, String styleClass) {
         Region spacer = new Region();
