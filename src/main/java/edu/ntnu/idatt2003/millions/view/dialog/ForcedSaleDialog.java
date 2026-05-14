@@ -238,8 +238,7 @@ public class ForcedSaleDialog extends Modal {
         selectedTotalLabel = StyledText.detailValue(
                 LanguageManager.get("forcedSale.selected") + ": " + CurrencyFormatter.format(BigDecimal.ZERO));
 
-        statusLabel = new Label("");
-        statusLabel.getStyleClass().add("detail-label");
+        statusLabel = StyledText.detailLabel();
 
         confirmBtn = new Button(LanguageManager.get("forcedSale.confirm"));
         confirmBtn.getStyleClass().addAll("modal-button", "modal-button-primary");

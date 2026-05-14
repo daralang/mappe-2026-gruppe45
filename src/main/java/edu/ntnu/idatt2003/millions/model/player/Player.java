@@ -362,9 +362,7 @@ public class Player {
         BigDecimal total = BigDecimal.ZERO;
         if (loanLedger == null) loanLedger = new ArrayList<>();
         for (Loan loan : loans) {
-            BigDecimal interest = loan.principal()
-                    .multiply(loan.offer().weeklyInterestRate())
-                    .setScale(2, RoundingMode.HALF_UP);
+            BigDecimal interest = loan.weeklyInterest();
             total = total.add(interest);
             if (interest.signum() > 0) {
                 loanLedger.add(new LoanLedgerEntry(
@@ -385,9 +383,7 @@ public class Player {
      */
     public BigDecimal getWeeklyInterestDue() {
         return activeLoansInternal().stream()
-                .map(loan -> loan.principal()
-                        .multiply(loan.offer().weeklyInterestRate())
-                        .setScale(2, RoundingMode.HALF_UP))
+                .map(Loan::weeklyInterest)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
@@ -411,9 +407,7 @@ public class Player {
     public void writeInterestLedgerEntries(int week) {
         if (loanLedger == null) loanLedger = new ArrayList<>();
         for (Loan loan : activeLoansInternal()) {
-            BigDecimal interest = loan.principal()
-                    .multiply(loan.offer().weeklyInterestRate())
-                    .setScale(2, RoundingMode.HALF_UP);
+            BigDecimal interest = loan.weeklyInterest();
             if (interest.signum() > 0) {
                 loanLedger.add(new LoanLedgerEntry(
                         Math.max(week, 1), loan,

@@ -108,6 +108,19 @@ public final class TableCells {
     }
 
     /**
+     * Creates a bold data cell for total rows. Same as {@link #data} but with
+     * the {@code bold} utility modifier applied.
+     *
+     * @param text the cell text
+     * @return a styled bold data label
+     */
+    public static Label boldData(String text) {
+        Label label = new Label(text);
+        label.getStyleClass().addAll("holdings-cell", "bold");
+        return label;
+    }
+
+    /**
      * Creates the centered empty-state label used when a table has no rows
      * to display. Returned as a {@link StyledText} so callers can apply
      * {@code GridPane.setColumnSpan} and {@code GridPane.setHalignment} on it.
