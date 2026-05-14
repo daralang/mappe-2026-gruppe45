@@ -252,6 +252,83 @@
     -fx-text-fill: -success-text;
 }
 
+/* ─── Forced sale header ─────────────────────────────────────────────── */
+
+.forced-sale-header {
+    -fx-background-color: -danger-bg;
+    -fx-padding: 16 20 16 20;
+    -fx-background-radius: 12 12 0 0;
+    -fx-border-color: -danger-border;
+    -fx-border-width: 0 0 1 0;
+}
+
+.forced-sale-header .modal-title,
+.forced-sale-header .detail-label {
+    -fx-text-fill: -danger-text;
+}
+
+.forced-sale-warning-icon {
+    -fx-text-fill: -danger-text;
+    -fx-font-size: 18;
+}
+
+/* ─── Forced sale holdings list ─────────────────────────────────────── */
+
+.forced-sale-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.forced-sale-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.forced-sale-holding-row {
+    -fx-padding: 12 16 12 16;
+    -fx-border-color: transparent transparent -border-light transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-cursor: hand;
+}
+
+.forced-sale-holding-row.selected {
+    -fx-background-color: -surface-alt;
+    -fx-background-radius: 4;
+}
+
+.forced-sale-checkbox > .box {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 2;
+    -fx-background-insets: 0;
+    -fx-effect: null;
+    -fx-min-width: 18;
+    -fx-min-height: 18;
+    -fx-max-width: 18;
+    -fx-max-height: 18;
+}
+
+.forced-sale-checkbox:hover > .box {
+    -fx-border-color: -border-strong;
+}
+
+.forced-sale-checkbox:selected > .box {
+    -fx-background-color: -surface;
+    -fx-border-color: -text-primary;
+}
+
+.forced-sale-checkbox:selected > .box > .mark {
+    -fx-background-color: -text-primary;
+    -fx-shape: "M2,6 L5,9 L10,2 L11,3 L5,11 L1,7 Z";
+    -fx-min-width: 10;
+    -fx-min-height: 10;
+    -fx-max-width: 10;
+    -fx-max-height: 10;
+    -fx-padding: 0;
+}
+
 /* ─── Loan amount slider ─────────────────────────────────────────────── */
 
 /* Make the built-in track transparent so the custom overlay regions show through */

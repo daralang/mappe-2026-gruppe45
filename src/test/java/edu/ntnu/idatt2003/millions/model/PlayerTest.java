@@ -4,6 +4,8 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel;
 import edu.ntnu.idatt2003.millions.model.player.Player;
@@ -800,7 +802,7 @@ class PlayerTest {
             Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
             player.takeLoan(loan, converter);
             // Act
-            player.repayLoan(loan);
+            player.repayLoan(loan, 1);
             // Assert
             assertFalse(player.getActiveLoans().contains(loan));
         }
@@ -813,7 +815,7 @@ class PlayerTest {
             player.takeLoan(loan, converter); // money: 1000 + 200 = 1200
             BigDecimal moneyAfterTake = player.getMoney();
             // Act
-            player.repayLoan(loan); // money: 1200 - 200 = 1000
+            player.repayLoan(loan, 1); // money: 1200 - 200 = 1000
             // Assert
             assertEquals(0, moneyAfterTake.subtract(new BigDecimal("200.00")).compareTo(player.getMoney()));
         }
@@ -831,7 +833,7 @@ class PlayerTest {
             broke.takeLoan(loan, converter); // money: 100 + 50 = 150
             broke.withdrawMoney(new BigDecimal("140.00")); // money: 10, principal: 50
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () -> broke.repayLoan(loan));
+            assertThrows(IllegalArgumentException.class, () -> broke.repayLoan(loan, 1));
         }
 
         @Test
@@ -840,7 +842,7 @@ class PlayerTest {
             // Arrange
             Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
             // Act & Assert — loan never taken, so not in active list
-            assertThrows(IllegalArgumentException.class, () -> player.repayLoan(loan));
+            assertThrows(IllegalArgumentException.class, () -> player.repayLoan(loan, 1));
         }
 
         @Test
@@ -872,7 +874,7 @@ class PlayerTest {
             player.takeLoan(loan, converter);
             BigDecimal before = player.getNetWorth(converter);
             // Act
-            player.repayLoan(loan);
+            player.repayLoan(loan, 1);
             // Assert — cash down by 300, debt down by 300: net effect is zero
             assertEquals(0, before.compareTo(player.getNetWorth(converter)));
         }
@@ -900,6 +902,49 @@ class PlayerTest {
         }
 
         @Test
+        @DisplayName("takeLoan() appends a DISBURSEMENT ledger entry")
+        void takeLoanAppendsDisbursementEntry() {
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 1);
+            player.takeLoan(loan, converter);
+            List<LoanLedgerEntry> ledger = player.getLoanLedger();
+            assertEquals(1, ledger.size());
+            LoanLedgerEntry entry = ledger.getFirst();
+            assertEquals(LoanLedgerEntryType.DISBURSEMENT, entry.type());
+            assertEquals(0, new BigDecimal("200.00").compareTo(entry.amount()));
+            assertEquals(loan, entry.loan());
+        }
+
+        @Test
+        @DisplayName("repayLoan() appends a REPAYMENT ledger entry with negative amount")
+        void repayLoanAppendsRepaymentEntry() {
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 1);
+            player.takeLoan(loan, converter);
+            player.repayLoan(loan, 2);
+            List<LoanLedgerEntry> ledger = player.getLoanLedger();
+            assertEquals(2, ledger.size());
+            LoanLedgerEntry repayment = ledger.getLast();
+            assertEquals(LoanLedgerEntryType.REPAYMENT, repayment.type());
+            assertEquals(0, new BigDecimal("-200.00").compareTo(repayment.amount()));
+            assertEquals(2, repayment.week());
+        }
+
+        @Test
+        @DisplayName("getLoanLedger() returns a defensive copy")
+        void getLoanLedgerReturnsDefensiveCopy() {
+            Loan loan = new Loan(offer, new BigDecimal("100.00"), 1);
+            player.takeLoan(loan, converter);
+            List<LoanLedgerEntry> ledger = player.getLoanLedger();
+            ledger.clear();
+            assertEquals(1, player.getLoanLedger().size());
+        }
+
+        @Test
+        @DisplayName("Ledger is empty for a player with no loan activity")
+        void ledgerIsEmptyWithNoActivity() {
+            assertTrue(player.getLoanLedger().isEmpty());
+        }
+
+        @Test
         @DisplayName("Stacking loans to bypass the 50% cap is blocked")
         void stackingLoansIsBlocked() {
             // Arrange — player starts with 10 000 NOK, capacity = 5 000
@@ -911,6 +956,99 @@ class PlayerTest {
             // Act & Assert — any further loan must be rejected
             assertThrows(ExcessiveDebtException.class, () ->
                     rich.takeLoan(new Loan(bigOffer, new BigDecimal("1.00"), 0), converter));
+        }
+
+        @Test
+        @DisplayName("getWeeklyInterestDue() returns zero when no active loans")
+        void getWeeklyInterestDueIsZeroWhenNoActiveLoans() {
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getWeeklyInterestDue()));
+        }
+
+        @Test
+        @DisplayName("getWeeklyInterestDue() sums interest across all active loans")
+        void getWeeklyInterestDueSumsAllActiveLoans() {
+            // Arrange — player starts with 1000 NOK, capacity = 500.
+            // Two loans within capacity: 200 NOK at 1% = 2.00, 100 NOK at 1% = 1.00 → total 3.00
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            player.takeLoan(new Loan(offer, new BigDecimal("100.00"), 1), converter);
+            assertEquals(0, new BigDecimal("3.00").compareTo(player.getWeeklyInterestDue()));
+        }
+
+        @Test
+        @DisplayName("canCoverInterestThisWeek() returns true when cash >= interest due")
+        void canCoverInterestThisWeekReturnsTrueWhenMoneyExceedsDue() {
+            // Arrange — take 400 NOK loan (within 500 capacity): money = 1400, interest = 4.00
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertTrue(player.canCoverInterestThisWeek());
+        }
+
+        @Test
+        @DisplayName("canCoverInterestThisWeek() returns false when cash < interest due")
+        void canCoverInterestThisWeekReturnsFalseWhenMoneyIsLess() {
+            // Arrange — take 400 NOK loan: money = 1400, interest = 4.00. Then drain to 3.00.
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            player.withdrawMoney(new BigDecimal("1397.00")); // money = 3.00 < 4.00 interest
+            assertFalse(player.canCoverInterestThisWeek());
+        }
+
+        @Test
+        @DisplayName("getMaturityDueThisWeek() returns zero when no loans are maturing")
+        void getMaturityDueThisWeek_zeroWhenNoneAreMaturing() {
+            // Arrange — loan taken at week 1, term 10: due at week 11, not week 2
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getMaturityDueThisWeek(2)));
+        }
+
+        @Test
+        @DisplayName("getMaturityDueThisWeek() returns principal of maturing loan")
+        void getMaturityDueThisWeek_returnsPrincipalOfMaturingLoan() {
+            // Arrange — offer has term 10: taken at week 1, due at week 11
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            assertEquals(0, new BigDecimal("200.00").compareTo(player.getMaturityDueThisWeek(11)));
+        }
+
+        @Test
+        @DisplayName("getMaturityDueThisWeek() sums principals of multiple maturing loans")
+        void getMaturityDueThisWeek_sumsBothMaturingLoans() {
+            // Both loans taken at week 1 with term 10 → both mature at week 11
+            // player starts with 1000, capacity 500; two loans sum to 350 which is within limit
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            player.takeLoan(new Loan(offer, new BigDecimal("150.00"), 1), converter);
+            assertEquals(0, new BigDecimal("350.00").compareTo(player.getMaturityDueThisWeek(11)));
+        }
+
+        @Test
+        @DisplayName("getTotalObligationsThisWeek() equals interest-only when no loans mature")
+        void getTotalObligationsThisWeek_equalsInterestWhenNoMaturity() {
+            // Arrange — 400 NOK at 1% = 4.00 weekly; loan matures at week 11, not week 2
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertEquals(0, new BigDecimal("4.00").compareTo(player.getTotalObligationsThisWeek(2)));
+        }
+
+        @Test
+        @DisplayName("getTotalObligationsThisWeek() includes maturity principal when loan matures")
+        void getTotalObligationsThisWeek_includesMaturityPrincipal() {
+            // 400 NOK at 1%/week: interest = 4.00, maturity = 400.00 → obligations = 404.00
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertEquals(0, new BigDecimal("404.00").compareTo(player.getTotalObligationsThisWeek(11)));
+        }
+
+        @Test
+        @DisplayName("canCoverObligationsThisWeek() returns true when cash covers interest only")
+        void canCoverObligationsThisWeek_trueForInterestOnly() {
+            // 400 NOK loan at 1%: money=1400, interest=4.00, no maturity at week 2 → true
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertTrue(player.canCoverObligationsThisWeek(2));
+        }
+
+        @Test
+        @DisplayName("canCoverObligationsThisWeek() returns false when cash cannot cover interest + maturity")
+        void canCoverObligationsThisWeek_falseWhenObligationsExceedCash() {
+            // 400 NOK loan at 1%: money=1400 initially.
+            // At week 11, obligations = 4.00 + 400.00 = 404.00. Drain to 403.00.
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            player.withdrawMoney(new BigDecimal("997.00")); // money = 403.00 < 404.00
+            assertFalse(player.canCoverObligationsThisWeek(11));
         }
     }
 }

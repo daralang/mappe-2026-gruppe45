@@ -160,13 +160,9 @@ public class HoldingsCard extends Card {
 
         int dataRow = row + 1;
 
-        Label totalLabel = new Label(LanguageManager.get("dashboard.portfolio.total"));
-        totalLabel.getStyleClass().addAll("holdings-cell", "bold");
-        grid.add(totalLabel, 1, dataRow);
-
-        Label valueNok = new Label(TableCells.NUMBER_FORMAT.format(portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
-        valueNok.getStyleClass().addAll("holdings-cell", "bold");
-        grid.add(valueNok, 4, dataRow);
+        grid.add(TableCells.boldData(LanguageManager.get("dashboard.portfolio.total")), 1, dataRow);
+        grid.add(TableCells.boldData(TableCells.NUMBER_FORMAT.format(
+                portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter()))), 4, dataRow);
 
         grid.add(coloredPercentCell(portfolioService.getTotalReturnPercent(gameService.getPlayer(), gameService.getCurrencyConverter())), 5, dataRow);
         grid.add(coloredAmountCell(portfolioService.getTotalReturnInNok(gameService.getPlayer(), gameService.getCurrencyConverter())), 6, dataRow);

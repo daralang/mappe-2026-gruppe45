@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.transactions.card;
 
+import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -9,9 +10,7 @@ import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
-import edu.ntnu.idatt2003.millions.view.component.card.Card;
-import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.TransactionTypeFilter;
+import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.LedgerTypeFilter;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
@@ -20,6 +19,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -27,22 +27,19 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Dashboard card for the transactions tab. Renders the section title,
- * a filter row, and a table of every committed transaction within the
- * current filter selection, sorted oldest first.
+ * Body component for the Aksjehandel sub-tab on the Transactions tab.
+ * Renders a filter row and a table of every committed stock transaction
+ * within the current filter selection, sorted oldest first.
+ *
+ * <p>This class is a plain {@link VBox} — no card chrome. The surrounding
+ * {@link Card} and title are owned by {@code TransactionsView}, which wraps
+ * this body alongside the loan-ledger body in a single outer card.</p>
  *
  * <p>The {@link WeekRangeFilter} is supplied by {@code TransactionsView}
- * and shared with the summary and activity cards on the tab, so all
- * three show data for the same period. This card owns the visible
- * spinner widget; the others only echo the current range as a label.
- * The type filter is local to this card - filtering the summary by
- * type would zero out one of its two comparison rows.</p>
- *
- * <p>Shares structure and CSS with {@code HoldingsCard} via
- * {@link TableCells} and {@link ChangeFormatter}, so both dashboard
- * tables look like part of the same family.</p>
+ * and shared with the summary and activity cards so all three show data
+ * for the same period. The type filter is local to this body.</p>
  */
-public class TransactionsCard extends Card {
+public class TransactionsCard extends VBox implements GameObserver {
 
     /** Number of columns — used for empty-state column span. */
     private static final int COLUMN_COUNT = 8;
@@ -58,27 +55,31 @@ public class TransactionsCard extends Card {
 
     private final GameService gameService;
     private final TransactionStatsService statsService = new TransactionStatsService();
-    private final StyledText title;
-    private final TransactionTypeFilter typeFilter;
+    private final LedgerTypeFilter<Class<? extends Transaction>> typeFilter;
     private final WeekRangeFilter weekRangeFilter;
     private final GridPane grid = new GridPane();
 
     /**
      * @param gameService     game manager containing player and exchange
-     * @param weekRangeFilter shared filter that scopes both this card's
+     * @param weekRangeFilter shared filter that scopes both this body's
      *                        table and the summary/activity card totals
      */
     public TransactionsCard(GameService gameService, WeekRangeFilter weekRangeFilter) {
-        super(gameService);
         this.gameService = gameService;
         this.weekRangeFilter = weekRangeFilter;
 
+        gameService.addObserver(this);
+        LanguageManager.addObserver(this::refresh);
+
         setSpacing(16);
 
-        title = StyledText.sectionTitle(LanguageManager.get("transactions.title"));
-
-        typeFilter = new TransactionTypeFilter();
-        typeFilter.selectedTypeProperty().addListener((_, _, _) -> refresh());
+        typeFilter = new LedgerTypeFilter<>(List.of(
+                new LedgerTypeFilter.TypeOption<>("transactions.type.all", null),
+                new LedgerTypeFilter.TypeOption<>("transactions.type.buy", Purchase.class),
+                new LedgerTypeFilter.TypeOption<>("transactions.type.sell",
+                        edu.ntnu.idatt2003.millions.model.transaction.Sale.class)
+        ));
+        typeFilter.selectedValueProperty().addListener((_, _, _) -> refresh());
 
         weekRangeFilter.fromWeekProperty().addListener((_, _, _) -> refresh());
         weekRangeFilter.toWeekProperty().addListener((_, _, _) -> refresh());
@@ -88,15 +89,10 @@ public class TransactionsCard extends Card {
         grid.setHgap(20);
         TableCells.configureColumns(grid, COLUMN_WIDTHS, COLUMN_ALIGNMENTS);
 
-        getChildren().addAll(title, filterRow, grid);
+        getChildren().addAll(filterRow, grid);
         refresh();
     }
 
-    /**
-     * Builds the filter row between the title and the table. Filters
-     * sit together on the left; a flexible spacer leaves room for
-     * additional controls to be inserted later.
-     */
     private HBox buildFilterRow() {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -107,26 +103,12 @@ public class TransactionsCard extends Card {
         return row;
     }
 
-    /**
-     * Extends the filter's upper bound to the new current week, then
-     * refreshes so the player can include the new week in the filter.
-     */
     @Override
     public void onGameUpdated() {
         weekRangeFilter.setMaxWeek(Math.max(gameService.getExchange().getWeek(), 1));
         refresh();
     }
 
-    @Override
-    protected void onLanguageChanged() {
-        title.setText(LanguageManager.get("transactions.title"));
-        refresh();
-    }
-
-    /**
-     * Rebuilds the table: header row, then either an empty-state
-     * message or one row per transaction that passes the filters.
-     */
     private void refresh() {
         grid.getChildren().clear();
         if (gameService.getPlayer() == null) return;
@@ -135,7 +117,7 @@ public class TransactionsCard extends Card {
         TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
         int fromWeek = weekRangeFilter.getFromWeek();
         int toWeek = weekRangeFilter.getToWeek();
-        Class<? extends Transaction> selectedType = typeFilter.getSelectedType();
+        Class<? extends Transaction> selectedType = typeFilter.getSelectedValue();
 
         List<Transaction> transactions = collectRange(archive, fromWeek, toWeek).stream()
                 .filter(t -> selectedType == null || selectedType.isInstance(t))
@@ -153,7 +135,6 @@ public class TransactionsCard extends Card {
         }
     }
 
-    /** Localized column headers, freshly resolved on every call. */
     private String[] headerTexts() {
         return new String[] {
                 LanguageManager.get("transactions.col.week"),
@@ -167,10 +148,6 @@ public class TransactionsCard extends Card {
         };
     }
 
-    /**
-     * Gathers transactions in the inclusive week range and sorts them
-     * oldest to newest so the table reads chronologically top to bottom.
-     */
     private List<Transaction> collectRange(TransactionArchive archive, int fromWeek, int toWeek) {
         List<Transaction> list = new ArrayList<>();
         for (int week = fromWeek; week <= toWeek; week++) {
@@ -180,11 +157,6 @@ public class TransactionsCard extends Card {
         return list;
     }
 
-    /**
-     * Renders one transaction as a row. Value computation is delegated
-     * to {@link TransactionStatsService}; this method only handles
-     * cell placement and formatting.
-     */
     private void addDataRow(int row, Transaction transaction) {
         Stock stock = transaction.getShare().getStock();
         TransactionStatsService.TransactionStats stats =
@@ -202,12 +174,6 @@ public class TransactionsCard extends Card {
         grid.add(ChangeFormatter.styledAmount(stats.amountNok(), "holdings-cell"), 7, row);
     }
 
-    /**
-     * Pill-shaped type badge: light-blue for buys, light-green for
-     * sales. Kept as a private helper for now; will be extracted into
-     * a reusable {@code TransactionTypeBadge} component once a second
-     * caller needs it.
-     */
     private Label typeBadge(Transaction transaction) {
         boolean isPurchase = transaction instanceof Purchase;
         String key = isPurchase ? "transactions.type.buy" : "transactions.type.sell";
@@ -217,7 +183,6 @@ public class TransactionsCard extends Card {
         return badge;
     }
 
-    /** Tax cell — purchases have no tax, so an en-dash is shown instead of "0,00 NOK". */
     private Label taxCell(TransactionStatsService.TransactionStats stats) {
         if (stats.taxNok().signum() == 0) {
             return TableCells.data("–");

@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -54,7 +55,7 @@ public class LoanApplicationDialog extends Modal {
     }
 
     private final LoanOffer offer;
-    private final BigDecimal availableLoanCapacity;
+    private final Function<BigDecimal, Optional<String>> validateCallback;
     private final Function<BigDecimal, LoanPreview> previewCallback;
     private final Consumer<BigDecimal> confirmCallback;
 
@@ -66,17 +67,18 @@ public class LoanApplicationDialog extends Modal {
     private boolean updatingAmount = false;
 
     /**
-     * @param offer                  the loan product the player is applying for
-     * @param availableLoanCapacity  player's remaining borrowing capacity at dialog-open time (NOK)
-     * @param previewCallback        pure calculation callback: principal → {@link LoanPreview}
-     * @param confirmCallback        callback invoked with the chosen principal when confirmed
+     * @param offer            the loan product the player is applying for
+     * @param validateCallback game-policy validation: returns empty if allowed,
+     *                         or an i18n error key if the amount is not permitted
+     * @param previewCallback  pure calculation callback: principal → {@link LoanPreview}
+     * @param confirmCallback  callback invoked with the chosen principal when confirmed
      */
     public LoanApplicationDialog(LoanOffer offer,
-                                 BigDecimal availableLoanCapacity,
+                                 Function<BigDecimal, Optional<String>> validateCallback,
                                  Function<BigDecimal, LoanPreview> previewCallback,
                                  Consumer<BigDecimal> confirmCallback) {
         this.offer = offer;
-        this.availableLoanCapacity = availableLoanCapacity;
+        this.validateCallback = validateCallback;
         this.previewCallback = previewCallback;
         this.confirmCallback = confirmCallback;
     }
@@ -247,9 +249,10 @@ public class LoanApplicationDialog extends Modal {
             return;
         }
 
-        if (amount.compareTo(availableLoanCapacity) > 0) {
+        Optional<String> policyError = validateCallback.apply(amount);
+        if (policyError.isPresent()) {
             renderEmptySummary();
-            showError(LanguageManager.get("loans.dialog.error.exceedsCapacity"));
+            showError(LanguageManager.get(policyError.get()));
             setConfirmEnabled(false);
             return;
         }

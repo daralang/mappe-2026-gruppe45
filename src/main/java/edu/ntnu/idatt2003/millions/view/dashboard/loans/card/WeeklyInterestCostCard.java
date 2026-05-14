@@ -10,7 +10,6 @@ import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 
 /**
@@ -36,9 +35,7 @@ public class WeeklyInterestCostCard extends WidgetCard {
     protected void refreshDisplay() {
         List<Loan> loans = gameService.getPlayer().getActiveLoans();
         BigDecimal total = loans.stream()
-                .map(l -> l.principal()
-                        .multiply(l.offer().weeklyInterestRate())
-                        .setScale(2, RoundingMode.HALF_UP))
+                .map(Loan::weeklyInterest)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         valueLabel.setText(CurrencyFormatter.format(total));
     }

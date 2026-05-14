@@ -1,8 +1,14 @@
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.loan.InsufficientSaleProceedsException;
+import edu.ntnu.idatt2003.millions.model.loan.Loan;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
+import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
+import edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -399,6 +405,187 @@ class GameServiceTest {
             assertEquals(0, STARTING_MONEY.compareTo(gameService.getPreviousNetWorth()));
             assertEquals(2, gameService.getPlayer().getNetWorthHistory().size());
             assertEquals(1, observer.updateCount);
+        }
+    }
+
+    @Nested
+    @DisplayName("executeForcedSale()")
+    class ExecuteForcedSale {
+
+        private LoanOffer offer;
+
+        @BeforeEach
+        void setUpLoan() {
+            offer = new LoanOffer("standard", new BigDecimal("0.01"), 10,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+        }
+
+        private Share buyAndGetShare() {
+            gameService.buy("EQNR", QUANTITY);
+            return gameService.getPlayer().getPortfolio().getShares("EQNR").getFirst();
+        }
+
+        private int nextWeek() {
+            return gameService.getExchange().getWeek() + 1;
+        }
+
+        @Test
+        @DisplayName("sells shares and deducts obligations from cash")
+        void executeForcedSale_sellsSharesAndPaysObligations() throws InsufficientSaleProceedsException {
+            // Arrange — buy shares then take a loan so there is interest due
+            gameService.takeLoan(offer, new BigDecimal("500.00"));
+            Share share = buyAndGetShare();
+            BigDecimal obligations = gameService.getPlayer().getTotalObligationsThisWeek(nextWeek());
+            BigDecimal moneyBefore = gameService.getPlayer().getMoney();
+            BigDecimal netNok = SalesCalculator.calculateNetNok(share, gameService.getCurrencyConverter());
+            // Act
+            gameService.executeForcedSale(List.of(share), nextWeek());
+            // Assert — portfolio empty, cash = previous + net sale - obligations
+            assertTrue(gameService.getPlayer().getPortfolio().getShares("EQNR").isEmpty());
+            BigDecimal expectedMoney = moneyBefore.add(netNok).subtract(obligations);
+            assertEquals(0, expectedMoney.compareTo(gameService.getPlayer().getMoney()));
+        }
+
+        @Test
+        @DisplayName("writes INTEREST ledger entries for each active loan")
+        void executeForcedSale_writesInterestLedgerEntries() throws InsufficientSaleProceedsException {
+            // Arrange
+            gameService.takeLoan(offer, new BigDecimal("500.00"));
+            Share share = buyAndGetShare();
+            // Act
+            gameService.executeForcedSale(List.of(share), nextWeek());
+            // Assert — one INTEREST entry recorded for the loan
+            long interestEntries = gameService.getPlayer().getLoanLedger().stream()
+                    .filter(e -> e.type() == LoanLedgerEntryType.INTEREST)
+                    .count();
+            assertEquals(1, interestEntries);
+        }
+
+        @Test
+        @DisplayName("throws InsufficientSaleProceedsException when proceeds < obligations")
+        void executeForcedSale_throwsWhenSharesDontCover() {
+            // Arrange — player: 10000 NOK, capacity = 5000.
+            // Loan: 4000 NOK at 50%/week → interest = 2000 NOK.
+            // Selling 5 shares at 100 NOK (NOK stock): net ≈ 495 NOK < 2000 → throws.
+            LoanOffer bigRate = new LoanOffer("big", new BigDecimal("0.50"), 10,
+                    new BigDecimal("50000.00"), LoanRiskLevel.HIGH);
+            gameService.takeLoan(bigRate, new BigDecimal("4000.00"));
+            Share share = buyAndGetShare();
+            int nw = nextWeek();
+            assertThrows(InsufficientSaleProceedsException.class, () ->
+                    gameService.executeForcedSale(List.of(share), nw));
+        }
+
+        @Test
+        @DisplayName("is all-or-nothing: no mutations happen when proceeds are insufficient")
+        void executeForcedSale_isAllOrNothingOnInsufficientSale() {
+            // Arrange — same as above: obligations >> share net sale value
+            LoanOffer bigRate = new LoanOffer("big", new BigDecimal("0.50"), 10,
+                    new BigDecimal("50000.00"), LoanRiskLevel.HIGH);
+            gameService.takeLoan(bigRate, new BigDecimal("4000.00"));
+            Share share = buyAndGetShare();
+            BigDecimal moneyBefore = gameService.getPlayer().getMoney();
+            int weekBefore = gameService.getExchange().getWeek();
+            int nw = nextWeek();
+            // Act
+            try {
+                gameService.executeForcedSale(List.of(share), nw);
+            } catch (InsufficientSaleProceedsException ignored) {}
+            // Assert — no state changed
+            assertEquals(weekBefore, gameService.getExchange().getWeek());
+            assertEquals(0, moneyBefore.compareTo(gameService.getPlayer().getMoney()));
+            assertFalse(gameService.getPlayer().getPortfolio().getShares("EQNR").isEmpty());
+        }
+
+        @Test
+        @DisplayName("advances the week and records total debt after forced sale")
+        void executeForcedSale_advancesWeekAndRecordsTotalDebt() throws InsufficientSaleProceedsException {
+            // Arrange
+            gameService.takeLoan(offer, new BigDecimal("200.00"));
+            Share share = buyAndGetShare();
+            int weekBefore = gameService.getExchange().getWeek();
+            // Act
+            gameService.executeForcedSale(List.of(share), nextWeek());
+            // Assert — week advanced, debt history has a new entry
+            assertEquals(weekBefore + 1, gameService.getExchange().getWeek());
+            assertFalse(gameService.getPlayer().getTotalDebtHistory().isEmpty());
+        }
+
+        @Test
+        @DisplayName("repays maturing loan and removes it from active loans")
+        void executeForcedSale_repaysMaturingLoanOnDueWeek() throws InsufficientSaleProceedsException {
+            // Arrange — offer has term 10; loan taken at week 1, due at week 11 (nextWeek = 2 here)
+            // Use a short-term offer instead: term = 1 so due at week 2 (nextWeek after setUp)
+            LoanOffer shortOffer = new LoanOffer("short", new BigDecimal("0.01"), 1,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+            gameService.takeLoan(shortOffer, new BigDecimal("200.00"));
+            Share share = buyAndGetShare();
+            // Act — nextWeek = 2, loan due at week 2
+            gameService.executeForcedSale(List.of(share), nextWeek());
+            // Assert — loan removed from active list
+            assertTrue(gameService.getPlayer().getActiveLoans().isEmpty());
+        }
+
+        @Test
+        @DisplayName("writes REPAYMENT ledger entry for maturing loan")
+        void executeForcedSale_writesRepaymentEntryForMaturingLoan() throws InsufficientSaleProceedsException {
+            LoanOffer shortOffer = new LoanOffer("short", new BigDecimal("0.01"), 1,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+            gameService.takeLoan(shortOffer, new BigDecimal("200.00"));
+            Share share = buyAndGetShare();
+            gameService.executeForcedSale(List.of(share), nextWeek());
+            long repaymentEntries = gameService.getPlayer().getLoanLedger().stream()
+                    .filter(e -> e.type() == LoanLedgerEntryType.REPAYMENT)
+                    .count();
+            assertEquals(1, repaymentEntries);
+        }
+    }
+
+    @Nested
+    @DisplayName("advanceWeek() with maturing loans")
+    class AdvanceWeekMaturity {
+
+        @Test
+        @DisplayName("repays maturing loan and removes it from active loans")
+        void advanceWeek_repaysMaturingLoan() {
+            // Arrange — term 1 loan taken at week 1, due at week 2
+            LoanOffer shortOffer = new LoanOffer("short", new BigDecimal("0.01"), 1,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+            gameService.takeLoan(shortOffer, new BigDecimal("200.00"));
+            // Act
+            gameService.advanceWeek();
+            // Assert — loan gone, week advanced
+            assertTrue(gameService.getPlayer().getActiveLoans().isEmpty());
+            assertEquals(2, gameService.getExchange().getWeek());
+        }
+
+        @Test
+        @DisplayName("writes INTEREST and REPAYMENT entries for maturing loan")
+        void advanceWeek_writesInterestAndRepaymentForMaturingLoan() {
+            LoanOffer shortOffer = new LoanOffer("short", new BigDecimal("0.01"), 1,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+            gameService.takeLoan(shortOffer, new BigDecimal("200.00"));
+            gameService.advanceWeek();
+            long interestCount = gameService.getPlayer().getLoanLedger().stream()
+                    .filter(e -> e.type() == LoanLedgerEntryType.INTEREST).count();
+            long repaymentCount = gameService.getPlayer().getLoanLedger().stream()
+                    .filter(e -> e.type() == LoanLedgerEntryType.REPAYMENT).count();
+            assertEquals(1, interestCount);
+            assertEquals(1, repaymentCount);
+        }
+
+        @Test
+        @DisplayName("deducts interest plus principal from cash on maturity week")
+        void advanceWeek_deductsInterestAndPrincipalOnMaturityWeek() {
+            LoanOffer shortOffer = new LoanOffer("short", new BigDecimal("0.01"), 1,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+            BigDecimal principal = new BigDecimal("200.00");
+            gameService.takeLoan(shortOffer, principal);
+            BigDecimal moneyAfterLoan = gameService.getPlayer().getMoney(); // starting + principal
+            BigDecimal interest = principal.multiply(new BigDecimal("0.01")).setScale(2, java.math.RoundingMode.HALF_UP);
+            gameService.advanceWeek();
+            BigDecimal expectedMoney = moneyAfterLoan.subtract(interest).subtract(principal);
+            assertEquals(0, expectedMoney.compareTo(gameService.getPlayer().getMoney()));
         }
     }
 

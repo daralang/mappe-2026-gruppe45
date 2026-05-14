@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.model.loan;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -25,5 +26,45 @@ public record Loan(LoanOffer offer, BigDecimal principal, int takenAtWeek) {
         if (takenAtWeek < 0) {
             throw new IllegalArgumentException("takenAtWeek must be non-negative");
         }
+    }
+
+    /** Weekly interest charged on this loan (principal × weekly rate, rounded to 2 dp). */
+    public BigDecimal weeklyInterest() {
+        return principal.multiply(offer.weeklyInterestRate()).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /** Total interest over the full term (weeklyInterest × termWeeks). */
+    public BigDecimal totalInterest() {
+        return weeklyInterest().multiply(BigDecimal.valueOf(offer.termWeeks()));
+    }
+
+    /** Total amount to repay (principal + totalInterest). */
+    public BigDecimal totalRepayment() {
+        return principal.add(totalInterest());
+    }
+
+    /** Number of weeks elapsed since the loan was taken. */
+    public int weeksElapsed(int currentWeek) {
+        return currentWeek - takenAtWeek;
+    }
+
+    /** Number of weeks remaining in the loan term, floored at zero. */
+    public int weeksRemaining(int currentWeek) {
+        return Math.max(0, offer.termWeeks() - weeksElapsed(currentWeek));
+    }
+
+    /** Interest already paid up to {@code currentWeek} (weeklyInterest × weeksElapsed). */
+    public BigDecimal interestPaid(int currentWeek) {
+        return weeklyInterest().multiply(BigDecimal.valueOf(weeksElapsed(currentWeek)));
+    }
+
+    /** Interest that would be saved by repaying now (weeklyInterest × weeksRemaining). */
+    public BigDecimal interestSaved(int currentWeek) {
+        return weeklyInterest().multiply(BigDecimal.valueOf(weeksRemaining(currentWeek)));
+    }
+
+    /** True when {@code currentWeek} is the week this loan's principal becomes due. */
+    public boolean isDueThisWeek(int currentWeek) {
+        return weeksRemaining(currentWeek) == 0;
     }
 }

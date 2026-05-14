@@ -65,6 +65,25 @@
 .debt-ratio-bar.debt-bar-warning > .bar { -fx-background-color: -warning; }
 .debt-ratio-bar.debt-bar-danger > .bar  { -fx-background-color: -danger; }
 
+/* Loan ledger type badges */
+.badge-disbursement {
+    -fx-background-color: -warning-bg;
+    -fx-text-fill: -warning-text;
+    -fx-border-color: -warning-border;
+}
+
+.badge-interest {
+    -fx-background-color: -danger-bg;
+    -fx-text-fill: -danger-text;
+    -fx-border-color: -danger-border;
+}
+
+.badge-repayment {
+    -fx-background-color: -purple-bg;
+    -fx-text-fill: -purple-text;
+    -fx-border-color: -purple-border;
+}
+
 /* Debt history bar chart */
 .debt-bar-chart {
     -fx-background-color: transparent;
