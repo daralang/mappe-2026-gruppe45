@@ -203,7 +203,7 @@ public class AvailableLoansCard extends Card {
             case MEDIUM -> "loans-offer-badge-medium";
             case HIGH -> "loans-offer-badge-high";
         };
-        StyledText badge = StyledText.detailLabel(LanguageManager.get(textKey));
+        StyledText badge = StyledText.detailLabel(LanguageManager.get(textKey).toUpperCase());
         badge.getStyleClass().addAll("loans-offer-badge", colorClass);
         return badge;
     }

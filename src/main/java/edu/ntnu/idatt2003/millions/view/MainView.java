@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view;
 
 import edu.ntnu.idatt2003.millions.controller.LoanController;
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.StatusFooter;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
@@ -31,7 +31,7 @@ import javafx.stage.Stage;
 public class MainView {
 
     private final GameService gameService;
-    private final PortfolioController portfolioController;
+    private final TradeController tradeController;
     private final LoanController loanController;
     private final StackPane outerRoot;
     private final BorderPane content;
@@ -49,12 +49,12 @@ public class MainView {
      */
     public MainView(Stage stage,
                     GameService gameService,
-                    PortfolioController portfolioController,
+                    TradeController tradeController,
                     LoanController loanController,
                     TitleBar titleBar,
                     Runnable onAdvanceWeek) {
         this.gameService = gameService;
-        this.portfolioController = portfolioController;
+        this.tradeController = tradeController;
         this.loanController = loanController;
         this.weekBar = new WeekBar(gameService, onAdvanceWeek);
         titleBar.setOnDashboard(this::showDashboard);
@@ -130,7 +130,7 @@ public class MainView {
     }
 
     private void showExchangeOnStocksTab() {
-        ExchangeView exchangeView = new ExchangeView(gameService, weekBar, portfolioController);
+        ExchangeView exchangeView = new ExchangeView(gameService, weekBar, tradeController);
         exchangeView.selectStocksTab();
         content.setCenter(wrapScrollable(exchangeView));
     }

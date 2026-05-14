@@ -43,7 +43,7 @@ public class NetWorthCard extends WidgetCard {
 
         xAxis = new NumberAxis(1, Math.max(historySize, 1), Math.max(1, historySize / 8));
         xAxis.setAutoRanging(false);
-        xAxis.setLabel(LanguageManager.get("app.week"));
+        xAxis.setLabel(LanguageManager.get("app.week").toUpperCase());
 
         NumberAxis yAxis = new NumberAxis();
         yAxis.setAutoRanging(true);

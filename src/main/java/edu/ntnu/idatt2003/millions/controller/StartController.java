@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
+import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
@@ -11,6 +12,7 @@ import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import javafx.scene.control.Alert;
 import javafx.stage.FileChooser;
@@ -23,13 +25,15 @@ import javafx.stage.Stage;
  * file selection for stock data and saved games, as well as
  * starting or loading a game session.</p>
  *
- * <p>All UI-input validation is delegated to {@link StartInputValidator}
- * so the controller keeps a single, consistent validation strategy and
- * stays free of domain rules.</p>
+ * <p>UI-input validation (name, capital, file extension) is delegated to
+ * {@link StartInputValidator}. Stock CSV files are validated immediately on
+ * selection, which attempts a full parse via {@link CsvStockFileHandler} and
+ * clears the file path if the file is invalid, preventing the user from starting
+ * with a bad file.</p>
  *
  * <p>Errors from the start flow are translated to user-facing messages by
  * a shared error-handling helper that catches the concrete exception types
- * the flow can legitimately produce (input validation, missing game state
+ * the flow can legitimately produce (input validation, missing game state,
  * and file I/O), while letting programming errors surface as crashes.</p>
  */
 public class StartController {
@@ -101,7 +105,7 @@ public class StartController {
     /**
      * Test-only seam that constructs the controller without requiring a
      * {@link Stage} or a fully built {@link StartView}. The controller
-     * reads user input. reports errors to {@code errorSink} and navigates
+     * reads user input, reports errors to {@code errorSink} and navigates
      * through {@code showMainViewAction}.
      * {@link #show()} and the file-chooser handlers are not safe to call
      * on instances created through this constructor.
@@ -135,7 +139,7 @@ public class StartController {
         view.getDropZone().setOnDragDropped(e -> {
             var db = e.getDragboard();
             if (db.hasFiles()) {
-                inputs.setStockFilePath(db.getFiles().getFirst().getAbsolutePath());
+                validateAndSetStockFile(db.getFiles().getFirst());
                 e.setDropCompleted(true);
             }
             e.consume();
@@ -144,7 +148,9 @@ public class StartController {
 
     /**
      * Opens a file chooser for selecting a stock data file (CSV).
-     * If a file is chosen, the path is shown in the view.
+     * If a file is chosen, it is validated immediately via
+     * {@link #validateAndSetStockFile(File)}. The file path is only
+     * stored if the file parses without errors.
      */
     private void handleBrowseStockFile() {
         FileChooser chooser = new FileChooser();
@@ -153,7 +159,32 @@ public class StartController {
                 new FileChooser.ExtensionFilter("Data files", "*.csv"));
         File file = chooser.showOpenDialog(stage);
         if (file != null) {
-            inputs.setStockFilePath(file.getAbsolutePath());
+            validateAndSetStockFile(file);
+        }
+    }
+
+    /**
+     * Validates the given stock file by attempting to parse it immediately.
+     * If parsing succeeds, the file path is stored in the view. If parsing
+     * fails, the file path is cleared and the error is shown to the user
+     * via the {@link #errorSink} so they cannot proceed with an invalid file.
+     *
+     * <p>The currency currently selected in the view is used for parsing.
+     * If no currency is selected yet, USD is used as a fallback so that
+     * structural errors (wrong field count, blank fields, invalid price) are
+     * still caught regardless of the currency choice.</p>
+     *
+     * @param file the CSV file to validate and register
+     */
+    private void validateAndSetStockFile(File file) {
+        inputs.setStockFilePath(file.getAbsolutePath());
+        Currency currency = Optional.ofNullable(inputs.getSelectedCurrency())
+                .orElse(Currency.getInstance("USD"));
+        try {
+            new CsvStockFileHandler().readStocks(file.toPath(), currency);
+        } catch (InvalidStockDataException | UncheckedIOException e) {
+            inputs.setStockFilePath("");
+            errorSink.accept(e.getMessage());
         }
     }
 
@@ -214,6 +245,15 @@ public class StartController {
     }
 
     /**
+     * Functional interface for start-flow actions that may throw checked
+     * file-parsing exceptions.
+     */
+    @FunctionalInterface
+    private interface GameAction {
+        void execute() throws InvalidStockDataException, GameSaveCorruptException;
+    }
+
+    /**
      * Runs the given action and translates expected game errors to a user-facing
      * error dialog. Catches the specific exception types that the start flow can
      * legitimately produce: input validation failures, missing game state, and
@@ -222,11 +262,6 @@ public class StartController {
      *
      * @param action the start-flow action to execute
      */
-    @FunctionalInterface
-    private interface GameAction {
-        void execute() throws InvalidStockDataException, GameSaveCorruptException;
-    }
-
     private void runOrShowError(GameAction action) {
         try {
             action.execute();

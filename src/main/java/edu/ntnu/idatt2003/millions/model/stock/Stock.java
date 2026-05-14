@@ -172,6 +172,34 @@ public class Stock {
     }
 
     /**
+     * Returns whether this stock matches the given search term.
+     * Checks for a case-insensitive substring match against the symbol or company name.
+     * Returns {@code false} for null or blank terms.
+     *
+     * @param term the search term to test against
+     * @return {@code true} if the symbol or company name contains the term
+     */
+    public boolean matches(String term) {
+        if (term == null || term.isBlank()) return false;
+        String normalized = term.toLowerCase();
+        return symbol.toLowerCase().contains(normalized)
+                || company.toLowerCase().contains(normalized);
+    }
+
+    /**
+     * Returns the most recent {@code weeks} prices from the price history.
+     * If fewer entries exist than requested, all prices are returned.
+     *
+     * @param weeks the maximum number of recent prices to return
+     * @return a list of the most recent prices, oldest first
+     * @throws IllegalArgumentException if weeks is not greater than zero
+     */
+    public List<BigDecimal> getRecentPrices(int weeks) {
+        if (weeks <= 0) throw new IllegalArgumentException("weeks must be greater than zero");
+        return prices.subList(Math.max(0, prices.size() - weeks), prices.size());
+    }
+
+    /**
      * Returns the price change this week as a percentage of the previous price.
      * Returns zero if there is no previous price to compare against.
      *

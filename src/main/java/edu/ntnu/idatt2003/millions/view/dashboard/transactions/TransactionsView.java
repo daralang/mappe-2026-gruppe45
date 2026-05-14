@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.transactions;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.LoanLedgerCard;
@@ -44,7 +45,7 @@ public class TransactionsView extends VBox {
         int currentWeek = Math.max(gameService.getExchange().getWeek(), 1);
         WeekRangeFilter sharedFilter = new WeekRangeFilter(1, currentWeek);
 
-        tradesBody     = new TransactionsCard(gameService, sharedFilter);
+        tradesBody     = new TransactionsCard(gameService, sharedFilter, new TransactionStatsService());
         loanLedgerBody = new LoanLedgerCard(gameService);
 
         // ── Outer card ──────────────────────────────────────────────────────
