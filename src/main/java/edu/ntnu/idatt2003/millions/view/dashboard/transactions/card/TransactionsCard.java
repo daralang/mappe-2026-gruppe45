@@ -74,8 +74,8 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
 
         typeFilter = new LedgerTypeFilter<>(List.of(
                 new LedgerTypeFilter.TypeOption<>("transactions.type.all", null),
-                new LedgerTypeFilter.TypeOption<>("transactions.type.buy", Purchase.class),
-                new LedgerTypeFilter.TypeOption<>("transactions.type.sell",
+                new LedgerTypeFilter.TypeOption<>("transactions.type.buy.label", Purchase.class),
+                new LedgerTypeFilter.TypeOption<>("transactions.type.sell.label",
                         edu.ntnu.idatt2003.millions.model.transaction.Sale.class)
         ));
         typeFilter.selectedValueProperty().addListener((_, _, _) -> resetPageAndRefresh());

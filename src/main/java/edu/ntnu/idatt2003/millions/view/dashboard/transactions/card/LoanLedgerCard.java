@@ -78,9 +78,9 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
 
         typeFilter = new LedgerTypeFilter<>(List.of(
                 new LedgerTypeFilter.TypeOption<>("loans.ledger.type.all",          null),
-                new LedgerTypeFilter.TypeOption<>("loans.ledger.type.disbursement",  LoanLedgerEntryType.DISBURSEMENT),
-                new LedgerTypeFilter.TypeOption<>("loans.ledger.type.interest",      LoanLedgerEntryType.INTEREST),
-                new LedgerTypeFilter.TypeOption<>("loans.ledger.type.repayment",     LoanLedgerEntryType.REPAYMENT)
+                new LedgerTypeFilter.TypeOption<>("loans.ledger.type.disbursement.label",  LoanLedgerEntryType.DISBURSEMENT),
+                new LedgerTypeFilter.TypeOption<>("loans.ledger.type.interest.label",      LoanLedgerEntryType.INTEREST),
+                new LedgerTypeFilter.TypeOption<>("loans.ledger.type.repayment.label",     LoanLedgerEntryType.REPAYMENT)
         ));
         typeFilter.selectedValueProperty().addListener((_, _, _) -> resetPageAndRefresh());
         weekRangeFilter.fromWeekProperty().addListener((_, _, _) -> resetPageAndRefresh());
