@@ -450,6 +450,16 @@ public class GameService {
         notifyObservers();
     }
 
+    /**
+     * Records the player's current standing to the leaderboard as an active game.
+     * No-op if no game is currently active.
+     */
+    public void recordLeaderboardEntry() {
+        if (player != null && exchange != null) {
+            leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(), Outcome.ACTIVE);
+        }
+    }
+
     public void clearAllNotifications() {
         if (player == null) return;
         player.clearAllNotifications();
