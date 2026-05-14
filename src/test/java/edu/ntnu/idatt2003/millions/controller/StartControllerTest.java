@@ -1,15 +1,23 @@
 package edu.ntnu.idatt2003.millions.controller;
 
+import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Currency;
@@ -29,6 +37,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * call made to the service layer and optionally throws a configured failure.</p>
  */
 class StartControllerTest {
+
+    @TempDir
+    Path tempDir;
 
     private StubInputs inputs;
     private RecordingGameService gameService;
@@ -282,6 +293,125 @@ class StartControllerTest {
             // Assert
             assertEquals(1, errors.size());
             assertFalse(showMainCalled);
+        }
+    }
+
+    @Nested
+    @DisplayName("validateAndSetSaveFile()")
+    class ValidateAndSetSaveFile {
+
+        @Test
+        @DisplayName("Should store file path when save file is valid")
+        void storesFilePathWhenSaveFileIsValid() throws IOException {
+            // Arrange
+            Path saveFile = tempDir.resolve("save.json");
+            Stock stock = new Stock("EQNR", "Equinor ASA",
+                    new ArrayList<>(List.of(new BigDecimal("276.43"))),
+                    Currency.getInstance("NOK"));
+            Exchange exchange = new Exchange("Oslo Børs",
+                    new ArrayList<>(List.of(stock)),
+                    new FixedRateCurrencyConverter());
+            Player player = new Player("Dara", new BigDecimal("10000.00"));
+            new JsonGameFileHandler().saveGame(player, exchange, saveFile.toFile());
+            // Act
+            controller.validateAndSetSaveFile(saveFile.toFile());
+            // Assert
+            assertEquals(saveFile.toAbsolutePath().toString(), inputs.saveFilePath);
+            assertTrue(errors.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when save file contains invalid JSON")
+        void clearsFilePathAndReportsErrorWhenSaveFileIsCorrupt() throws IOException {
+            // Arrange
+            Path saveFile = tempDir.resolve("corrupt.json");
+            Files.writeString(saveFile, "{ this is not valid json }");
+            // Act
+            controller.validateAndSetSaveFile(saveFile.toFile());
+            // Assert
+            assertTrue(inputs.saveFilePath.isBlank());
+            assertEquals(1, errors.size());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when save file is missing required fields")
+        void clearsFilePathAndReportsErrorWhenSaveFileMissingRequiredFields() throws IOException {
+            // Arrange
+            Path saveFile = tempDir.resolve("incomplete.json");
+            Files.writeString(saveFile, "{ \"player\": {} }");
+            // Act
+            controller.validateAndSetSaveFile(saveFile.toFile());
+            // Assert
+            assertTrue(inputs.saveFilePath.isBlank());
+            assertEquals(1, errors.size());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when save file does not exist")
+        void clearsFilePathAndReportsErrorWhenSaveFileDoesNotExist() {
+            // Arrange
+            File nonExistent = tempDir.resolve("ghost.json").toFile();
+            // Act
+            controller.validateAndSetSaveFile(nonExistent);
+            // Assert
+            assertTrue(inputs.saveFilePath.isBlank());
+            assertEquals(1, errors.size());
+        }
+    }
+
+    @Nested
+    @DisplayName("validateAndSetStockFile()")
+    class ValidateAndSetStockFile {
+
+        @Test
+        @DisplayName("Should store file path when stock file is valid")
+        void storesFilePathWhenStockFileIsValid() throws IOException {
+            // Arrange
+            Path stockFile = tempDir.resolve("stocks.csv");
+            Files.writeString(stockFile, "AAPL,Apple Inc.,276.43\n");
+            // Act
+            controller.validateAndSetStockFile(stockFile.toFile());
+            // Assert
+            assertEquals(stockFile.toAbsolutePath().toString(), inputs.stockFilePath);
+            assertTrue(errors.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when stock file has invalid format")
+        void clearsFilePathAndReportsErrorWhenStockFileHasInvalidFormat() throws IOException {
+            // Arrange
+            Path stockFile = tempDir.resolve("stocks.csv");
+            Files.writeString(stockFile, "INVALID_LINE\n");
+            // Act
+            controller.validateAndSetStockFile(stockFile.toFile());
+            // Assert
+            assertTrue(inputs.stockFilePath.isBlank());
+            assertEquals(1, errors.size());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when stock file is empty")
+        void clearsFilePathAndReportsErrorWhenStockFileIsEmpty() throws IOException {
+            // Arrange
+            Path stockFile = tempDir.resolve("stocks.csv");
+            Files.writeString(stockFile, "");
+            // Act
+            controller.validateAndSetStockFile(stockFile.toFile());
+            // Assert
+            assertTrue(inputs.stockFilePath.isBlank());
+            assertEquals(1, errors.size());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when stock file does not exist")
+        void clearsFilePathAndReportsErrorWhenStockFileDoesNotExist() {
+            // Arrange
+            File nonExistent = tempDir.resolve("ghost.csv").toFile();
+            // Act
+            controller.validateAndSetStockFile(nonExistent);
+            // Assert
+            assertTrue(inputs.stockFilePath.isBlank());
+            assertEquals(1, errors.size());
         }
     }
 
