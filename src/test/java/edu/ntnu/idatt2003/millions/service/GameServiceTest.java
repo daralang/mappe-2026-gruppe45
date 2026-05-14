@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.file.stock.EmptyStockFileException;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
@@ -235,13 +236,13 @@ class GameServiceTest {
         }
 
         @Test
-        @DisplayName("Should throw exception when stock file is empty")
+        @DisplayName("Should throw EmptyStockFileException when stock file is empty")
         void throwsExceptionWhenStockFileIsEmpty() throws IOException {
             // Arrange
             File stockFile = createStockFile("");
             GameService newGameService = new GameService();
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(EmptyStockFileException.class, () ->
                     newGameService.createNewGame("Dara", STARTING_MONEY, stockFile));
         }
 

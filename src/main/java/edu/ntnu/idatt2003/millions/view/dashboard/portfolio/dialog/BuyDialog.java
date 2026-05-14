@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
@@ -20,7 +20,7 @@ public class BuyDialog extends TransactionDialog {
 
     private Consumer<BigDecimal> onConfirmCallback;
 
-    public BuyDialog(Stock stock, PortfolioController controller) {
+    public BuyDialog(Stock stock, TradeController controller) {
         super(stock, controller);
     }
 

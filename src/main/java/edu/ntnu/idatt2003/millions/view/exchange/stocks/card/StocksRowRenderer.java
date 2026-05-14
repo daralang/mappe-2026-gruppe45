@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.exchange.stocks.card;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -39,7 +39,7 @@ class StocksRowRenderer {
     private static final Currency NOK = Currency.getInstance("NOK");
 
     private final GameService gameService;
-    private final PortfolioController controller;
+    private final TradeController controller;
 
     /**
      * Constructs a new StocksRowRenderer.
@@ -47,7 +47,7 @@ class StocksRowRenderer {
      * @param gameService the game service used to read player portfolio state
      * @param controller  the controller used to open buy/sell dialogs
      */
-    StocksRowRenderer(GameService gameService, PortfolioController controller) {
+    StocksRowRenderer(GameService gameService, TradeController controller) {
         this.gameService = gameService;
         this.controller = controller;
     }
@@ -152,7 +152,7 @@ class StocksRowRenderer {
     /**
      * Builds the buy and optional sell buttons for the trade column.
      *
-     * <p>Always shows a buy button that delegates to {@link PortfolioController}.
+     * <p>Always shows a buy button that delegates to {@link TradeController}.
      *
      * @param stock the stock the buttons act on
      * @return an {@link HBox} containing the action buttons

@@ -28,10 +28,11 @@ import java.util.Objects;
  * <p>Both file paths and arbitrary input streams are supported as input,
  * which lets callers parse classpath resources without writing them to disk.</p>
  *
- * <p>Any data line that has the wrong number of fields or a non-numeric
- * price causes the entire parse to abort with an
- * {@link InvalidStockDataException} identifying the offending line number
- * and content.
+ * <p>Any data line that fails validation causes the entire parse to abort with an
+ * {@link InvalidStockDataException} identifying the offending line number and content.
+ * Validation covers wrong field count, blank symbol or name, non-numeric price, and
+ * non-positive price. If the file contains no valid stock entries at all, an
+ * {@link EmptyStockFileException} is thrown instead.
  */
 public class CsvStockFileHandler implements StockFileHandler {
 
@@ -95,11 +96,12 @@ public class CsvStockFileHandler implements StockFileHandler {
      *
      * @param path     the path to the CSV file to read from
      * @param currency the currency to assign to every parsed stock
-     * @return a list of stocks parsed from the file
+     * @return a non-empty list of stocks parsed from the file
      * @throws NullPointerException      if path or currency is null
      * @throws UncheckedIOException      if the file cannot be read
-     * @throws InvalidStockDataException if any data line has the wrong column count
-     *                                   or a non-numeric price field
+     * @throws EmptyStockFileException   if the file contains no valid stock entries
+     * @throws InvalidStockDataException if any data line has the wrong column count,
+     *                                   a blank symbol or name, or an invalid price
      */
     @Override
     public List<Stock> readStocks(Path path, Currency currency) throws InvalidStockDataException {
@@ -107,7 +109,7 @@ public class CsvStockFileHandler implements StockFileHandler {
         Objects.requireNonNull(currency, "Currency cannot be null");
 
         try (BufferedReader reader = Files.newBufferedReader(path)) {
-            return parse(reader, currency);
+            return parse(reader, currency, path.toString());
         } catch (IOException e) {
             throw new UncheckedIOException("Could not read file: " + path, e);
         }
@@ -138,11 +140,12 @@ public class CsvStockFileHandler implements StockFileHandler {
      *
      * @param inputStream the input stream to read from
      * @param currency    the currency to assign to every parsed stock
-     * @return a list of stocks parsed from the stream
+     * @return a non-empty list of stocks parsed from the stream
      * @throws NullPointerException      if inputStream or currency is null
      * @throws UncheckedIOException      if the stream cannot be read
-     * @throws InvalidStockDataException if any data line has the wrong column count
-     *                                   or a non-numeric price field
+     * @throws EmptyStockFileException   if the stream contains no valid stock entries
+     * @throws InvalidStockDataException if any data line has the wrong column count,
+     *                                   a blank symbol or name, or an invalid price
      */
     @Override
     public List<Stock> readStocks(InputStream inputStream, Currency currency) throws InvalidStockDataException {
@@ -151,21 +154,35 @@ public class CsvStockFileHandler implements StockFileHandler {
 
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-        return parse(reader, currency);
+        return parse(reader, currency, "<stream>");
     }
 
     /**
-     * Parses CSV stock data from the given reader and tags every produced
-     * stock with the supplied currency. Lines starting with {@code #} and
-     * blank lines are skipped. Any data line that has the wrong number of
-     * fields or a non-numeric price aborts the parse immediately.
+     * Parses CSV stock data from the given reader and tags every produced stock with
+     * the supplied currency. Lines starting with {@code #} and blank lines are skipped.
+     *
+     * <p>Each data line is validated in order:
+     * <ol>
+     *   <li>Exactly {@value #EXPECTED_FIELDS} comma-separated fields must be present.</li>
+     *   <li>The symbol field must not be blank.</li>
+     *   <li>The name field must not be blank.</li>
+     *   <li>The price field must be a valid number.</li>
+     *   <li>The price must be greater than zero.</li>
+     * </ol>
+     * Any failing line aborts the parse immediately. If no valid entries are found
+     * after reading the entire input, an {@link EmptyStockFileException} is thrown.
      *
      * @param reader   the buffered reader to parse from
      * @param currency the currency to assign to every parsed stock
-     * @return a list of stocks parsed from the reader
-     * @throws InvalidStockDataException if any data line is malformed
+     * @param source   a human-readable identifier for the input (file path or
+     *                 {@code "<stream>"}), used in the {@link EmptyStockFileException}
+     *                 message when no entries are found
+     * @return a non-empty list of stocks parsed from the reader
+     * @throws EmptyStockFileException   if the input contains no valid stock entries
+     * @throws InvalidStockDataException if any data line fails validation
      */
-    private List<Stock> parse(BufferedReader reader, Currency currency) throws InvalidStockDataException {
+    private List<Stock> parse(BufferedReader reader, Currency currency, String source)
+            throws InvalidStockDataException {
         List<Stock> result = new ArrayList<>();
         int lineNumber = 0;
         try {
@@ -179,20 +196,33 @@ public class CsvStockFileHandler implements StockFileHandler {
                 if (fields.length != EXPECTED_FIELDS) {
                     throw new InvalidStockDataException(lineNumber, line.trim());
                 }
+                String symbol = fields[SYMBOL_INDEX].trim();
+                if (symbol.isBlank()) {
+                    throw new InvalidStockDataException(lineNumber, line.trim(), "blank symbol");
+                }
+                String name = fields[NAME_INDEX].trim();
+                if (name.isBlank()) {
+                    throw new InvalidStockDataException(lineNumber, line.trim(), "blank name");
+                }
+                String rawPrice = fields[PRICE_INDEX].trim();
                 BigDecimal price;
                 try {
-                    price = new BigDecimal(fields[PRICE_INDEX].trim());
+                    price = new BigDecimal(rawPrice);
                 } catch (NumberFormatException e) {
-                    throw new InvalidStockDataException(lineNumber, line.trim());
+                    throw new InvalidStockDataException(
+                            lineNumber, line.trim(), "non-numeric price \"" + rawPrice + "\"");
                 }
-                result.add(new Stock(
-                        fields[SYMBOL_INDEX].trim(),
-                        fields[NAME_INDEX].trim(),
-                        new ArrayList<>(List.of(price)),
-                        currency));
+                if (price.compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new InvalidStockDataException(
+                            lineNumber, line.trim(), "non-positive price \"" + rawPrice + "\"");
+                }
+                result.add(new Stock(symbol, name, new ArrayList<>(List.of(price)), currency));
             }
         } catch (IOException e) {
             throw new UncheckedIOException("Could not read CSV data", e);
+        }
+        if (result.isEmpty()) {
+            throw new EmptyStockFileException(source);
         }
         return result;
     }
