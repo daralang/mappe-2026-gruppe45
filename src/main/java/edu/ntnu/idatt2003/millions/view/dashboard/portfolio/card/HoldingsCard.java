@@ -42,6 +42,18 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
 
     private static final int PAGE_SIZE = 9;
 
+    /** Grid column index for the company name cell in the total row. */
+    private static final int TOTAL_COL_COMPANY = 1;
+
+    /** Grid column index for the value (NOK) cell in the total row. */
+    private static final int TOTAL_COL_VALUE_NOK = 4;
+
+    /** Grid column index for the return-percent cell in the total row. */
+    private static final int TOTAL_COL_RETURN_PCT = 5;
+
+    /** Grid column index for the return (NOK) cell in the total row. */
+    private static final int TOTAL_COL_RETURN_NOK = 6;
+
     private final GameService gameService;
     private final PortfolioService portfolioService;
     private final PortfolioController controller;
@@ -153,17 +165,17 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
 
         Label totalLabel = new Label(LanguageManager.get("dashboard.portfolio.total"));
         totalLabel.getStyleClass().addAll("holdings-cell", "bold");
-        totalGrid.add(totalLabel, 1, 0);
+        totalGrid.add(totalLabel, TOTAL_COL_COMPANY, 0);
 
         Label valueNok = new Label(TableCells.NUMBER_FORMAT.format(
                 portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
         valueNok.getStyleClass().addAll("holdings-cell", "bold");
-        totalGrid.add(valueNok, 4, 0);
+        totalGrid.add(valueNok, TOTAL_COL_VALUE_NOK, 0);
 
         totalGrid.add(coloredPercentCell(portfolioService.getTotalReturnPercent(
-                gameService.getPlayer(), gameService.getCurrencyConverter())), 5, 0);
+                gameService.getPlayer(), gameService.getCurrencyConverter())), TOTAL_COL_RETURN_PCT, 0);
         totalGrid.add(coloredAmountCell(portfolioService.getTotalReturnInNok(
-                gameService.getPlayer(), gameService.getCurrencyConverter())), 6, 0);
+                gameService.getPlayer(), gameService.getCurrencyConverter())), TOTAL_COL_RETURN_NOK, 0);
     }
 
     /**
