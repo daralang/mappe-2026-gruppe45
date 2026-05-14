@@ -79,8 +79,8 @@ public class Header extends HBox {
         badge = new Label();
         badge.getStyleClass().add("notification-bell-badge");
         badge.setVisible(false);
-        StackPane.setAlignment(badge, Pos.TOP_RIGHT);
-        StackPane.setMargin(badge, new Insets(-2, 0, 0, 0));
+        StackPane.setAlignment(badge, Pos.TOP_LEFT);
+        StackPane.setMargin(badge, new Insets(-2, 0, 0, 22));
 
         StackPane bellWrapper = new StackPane(bellButton, badge);
         bellWrapper.setAlignment(Pos.CENTER);
