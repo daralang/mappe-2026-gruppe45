@@ -108,13 +108,11 @@ public class ActiveLoansCard extends Card {
                 .setScale(2, RoundingMode.HALF_UP);
 
         int currentWeek = gameService.getExchange().getWeek();
-        int weeksLeft = Math.max(0, loan.offer().termWeeks() - (currentWeek - loan.takenAtWeek()));
+        int weeksLeft = loan.weeksRemaining(currentWeek);
         String weeksLeftText = MessageFormat.format(
                 LanguageManager.get("loans.active.weeksLeft"), weeksLeft, loan.offer().termWeeks());
 
-        BigDecimal weeklyCost = loan.principal()
-                .multiply(loan.offer().weeklyInterestRate())
-                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal weeklyCost = loan.weeklyInterest();
 
         grid.add(TableCells.data(offerName + " #" + typeCount), 0, row);
         grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(weeklyRate) + " %"), 1, row);
@@ -133,23 +131,13 @@ public class ActiveLoansCard extends Card {
         int dataRow = row + 1;
 
         BigDecimal totalWeeklyCost = loans.stream()
-                .map(l -> l.principal()
-                        .multiply(l.offer().weeklyInterestRate())
-                        .setScale(2, RoundingMode.HALF_UP))
+                .map(Loan::weeklyInterest)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        Label totalLabel = new Label(LanguageManager.get("loans.active.total"));
-        totalLabel.getStyleClass().addAll("holdings-cell", "bold");
-        grid.add(totalLabel, 0, dataRow);
-
-        Label weeklyCostLabel = new Label(TableCells.NUMBER_FORMAT.format(totalWeeklyCost) + " NOK");
-        weeklyCostLabel.getStyleClass().addAll("holdings-cell", "bold");
-        grid.add(weeklyCostLabel, 3, dataRow);
-
-        Label totalDebtLabel = new Label(
-                TableCells.NUMBER_FORMAT.format(gameService.getPlayer().getTotalDebt()) + " NOK");
-        totalDebtLabel.getStyleClass().addAll("holdings-cell", "bold");
-        grid.add(totalDebtLabel, 4, dataRow);
+        grid.add(TableCells.boldData(LanguageManager.get("loans.active.total")), 0, dataRow);
+        grid.add(TableCells.boldData(TableCells.NUMBER_FORMAT.format(totalWeeklyCost) + " NOK"), 3, dataRow);
+        grid.add(TableCells.boldData(
+                TableCells.NUMBER_FORMAT.format(gameService.getPlayer().getTotalDebt()) + " NOK"), 4, dataRow);
     }
 
     private HBox buildActionCell(Loan loan, int loanIndex) {

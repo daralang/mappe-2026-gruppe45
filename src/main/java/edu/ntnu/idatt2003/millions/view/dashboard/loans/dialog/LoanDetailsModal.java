@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.dialog;
+package edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog;
 
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
@@ -33,8 +33,7 @@ public class LoanDetailsModal extends Modal {
     private final Loan loan;
     private final int loanIndex;
     private final LoanController controller;
-    private final int weeksElapsed;
-    private final int weeksRemaining;
+    private final int currentWeek;
 
     /**
      * @param loan       the active loan to display
@@ -45,9 +44,7 @@ public class LoanDetailsModal extends Modal {
         this.loan = loan;
         this.loanIndex = loanIndex;
         this.controller = controller;
-        int currentWeek = controller.getCurrentWeek();
-        this.weeksElapsed = currentWeek - loan.takenAtWeek();
-        this.weeksRemaining = Math.max(0, loan.offer().termWeeks() - weeksElapsed);
+        this.currentWeek = controller.getCurrentWeek();
     }
 
     @Override
@@ -83,7 +80,6 @@ public class LoanDetailsModal extends Modal {
                 .multiply(BigDecimal.valueOf(52))
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(2, RoundingMode.HALF_UP);
-        String annualRateValue = TableCells.NUMBER_FORMAT.format(annualRate) + " %";
         String termValue = MessageFormat.format(
                 LanguageManager.get("loans.details.terms.termValue"),
                 loan.offer().termWeeks());
@@ -94,7 +90,8 @@ public class LoanDetailsModal extends Modal {
                 CurrencyFormatter.format(loan.principal()));
         box.addRow(LanguageManager.get("loans.details.terms.rate"),
                 TableCells.NUMBER_FORMAT.format(weeklyRate) + " %");
-        box.addRow(LanguageManager.get("loans.details.terms.annualRate"), annualRateValue);
+        box.addRow(LanguageManager.get("loans.details.terms.annualRate"),
+                TableCells.NUMBER_FORMAT.format(annualRate) + " %");
         box.addRow(LanguageManager.get("loans.details.terms.term"), termValue);
         box.addRow(LanguageManager.get("loans.details.terms.takenInWeek"),
                 String.valueOf(loan.takenAtWeek()));
@@ -102,46 +99,30 @@ public class LoanDetailsModal extends Modal {
     }
 
     private SummaryBox buildStatusBox() {
-        BigDecimal weeklyInterestAmount = loan.principal()
-                .multiply(loan.offer().weeklyInterestRate())
-                .setScale(2, RoundingMode.HALF_UP);
         int dueWeek = loan.takenAtWeek() + loan.offer().termWeeks();
 
         SummaryBox box = new SummaryBox();
         box.setSectionTitle(LanguageManager.get("loans.details.section.status"));
         box.addRow(LanguageManager.get("loans.details.status.weeksElapsed"),
-                weeksElapsed + " / " + loan.offer().termWeeks());
+                loan.weeksElapsed(currentWeek) + " / " + loan.offer().termWeeks());
         box.addRow(LanguageManager.get("loans.details.status.weeksRemaining"),
-                String.valueOf(weeksRemaining));
+                String.valueOf(loan.weeksRemaining(currentWeek)));
         box.addRow(LanguageManager.get("loans.details.status.weeklyInterestNow"),
-                CurrencyFormatter.format(weeklyInterestAmount));
+                CurrencyFormatter.format(loan.weeklyInterest()));
         box.addRow(LanguageManager.get("loans.details.status.dueWeek"),
                 String.valueOf(dueWeek));
         return box;
     }
 
     private SummaryBox buildCostBox() {
-        BigDecimal weeklyInterest = loan.principal()
-                .multiply(loan.offer().weeklyInterestRate())
-                .setScale(2, RoundingMode.HALF_UP);
-        BigDecimal paid = weeklyInterest
-                .multiply(BigDecimal.valueOf(weeksElapsed))
-                .setScale(2, RoundingMode.HALF_UP);
-        BigDecimal remaining = weeklyInterest
-                .multiply(BigDecimal.valueOf(weeksRemaining))
-                .setScale(2, RoundingMode.HALF_UP);
-        BigDecimal total = weeklyInterest
-                .multiply(BigDecimal.valueOf(loan.offer().termWeeks()))
-                .setScale(2, RoundingMode.HALF_UP);
-
         SummaryBox box = new SummaryBox();
         box.setSectionTitle(LanguageManager.get("loans.details.section.cost"));
         box.addRow(LanguageManager.get("loans.details.cost.paid"),
-                CurrencyFormatter.format(paid));
+                CurrencyFormatter.format(loan.interestPaid(currentWeek)));
         box.addRow(LanguageManager.get("loans.details.cost.remaining"),
-                CurrencyFormatter.format(remaining));
+                CurrencyFormatter.format(loan.interestSaved(currentWeek)));
         box.addTotal(LanguageManager.get("loans.details.cost.total"),
-                CurrencyFormatter.format(total));
+                CurrencyFormatter.format(loan.totalInterest()));
         return box;
     }
 
