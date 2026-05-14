@@ -151,7 +151,7 @@ class GameServiceTest {
 
     @Nested
     @DisplayName("createNewGame()")
-    class CreateNewGame {
+    class CreateNewGameTab {
 
         @Test
         @DisplayName("Should create player and exchange from stock file")

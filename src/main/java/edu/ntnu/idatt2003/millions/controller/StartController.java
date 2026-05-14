@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
+import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.service.GameService;
@@ -26,10 +27,10 @@ import javafx.stage.Stage;
  * starting or loading a game session.</p>
  *
  * <p>UI-input validation (name, capital, file extension) is delegated to
- * {@link StartInputValidator}. Stock CSV files are validated immediately on
- * selection, which attempts a full parse via {@link CsvStockFileHandler} and
- * clears the file path if the file is invalid, preventing the user from starting
- * with a bad file.</p>
+ * {@link StartInputValidator}. Both stock CSV files and save JSON files are
+ * validated immediately on selection: the controller attempts a full parse via
+ * {@link CsvStockFileHandler} or {@link JsonGameFileHandler} and clears the file
+ * path if the file is invalid, preventing the user from proceeding with a bad file.</p>
  *
  * <p>Errors from the start flow are translated to user-facing messages by
  * a shared error-handling helper that catches the concrete exception types
@@ -129,21 +130,17 @@ public class StartController {
     }
 
     /**
-     * Registers event handlers for all interactive controls in the view.
+     * Injects callbacks into the view for all interactive controls.
+     * The view wires these callbacks to its own controls internally,
+     * so the controller never accesses individual UI components directly.
      */
     private void bindEvents() {
-        view.getBrowseStockFileButton().setOnAction(e -> handleBrowseStockFile());
-        view.getBrowseSaveFileButton().setOnAction(e -> handleBrowseSaveFile());
-        view.getStartButton().setOnAction(e -> handleStartGame());
-        view.getLoadButton().setOnAction(e -> handleLoadGame());
-        view.getDropZone().setOnDragDropped(e -> {
-            var db = e.getDragboard();
-            if (db.hasFiles()) {
-                validateAndSetStockFile(db.getFiles().getFirst());
-                e.setDropCompleted(true);
-            }
-            e.consume();
-        });
+        view.setOnStartGame(this::handleStartGame);
+        view.setOnLoadGame(this::handleLoadGame);
+        view.setOnBrowseStockFile(this::handleBrowseStockFile);
+        view.setOnBrowseSaveFile(this::handleBrowseSaveFile);
+        view.setOnStockFileDrop(this::validateAndSetStockFile);
+        view.setOnSaveFileDrop(this::validateAndSetSaveFile);
     }
 
     /**
@@ -160,6 +157,23 @@ public class StartController {
         File file = chooser.showOpenDialog(stage);
         if (file != null) {
             validateAndSetStockFile(file);
+        }
+    }
+
+    /**
+     * Opens a file chooser for selecting a previously saved game file (JSON).
+     * If a file is chosen, it is validated immediately via
+     * {@link #validateAndSetSaveFile(File)}. The file path is only
+     * stored if the file parses without errors.
+     */
+    private void handleBrowseSaveFile() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Select save file");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Save files", "*.json"));
+        File file = chooser.showOpenDialog(stage);
+        if (file != null) {
+            validateAndSetSaveFile(file);
         }
     }
 
@@ -189,17 +203,20 @@ public class StartController {
     }
 
     /**
-     * Opens a file chooser for selecting a previously saved game file (JSON).
-     * If a file is chosen, the path is shown in the view.
+     * Validates the given save file by attempting to parse it immediately.
+     * If parsing succeeds, the file path is stored in the view. If parsing
+     * fails, the file path is cleared and the error is shown to the user
+     * via the {@link #errorSink} so they cannot proceed with a corrupt save file.
+     *
+     * @param file the JSON save file to validate and register
      */
-    private void handleBrowseSaveFile() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Select save file");
-        chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Save files", "*.json"));
-        File file = chooser.showOpenDialog(stage);
-        if (file != null) {
-            inputs.setSaveFilePath(file.getAbsolutePath());
+    private void validateAndSetSaveFile(File file) {
+        inputs.setSaveFilePath(file.getAbsolutePath());
+        try {
+            new JsonGameFileHandler().loadGame(file);
+        } catch (GameSaveCorruptException | UncheckedIOException e) {
+            inputs.setSaveFilePath("");
+            errorSink.accept(e.getMessage());
         }
     }
 
@@ -237,9 +254,9 @@ public class StartController {
      */
     void handleLoadGame() {
         runOrShowError(() -> {
-            String saveFilePath = inputs.getSaveFilePath();
-            File saveFile = StartInputValidator.requireFilePath(saveFilePath, "Save file must be selected");
-            gameService.loadGame(saveFile);
+            String saveGameFilePath = inputs.getSaveFilePath();
+            File saveGameFile = StartInputValidator.requireFilePath(saveGameFilePath, "Save file must be selected");
+            gameService.loadGame(saveGameFile);
             showMainView();
         });
     }
