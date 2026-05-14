@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.file.leaderboard.JsonLeaderboardFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.EmptyStockFileException;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
@@ -73,7 +74,10 @@ class GameServiceTest {
         Path file = tempDir.resolve("save.json");
         new JsonGameFileHandler().saveGame(player, exchange, file.toFile());
 
-        gameService = new GameService();
+        LeaderboardService lb = new LeaderboardService(
+                new JsonLeaderboardFileHandler(),
+                tempDir.resolve("leaderboard.json").toFile());
+        gameService = new GameService(lb);
         gameService.loadGame(file.toFile());
     }
 
