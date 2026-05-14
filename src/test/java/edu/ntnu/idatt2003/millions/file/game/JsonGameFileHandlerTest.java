@@ -499,6 +499,29 @@ class JsonGameFileHandlerTest {
         }
 
         @Test
+        @DisplayName("Saves and loads nextNotificationId so IDs don't restart after load")
+        void savesAndLoadsNextNotificationId() throws GameSaveCorruptException {
+            // Push one notification — this consumes id=1 and advances the counter to 2
+            player.addNotification(new Notification(
+                    player.nextNotificationId(), Notification.Severity.INFO,
+                    "notification.loanRepaid.title", "notification.loanRepaid.body",
+                    List.of(), 1, false));
+            File file = tempDir.resolve("next-id-save.json").toFile();
+
+            handler.saveGame(player, exchange, file);
+            GameState state = handler.loadGame(file);
+
+            // Push a second notification on the loaded player — must get id=2, not id=1
+            Player loaded = state.player();
+            loaded.addNotification(new Notification(
+                    loaded.nextNotificationId(), Notification.Severity.INFO,
+                    "notification.loanRepaid.title", "notification.loanRepaid.body",
+                    List.of(), 2, false));
+
+            assertEquals(2, loaded.getNotifications().get(1).id());
+        }
+
+        @Test
         @DisplayName("Saves and loads previousStatus")
         void savesAndLoadsPreviousStatus() throws GameSaveCorruptException {
             player.setPreviousStatus(PlayerStatusLevel.INVESTOR);
