@@ -7,14 +7,18 @@ import javafx.scene.control.Label;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 
+import java.io.File;
+import java.util.function.Consumer;
+
 /**
  * A reusable drag-and-drop file upload zone.
  *
  * <p> Renders a dashed bordered box with a hint label, an "or" separator,
  * a browse button, and a filename label that appears once a file is selected.
  * Drag-over highlighting is handled internally as a purely visual concern.
- * The controller is responsible for binding {@link #getBrowseButton()} and
- * {@code setOnDragDropped} to perform file selection and validation. </p>
+ * Callers attach file-selection logic via {@link #getBrowseButton()} for browse
+ * actions and {@link #setOnFileDropped(Consumer)} for drag-and-drop, which
+ * abstracts away the JavaFX dragboard API. </p>
  */
 public class FileDropZone extends VBox {
 
@@ -106,12 +110,31 @@ public class FileDropZone extends VBox {
     }
 
     /**
-     * Returns the browse button so the controller can attach an action handler.
+     * Returns the browse button so the parent component can attach an action handler.
      *
      * @return the browse {@link Button}
      */
     public Button getBrowseButton() {
         return browseButton;
+    }
+
+    /**
+     * Registers a callback that is invoked when the user drops one or more files
+     * onto this zone. The first dropped file is extracted from the dragboard and
+     * passed directly to the handler, hiding the JavaFX drag-event API from callers.
+     *
+     * @param handler the action to run with the dropped {@link File};
+     *                {@code null} disables the handler
+     */
+    public void setOnFileDropped(Consumer<File> handler) {
+        setOnDragDropped(event -> {
+            var db = event.getDragboard();
+            if (db.hasFiles() && handler != null) {
+                handler.accept(db.getFiles().getFirst());
+                event.setDropCompleted(true);
+            }
+            event.consume();
+        });
     }
 
     /**
