@@ -38,12 +38,15 @@ public class NetWorthCard extends WidgetCard {
         super(gameService, "dashboard.netWorth");
         this.gameService = gameService;
 
-        List<BigDecimal> history = gameService.getPlayer().getNetWorthHistory();
-        int historySize = history.size();
+        int historySize = gameService.getPlayer().getNetWorthHistory().size();
 
-        xAxis = new NumberAxis(1, Math.max(historySize, 1), Math.max(1, historySize / 8));
-        xAxis.setAutoRanging(false);
+        xAxis = new NumberAxis();
         xAxis.setLabel(LanguageManager.get("app.week").toUpperCase());
+        xAxis.setAutoRanging(false);
+        xAxis.setForceZeroInRange(false);
+        xAxis.setLowerBound(1);
+        xAxis.setUpperBound(Math.max(2, historySize));
+        xAxis.setTickUnit(1);
 
         NumberAxis yAxis = new NumberAxis();
         yAxis.setAutoRanging(true);
@@ -79,6 +82,7 @@ public class NetWorthCard extends WidgetCard {
         getChildren().addAll(titleRow, netWorthLabel, changeLabel, chart);
 
         loadHistory();
+        updateXAxis();
         refreshDisplay();
     }
 
@@ -87,6 +91,15 @@ public class NetWorthCard extends WidgetCard {
         for (int i = 0; i < history.size(); i++) {
             series.getData().add(new XYChart.Data<>(i + 1, history.get(i).doubleValue()));
         }
+    }
+
+    private void updateXAxis() {
+        int weeks = series.getData().size();
+        xAxis.setAutoRanging(false);
+        xAxis.setLowerBound(1);
+        xAxis.setUpperBound(Math.max(2, weeks));
+        xAxis.setTickUnit(1);
+        xAxis.requestAxisLayout();
     }
 
     /**
@@ -120,8 +133,7 @@ public class NetWorthCard extends WidgetCard {
         int nextPoint = series.getData().size() + 1;
         double netWorth = statsService.getNetWorth(gameService.getPlayer(), gameService.getCurrencyConverter()).doubleValue();
         series.getData().add(new XYChart.Data<>(nextPoint, netWorth));
-        xAxis.setUpperBound(nextPoint);
-        xAxis.setTickUnit(Math.max(1, nextPoint / 8));
+        updateXAxis();
         refreshDisplay();
     }
 }
