@@ -13,6 +13,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A table component displaying a ranked list of stocks with their
@@ -24,6 +25,9 @@ public class StockRankingCard extends VBox {
     private final VBox rows;
     private final String titleKey;
     private final StyledText titleLabel;
+
+    /** The most recently displayed stock list; used to re-render on language change. */
+    private List<Stock> lastStocks = List.of();
 
     private final Label symbolHeader;
     private final Label stockHeader;
@@ -66,7 +70,8 @@ public class StockRankingCard extends VBox {
     }
 
     /**
-     * Updates the title and all column header labels to reflect the current language.
+     * Updates the title, column headers, and rows to reflect the current language.
+     * Re-renders rows so that the empty-state message is also re-localised.
      * Called automatically when the active language changes.
      */
     private void refreshLabels() {
@@ -75,18 +80,28 @@ public class StockRankingCard extends VBox {
         stockHeader.setText(LanguageManager.get("exchange.overview.columnStock"));
         priceHeader.setText(LanguageManager.get("exchange.overview.columnPrice"));
         changeHeader.setText(LanguageManager.get("exchange.overview.columnChange"));
+        update(lastStocks);
     }
 
     /**
      * Updates the table with a new list of stocks.
-     * Replaces all existing rows.
+     * Shows an empty-state message when the list has no entries,
+     * for example before the first week has been advanced.
      *
      * @param stocks the new list of stocks to display
      * @throws NullPointerException if stocks is null
      */
     public void update(List<Stock> stocks) {
+        this.lastStocks = List.copyOf(Objects.requireNonNull(stocks, "stocks cannot be null"));
         rows.getChildren().clear();
-        stocks.forEach(stock -> rows.getChildren().add(addRow(stock)));
+        if (stocks.isEmpty()) {
+            StyledText emptyLabel = StyledText.detailLabel(
+                    LanguageManager.get("exchange.overview.noWeeklyData"));
+            emptyLabel.getStyleClass().add("text-muted");
+            rows.getChildren().add(emptyLabel);
+        } else {
+            stocks.forEach(stock -> rows.getChildren().add(addRow(stock)));
+        }
     }
 
     /**
