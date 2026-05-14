@@ -132,15 +132,13 @@ class CsvStockFileHandlerTest {
         }
 
         @Test
-        @DisplayName("Should return empty list when file is empty")
-        void returnsEmptyListWhenFileIsEmpty() throws Exception {
+        @DisplayName("Should throw EmptyStockFileException when file is empty")
+        void throwsEmptyStockFileExceptionWhenFileIsEmpty() throws Exception {
             // Arrange
             Path file = tempDir.resolve("stocks.csv");
             Files.writeString(file, "");
-            // Act
-            List<Stock> stocks = handler.readStocks(file);
-            // Assert
-            assertTrue(stocks.isEmpty());
+            // Act & Assert
+            assertThrows(EmptyStockFileException.class, () -> handler.readStocks(file));
         }
 
         @Test
@@ -195,15 +193,14 @@ class CsvStockFileHandlerTest {
         }
 
         @Test
-        @DisplayName("Should return empty list when file is empty")
-        void returnsEmptyListWhenFileIsEmpty() throws Exception {
+        @DisplayName("Should throw EmptyStockFileException when file is empty")
+        void throwsEmptyStockFileExceptionWhenFileIsEmpty() throws Exception {
             // Arrange
             Path file = tempDir.resolve("stocks.csv");
             Files.writeString(file, "");
-            // Act
-            List<Stock> stocks = handler.readStocks(file, Currency.getInstance("NOK"));
-            // Assert
-            assertTrue(stocks.isEmpty());
+            // Act & Assert
+            assertThrows(EmptyStockFileException.class,
+                    () -> handler.readStocks(file, Currency.getInstance("NOK")));
         }
 
         @Test
@@ -258,14 +255,12 @@ class CsvStockFileHandlerTest {
         }
 
         @Test
-        @DisplayName("Should return empty list when stream is empty")
-        void returnsEmptyListWhenStreamIsEmpty() throws InvalidStockDataException {
+        @DisplayName("Should throw EmptyStockFileException when stream is empty")
+        void throwsEmptyStockFileExceptionWhenStreamIsEmpty() {
             // Arrange
             InputStream stream = new ByteArrayInputStream(new byte[0]);
-            // Act
-            List<Stock> stocks = handler.readStocks(stream);
-            // Assert
-            assertTrue(stocks.isEmpty());
+            // Act & Assert
+            assertThrows(EmptyStockFileException.class, () -> handler.readStocks(stream));
         }
 
         @Test
@@ -316,6 +311,99 @@ class CsvStockFileHandlerTest {
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
                     handler.readStocks(stream, null));
+        }
+    }
+
+    @Nested
+    @DisplayName("CSV field validation")
+    class CsvFieldValidation {
+
+        @Test
+        @DisplayName("Should throw InvalidStockDataException when symbol is blank")
+        void throwsWhenSymbolIsBlank() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, " ,Apple Inc.,276.43\n");
+            // Act
+            InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
+                    () -> handler.readStocks(file));
+            // Assert
+            assertTrue(ex.getMessage().contains("blank symbol"));
+        }
+
+        @Test
+        @DisplayName("Should throw InvalidStockDataException when name is blank")
+        void throwsWhenNameIsBlank() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "AAPL, ,276.43\n");
+            // Act
+            InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
+                    () -> handler.readStocks(file));
+            // Assert
+            assertTrue(ex.getMessage().contains("blank name"));
+        }
+
+        @Test
+        @DisplayName("Should throw InvalidStockDataException when price is zero")
+        void throwsWhenPriceIsZero() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "AAPL,Apple Inc.,0\n");
+            // Act
+            InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
+                    () -> handler.readStocks(file));
+            // Assert
+            assertTrue(ex.getMessage().contains("non-positive price"));
+        }
+
+        @Test
+        @DisplayName("Should throw InvalidStockDataException when price is negative")
+        void throwsWhenPriceIsNegative() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "AAPL,Apple Inc.,-1.00\n");
+            // Act
+            InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
+                    () -> handler.readStocks(file));
+            // Assert
+            assertTrue(ex.getMessage().contains("non-positive price"));
+        }
+
+        @Test
+        @DisplayName("Should report correct line number when symbol is blank")
+        void reportsCorrectLineNumberForBlankSymbol() throws Exception {
+            // Arrange — line 1 is valid, line 2 has a blank symbol
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "AAPL,Apple Inc.,276.43\n ,Microsoft,404.68\n");
+            // Act
+            InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
+                    () -> handler.readStocks(file));
+            // Assert
+            assertEquals(2, ex.getLineNumber());
+        }
+
+        @Test
+        @DisplayName("Should throw EmptyStockFileException when file contains only comments")
+        void throwsEmptyStockFileExceptionForOnlyComments() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "# comment one\n# comment two\n");
+            // Act & Assert
+            assertThrows(EmptyStockFileException.class, () -> handler.readStocks(file));
+        }
+
+        @Test
+        @DisplayName("EmptyStockFileException should be an instance of InvalidStockDataException")
+        void emptyStockFileExceptionIsSubtypeOfInvalidStockDataException() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("stocks.csv");
+            Files.writeString(file, "");
+            // Act
+            Exception ex = assertThrows(EmptyStockFileException.class,
+                    () -> handler.readStocks(file));
+            // Assert
+            assertInstanceOf(InvalidStockDataException.class, ex);
         }
     }
 
