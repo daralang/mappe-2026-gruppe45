@@ -1,7 +1,6 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.MainView;
 import edu.ntnu.idatt2003.millions.view.dialog.ExitDialog;
@@ -38,7 +37,7 @@ public class MainController {
         this.forcedSaleController = new ForcedSaleController(gameService);
         this.gameOverController = new GameOverController(gameService, stage,
                 () -> new StartController(stage, gameService).show());
-        PortfolioController portfolioController = new PortfolioController(gameService);
+        TradeController tradeController = new TradeController(gameService);
         LoanController loanController = new LoanController(gameService);
         TitleBar titleBar = TitleBarFactory.create(stage, gameService);
         titleBar.setOnSave(this::handleSaveGame);
@@ -47,7 +46,7 @@ public class MainController {
         this.view = new MainView(
                 stage,
                 gameService,
-                portfolioController,
+                tradeController,
                 loanController,
                 titleBar,
                 this::handleAdvanceWeek

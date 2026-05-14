@@ -65,6 +65,7 @@
 
 .type-filter {
     -fx-font-size: 13px;
+    -fx-pref-width: 140px;
     -fx-background-color: -border-strong, -surface;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 6, 5;

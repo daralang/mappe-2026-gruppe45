@@ -166,11 +166,8 @@ public class Exchange {
     public List<Stock> findStocks(String searchTerm) {
         if (searchTerm == null || searchTerm.isBlank()) return List.of();
 
-        String normalized = searchTerm.toLowerCase();
         return stockMap.values().stream()
-                .filter(stock ->
-                        stock.getSymbol().toLowerCase().contains(normalized)
-                                || stock.getCompany().toLowerCase().contains(normalized))
+                .filter(stock -> stock.matches(searchTerm))
                 .toList();
     }
 

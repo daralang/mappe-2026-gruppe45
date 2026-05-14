@@ -1,173 +1,240 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
-import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.service.PortfolioService;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.player.Portfolio;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.util.TableCells;
-import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
+import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import javafx.geometry.HPos;
+import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
+import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
+import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.HoldingsSort;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Card displaying the player's holdings (shares owned), with action buttons
- * for buy / sell / sell all / details, and a total row at the bottom.
+ * Card displaying the player's holdings (shares owned), with sortable column
+ * headers, search, pagination, action buttons for buy / sell / sell all / details,
+ * and a persistent total row below the pagination.
  *
- * <p>Currency-related columns ("Valuta" and "Verdi") are intentionally
- * omitted from the main table and will be shown in the details popup
- * instead. This keeps the main table clean while Dara's currency PR is
- * pending.</p>
+ * <p>Extends {@link SortableTableCard} for shared pagination, search, sort state,
+ * and the common refresh Template Method. The total row lives in a separate
+ * {@link GridPane} with the same column constraints as the table, so values align
+ * regardless of which page is active. The {@link #afterFilter} hook is overridden
+ * to update the total row's visibility and values after each filter pass.</p>
  */
-public class HoldingsCard extends Card {
+public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColumn> {
+
+    private static final int PAGE_SIZE = 9;
+
+    /** Grid column index for the company name cell in the total row. */
+    private static final int TOTAL_COL_COMPANY = 1;
+
+    /** Grid column index for the value (NOK) cell in the total row. */
+    private static final int TOTAL_COL_VALUE_NOK = 4;
+
+    /** Grid column index for the return-percent cell in the total row. */
+    private static final int TOTAL_COL_RETURN_PCT = 5;
+
+    /** Grid column index for the return (NOK) cell in the total row. */
+    private static final int TOTAL_COL_RETURN_NOK = 6;
 
     private final GameService gameService;
-    private final PortfolioService portfolioService = new PortfolioService();
-    private final PortfolioController controller;
-    private final GridPane grid = new GridPane();
+    private final PortfolioService portfolioService;
+    private final TradeController controller;
+    private final HoldingsSort sort;
+    private final Region totalDivider = new Region();
+    private final GridPane totalGrid = new GridPane();
 
     /**
      * Constructs a new HoldingsCard.
      *
-     * @param gameService the game manager containing player and exchange
-     * @param controller the controller handling portfolio actions
+     * @param gameService      the game manager containing player and exchange
+     * @param controller       the controller handling portfolio actions
+     * @param portfolioService the service used to compute share values and returns
      */
-    public HoldingsCard(GameService gameService, PortfolioController controller) {
-        super(gameService);
+    public HoldingsCard(GameService gameService, TradeController controller,
+                        PortfolioService portfolioService) {
+        super(gameService, PAGE_SIZE,
+                "dashboard.portfolio.holdings.status", "dashboard.portfolio.empty");
         this.gameService = gameService;
         this.controller = controller;
+        this.portfolioService = portfolioService;
+        this.sort = new HoldingsSort(portfolioService, gameService.getCurrencyConverter());
+        this.sortProvider = sort;
+        this.table = new SortColumnTable<>(sort::getColumnDefs);
+        this.pagination = new Pagination(PAGE_SIZE, this::setPage);
+        Button clearSortButton = table.createClearSortButton(
+                () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
+
+        totalDivider.getStyleClass().add("holdings-total-divider");
+        totalGrid.setHgap(20);
+        initTotalGridColumns();
+        setTotalVisible(false);
 
         StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
         setSpacing(16);
 
-        grid.setHgap(20);
-        TableCells.configureColumns(grid,
-                new double[]{18, 22, 10, 12, 12, 10, 11, 5},
-                new HPos[]{HPos.LEFT, HPos.LEFT, HPos.RIGHT, HPos.RIGHT,
-                        HPos.RIGHT, HPos.RIGHT, HPos.RIGHT, HPos.CENTER});
-
-        getChildren().addAll(title, grid);
+        getChildren().addAll(title, buildSearchRow(clearSortButton), table.asNode(), pagination, totalDivider, totalGrid);
         refresh();
     }
 
     /**
-     * Called when the game state changes (week advanced, buy or sell).
-     * Rebuilds the holdings table to reflect the current portfolio.
+     * Returns all shares in the player's portfolio, or an empty list if no player is active.
+     *
+     * @return mutable list of all {@link Share} objects owned by the player
      */
     @Override
-    public void onGameUpdated() {
-        refresh();
-    }
-
-    /**
-     * Called when the application language changes.
-     * Rebuilds the table so any future i18n keys are picked up.
-     */
-    @Override
-    protected void onLanguageChanged() {
-        refresh();
-    }
-
-    /**
-     * Rebuilds the table contents based on the player's current portfolio.
-     */
-    private void refresh() {
-        grid.getChildren().clear();
-
-        Portfolio portfolio = gameService.getPlayer().getPortfolio();
-        List<Share> shares = portfolio.getShares();
-
-        addHeaderRow();
-
-        if (shares.isEmpty()) {
-            TableCells.renderEmptyState(grid, LanguageManager.get("dashboard.portfolio.empty"), 8);
-            return;
+    protected List<Share> fetchAll() {
+        if (gameService.getPlayer() == null) {
+            return new ArrayList<>();
         }
+        return new ArrayList<>(gameService.getPlayer().getPortfolio().getShares());
+    }
 
+    @Override
+    protected List<Share> applySearch(List<Share> all, String term) {
+        if (term.isBlank()) {
+            return new ArrayList<>(all);
+        }
+        return new ArrayList<>(all.stream()
+                .filter(share -> share.getStock().matches(term))
+                .toList());
+    }
+
+    @Override
+    protected void renderPage(List<Share> page) {
         int row = 1;
-        for (Share share : shares) {
+        for (Share share : page) {
             addDataRow(row++, share);
         }
-
-        addTotalRow(row, portfolio);
     }
 
-    private void addHeaderRow() {
-        String[] headers = {
-                "",
-                LanguageManager.get("dashboard.portfolio.company"),
-                LanguageManager.get("dashboard.portfolio.quantity"),
-                LanguageManager.get("dashboard.portfolio.weeklyChange"),
-                LanguageManager.get("dashboard.portfolio.valueNok"),
-                LanguageManager.get("dashboard.portfolio.returnPct"),
-                LanguageManager.get("dashboard.portfolio.returnNok"),
-                ""
-        };
-        String[] tooltipKeys = {
-                null, null, null,
-                "tooltip.shared.weeklyChange",
-                "tooltip.holdings.valueNok",
-                "tooltip.shared.returnPct",
-                "tooltip.shared.returnNok",
-                null
-        };
-        for (int i = 0; i < headers.length; i++) {
-            Label label = TableCells.header(headers[i]);
-            if (tooltipKeys[i] != null) {
-                InfoTooltip icon = new InfoTooltip(tooltipKeys[i]);
-                icon.getStyleClass().add("holdings-header-icon");
-                HBox headerCell = new HBox(6, label, icon);
-                headerCell.setAlignment(Pos.CENTER_RIGHT);
-                GridPane.setFillWidth(headerCell, false);
-                icon.attachToParent(headerCell);
-                grid.add(headerCell, i, 0);
-            } else {
-                grid.add(label, i, 0);
-            }
+    /**
+     * Returns a localised empty-state message that includes the search term when active.
+     *
+     * @param term the active search term; may be blank
+     * @return the localised empty-state message
+     */
+    @Override
+    protected String emptyStateMessage(String term) {
+        if (!term.isBlank()) {
+            return MessageFormat.format(
+                    LanguageManager.get("dashboard.portfolio.empty.search"), term);
+        }
+        return LanguageManager.get("dashboard.portfolio.empty");
+    }
+
+    /**
+     * Updates the total row visibility and values after the filter pass.
+     * The total row is shown whenever the unfiltered portfolio has shares,
+     * regardless of the active search term.
+     *
+     * @param all      unfiltered share list
+     * @param filtered text-filtered share list
+     */
+    @Override
+    protected void afterFilter(List<Share> all, List<Share> filtered) {
+        boolean hasPortfolioShares = !all.isEmpty();
+        setTotalVisible(hasPortfolioShares);
+        if (hasPortfolioShares) {
+            refreshTotal(gameService.getPlayer().getPortfolio());
         }
     }
 
+    /**
+     * Configures {@link #totalGrid} with the same percentage column constraints
+     * as the holdings table so total values align with their respective columns.
+     */
+    private void initTotalGridColumns() {
+        for (TableColumnDef<HoldingsSort.SortColumn> col : sort.getColumnDefs()) {
+            ColumnConstraints cc = new ColumnConstraints();
+            cc.setPercentWidth(col.percentWidth());
+            cc.setHalignment(col.alignment());
+            totalGrid.getColumnConstraints().add(cc);
+        }
+    }
+
+    /**
+     * Rebuilds the total row in {@link #totalGrid} with the latest portfolio values.
+     *
+     * @param portfolio the portfolio supplying the total values
+     */
+    private void refreshTotal(Portfolio portfolio) {
+        totalGrid.getChildren().clear();
+
+        Label totalLabel = new Label(LanguageManager.get("dashboard.portfolio.total"));
+        totalLabel.getStyleClass().addAll("holdings-cell", "bold");
+        totalGrid.add(totalLabel, TOTAL_COL_COMPANY, 0);
+
+        Label valueNok = new Label(TableCells.NUMBER_FORMAT.format(
+                portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
+        valueNok.getStyleClass().addAll("holdings-cell", "bold");
+        totalGrid.add(valueNok, TOTAL_COL_VALUE_NOK, 0);
+
+        totalGrid.add(coloredPercentCell(portfolioService.getTotalReturnPercent(
+                gameService.getPlayer(), gameService.getCurrencyConverter())), TOTAL_COL_RETURN_PCT, 0);
+        totalGrid.add(coloredAmountCell(portfolioService.getTotalReturnInNok(
+                gameService.getPlayer(), gameService.getCurrencyConverter())), TOTAL_COL_RETURN_NOK, 0);
+    }
+
+    /**
+     * Shows or hides the total divider and grid.
+     *
+     * @param visible {@code true} to show, {@code false} to hide and unmanage
+     */
+    private void setTotalVisible(boolean visible) {
+        totalDivider.setVisible(visible);
+        totalDivider.setManaged(visible);
+        totalGrid.setVisible(visible);
+        totalGrid.setManaged(visible);
+    }
+
+    /**
+     * Renders one share as a data row in the table.
+     *
+     * @param row   the grid row index to write to
+     * @param share the share to render
+     */
     private void addDataRow(int row, Share share) {
         Stock stock = share.getStock();
-        grid.add(buildActionButtons(share), 0, row);
-        grid.add(TableCells.data(stock.getSymbol() + ", " + stock.getCompany()), 1, row);
-        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(share.getQuantity())), 2, row);
-        grid.add(coloredPercentCell(stock.getWeeklyChangePercent()), 3, row);
-        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))), 4, row);
-        grid.add(coloredPercentCell(share.getReturnPercent()), 5, row);
-        grid.add(coloredAmountCell(portfolioService.getShareReturnInNok(share, gameService.getCurrencyConverter())), 6, row);
-        grid.add(buildDetailsButton(share), 7, row);
+        table.addRow(row,
+                buildActionButtons(share),
+                TableCells.data(stock.getSymbol() + ", " + stock.getCompany()),
+                TableCells.data(TableCells.NUMBER_FORMAT.format(share.getQuantity())),
+                coloredPercentCell(stock.getWeeklyChangePercent()),
+                TableCells.data(TableCells.NUMBER_FORMAT.format(
+                        portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))),
+                coloredPercentCell(share.getReturnPercent()),
+                coloredAmountCell(
+                        portfolioService.getShareReturnInNok(share, gameService.getCurrencyConverter())),
+                buildDetailsButton(share)
+        );
     }
 
-    private void addTotalRow(int row, Portfolio portfolio) {
-        Region divider = new Region();
-        divider.getStyleClass().add("holdings-total-divider");
-        GridPane.setColumnSpan(divider, 8);
-        grid.add(divider, 0, row);
-
-        int dataRow = row + 1;
-
-        grid.add(TableCells.boldData(LanguageManager.get("dashboard.portfolio.total")), 1, dataRow);
-        grid.add(TableCells.boldData(TableCells.NUMBER_FORMAT.format(
-                portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter()))), 4, dataRow);
-
-        grid.add(coloredPercentCell(portfolioService.getTotalReturnPercent(gameService.getPlayer(), gameService.getCurrencyConverter())), 5, dataRow);
-        grid.add(coloredAmountCell(portfolioService.getTotalReturnInNok(gameService.getPlayer(), gameService.getCurrencyConverter())), 6, dataRow);
-    }
-
+    /**
+     * Builds the buy, sell and sell-all action buttons for a share row.
+     * All buttons are disabled when the game is over.
+     *
+     * @param share the share the buttons act on
+     * @return an {@link HBox} containing the action buttons
+     */
     private HBox buildActionButtons(Share share) {
         boolean gameOver = gameService.isGameOver();
 
@@ -191,6 +258,12 @@ public class HoldingsCard extends Card {
         return box;
     }
 
+    /**
+     * Builds the details navigation button for a share row.
+     *
+     * @param share the share to open details for
+     * @return a styled chevron button
+     */
     private Button buildDetailsButton(Share share) {
         Button details = new Button("❯");
         details.getStyleClass().add("holdings-details-chevron");
@@ -198,16 +271,35 @@ public class HoldingsCard extends Card {
         return details;
     }
 
+    /**
+     * Creates a styled action button with the given label and colour class.
+     *
+     * @param text       the button label
+     * @param colorClass the CSS class controlling the button colour
+     * @return a styled action button
+     */
     private Button actionButton(String text, String colorClass) {
         Button b = new Button(text);
         b.getStyleClass().addAll("holdings-action-link", colorClass);
         return b;
     }
 
+    /**
+     * Creates a coloured percentage label using {@link ChangeFormatter}.
+     *
+     * @param value the percentage value to format
+     * @return a styled label
+     */
     private Label coloredPercentCell(BigDecimal value) {
         return ChangeFormatter.styledPercent(value, "holdings-cell");
     }
 
+    /**
+     * Creates a coloured signed amount label using {@link ChangeFormatter}.
+     *
+     * @param value the amount value to format
+     * @return a styled label
+     */
     private Label coloredAmountCell(BigDecimal value) {
         return ChangeFormatter.styledAmount(value, "holdings-cell");
     }

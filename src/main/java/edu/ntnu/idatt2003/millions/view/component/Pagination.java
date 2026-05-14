@@ -6,7 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 
 import java.text.MessageFormat;
 import java.util.function.IntConsumer;
@@ -15,8 +15,8 @@ import java.util.function.IntConsumer;
  * Generic pagination control rendered as an {@link HBox}.
  *
  * <p>Displays a centred page indicator label (e.g. {@code 1 / 20 sider})
- * flanked by grow spacers, followed by Prev and Next buttons right-aligned.
- * Layout: {@code spacer | pageLabel | spacer | [< Prev] [Next >]}
+ * over the full control width, with Prev and Next buttons right-aligned.
+ * Layout: centred {@code pageLabel} plus right-aligned {@code [< Prev] [Next >]}.
  *
  * <p>Call {@link #update(int, int)} after each data refresh to rebuild the
  * control for the current page state. The control is cleared when there is
@@ -30,6 +30,9 @@ import java.util.function.IntConsumer;
  * }</pre>
  */
 public class Pagination extends HBox {
+
+    /** Default number of table rows shown before pagination is needed. */
+    public static final int DEFAULT_PAGE_SIZE = 8;
 
     private static final String PREV_KEY  = "pagination.prev";
     private static final String NEXT_KEY  = "pagination.next";
@@ -68,17 +71,11 @@ public class Pagination extends HBox {
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
         if (totalPages <= 1) return;
 
-        Region leftSpacer = new Region();
-        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-
         Label pageLabel = new Label(MessageFormat.format(
                 LanguageManager.get(PAGES_KEY),
                 currentPage + 1,
                 totalPages));
         pageLabel.getStyleClass().add("pagination-label");
-
-        Region rightSpacer = new Region();
-        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
         Button prevButton = buildButton(
                 LanguageManager.get(PREV_KEY),
@@ -90,7 +87,16 @@ public class Pagination extends HBox {
                 currentPage + 1,
                 currentPage >= totalPages - 1);
 
-        getChildren().addAll(leftSpacer, pageLabel, rightSpacer, prevButton, nextButton);
+        HBox actions = new HBox(8, prevButton, nextButton);
+        actions.setAlignment(Pos.CENTER_RIGHT);
+
+        StackPane centredLayout = new StackPane(pageLabel, actions);
+        centredLayout.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(centredLayout, Priority.ALWAYS);
+        StackPane.setAlignment(pageLabel, Pos.CENTER);
+        StackPane.setAlignment(actions, Pos.CENTER_RIGHT);
+
+        getChildren().add(centredLayout);
     }
 
     /**

@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.exchange;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
@@ -13,13 +13,13 @@ import java.util.List;
 
 /**
  * The exchange view of the application.
- * Contains a tab bar for navigating between overview, stocks and analysis.
+ * Contains a tab bar for navigating between overview and stocks.
  * Tab navigation is purely visual state and handled internally by this view.
  */
 public class ExchangeView extends VBox {
 
     private final GameService gameService;
-    private final PortfolioController controller;
+    private final TradeController controller;
     private final ViewHeader viewHeader;
     private final VBox contentArea;
 
@@ -30,7 +30,7 @@ public class ExchangeView extends VBox {
      * @param weekBar     the week bar shared with the rest of the application
      * @param controller  the portfolio controller used to open buy/sell dialogs
      */
-    public ExchangeView(GameService gameService, WeekBar weekBar, PortfolioController controller) {
+    public ExchangeView(GameService gameService, WeekBar weekBar, TradeController controller) {
         this.gameService = gameService;
         this.controller = controller;
         getStyleClass().add("content-area");
@@ -39,8 +39,7 @@ public class ExchangeView extends VBox {
                 "exchange.title",
                 List.of(
                         "exchange.tab.overview",
-                        "exchange.tab.stocks",
-                        "exchange.tab.analysis"
+                        "exchange.tab.stocks"
                 ),
                 weekBar
         );
@@ -50,7 +49,6 @@ public class ExchangeView extends VBox {
 
         viewHeader.setTabAction(0, this::showOverview);
         viewHeader.setTabAction(1, this::showStocks);
-        viewHeader.setTabAction(2, this::showAnalysis);
 
         getChildren().addAll(viewHeader, contentArea);
         showOverview();
@@ -72,10 +70,5 @@ public class ExchangeView extends VBox {
 
     private void showStocks() {
         contentArea.getChildren().setAll(new StocksView(gameService, controller));
-    }
-
-    private void showAnalysis() {
-        contentArea.getChildren().clear(); // remove this when implementing setAll
-        // contentArea.getChildren().setAll(new AnalysisView(gameService));
     }
 }

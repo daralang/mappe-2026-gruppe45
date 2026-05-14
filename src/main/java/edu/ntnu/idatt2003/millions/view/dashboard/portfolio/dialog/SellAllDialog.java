@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 
-import edu.ntnu.idatt2003.millions.controller.PortfolioController;
+import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
@@ -15,7 +15,7 @@ import java.text.MessageFormat;
  */
 public class SellAllDialog extends AbstractSellDialog {
 
-    public SellAllDialog(Share share, PortfolioController controller) {
+    public SellAllDialog(Share share, TradeController controller) {
         super(share, controller);
     }
 
