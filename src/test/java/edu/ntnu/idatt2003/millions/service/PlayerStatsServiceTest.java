@@ -62,7 +62,7 @@ class PlayerStatsServiceTest {
         }
 
         @Test
-        @DisplayName("Novice with 10 weeks and 10% growth returns 0.75")
+        @DisplayName("Novice with 10 weeks and 10% growth returns 0.5 (return is the bottleneck)")
         void noviceTenWeeksTenPercentGrowth() {
             // Arrange — 10 weeks, +10 money: growth = 10%, net worth 110 < 120 threshold → NOVICE
             Player p = playerWith("100");
@@ -70,25 +70,25 @@ class PlayerStatsServiceTest {
             p.addMoney(new BigDecimal("10"));
             // Act
             double progress = service.getProgressToNextStatus(p, converter);
-            // Assert — weeksScore=1.0, growthScore=0.5, avg=0.75
-            assertEquals(0.75, progress);
+            // Assert — weekProgress=(10-0)/10=1.0, returnProgress=(10-0)/20=0.5, min=0.5
+            assertEquals(0.5, progress);
         }
 
         @Test
-        @DisplayName("Novice with 10 weeks and 20% growth (rounded) returns 1.0")
-        void noviceTenWeeksTwentyPercentGrowth() {
-            // Arrange — addMoney(19.95): actual growth 19.95% rounds to 20.0%, but net worth 119.95 < 120 → NOVICE
+        @DisplayName("Novice with 10 weeks and 16% growth returns 0.8")
+        void noviceTenWeeksSixteenPercentGrowth() {
+            // Arrange — 10 weeks, +16 money: growth = 16%, net worth 116 < 120 → NOVICE
             Player p = playerWith("100");
             addWeeks(p, 10);
-            p.addMoney(new BigDecimal("19.95"));
+            p.addMoney(new BigDecimal("16"));
             // Act
             double progress = service.getProgressToNextStatus(p, converter);
-            // Assert — weeksScore=1.0, growthScore=1.0, avg=1.0
-            assertEquals(1.0, progress);
+            // Assert — weekProgress=1.0, returnProgress=(16-0)/20=0.8, min=0.8
+            assertEquals(0.8, progress);
         }
 
         @Test
-        @DisplayName("Novice with 5 weeks and 30% growth returns 0.75 (growth capped at 1.0)")
+        @DisplayName("Novice with 5 weeks and 30% growth returns 0.5 (weeks are the bottleneck)")
         void noviceFiveWeeksThirtyPercentGrowthCapped() {
             // Arrange — 5 weeks (<10) so still NOVICE despite 30% growth exceeding 20% threshold
             Player p = playerWith("100");
@@ -96,12 +96,25 @@ class PlayerStatsServiceTest {
             p.addMoney(new BigDecimal("30"));
             // Act
             double progress = service.getProgressToNextStatus(p, converter);
-            // Assert — weeksScore=0.5, growthScore=min(1.0,1.5)=1.0, avg=0.75
-            assertEquals(0.75, progress);
+            // Assert — weekProgress=(5-0)/10=0.5, returnProgress=min(1.0,30/20)=1.0, min=0.5
+            assertEquals(0.5, progress);
         }
 
         @Test
-        @DisplayName("Investor with 15 weeks and 50% growth returns 0.625")
+        @DisplayName("Investor who just leveled up shows 0% progress toward Speculator")
+        void investorJustLeveledUpShowsZeroProgress() {
+            // Arrange — exactly 10 weeks and 20% growth: net worth 120 >= 120 and 10 >= 10 → INVESTOR
+            Player p = playerWith("100");
+            addWeeks(p, 10);
+            p.addMoney(new BigDecimal("20"));
+            // Act
+            double progress = service.getProgressToNextStatus(p, converter);
+            // Assert — weekProgress=(10-10)/10=0.0, returnProgress=(20-20)/80=0.0, min=0.0
+            assertEquals(0.0, progress);
+        }
+
+        @Test
+        @DisplayName("Investor with 15 weeks and 50% growth returns 0.375 (return is the bottleneck)")
         void investorFifteenWeeksFiftyPercentGrowth() {
             // Arrange — 15 weeks, +50% growth: net worth 150 >= 120 and 15 >= 10 → INVESTOR
             Player p = playerWith("100");
@@ -109,8 +122,8 @@ class PlayerStatsServiceTest {
             p.addMoney(new BigDecimal("50"));
             // Act
             double progress = service.getProgressToNextStatus(p, converter);
-            // Assert — INVESTOR thresholds: weeksScore=15/20=0.75, growthScore=50/100=0.5, avg=0.625
-            assertEquals(0.625, progress);
+            // Assert — weekProgress=(15-10)/10=0.5, returnProgress=(50-20)/80=0.375, min=0.375
+            assertEquals(0.375, progress);
         }
 
         @Test
