@@ -54,3 +54,25 @@
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
 }
+
+/* === Start screen card tab pane === */
+.start-tab-pane {
+    -fx-background-color: -surface;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 16, 0, 0, 2);
+}
+
+.start-tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: -surface;
+    -fx-background-radius: 12 12 0 0;
+}
+
+.start-tab-pane > .tab-header-area {
+    -fx-background-color: transparent;
+    -fx-padding: 8 8 0 8;
+}
+
+.start-tab-pane > .tab-content-area {
+    -fx-background-color: -surface;
+    -fx-background-radius: 0 0 12 12;
+}
