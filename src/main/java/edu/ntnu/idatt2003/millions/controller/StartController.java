@@ -183,14 +183,12 @@ public class StartController {
      * fails, the file path is cleared and the error is shown to the user
      * via the {@link #errorSink} so they cannot proceed with an invalid file.
      *
-     * <p>The currency currently selected in the view is used for parsing.
-     * If no currency is selected yet, USD is used as a fallback so that
-     * structural errors (wrong field count, blank fields, invalid price) are
-     * still caught regardless of the currency choice.</p>
+     * <p>Package-private visibility allows controller tests in this package
+     * to invoke the handler directly without simulating a drag-and-drop event.</p>
      *
      * @param file the CSV file to validate and register
      */
-    private void validateAndSetStockFile(File file) {
+    void validateAndSetStockFile(File file) {
         inputs.setStockFilePath(file.getAbsolutePath());
         Currency currency = Optional.ofNullable(inputs.getSelectedCurrency())
                 .orElse(Currency.getInstance("USD"));
@@ -208,9 +206,12 @@ public class StartController {
      * fails, the file path is cleared and the error is shown to the user
      * via the {@link #errorSink} so they cannot proceed with a corrupt save file.
      *
+     * <p>Package-private visibility allows controller tests in this package
+     * to invoke the handler directly without simulating a drag-and-drop event.</p>
+     *
      * @param file the JSON save file to validate and register
      */
-    private void validateAndSetSaveFile(File file) {
+    void validateAndSetSaveFile(File file) {
         inputs.setSaveFilePath(file.getAbsolutePath());
         try {
             new JsonGameFileHandler().loadGame(file);
