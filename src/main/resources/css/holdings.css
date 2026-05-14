@@ -36,6 +36,12 @@ Button.holdings-header:hover {
     -fx-cursor: hand;
 }
 
+.holdings-action-link:disabled {
+    -fx-text-fill: -text-muted;
+    -fx-cursor: default;
+    -fx-underline: false;
+}
+
 .holdings-action-buy {
     -fx-text-fill: -primary;
 }

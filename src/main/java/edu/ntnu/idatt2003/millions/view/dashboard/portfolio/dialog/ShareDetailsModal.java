@@ -65,8 +65,11 @@ public class ShareDetailsModal extends Modal {
                 currencyCode,
                 NUMBER_FORMAT.format(stock.getSalesPrice()));
 
+        boolean gameOver = controller.isGameOver();
+
         Button buyMore = new Button(LanguageManager.get("details.button.buyMore"));
         buyMore.getStyleClass().addAll("modal-button", "modal-button-primary");
+        buyMore.setDisable(gameOver);
         buyMore.setOnAction(e -> {
             close();
             Platform.runLater(() -> controller.openBuyDialog(stock));
@@ -74,6 +77,7 @@ public class ShareDetailsModal extends Modal {
 
         Button sell = new Button(LanguageManager.get("details.button.sell"));
         sell.getStyleClass().addAll("modal-button", "modal-button-danger");
+        sell.setDisable(gameOver);
         sell.setOnAction(e -> {
             close();
             Platform.runLater(() -> controller.openSellDialog(share));
@@ -81,6 +85,7 @@ public class ShareDetailsModal extends Modal {
 
         Button sellAll = new Button(LanguageManager.get("details.button.sellAll"));
         sellAll.getStyleClass().addAll("modal-button", "modal-button-danger");
+        sellAll.setDisable(gameOver);
         sellAll.setOnAction(e -> {
             close();
             Platform.runLater(() -> controller.openSellAllDialog(share));

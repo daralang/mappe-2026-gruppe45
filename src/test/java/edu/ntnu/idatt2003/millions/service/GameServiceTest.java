@@ -592,6 +592,107 @@ class GameServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("isGameOver() and declareGameOver()")
+    class GameOverState {
+
+        @Test
+        @DisplayName("isGameOver() returns false when game is freshly loaded")
+        void isGameOver_falseInitially() {
+            assertFalse(gameService.isGameOver());
+        }
+
+        @Test
+        @DisplayName("isGameOver() returns true after declareGameOver()")
+        void isGameOver_trueAfterDeclare() {
+            gameService.declareGameOver();
+            assertTrue(gameService.isGameOver());
+        }
+
+        @Test
+        @DisplayName("declareGameOver() notifies observers")
+        void declareGameOver_notifiesObservers() {
+            CountingObserver observer = new CountingObserver();
+            gameService.addObserver(observer);
+            int before = observer.updateCount;
+            gameService.declareGameOver();
+            assertEquals(before + 1, observer.updateCount);
+        }
+
+        @Test
+        @DisplayName("buy() throws IllegalStateException when game is over")
+        void buy_throwsWhenGameOver() {
+            gameService.declareGameOver();
+            assertThrows(IllegalStateException.class, () ->
+                    gameService.buy("EQNR", BigDecimal.ONE));
+        }
+
+        @Test
+        @DisplayName("sell() throws IllegalStateException when game is over")
+        void sell_throwsWhenGameOver() {
+            gameService.declareGameOver();
+            Share share = new Share(gameService.getExchange().getStock("EQNR"),
+                    BigDecimal.ONE, STOCK_PRICE);
+            assertThrows(IllegalStateException.class, () ->
+                    gameService.sell(share, BigDecimal.ONE));
+        }
+
+        @Test
+        @DisplayName("advanceWeek() throws IllegalStateException when game is over")
+        void advanceWeek_throwsWhenGameOver() {
+            gameService.declareGameOver();
+            assertThrows(IllegalStateException.class, () ->
+                    gameService.advanceWeek());
+        }
+
+        @Test
+        @DisplayName("takeLoan() throws IllegalStateException when game is over")
+        void takeLoan_throwsWhenGameOver() {
+            gameService.declareGameOver();
+            LoanOffer offer = new LoanOffer("t", new BigDecimal("0.01"), 10,
+                    new BigDecimal("9000.00"), LoanRiskLevel.LOW);
+            assertThrows(IllegalStateException.class, () ->
+                    gameService.takeLoan(offer, new BigDecimal("100.00")));
+        }
+
+        @Test
+        @DisplayName("repayLoan() throws IllegalStateException when game is over")
+        void repayLoan_throwsWhenGameOver() throws ExcessiveDebtException {
+            LoanOffer offer = new LoanOffer("t", new BigDecimal("0.01"), 10,
+                    new BigDecimal("9000.00"), LoanRiskLevel.LOW);
+            Loan loan = gameService.takeLoan(offer, new BigDecimal("100.00"));
+            gameService.declareGameOver();
+            assertThrows(IllegalStateException.class, () ->
+                    gameService.repayLoan(loan));
+        }
+
+        @Test
+        @DisplayName("isGameOver() resets to false when createNewGame() is called")
+        void createNewGame_resetsGameOver() {
+            gameService.declareGameOver();
+            gameService.createNewGame("Fresh", new BigDecimal("5000.00"));
+            assertFalse(gameService.isGameOver());
+        }
+
+        @Test
+        @DisplayName("isGameOver() resets to false when loadGame() is called")
+        void loadGame_resetsGameOver() throws GameSaveCorruptException {
+            gameService.declareGameOver();
+            Path file = tempDir.resolve("reset-save.json");
+            Stock stock = new Stock("EQNR", "Equinor ASA",
+                    new ArrayList<>(List.of(STOCK_PRICE)),
+                    Currency.getInstance("NOK"));
+            edu.ntnu.idatt2003.millions.model.exchange.Exchange exchange =
+                    new edu.ntnu.idatt2003.millions.model.exchange.Exchange(
+                            "NYSE", new ArrayList<>(List.of(stock)),
+                            new FixedRateCurrencyConverter());
+            Player player = new Player("Dara", STARTING_MONEY);
+            new JsonGameFileHandler().saveGame(player, exchange, file.toFile());
+            gameService.loadGame(file.toFile());
+            assertFalse(gameService.isGameOver());
+        }
+    }
+
     private static class CountingObserver implements GameObserver {
         private int updateCount;
 
