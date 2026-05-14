@@ -1,30 +1,36 @@
 package edu.ntnu.idatt2003.millions.view.component.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.SearchMetadataRow;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
  * Abstract base for paginated, sortable, searchable table cards.
  *
  * <p>Extends {@link PaginatedCard} with shared fields and implements
- * {@link #refresh()} as a sealed Template Method. Subclasses provide
- * the data-specific steps via abstract methods, may override the optional
- * {@link #afterFilter} hook, and may override {@link #buildSearchRow} to
- * add extra filter controls.</p>
+ * {@link #refresh()} as a sealed Template Method.
  *
- * <p>{@link #table} and {@link #pagination} are non-final protected fields
- * that subclasses must assign in their constructors after the {@code super()}
- * call, since both depend on sort objects that cannot be created before it.</p>
+ * <p>{@link #table}, {@link #pagination} and {@link #sortProvider} are
+ * non-final protected fields that subclasses must assign in their constructors
+ * after the {@code super()} call, since all three depend on sort objects that
+ * cannot be created before it.</p>
+ *
+ * <p>The i18n keys {@code statusKey} and {@code emptyStateKey} are supplied
+ * at construction time. Subclasses may override {@link #emptyStateMessage}
+ * when the default key-lookup is not sufficient (e.g. when the message
+ * requires a {@link java.text.MessageFormat} argument).</p>
  *
  * @param <T>      the item type displayed in the table rows
  * @param <Column> the sort-column enum type
@@ -43,20 +49,38 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard {
      */
     protected Pagination pagination;
 
+    /**
+     * The sort-logic provider. Must be assigned by the subclass constructor
+     * before the first call to {@link #refresh()}.
+     */
+    protected SortProvider<T, Column> sortProvider;
+
     /** Reusable metadata row showing search result counts. */
     protected final SearchMetadataRow metadataRow = new SearchMetadataRow();
 
     /** The active text-search term. Updated by the search bar callback. */
     protected String currentSearchTerm = "";
 
+    private final String statusKey;
+    private final String emptyStateKey;
+
     /**
      * Constructs a sortable table card.
      *
-     * @param gameService the game service to observe
-     * @param pageSize    the number of items shown per page
+     * @param gameService   the game service to observe
+     * @param pageSize      the number of items shown per page
+     * @param statusKey     i18n key for the metadata-row status pattern;
+     *                      must accept two positional arguments (filtered count,
+     *                      total count)
+     * @param emptyStateKey i18n key for the default empty-state message
+     * @throws NullPointerException if statusKey or emptyStateKey is null
      */
-    protected SortableTableCard(GameService gameService, int pageSize) {
+    protected SortableTableCard(
+            GameService gameService, int pageSize,
+            String statusKey, String emptyStateKey) {
         super(gameService, pageSize);
+        this.statusKey = Objects.requireNonNull(statusKey, "statusKey cannot be null");
+        this.emptyStateKey = Objects.requireNonNull(emptyStateKey, "emptyStateKey cannot be null");
     }
 
     /**
@@ -70,12 +94,12 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard {
         List<T> filtered = applySearch(all, currentSearchTerm);
 
         table.refreshHeader(this::refresh, !filtered.isEmpty());
-        metadataRow.update(statusKey(), filtered.size(), all.size());
+        metadataRow.update(statusKey, filtered.size(), all.size());
 
         afterFilter(all, filtered);
 
         if (table.isSortActive()) {
-            applySort(filtered);
+            sortProvider.applySort(filtered, table.getSortState());
         }
 
         if (filtered.isEmpty()) {
@@ -110,13 +134,6 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard {
     protected abstract List<T> applySearch(List<T> all, String term);
 
     /**
-     * Sorts {@code items} in place. Only called when a sort is active.
-     *
-     * @param items the filtered item list to sort in place
-     */
-    protected abstract void applySort(List<T> items);
-
-    /**
      * Renders one page of items into the table.
      *
      * @param page the sub-list of items for the current page
@@ -124,20 +141,18 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard {
     protected abstract void renderPage(List<T> page);
 
     /**
-     * Returns the i18n key for the metadata-row status pattern.
-     * The pattern must accept two positional arguments: filtered count and total count.
+     * Returns the localised empty-state message when no items match the current filter.
      *
-     * @return the i18n key
-     */
-    protected abstract String statusKey();
-
-    /**
-     * Returns the empty-state message when no items match the current filter.
+     * <p>The default implementation looks up {@code emptyStateKey} from
+     * {@link LanguageManager}. Override when the message requires a
+     * {@link java.text.MessageFormat} argument (e.g. quoting the search term).</p>
      *
      * @param term the active search term; may be blank
      * @return the localised empty-state message
      */
-    protected abstract String emptyStateMessage(String term);
+    protected String emptyStateMessage(String term) {
+        return LanguageManager.get(emptyStateKey);
+    }
 
     /**
      * Optional hook called after filtering but before sorting and rendering.

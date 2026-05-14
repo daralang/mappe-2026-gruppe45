@@ -56,10 +56,12 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
      * @param controller  the controller handling portfolio actions
      */
     public HoldingsCard(GameService gameService, PortfolioController controller) {
-        super(gameService, PAGE_SIZE);
+        super(gameService, PAGE_SIZE,
+                "dashboard.portfolio.holdings.status", "dashboard.portfolio.empty");
         this.gameService = gameService;
         this.controller = controller;
         this.sort = new HoldingsSort(portfolioService, gameService.getCurrencyConverter());
+        this.sortProvider = sort;
         this.table = new SortColumnTable<>(sort::getColumnDefs);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         Button clearSortButton = table.createClearSortButton(
@@ -93,26 +95,11 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     }
 
     @Override
-    protected void applySort(List<Share> items) {
-        sort.applySort(items, table.getSortState());
-    }
-
-    @Override
     protected void renderPage(List<Share> page) {
         int row = 1;
         for (Share share : page) {
             addDataRow(row++, share);
         }
-    }
-
-    @Override
-    protected String statusKey() {
-        return "dashboard.portfolio.holdings.status";
-    }
-
-    @Override
-    protected String emptyStateMessage(String term) {
-        return LanguageManager.get("dashboard.portfolio.empty");
     }
 
     /**

@@ -40,9 +40,10 @@ public class StocksListCard extends SortableTableCard<Stock, StocksSort.SortColu
      * @param controller  the controller used to open buy/sell dialogs
      */
     public StocksListCard(GameService gameService, PortfolioController controller) {
-        super(gameService, PAGE_SIZE);
+        super(gameService, PAGE_SIZE, "exchange.stocks.status", "exchange.stocks.empty");
         this.gameService = gameService;
         this.sort = new StocksSort(gameService.getCurrencyConverter());
+        this.sortProvider = sort;
         this.rowRenderer = new StocksRowRenderer(gameService, controller);
         this.table = new SortColumnTable<>(sort::getColumnDefs, 10);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
@@ -72,20 +73,10 @@ public class StocksListCard extends SortableTableCard<Stock, StocksSort.SortColu
     }
 
     @Override
-    protected void applySort(List<Stock> items) {
-        sort.applySort(items, table.getSortState());
-    }
-
-    @Override
     protected void renderPage(List<Stock> page) {
         for (int i = 0; i < page.size(); i++) {
             rowRenderer.buildRow(page.get(i), i + 1, table);
         }
-    }
-
-    @Override
-    protected String statusKey() {
-        return "exchange.stocks.status";
     }
 
     @Override

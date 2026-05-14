@@ -58,10 +58,11 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
      *                        table and the summary card's totals
      */
     public TransactionsCard(GameService gameService, WeekRangeFilter weekRangeFilter) {
-        super(gameService, PAGE_SIZE);
+        super(gameService, PAGE_SIZE, "transactions.status", "transactions.empty");
         this.gameService = gameService;
         this.weekRangeFilter = weekRangeFilter;
         this.sort = new TransactionsSort(statsService, gameService.getCurrencyConverter());
+        this.sortProvider = sort;
         this.table = new SortColumnTable<>(sort::getColumnDefs);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         Button clearSortButton = table.createClearSortButton(
@@ -138,26 +139,11 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     }
 
     @Override
-    protected void applySort(List<Transaction> items) {
-        sort.applySort(items, table.getSortState());
-    }
-
-    @Override
     protected void renderPage(List<Transaction> page) {
         int row = 1;
         for (Transaction transaction : page) {
             addDataRow(row++, transaction);
         }
-    }
-
-    @Override
-    protected String statusKey() {
-        return "transactions.status";
-    }
-
-    @Override
-    protected String emptyStateMessage(String term) {
-        return LanguageManager.get("transactions.empty");
     }
 
     /**
