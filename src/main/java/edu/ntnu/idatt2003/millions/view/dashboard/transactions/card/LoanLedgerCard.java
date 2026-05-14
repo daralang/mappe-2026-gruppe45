@@ -64,6 +64,7 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
      */
     public LoanLedgerCard(GameService gameService) {
         super(gameService, PAGE_SIZE, "transactions.loans.status", "transactions.loans.empty");
+        getStyleClass().remove("card");
         this.gameService = gameService;
 
         int currentWeek = Math.max(gameService.getExchange().getWeek(), 1);
