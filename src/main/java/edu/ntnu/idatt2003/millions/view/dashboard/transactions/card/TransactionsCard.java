@@ -1,5 +1,11 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.transactions.card;
 
+<<<<<<< HEAD
+=======
+import edu.ntnu.idatt2003.millions.observer.GameObserver;
+import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
+>>>>>>> origin/main
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
@@ -9,6 +15,7 @@ import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
+<<<<<<< HEAD
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
@@ -16,12 +23,20 @@ import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.TransactionsSort;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.TransactionTypeFilter;
+=======
+import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.LedgerTypeFilter;
+>>>>>>> origin/main
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+<<<<<<< HEAD
+=======
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+>>>>>>> origin/main
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -29,6 +44,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
+<<<<<<< HEAD
  * Dashboard card for the transactions tab. Extends {@link SortableTableCard}
  * for shared pagination, search, sort state, and the common refresh Template Method.
  *
@@ -48,9 +64,41 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     private final TransactionsSort sort;
     private final StyledText title;
     private final TransactionTypeFilter typeFilter;
+=======
+ * Body component for the Aksjehandel sub-tab on the Transactions tab.
+ * Renders a filter row and a table of every committed stock transaction
+ * within the current filter selection, sorted oldest first.
+ *
+ * <p>This class is a plain {@link VBox} — no card chrome. The surrounding
+ * {@link Card} and title are owned by {@code TransactionsView}, which wraps
+ * this body alongside the loan-ledger body in a single outer card.</p>
+ *
+ * <p>The {@link WeekRangeFilter} is supplied by {@code TransactionsView}
+ * and shared with the summary and activity cards so all three show data
+ * for the same period. The type filter is local to this body.</p>
+ */
+public class TransactionsCard extends VBox implements GameObserver {
+
+    /** Number of columns — used for empty-state column span. */
+    private static final int COLUMN_COUNT = 8;
+
+    /** Percentage widths for each column; sums to 100. */
+    private static final double[] COLUMN_WIDTHS = {8, 26, 8, 7, 12, 12, 13, 14};
+
+    /** Text columns align left, numeric columns right. */
+    private static final HPos[] COLUMN_ALIGNMENTS = {
+            HPos.LEFT, HPos.LEFT, HPos.LEFT, HPos.RIGHT,
+            HPos.RIGHT, HPos.RIGHT, HPos.RIGHT, HPos.RIGHT
+    };
+
+    private final GameService gameService;
+    private final TransactionStatsService statsService = new TransactionStatsService();
+    private final LedgerTypeFilter<Class<? extends Transaction>> typeFilter;
+>>>>>>> origin/main
     private final WeekRangeFilter weekRangeFilter;
 
     /**
+<<<<<<< HEAD
      * Constructs a new TransactionsCard.
      *
      * @param gameService     the game manager containing player and exchange
@@ -61,6 +109,13 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     public TransactionsCard(GameService gameService, WeekRangeFilter weekRangeFilter,
                             TransactionStatsService statsService) {
         super(gameService, PAGE_SIZE, "transactions.status", "transactions.empty");
+=======
+     * @param gameService     game manager containing player and exchange
+     * @param weekRangeFilter shared filter that scopes both this body's
+     *                        table and the summary/activity card totals
+     */
+    public TransactionsCard(GameService gameService, WeekRangeFilter weekRangeFilter) {
+>>>>>>> origin/main
         this.gameService = gameService;
         this.weekRangeFilter = weekRangeFilter;
         this.statsService = statsService;
@@ -72,10 +127,20 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
         table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
 
+        gameService.addObserver(this);
+        LanguageManager.addObserver(this::refresh);
+
         setSpacing(16);
 
-        title = StyledText.sectionTitle(LanguageManager.get("transactions.title"));
+        typeFilter = new LedgerTypeFilter<>(List.of(
+                new LedgerTypeFilter.TypeOption<>("transactions.type.all", null),
+                new LedgerTypeFilter.TypeOption<>("transactions.type.buy", Purchase.class),
+                new LedgerTypeFilter.TypeOption<>("transactions.type.sell",
+                        edu.ntnu.idatt2003.millions.model.transaction.Sale.class)
+        ));
+        typeFilter.selectedValueProperty().addListener((_, _, _) -> refresh());
 
+<<<<<<< HEAD
         typeFilter = new TransactionTypeFilter();
         typeFilter.selectedTypeProperty().addListener((obs, oldVal, newVal) -> resetPageAndRefresh());
 
@@ -103,6 +168,23 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
                 metadataRow);
         searchBar.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(searchBar, Priority.ALWAYS);
+=======
+        weekRangeFilter.fromWeekProperty().addListener((_, _, _) -> refresh());
+        weekRangeFilter.toWeekProperty().addListener((_, _, _) -> refresh());
+
+        HBox filterRow = buildFilterRow();
+
+        grid.setHgap(20);
+        TableCells.configureColumns(grid, COLUMN_WIDTHS, COLUMN_ALIGNMENTS);
+
+        getChildren().addAll(filterRow, grid);
+        refresh();
+    }
+
+    private HBox buildFilterRow() {
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+>>>>>>> origin/main
 
         HBox row = new HBox(16, searchBar, typeFilter, weekRangeFilter, clearSortButton);
         row.setAlignment(Pos.CENTER_LEFT);
@@ -110,6 +192,7 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
         return row;
     }
 
+<<<<<<< HEAD
     /**
      * Returns transactions scoped to the active week range and type filter,
      * sorted chronologically. Returns an empty list when the player is null.
@@ -152,12 +235,15 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     /**
      * Extends the week range filter's upper bound whenever the model changes.
      */
+=======
+>>>>>>> origin/main
     @Override
     public void onGameUpdated() {
         weekRangeFilter.setMaxWeek(Math.max(gameService.getExchange().getWeek(), 1));
         refresh();
     }
 
+<<<<<<< HEAD
     /**
      * Returns a localised empty-state message that includes the search term when active.
      *
@@ -191,6 +277,47 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
      * @param toWeek   the last week to include (inclusive)
      * @return a chronologically sorted mutable list of transactions in the range
      */
+=======
+    private void refresh() {
+        grid.getChildren().clear();
+        if (gameService.getPlayer() == null) return;
+        TableCells.addHeaderRow(grid, headerTexts());
+
+        TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
+        int fromWeek = weekRangeFilter.getFromWeek();
+        int toWeek = weekRangeFilter.getToWeek();
+        Class<? extends Transaction> selectedType = typeFilter.getSelectedValue();
+
+        List<Transaction> transactions = collectRange(archive, fromWeek, toWeek).stream()
+                .filter(t -> selectedType == null || selectedType.isInstance(t))
+                .toList();
+
+        if (transactions.isEmpty()) {
+            TableCells.renderEmptyState(
+                    grid, LanguageManager.get("transactions.empty"), COLUMN_COUNT);
+            return;
+        }
+
+        int row = 1;
+        for (Transaction transaction : transactions) {
+            addDataRow(row++, transaction);
+        }
+    }
+
+    private String[] headerTexts() {
+        return new String[] {
+                LanguageManager.get("transactions.col.week"),
+                LanguageManager.get("transactions.col.company"),
+                LanguageManager.get("transactions.col.type"),
+                LanguageManager.get("transactions.col.quantity"),
+                LanguageManager.get("transactions.col.price"),
+                LanguageManager.get("transactions.col.commission"),
+                LanguageManager.get("transactions.col.tax"),
+                LanguageManager.get("transactions.col.amount")
+        };
+    }
+
+>>>>>>> origin/main
     private List<Transaction> collectRange(TransactionArchive archive, int fromWeek, int toWeek) {
         List<Transaction> list = new ArrayList<>();
         for (int week = fromWeek; week <= toWeek; week++) {
@@ -200,12 +327,15 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
         return list;
     }
 
+<<<<<<< HEAD
     /**
      * Renders one transaction as a data row in the table.
      *
      * @param row         the table row index to write to
      * @param transaction the transaction to render
      */
+=======
+>>>>>>> origin/main
     private void addDataRow(int row, Transaction transaction) {
         Stock stock = transaction.getShare().getStock();
         TransactionStatsService.TransactionStats stats =
@@ -225,12 +355,15 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
         );
     }
 
+<<<<<<< HEAD
     /**
      * Creates the pill-shaped type badge for a transaction.
      *
      * @param transaction the transaction to label
      * @return a styled badge label
      */
+=======
+>>>>>>> origin/main
     private Label typeBadge(Transaction transaction) {
         boolean isPurchase = transaction instanceof Purchase;
         String key = isPurchase ? "transactions.type.buy" : "transactions.type.sell";
@@ -240,12 +373,15 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
         return badge;
     }
 
+<<<<<<< HEAD
     /**
      * Renders the tax cell. Purchases show an en-dash instead of "0,00 NOK".
      *
      * @param stats the row stats supplying the NOK tax amount
      * @return a styled cell label
      */
+=======
+>>>>>>> origin/main
     private Label taxCell(TransactionStatsService.TransactionStats stats) {
         if (stats.taxNok().signum() == 0) {
             return TableCells.data("–");

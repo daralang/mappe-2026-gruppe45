@@ -11,3 +11,6 @@
 /* Detail rows in modals, dialogs, and receipts */
 .detail-label  { -fx-font-size: 13; -fx-text-fill: -text-secondary; }
 .detail-value  { -fx-font-size: 13; -fx-text-fill: -text-primary; }
+
+/* Muted secondary line below a widget value */
+.widget-subtitle { -fx-font-size: 12; -fx-text-fill: -text-secondary; }

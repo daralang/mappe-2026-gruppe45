@@ -1,9 +1,11 @@
 package edu.ntnu.idatt2003.millions.model.calculator;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Currency;
 import java.util.Objects;
 
 /**
@@ -114,5 +116,20 @@ public class SalesCalculator implements TransactionCalculator {
     @Override
     public BigDecimal calculateTotal() {
         return this.calculateGross().subtract(this.calculateCommission()).subtract(this.calculateTax());
+    }
+
+    /**
+     * Calculates the net payout of selling the entire position and converts
+     * the result to NOK using the given currency converter.
+     *
+     * @param share     the share being sold; must not be null
+     * @param converter the converter used to translate the native-currency net to NOK
+     * @return the net sale value in NOK
+     */
+    public static BigDecimal calculateNetNok(Share share, CurrencyConverter converter) {
+        Objects.requireNonNull(share, "Share cannot be null");
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        BigDecimal netNative = new SalesCalculator(share).calculateTotal();
+        return converter.convert(netNative, share.getStock().getCurrency(), Currency.getInstance("NOK"));
     }
 }

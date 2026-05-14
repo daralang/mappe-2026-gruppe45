@@ -129,7 +129,6 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     /**
      * Returns a localised empty-state message that includes the search term when active.
      *
-     *
      * @param term the active search term; may be blank
      * @return the localised empty-state message
      */
@@ -231,14 +230,21 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
 
     /**
      * Builds the buy, sell and sell-all action buttons for a share row.
+     * All buttons are disabled when the game is over.
      *
      * @param share the share the buttons act on
      * @return an {@link HBox} containing the action buttons
      */
     private HBox buildActionButtons(Share share) {
+        boolean gameOver = gameService.isGameOver();
+
         Button buy = actionButton(LanguageManager.get("dashboard.portfolio.buy"), "holdings-action-buy");
         Button sell = actionButton(LanguageManager.get("dashboard.portfolio.sell"), "holdings-action-sell");
         Button sellAll = actionButton(LanguageManager.get("dashboard.portfolio.sellAll"), "holdings-action-sell");
+
+        buy.setDisable(gameOver);
+        sell.setDisable(gameOver);
+        sellAll.setDisable(gameOver);
 
         buy.setOnAction(e -> controller.openBuyDialog(share.getStock()));
         sell.setOnAction(e -> controller.openSellDialog(share));

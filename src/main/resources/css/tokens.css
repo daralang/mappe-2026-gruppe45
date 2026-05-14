@@ -7,15 +7,25 @@
     -danger-dark:      #b03a2e;
     -danger-text:      #c0392b;
     -danger-bg:        #fdecea;
+    -danger-border:    #F5B8B4;
 
     -success:          #27ae60;
     -success-bg:       #EAF3DE;
     -success-text:     #2E5A0E;
     -success-border:   #C4DDA0;
 
+    -warning:          #e67e22;
+    -warning-bg:       #FAEEDA;
+    -warning-text:     #854F0B;
+    -warning-border:   #F2D89C;
+
     -info-bg:          #E3EEF7;
     -info-text:        #1F4E79;
     -info-border:      #B4CCE3;
+
+    -purple-bg:        rgba(167, 139, 250, 0.15);
+    -purple-text:      #6d28d9;
+    -purple-border:    #c4b5fd;
 
     -text-primary:     #333333;
     -text-secondary:   #888888;
@@ -34,6 +44,9 @@
     -status-investor:        #fbbf24;
     -status-speculator:      #a78bfa;
     -status-speculator-bg:   rgba(167, 139, 250, 0.15);
+
+    /* Shadows */
+    -shadow-subtle:  rgba(0,0,0,0.12);
 
     /* Footer-specific surface */
     -footer-bg:      #1a1a1a;

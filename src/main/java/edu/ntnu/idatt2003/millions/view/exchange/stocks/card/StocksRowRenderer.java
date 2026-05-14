@@ -158,8 +158,11 @@ class StocksRowRenderer {
      * @return an {@link HBox} containing the action buttons
      */
     private HBox buildBuyButton(Stock stock) {
+        boolean gameOver = gameService.isGameOver();
+
         Button buyButton = new Button(LanguageManager.get("exchange.stocks.buy"));
         buyButton.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
+        buyButton.setDisable(gameOver);
         buyButton.setOnAction(e -> controller.openBuyDialog(stock));
 
         return new HBox(4, buyButton);

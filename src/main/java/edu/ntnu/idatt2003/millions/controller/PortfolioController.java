@@ -62,6 +62,10 @@ public class PortfolioController {
         return gameService.getCurrencyConverter();
     }
 
+    public boolean isGameOver() {
+        return gameService.isGameOver();
+    }
+
     /**
      * Returns a preview of buying the given quantity of a stock.
      *
@@ -165,7 +169,7 @@ public class PortfolioController {
             BigDecimal balanceAfter = gameService.getPlayer().getMoney();
             Platform.runLater(() ->
                     new BuyReceipt(transaction, balanceBefore, balanceAfter, preview).show());
-        } catch (Exception e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             String message = e.getMessage();
             if (message == null || message.isBlank()) {
                 message = e.getClass().getSimpleName();
@@ -190,7 +194,7 @@ public class PortfolioController {
             BigDecimal balanceAfter = gameService.getPlayer().getMoney();
             Platform.runLater(() ->
                     new SellReceipt(transaction, balanceBefore, balanceAfter, preview).show());
-        } catch (Exception e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             String message = e.getMessage();
             if (message == null || message.isBlank()) {
                 message = e.getClass().getSimpleName();

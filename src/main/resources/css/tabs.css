@@ -21,6 +21,12 @@
     -fx-padding: 0;
 }
 
+/* Compact sub-tab bar modifier — used inside cards (smaller than primary tabs) */
+.tab-bar-compact .tab-button {
+    -fx-font-size: 13;
+    -fx-padding: 4 0 6 0;
+}
+
 /* AppTabPane */
 .tab-pane .tab {
     -fx-padding: 8 16 8 16;

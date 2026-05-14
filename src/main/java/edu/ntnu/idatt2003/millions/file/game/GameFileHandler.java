@@ -26,7 +26,9 @@ public interface GameFileHandler {
      *
      * @param file the file to load the game state from
      * @return a {@link GameState} containing the deserialized player and exchange
-     * @throws NullPointerException if the file is null
+     * @throws NullPointerException     if the file is null
+     * @throws GameSaveCorruptException if the file is not valid JSON or is missing
+     *                                  required fields
      */
-    GameState loadGame(File file);
+    GameState loadGame(File file) throws GameSaveCorruptException;
 }

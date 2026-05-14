@@ -73,6 +73,12 @@ public class StyledText extends Label {
     /** @return a label styled as widget-change */
     public static StyledText widgetChange(String text) { return new StyledText(text, "widget-change"); }
 
+    /** @return an empty label styled as widget-subtitle (muted secondary line below a widget value) */
+    public static StyledText widgetSubtitle() { return new StyledText("widget-subtitle"); }
+
+    /** @return a label styled as widget-subtitle */
+    public static StyledText widgetSubtitle(String text) { return new StyledText(text, "widget-subtitle"); }
+
     /** @return an empty label styled as detail-label */
     public static StyledText detailLabel() { return new StyledText("detail-label"); }
 
