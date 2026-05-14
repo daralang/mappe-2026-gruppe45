@@ -8,6 +8,8 @@ import edu.ntnu.idatt2003.millions.file.stock.StockFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.loan.InsufficientSaleProceedsException;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.player.Player;
@@ -245,17 +247,57 @@ public class GameService {
 
     /**
      * Advances the game by one week and notifies all registered observers.
-     * Records the player's current net worth before advancing so that
-     * weekly change and historical net worth data are available after
-     * the week has passed. The {@link CurrencyConverter} is fetched from
-     * the {@link Exchange} so the player's portfolio value can be translated
-     * to NOK.
+     * Assumes the player has enough cash to cover weekly interest; use
+     * {@link #executeForcedSale} instead when they cannot.
      */
     public void advanceWeek() {
         CurrencyConverter converter = exchange.getCurrencyConverter();
         player.setPreviousNetWorth(player.getNetWorth(converter));
         exchange.advance();
-        player.collectWeeklyInterest(exchange.getWeek()); // TODO: handle shortfall with forced share sales
+        player.collectWeeklyInterest(exchange.getWeek());
+        finishWeekAdvance();
+    }
+
+    /**
+     * Sells the given shares, deducts the weekly interest from the player's cash,
+     * writes INTEREST ledger entries for every active loan, advances the week, and
+     * notifies observers.
+     *
+     * <p>All-or-nothing: if the combined net sale value (after commission and tax,
+     * converted to NOK) is less than {@code interestAmount}, an
+     * {@link InsufficientSaleProceedsException} is thrown and no state is mutated.
+     *
+     * @param shares         the shares the player has chosen to sell
+     * @param interestAmount the total weekly interest owed
+     * @throws InsufficientSaleProceedsException if the net sale total is less than interestAmount
+     */
+    public void executeForcedSale(List<Share> shares, BigDecimal interestAmount)
+            throws InsufficientSaleProceedsException {
+        CurrencyConverter converter = exchange.getCurrencyConverter();
+
+        BigDecimal netTotal = shares.stream()
+                .map(s -> SalesCalculator.calculateNetNok(s, converter))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (netTotal.compareTo(interestAmount) < 0) {
+            throw new InsufficientSaleProceedsException(
+                    "Net sale proceeds (" + netTotal + " NOK) are less than required interest ("
+                    + interestAmount + " NOK).");
+        }
+
+        player.setPreviousNetWorth(player.getNetWorth(converter));
+
+        for (Share share : shares) {
+            exchange.sell(share, player);
+        }
+        player.withdrawMoney(interestAmount);
+
+        exchange.advance();
+        player.writeInterestLedgerEntries(exchange.getWeek());
+        finishWeekAdvance();
+    }
+
+    private void finishWeekAdvance() {
+        CurrencyConverter converter = exchange.getCurrencyConverter();
         player.recordNetWorth(converter);
         player.recordTotalDebt();
         notifyObservers();

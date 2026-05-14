@@ -957,5 +957,38 @@ class PlayerTest {
             assertThrows(ExcessiveDebtException.class, () ->
                     rich.takeLoan(new Loan(bigOffer, new BigDecimal("1.00"), 0), converter));
         }
+
+        @Test
+        @DisplayName("getWeeklyInterestDue() returns zero when no active loans")
+        void getWeeklyInterestDueIsZeroWhenNoActiveLoans() {
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getWeeklyInterestDue()));
+        }
+
+        @Test
+        @DisplayName("getWeeklyInterestDue() sums interest across all active loans")
+        void getWeeklyInterestDueSumsAllActiveLoans() {
+            // Arrange — player starts with 1000 NOK, capacity = 500.
+            // Two loans within capacity: 200 NOK at 1% = 2.00, 100 NOK at 1% = 1.00 → total 3.00
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            player.takeLoan(new Loan(offer, new BigDecimal("100.00"), 1), converter);
+            assertEquals(0, new BigDecimal("3.00").compareTo(player.getWeeklyInterestDue()));
+        }
+
+        @Test
+        @DisplayName("canCoverInterestThisWeek() returns true when cash >= interest due")
+        void canCoverInterestThisWeekReturnsTrueWhenMoneyExceedsDue() {
+            // Arrange — take 400 NOK loan (within 500 capacity): money = 1400, interest = 4.00
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertTrue(player.canCoverInterestThisWeek());
+        }
+
+        @Test
+        @DisplayName("canCoverInterestThisWeek() returns false when cash < interest due")
+        void canCoverInterestThisWeekReturnsFalseWhenMoneyIsLess() {
+            // Arrange — take 400 NOK loan: money = 1400, interest = 4.00. Then drain to 3.00.
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            player.withdrawMoney(new BigDecimal("1397.00")); // money = 3.00 < 4.00 interest
+            assertFalse(player.canCoverInterestThisWeek());
+        }
     }
 }
