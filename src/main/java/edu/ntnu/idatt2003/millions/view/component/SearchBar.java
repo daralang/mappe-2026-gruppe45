@@ -3,8 +3,8 @@ package edu.ntnu.idatt2003.millions.view.component;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -27,7 +27,7 @@ public class SearchBar extends VBox {
 
     private final TextField searchField = new TextField();
     private final Button searchButton = new Button();
-    private final Button clearButton = new Button("✕");
+    private final Button clearButton = new Button();
     private final String placeholderKey;
     private final String buttonKey;
 
@@ -51,7 +51,7 @@ public class SearchBar extends VBox {
      * @param buttonKey      the i18n key for the button text
      * @param onSearch       callback receiving the current search term on each
      *                       triggered search or clear action
-     * @param metadata       optional metadata shown below the search row, such as a {@link Label}
+     * @param metadata       optional metadata shown below the search row
      * @throws NullPointerException if placeholder key, button key or callback is null
      */
     public SearchBar(String placeholderKey, String buttonKey, Consumer<String> onSearch, Node metadata) {
@@ -62,7 +62,7 @@ public class SearchBar extends VBox {
         this.placeholderKey = placeholderKey;
         this.buttonKey = buttonKey;
 
-        Label iconLabel = new Label("🔍");
+        FontIcon iconLabel = new FontIcon("fth-search");
         iconLabel.getStyleClass().add("search-icon");
 
         searchField.getStyleClass().add("search-field");
@@ -70,6 +70,9 @@ public class SearchBar extends VBox {
 
         searchButton.getStyleClass().add("search-button");
 
+        FontIcon clearIcon = new FontIcon("fth-x");
+        clearIcon.getStyleClass().add("search-clear-icon");
+        clearButton.setGraphic(clearIcon);
         clearButton.getStyleClass().add("search-clear-button");
         clearButton.setOpacity(0);
 

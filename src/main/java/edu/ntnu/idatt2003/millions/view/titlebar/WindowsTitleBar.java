@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.view.component.Header;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
+import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -96,7 +97,12 @@ public class WindowsTitleBar implements TitleBar {
             else        maximize.getStyleClass().add("title-bar-btn-max");
         });
 
-        Button close = new Button("✕");
+        FontIcon closeIcon = new FontIcon("fth-x");
+        closeIcon.getStyleClass().add(
+            "title-bar-light".equals(styleClass) ? "title-bar-close-icon-light" : "title-bar-close-icon"
+        );
+        Button close = new Button();
+        close.setGraphic(closeIcon);
         close.getStyleClass().addAll("title-bar-btn", "title-bar-btn-close");
         close.setOnAction(e -> stage.close());
 

@@ -27,15 +27,19 @@
 }
 
 .modal-close {
-    -fx-font-size: 18;
-    -fx-text-fill: -text-secondary;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-padding: 0 4 0 4;
     -fx-cursor: hand;
 }
-.modal-close:hover {
-    -fx-text-fill: black;
+
+.modal-close .ikonli-font {
+    -fx-icon-size: 16;
+    -fx-icon-color: -text-secondary;
+}
+
+.modal-close:hover .ikonli-font {
+    -fx-icon-color: -text-primary;
 }
 
 .modal-body {
@@ -229,15 +233,17 @@
 
 .modal-success-icon {
     -fx-background-color: -success-bg;
-    -fx-text-fill: -success-text;
     -fx-min-width: 32px;
     -fx-min-height: 32px;
     -fx-max-width: 32px;
     -fx-max-height: 32px;
     -fx-background-radius: 16px;
     -fx-alignment: center;
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
+}
+
+.modal-success-icon .ikonli-font {
+    -fx-icon-size: 16;
+    -fx-icon-color: -success-text;
 }
 
 .modal-header-success {
@@ -277,8 +283,8 @@
 }
 
 .forced-sale-warning-icon {
-    -fx-text-fill: -danger-text;
-    -fx-font-size: 18;
+    -fx-icon-size: 18;
+    -fx-icon-color: -danger-text;
 }
 
 
