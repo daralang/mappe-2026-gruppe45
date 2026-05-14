@@ -92,17 +92,17 @@ public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
     protected Comparator<Share> buildComparator(SortColumn column) {
         return switch (column) {
             case COMPANY ->
-                    Comparator.comparing((Share s) -> s.getStock().getCompany());
+                    Comparator.comparing(s -> s.getStock().getCompany());
             case QUANTITY ->
-                    Comparator.comparing((Share s) -> s.getQuantity());
+                    Comparator.comparing(Share::getQuantity);
             case WEEKLY_CHANGE ->
-                    Comparator.comparing((Share s) -> s.getStock().getWeeklyChangePercent());
+                    Comparator.comparing(s -> s.getStock().getWeeklyChangePercent());
             case VALUE_NOK ->
-                    Comparator.comparing((Share s) -> portfolioService.getShareValueInNok(s, converter));
+                    Comparator.comparing(s -> portfolioService.getShareValueInNok(s, converter));
             case RETURN_PCT ->
-                    Comparator.comparing((Share s) -> s.getReturnPercent());
+                    Comparator.comparing(Share::getReturnPercent);
             case RETURN_NOK ->
-                    Comparator.comparing((Share s) -> portfolioService.getShareReturnInNok(s, converter));
+                    Comparator.comparing(s -> portfolioService.getShareReturnInNok(s, converter));
         };
     }
 }

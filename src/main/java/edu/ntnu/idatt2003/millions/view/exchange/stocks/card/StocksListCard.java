@@ -56,7 +56,7 @@ public class StocksListCard extends SortableTableCard<Stock, StocksSort.SortColu
         table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
 
         getChildren().addAll(title, buildSearchRow(clearSortButton), table.asNode(), pagination);
-        onGameUpdated();
+        refresh();
     }
 
     @Override
