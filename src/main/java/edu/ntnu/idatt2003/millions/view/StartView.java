@@ -20,7 +20,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
+import java.io.File;
 import java.util.Currency;
+import java.util.function.Consumer;
 
 /**
  * Start view for the application.
@@ -30,6 +32,12 @@ import java.util.Currency;
  * card with inline label-field rows, a {@link FileDropZone} for stock CSV
  * upload, and a currency selector that activates once a file is chosen.
  * The resume game tab shows a {@link FileDropZone} for JSON save-file upload.</p>
+ *
+ * <p>User interactions are forwarded to the controller via callbacks registered
+ * through setter methods such as {@link #setOnStartGame(Runnable)},
+ * {@link #setOnBrowseStockFile(Runnable)}, and {@link #setOnStockFileDrop(Consumer)}.
+ * The view wires these callbacks to its own controls in {@code wireEvents()},
+ * which is called once during construction.</p>
  */
 public class StartView implements StartScreenInputs {
 
@@ -64,6 +72,14 @@ public class StartView implements StartScreenInputs {
     private final FileDropZone saveFileDropZone;
     private final Button loadButton;
     private String saveFilePath = "";
+
+    // Callbacks wired by the controller
+    private Runnable onStartGame;
+    private Runnable onLoadGame;
+    private Runnable onBrowseStockFile;
+    private Runnable onBrowseSaveFile;
+    private Consumer<File> onStockFileDrop;
+    private Consumer<File> onSaveFileDrop;
 
     /**
      * Creates the start view with two tabs:
@@ -136,6 +152,7 @@ public class StartView implements StartScreenInputs {
                 StylesheetLoader.Stylesheet.DROP_ZONE,
                 StylesheetLoader.Stylesheet.OTHER);
 
+        wireEvents();
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
     }
@@ -154,6 +171,51 @@ public class StartView implements StartScreenInputs {
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMaxWidth(CARD_WIDTH);
         return row;
+    }
+
+    /**
+     * Wires all interactive controls to their respective callback fields.
+     * Called once from the constructor after all UI components are initialised.
+     * Each handler delegates to the registered callback if one has been set,
+     * so the view remains functional even before the controller injects its callbacks.
+     */
+    private void wireEvents() {
+        startButton.setOnAction(e -> {
+            if (onStartGame != null) {
+                onStartGame.run();
+            }
+        });
+        loadButton.setOnAction(e -> {
+            if (onLoadGame != null) {
+                onLoadGame.run();
+            }
+        });
+        stockFileDropZone.getBrowseButton().setOnAction(e -> {
+            if (onBrowseStockFile != null) {
+                onBrowseStockFile.run();
+            }
+        });
+        saveFileDropZone.getBrowseButton().setOnAction(e -> {
+            if (onBrowseSaveFile != null) {
+                onBrowseSaveFile.run();
+            }
+        });
+        stockFileDropZone.setOnDragDropped(event -> {
+            var db = event.getDragboard();
+            if (db.hasFiles() && onStockFileDrop != null) {
+                onStockFileDrop.accept(db.getFiles().getFirst());
+                event.setDropCompleted(true);
+            }
+            event.consume();
+        });
+        saveFileDropZone.setOnDragDropped(event -> {
+            var db = event.getDragboard();
+            if (db.hasFiles() && onSaveFileDrop != null) {
+                onSaveFileDrop.accept(db.getFiles().getFirst());
+                event.setDropCompleted(true);
+            }
+            event.consume();
+        });
     }
 
     /**
@@ -393,5 +455,65 @@ public class StartView implements StartScreenInputs {
      */
     public TabPane getTabPane() {
         return tabPane;
+    }
+
+    /**
+     * Registers the callback invoked when the user clicks the start button.
+     *
+     * @param callback the action to run on start; {@code null} disables the handler
+     */
+    public void setOnStartGame(Runnable callback) {
+        this.onStartGame = callback;
+    }
+
+    /**
+     * Registers the callback invoked when the user clicks the load button.
+     *
+     * @param callback the action to run on load; {@code null} disables the handler
+     */
+    public void setOnLoadGame(Runnable callback) {
+        this.onLoadGame = callback;
+    }
+
+    /**
+     * Registers the callback invoked when the user clicks the browse button
+     * on the stock file {@link FileDropZone}.
+     *
+     * @param callback the action to run on browse; {@code null} disables the handler
+     */
+    public void setOnBrowseStockFile(Runnable callback) {
+        this.onBrowseStockFile = callback;
+    }
+
+    /**
+     * Registers the callback invoked when the user clicks the browse button
+     * on the save file {@link FileDropZone}.
+     *
+     * @param callback the action to run on browse; {@code null} disables the handler
+     */
+    public void setOnBrowseSaveFile(Runnable callback) {
+        this.onBrowseSaveFile = callback;
+    }
+
+    /**
+     * Registers the callback invoked when the user drops a file onto the
+     * stock file {@link FileDropZone}. The view extracts the first dropped
+     * file from the dragboard before passing it to the callback.
+     *
+     * @param callback the action to run with the dropped file; {@code null} disables the handler
+     */
+    public void setOnStockFileDrop(Consumer<File> callback) {
+        this.onStockFileDrop = callback;
+    }
+
+    /**
+     * Registers the callback invoked when the user drops a file onto the
+     * save file {@link FileDropZone}. The view extracts the first dropped
+     * file from the dragboard before passing it to the callback.
+     *
+     * @param callback the action to run with the dropped file; {@code null} disables the handler
+     */
+    public void setOnSaveFileDrop(Consumer<File> callback) {
+        this.onSaveFileDrop = callback;
     }
 }
