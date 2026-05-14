@@ -111,6 +111,35 @@ public abstract class Modal {
     }
 
     /**
+     * Builds a standard modal header with a title, a muted subtitle on the
+     * line below, and a close button in the top-right corner.
+     *
+     * @param title    the main header title
+     * @param subtitle secondary text displayed below the title in muted style
+     * @return the header node
+     */
+    protected VBox buildStandardHeaderWithSubtitle(String title, String subtitle) {
+        Label titleLabel = new Label(title);
+        titleLabel.getStyleClass().add("modal-title");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Button closeButton = new Button("\u2715");
+        closeButton.getStyleClass().add("modal-close");
+        closeButton.setOnAction(e -> close());
+
+        HBox titleRow = new HBox(titleLabel, spacer, closeButton);
+
+        Label subtitleLabel = new Label(subtitle);
+        subtitleLabel.getStyleClass().add("detail-label");
+
+        VBox header = new VBox(4, titleRow, subtitleLabel);
+        header.getStyleClass().add("modal-header");
+        return header;
+    }
+
+    /**
      * Builds the content placed inside the modal card.
      * Called once when the modal is shown.
      *

@@ -1,13 +1,20 @@
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
+import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
 import edu.ntnu.idatt2003.millions.file.game.GameState;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
+import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.file.stock.StockFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
+import edu.ntnu.idatt2003.millions.model.loan.InsufficientSaleProceedsException;
+import edu.ntnu.idatt2003.millions.model.loan.Loan;
+import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -43,6 +50,7 @@ public class GameService {
 
     private Player player;
     private Exchange exchange;
+    private boolean gameOver = false;
     private final GameFileHandler gameFileHandler;
     private final List<GameObserver> observers = new ArrayList<>();
 
@@ -63,6 +71,26 @@ public class GameService {
     public void addObserver(GameObserver observer) {
         Objects.requireNonNull(observer, "Observer cannot be null");
         observers.add(observer);
+    }
+
+    /**
+     * Returns whether the game has ended.
+     *
+     * @return true if the game is over; false otherwise
+     */
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    /**
+     * Marks the game as over and notifies observers.
+     * Call this when the player cannot cover obligations even through full liquidation.
+     * After this call, all trading and week-advance operations will throw
+     * {@link IllegalStateException}.
+     */
+    public void declareGameOver() {
+        this.gameOver = true;
+        notifyObservers();
     }
 
     /**
@@ -115,7 +143,8 @@ public class GameService {
      * @throws IllegalArgumentException if name is blank, capital is negative,
      *                                  or the file contains no stocks
      */
-    public void createNewGame(String name, BigDecimal capital, File stockFile) {
+    public void createNewGame(String name, BigDecimal capital, File stockFile)
+            throws InvalidStockDataException {
         createNewGame(name, capital, stockFile, DEFAULT_STOCK_CURRENCY);
     }
 
@@ -133,7 +162,8 @@ public class GameService {
      * @throws IllegalArgumentException if name is blank, capital is negative,
      *                                  or the file contains no stocks
      */
-    public void createNewGame(String name, BigDecimal capital, File stockFile, Currency currency) {
+    public void createNewGame(String name, BigDecimal capital, File stockFile, Currency currency)
+            throws InvalidStockDataException {
         Objects.requireNonNull(stockFile, "Stock file cannot be null");
         Objects.requireNonNull(currency, "Currency cannot be null");
         Player newPlayer = new Player(name, capital);
@@ -153,6 +183,7 @@ public class GameService {
     private void activate(Player newPlayer, List<Stock> stocks) {
         this.player = newPlayer;
         this.exchange = new Exchange(DEFAULT_EXCHANGE_NAME, stocks, new FixedRateCurrencyConverter());
+        this.gameOver = false;
         notifyObservers();
     }
 
@@ -174,6 +205,8 @@ public class GameService {
             return stockFileHandler.readStocks(inputStream, DEFAULT_STOCK_CURRENCY);
         } catch (IOException e) {
             throw new UncheckedIOException("Could not read default stock data", e);
+        } catch (InvalidStockDataException e) {
+            throw new IllegalStateException("Default stock data is malformed: " + e.getMessage(), e);
         }
     }
 
@@ -185,14 +218,16 @@ public class GameService {
      * once the loaded state is in place.
      *
      * @param file the file to load the game state from
-     * @throws NullPointerException if the file is null
+     * @throws NullPointerException     if the file is null
+     * @throws GameSaveCorruptException if the save file is corrupt or has missing fields
      */
-    public void loadGame(File file) {
+    public void loadGame(File file) throws GameSaveCorruptException {
         Objects.requireNonNull(file, "File cannot be null");
         GameState state = gameFileHandler.loadGame(file);
         this.player = state.player();
         this.exchange = state.exchange();
         this.exchange.reinitialize(new FixedRateCurrencyConverter());
+        this.gameOver = false;
         notifyObservers();
     }
 
@@ -206,6 +241,7 @@ public class GameService {
      * @return the completed purchase transaction
      */
     public Transaction buy(String symbol, BigDecimal quantity) {
+        if (gameOver) throw new IllegalStateException("Game is over");
         Transaction transaction = exchange.buy(symbol, quantity, player);
         notifyObservers();
         return transaction;
@@ -236,6 +272,7 @@ public class GameService {
      * @return the completed sale transaction
      */
     public Transaction sell(Share share, BigDecimal quantity) {
+        if (gameOver) throw new IllegalStateException("Game is over");
         Transaction transaction = exchange.sell(share, quantity, player);
         notifyObservers();
         return transaction;
@@ -243,17 +280,71 @@ public class GameService {
 
     /**
      * Advances the game by one week and notifies all registered observers.
-     * Records the player's current net worth before advancing so that
-     * weekly change and historical net worth data are available after
-     * the week has passed. The {@link CurrencyConverter} is fetched from
-     * the {@link Exchange} so the player's portfolio value can be translated
-     * to NOK.
+     * Assumes the player has enough cash to cover all obligations (interest +
+     * any maturing loan principals); use {@link #executeForcedSale} instead
+     * when they cannot.
      */
     public void advanceWeek() {
+        if (gameOver) throw new IllegalStateException("Game is over");
         CurrencyConverter converter = exchange.getCurrencyConverter();
         player.setPreviousNetWorth(player.getNetWorth(converter));
         exchange.advance();
+        int week = exchange.getWeek();
+        player.collectWeeklyInterest(week);
+        for (Loan loan : player.getLoansDueThisWeek(week)) {
+            player.repayLoan(loan, week);
+        }
+        finishWeekAdvance();
+    }
+
+    /**
+     * Sells the given shares, deducts all weekly obligations (interest plus any
+     * maturing loan principals) from the player's cash, advances the week, and
+     * notifies observers.
+     *
+     * <p>All-or-nothing: if the combined net sale value (after commission and tax,
+     * converted to NOK) is less than the total obligations for {@code currentWeek},
+     * an {@link InsufficientSaleProceedsException} is thrown and no state is mutated.
+     *
+     * @param shares      the shares the player has chosen to sell
+     * @param currentWeek the game week being processed (the week after the current one)
+     * @throws InsufficientSaleProceedsException if the net sale total is less than total obligations
+     */
+    public void executeForcedSale(List<Share> shares, int currentWeek)
+            throws InsufficientSaleProceedsException {
+        if (gameOver) throw new IllegalStateException("Game is over");
+        CurrencyConverter converter = exchange.getCurrencyConverter();
+
+        List<Loan> maturingLoans = player.getLoansDueThisWeek(currentWeek);
+        BigDecimal totalObligations = player.getTotalObligationsThisWeek(currentWeek);
+
+        BigDecimal netTotal = shares.stream()
+                .map(s -> SalesCalculator.calculateNetNok(s, converter))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (netTotal.compareTo(totalObligations) < 0) {
+            throw new InsufficientSaleProceedsException(totalObligations.subtract(netTotal));
+        }
+
+        player.setPreviousNetWorth(player.getNetWorth(converter));
+
+        for (Share share : shares) {
+            exchange.sell(share, player);
+        }
+        player.withdrawMoney(totalObligations);
+
+        exchange.advance();
+        int week = exchange.getWeek();
+        player.writeInterestLedgerEntries(week);
+        for (Loan loan : maturingLoans) {
+            player.settleMatureLoan(loan, week);
+        }
+        finishWeekAdvance();
+    }
+
+    private void finishWeekAdvance() {
+        CurrencyConverter converter = exchange.getCurrencyConverter();
         player.recordNetWorth(converter);
+        player.recordTotalDebt();
         notifyObservers();
     }
 
@@ -293,6 +384,44 @@ public class GameService {
      */
     public BigDecimal getPreviousNetWorth() {
         return player.getPreviousNetWorth();
+    }
+
+    /**
+     * Creates a loan against the given offer, disburses the principal to the player,
+     * and notifies observers. Delegates all capacity and limit validation to
+     * {@link edu.ntnu.idatt2003.millions.model.player.Player#takeLoan}.
+     *
+     * @param offer  the loan offer the player is accepting
+     * @param amount the principal to disburse; must be positive and within offer limits
+     * @return the created {@link Loan}
+     * @throws NullPointerException    if either argument is null
+     * @throws IllegalArgumentException if amount exceeds the offer's maximum principal
+     * @throws edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException
+     *         if the loan would breach the player's debt-to-net-worth limit
+     */
+    public Loan takeLoan(LoanOffer offer, BigDecimal amount) throws ExcessiveDebtException {
+        if (gameOver) throw new IllegalStateException("Game is over");
+        Objects.requireNonNull(offer, "Offer cannot be null");
+        Objects.requireNonNull(amount, "Amount cannot be null");
+        Loan loan = new Loan(offer, amount, exchange.getWeek());
+        player.takeLoan(loan, exchange.getCurrencyConverter());
+        notifyObservers();
+        return loan;
+    }
+
+    /**
+     * Repays the given loan in full, withdrawing the principal from the player's
+     * cash balance and removing the loan from their active list.
+     *
+     * @param loan the loan to repay
+     * @throws NullPointerException     if loan is null
+     * @throws IllegalArgumentException if the player cannot afford the repayment
+     */
+    public void repayLoan(Loan loan) {
+        if (gameOver) throw new IllegalStateException("Game is over");
+        Objects.requireNonNull(loan, "Loan cannot be null");
+        player.repayLoan(loan, exchange.getWeek());
+        notifyObservers();
     }
 
     /**

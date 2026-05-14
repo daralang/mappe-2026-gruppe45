@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.controller;
 
+import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
+import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import edu.ntnu.idatt2003.millions.view.StartView;
@@ -218,10 +220,16 @@ public class StartController {
      *
      * @param action the start-flow action to execute
      */
-    private void runOrShowError(Runnable action) {
+    @FunctionalInterface
+    private interface GameAction {
+        void execute() throws InvalidStockDataException, GameSaveCorruptException;
+    }
+
+    private void runOrShowError(GameAction action) {
         try {
-            action.run();
-        } catch (IllegalArgumentException | IllegalStateException | UncheckedIOException exception) {
+            action.execute();
+        } catch (GameSaveCorruptException | InvalidStockDataException | IllegalArgumentException
+                 | IllegalStateException | UncheckedIOException exception) {
             errorSink.accept(exception.getMessage());
         }
     }

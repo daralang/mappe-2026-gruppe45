@@ -1,6 +1,11 @@
 package edu.ntnu.idatt2003.millions.model.player;
 
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
+import edu.ntnu.idatt2003.millions.model.loan.Loan;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 
 import java.math.BigDecimal;
@@ -15,15 +20,25 @@ import java.util.Objects;
  * and a {@link TransactionArchive} of committed transactions.
  */
 public class Player {
+
+    /**
+     * Maximum ratio of total outstanding loan debt to current net worth.
+     * A player may not borrow more than this fraction of their net worth in total.
+     */
+    public static final BigDecimal MAX_DEBT_RATIO = new BigDecimal("0.50");
+
     private final String name;
     private final BigDecimal startingMoney;
     private BigDecimal money;
 
     private final Portfolio portfolio;
     private final TransactionArchive transactionArchive;
+    private List<Loan> activeLoans;
 
     private BigDecimal previousNetWorth;
     private List<BigDecimal> netWorthHistory;
+    private List<BigDecimal> totalDebtHistory = new ArrayList<>();
+    private List<LoanLedgerEntry> loanLedger = new ArrayList<>();
 
     /**
      * Constructs a new Player with the specified name and starting balance.
@@ -47,6 +62,7 @@ public class Player {
 
         this.portfolio = new Portfolio();
         this.transactionArchive = new TransactionArchive();
+        this.activeLoans = new ArrayList<>();
 
         this.netWorthHistory = new ArrayList<>();
         netWorthHistory.add(startingMoney);
@@ -136,7 +152,7 @@ public class Player {
      */
     public BigDecimal getNetWorth(CurrencyConverter converter) {
         Objects.requireNonNull(converter, "Converter cannot be null");
-        return money.add(portfolio.getNetWorth(converter));
+        return money.add(portfolio.getNetWorth(converter)).subtract(getTotalDebt());
     }
 
     /**
@@ -184,6 +200,324 @@ public class Player {
      */
     public void setPreviousNetWorth(BigDecimal previousNetWorth) {
         this.previousNetWorth = previousNetWorth;
+    }
+
+    /**
+     * Returns a defensive copy of the player's active loans.
+     *
+     * @return immutable snapshot of active loans
+     */
+    private List<Loan> activeLoansInternal() {
+        if (activeLoans == null) activeLoans = new ArrayList<>();
+        return activeLoans;
+    }
+
+    public List<Loan> getActiveLoans() {
+        return new ArrayList<>(activeLoansInternal());
+    }
+
+    /**
+     * Returns the sum of all outstanding loan principals.
+     *
+     * @return total debt in NOK; zero if no active loans
+     */
+    public BigDecimal getTotalDebt() {
+        return activeLoansInternal().stream()
+                .map(Loan::principal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Records the player's current total debt in the history.
+     * Called by {@link edu.ntnu.idatt2003.millions.service.GameService}
+     * before advancing the week.
+     */
+    public void recordTotalDebt() {
+        if (totalDebtHistory == null) totalDebtHistory = new ArrayList<>();
+        totalDebtHistory.add(getTotalDebt());
+    }
+
+    /**
+     * Returns a list of all recorded total-debt snapshots over time.
+     * Each entry corresponds to the debt at the end of a week.
+     *
+     * @return a defensive copy of the debt history
+     */
+    public List<BigDecimal> getTotalDebtHistory() {
+        if (totalDebtHistory == null) return List.of();
+        return new ArrayList<>(totalDebtHistory);
+    }
+
+    /**
+     * Returns a defensive copy of all loan-related ledger entries.
+     * Each entry records a disbursement, interest deduction, or repayment.
+     *
+     * @return copy of the loan ledger; empty if no loan activity has occurred
+     */
+    public List<LoanLedgerEntry> getLoanLedger() {
+        if (loanLedger == null) return List.of();
+        return new ArrayList<>(loanLedger);
+    }
+
+    /**
+     * Returns the maximum total debt the player may carry, equal to
+     * {@link #MAX_DEBT_RATIO} of their current net worth.
+     *
+     * @param converter the currency converter used to compute net worth
+     * @return loan capacity in NOK
+     * @throws NullPointerException if converter is null
+     */
+    public BigDecimal getLoanCapacity(CurrencyConverter converter) {
+        return getNetWorth(converter)
+                .multiply(MAX_DEBT_RATIO)
+                .setScale(2, RoundingMode.HALF_UP)
+                .max(BigDecimal.ZERO);
+    }
+
+    /**
+     * Returns how much additional debt the player may take on right now.
+     * Equal to {@link #getLoanCapacity} minus {@link #getTotalDebt}, floored at zero.
+     *
+     * @param converter the currency converter used to compute net worth
+     * @return available borrowing capacity in NOK; never negative
+     * @throws NullPointerException if converter is null
+     */
+    public BigDecimal getAvailableLoanCapacity(CurrencyConverter converter) {
+        return getLoanCapacity(converter).subtract(getTotalDebt()).max(BigDecimal.ZERO);
+    }
+
+    /**
+     * Disburses a loan to the player: credits their balance with the principal
+     * and records the loan as an active debt.
+     *
+     * <p>The combined total of existing debt plus this loan's principal must not
+     * exceed {@link #MAX_DEBT_RATIO} of the player's current net worth. If it
+     * would, an {@link ExcessiveDebtException} is thrown and no state is mutated.
+     *
+     * @param loan      the loan to take; must not be null
+     * @param converter the currency converter used to evaluate net worth
+     * @throws NullPointerException    if loan or converter is null
+     * @throws ExcessiveDebtException  if taking the loan would breach the debt ratio
+     */
+    public void takeLoan(Loan loan, CurrencyConverter converter) throws ExcessiveDebtException {
+        Objects.requireNonNull(loan, "Loan cannot be null");
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        BigDecimal newTotalDebt = getTotalDebt().add(loan.principal());
+        BigDecimal capacity = getLoanCapacity(converter);
+        if (newTotalDebt.compareTo(capacity) > 0) {
+            throw new ExcessiveDebtException(newTotalDebt, capacity);
+        }
+        addMoney(loan.principal());
+        activeLoansInternal().add(loan);
+        if (loanLedger == null) loanLedger = new ArrayList<>();
+        loanLedger.add(new LoanLedgerEntry(
+                Math.max(loan.takenAtWeek(), 1), loan,
+                LoanLedgerEntryType.DISBURSEMENT, loan.principal()));
+    }
+
+    /**
+     * Repays a loan in full: withdraws the principal from the player's cash
+     * balance and removes the loan from the active list.
+     *
+     * @param loan        the loan to repay; must be an active loan owned by this player
+     * @param currentWeek the game week in which the repayment occurs; used for the ledger entry
+     * @throws NullPointerException     if loan is null
+     * @throws IllegalArgumentException if the player cannot afford the repayment
+     * @throws IllegalArgumentException if the loan is not in the active list
+     */
+    public void repayLoan(Loan loan, int currentWeek) {
+        Objects.requireNonNull(loan, "Loan cannot be null");
+        if (money.compareTo(loan.principal()) < 0) {
+            throw new IllegalArgumentException(
+                    "Insufficient funds to repay loan of " + loan.principal() + " NOK");
+        }
+        if (!activeLoansInternal().remove(loan)) {
+            throw new IllegalArgumentException("Loan is not an active loan for this player");
+        }
+        money = money.subtract(loan.principal());
+        if (loanLedger == null) loanLedger = new ArrayList<>();
+        loanLedger.add(new LoanLedgerEntry(
+                Math.max(currentWeek, 1), loan,
+                LoanLedgerEntryType.REPAYMENT, loan.principal().negate()));
+    }
+
+    /**
+     * Deducts one week's interest for every active loan from the player's
+     * cash balance and records an INTEREST ledger entry for each loan.
+     *
+     * <p>If the balance is insufficient to cover the full amount, the balance
+     * is reduced to zero and the unpaid shortfall is returned so the caller
+     * can trigger forced share sales. The ledger entries always record the
+     * full owed amount regardless of whether the player could cover it;
+     * the forced-sale flow that handles shortfalls is tracked separately.</p>
+     *
+     * @param week the game week in which interest is collected; used for ledger entries
+     * @return the interest amount that could not be paid; zero when fully covered
+     */
+    public BigDecimal collectWeeklyInterest(int week) {
+        List<Loan> loans = activeLoansInternal();
+        BigDecimal total = BigDecimal.ZERO;
+        if (loanLedger == null) loanLedger = new ArrayList<>();
+        for (Loan loan : loans) {
+            BigDecimal interest = loan.weeklyInterest();
+            total = total.add(interest);
+            if (interest.signum() > 0) {
+                loanLedger.add(new LoanLedgerEntry(
+                        Math.max(week, 1), loan,
+                        LoanLedgerEntryType.INTEREST, interest.negate()));
+            }
+        }
+        if (total.signum() == 0) return BigDecimal.ZERO;
+        BigDecimal paid = total.min(money);
+        money = money.subtract(paid);
+        return total.subtract(paid);
+    }
+
+    /**
+     * Returns the total weekly interest owed across all active loans this week.
+     *
+     * @return sum of each active loan's weekly interest; zero when no loans are active
+     */
+    public BigDecimal getWeeklyInterestDue() {
+        return activeLoansInternal().stream()
+                .map(Loan::weeklyInterest)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Returns {@code true} iff the player's current cash balance is at least
+     * equal to {@link #getWeeklyInterestDue()}.
+     *
+     * @return true if the player can cover this week's interest without selling shares
+     */
+    public boolean canCoverInterestThisWeek() {
+        return money.compareTo(getWeeklyInterestDue()) >= 0;
+    }
+
+    /**
+     * Returns loans whose principal becomes due at {@code currentWeek}
+     * (i.e., {@link Loan#isDueThisWeek(int)} is true for each).
+     *
+     * @param currentWeek the game week to evaluate
+     * @return immutable list of maturing loans; empty if none are due
+     */
+    public List<Loan> getLoansDueThisWeek(int currentWeek) {
+        return activeLoansInternal().stream()
+                .filter(loan -> loan.isDueThisWeek(currentWeek))
+                .toList();
+    }
+
+    /**
+     * Returns the sum of principals for all loans maturing at {@code currentWeek}.
+     *
+     * @param currentWeek the game week to evaluate
+     * @return total maturity principal in NOK; zero if no loans are due
+     */
+    public BigDecimal getMaturityDueThisWeek(int currentWeek) {
+        return getLoansDueThisWeek(currentWeek).stream()
+                .map(Loan::principal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Returns the total amount the player must pay this week: weekly interest
+     * across all active loans plus the principal of any maturing loans.
+     *
+     * @param currentWeek the game week to evaluate
+     * @return interest + maturity principal in NOK; zero if no loans are active
+     */
+    public BigDecimal getTotalObligationsThisWeek(int currentWeek) {
+        return getWeeklyInterestDue().add(getMaturityDueThisWeek(currentWeek));
+    }
+
+    /**
+     * Returns {@code true} iff the player's current cash covers
+     * {@link #getTotalObligationsThisWeek(int)}.
+     *
+     * @param currentWeek the game week to evaluate
+     * @return true if no forced share sale is required
+     */
+    public boolean canCoverObligationsThisWeek(int currentWeek) {
+        return money.compareTo(getTotalObligationsThisWeek(currentWeek)) >= 0;
+    }
+
+    /**
+     * Removes a matured loan from the active list and writes a REPAYMENT
+     * ledger entry, without touching the cash balance.
+     *
+     * <p>Used by the forced-sale path where the total obligation has already
+     * been withdrawn from cash in a single {@link #withdrawMoney} call.</p>
+     *
+     * @param loan the loan to close; must be an active loan owned by this player
+     * @param week the game week in which settlement occurs; used for the ledger entry
+     * @throws NullPointerException     if loan is null
+     * @throws IllegalArgumentException if the loan is not in the active list
+     */
+    public void settleMatureLoan(Loan loan, int week) {
+        Objects.requireNonNull(loan, "Loan cannot be null");
+        if (!activeLoansInternal().remove(loan)) {
+            throw new IllegalArgumentException("Loan is not an active loan for this player");
+        }
+        if (loanLedger == null) loanLedger = new ArrayList<>();
+        loanLedger.add(new LoanLedgerEntry(
+                Math.max(week, 1), loan,
+                LoanLedgerEntryType.REPAYMENT, loan.principal().negate()));
+    }
+
+    /**
+     * Appends an INTEREST {@link LoanLedgerEntry} for every active loan without
+     * touching the cash balance. Called by the forced-sale path after the player's
+     * cash has already been adjusted separately via {@link #withdrawMoney}.
+     *
+     * @param week the game week in which interest is recorded; must be &gt;= 1
+     */
+    public void writeInterestLedgerEntries(int week) {
+        if (loanLedger == null) loanLedger = new ArrayList<>();
+        for (Loan loan : activeLoansInternal()) {
+            BigDecimal interest = loan.weeklyInterest();
+            if (interest.signum() > 0) {
+                loanLedger.add(new LoanLedgerEntry(
+                        Math.max(week, 1), loan,
+                        LoanLedgerEntryType.INTEREST, interest.negate()));
+            }
+        }
+    }
+
+    /**
+     * Returns the total liquidation value of all portfolio positions plus cash, in NOK.
+     * Liquidation value per share is the net payout after commission and tax,
+     * converted to NOK via the given converter.
+     *
+     * @param converter the currency converter used to translate share values to NOK
+     * @return cash plus net liquidation value of all holdings, in NOK
+     * @throws NullPointerException if converter is null
+     */
+    public BigDecimal getTotalLiquidationValue(CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        BigDecimal portfolioLiquidation = portfolio.getShares().stream()
+                .map(s -> SalesCalculator.calculateNetNok(s, converter))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return money.add(portfolioLiquidation);
+    }
+
+    /**
+     * Returns {@code true} iff the player's total liquidation value
+     * (cash plus net sale proceeds from all holdings) is enough to cover
+     * {@link #getTotalObligationsThisWeek(int)}.
+     *
+     * <p>When this returns {@code false} and
+     * {@link #canCoverObligationsThisWeek(int)} is also {@code false}, a
+     * forced sale cannot save the player — the game is over.</p>
+     *
+     * @param currentWeek the game week to evaluate
+     * @param converter   the currency converter used to compute liquidation value
+     * @return true if forced-sale is viable; false if game over
+     * @throws NullPointerException if converter is null
+     */
+    public boolean canCoverWithFullLiquidation(int currentWeek, CurrencyConverter converter) {
+        Objects.requireNonNull(converter, "Converter cannot be null");
+        return getTotalLiquidationValue(converter)
+                .compareTo(getTotalObligationsThisWeek(currentWeek)) >= 0;
     }
 
     /**

@@ -1,7 +1,14 @@
 package edu.ntnu.idatt2003.millions.model;
 
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
+import edu.ntnu.idatt2003.millions.model.loan.Loan;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
+import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
+import edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -13,6 +20,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
@@ -386,6 +394,100 @@ class PlayerTest {
     }
 
     @Nested
+    @DisplayName("recordTotalDebt()")
+    class RecordTotalDebt {
+
+        @Test
+        @DisplayName("Should append current total debt to history")
+        void appendsCurrentTotalDebtToHistory() {
+            // Arrange
+            int initialSize = player.getTotalDebtHistory().size();
+            // Act
+            player.recordTotalDebt();
+            // Assert
+            assertEquals(initialSize + 1, player.getTotalDebtHistory().size());
+        }
+
+        @Test
+        @DisplayName("Should record matching value as getTotalDebt")
+        void recordsMatchingValue() {
+            // Arrange
+            BigDecimal expected = player.getTotalDebt();
+            // Act
+            player.recordTotalDebt();
+            // Assert
+            BigDecimal recorded = player.getTotalDebtHistory().getLast();
+            assertEquals(0, expected.compareTo(recorded));
+        }
+
+        @Test
+        @DisplayName("Should record zero debt when no loans are active")
+        void recordsZeroWhenNoLoans() {
+            // Act
+            player.recordTotalDebt();
+            // Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getTotalDebtHistory().getLast()));
+        }
+
+        @Test
+        @DisplayName("Should support multiple recordings in order")
+        void supportsMultipleRecordings() throws ExcessiveDebtException {
+            // Arrange
+            LoanOffer offer = new LoanOffer("test", new BigDecimal("0.01"), 10,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+            player.recordTotalDebt(); // debt = 0
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 0), converter);
+            player.recordTotalDebt(); // debt = 200
+            // Act
+            List<BigDecimal> history = player.getTotalDebtHistory();
+            // Assert: two recordings
+            assertEquals(2, history.size());
+            assertTrue(history.getLast().compareTo(history.getFirst()) > 0);
+        }
+    }
+
+
+    @Nested
+    @DisplayName("getTotalDebtHistory()")
+    class GetTotalDebtHistory {
+
+        @Test
+        @DisplayName("Should start empty before any recording")
+        void startsEmpty() {
+            assertTrue(player.getTotalDebtHistory().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should return a copy that does not affect the internal list")
+        void returnsCopy() {
+            // Arrange
+            player.recordTotalDebt();
+            List<BigDecimal> history = player.getTotalDebtHistory();
+            // Act
+            history.clear();
+            // Assert
+            assertFalse(player.getTotalDebtHistory().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should reflect every recordTotalDebt call in order")
+        void reflectsRecordingsInOrder() throws ExcessiveDebtException {
+            // Arrange
+            LoanOffer offer = new LoanOffer("test", new BigDecimal("0.01"), 10,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+            player.recordTotalDebt(); // 0
+            player.takeLoan(new Loan(offer, new BigDecimal("100.00"), 0), converter);
+            player.recordTotalDebt(); // 100
+            // Act
+            List<BigDecimal> history = player.getTotalDebtHistory();
+            // Assert
+            assertEquals(2, history.size());
+            assertEquals(0, BigDecimal.ZERO.compareTo(history.getFirst()));
+            assertEquals(0, new BigDecimal("100.00").compareTo(history.getLast()));
+        }
+    }
+
+    @Nested
     @DisplayName("getStatus()")
     class GetStatus {
 
@@ -577,6 +679,422 @@ class PlayerTest {
 
             // Assert
             assertEquals(new BigDecimal("7500.00"), player.getPreviousNetWorth());
+        }
+    }
+
+    @Nested
+    @DisplayName("Loans")
+    class Loans {
+
+        private LoanOffer offer;
+
+        @BeforeEach
+        void setUpOffer() {
+            // simple offer with generous maxPrincipal so tests can isolate capacity logic
+            offer = new LoanOffer("test", new BigDecimal("0.01"), 10,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+        }
+
+        @Test
+        @DisplayName("getTotalDebt() returns zero when no active loans")
+        void getTotalDebtReturnsZeroWithNoLoans() {
+            // Act & Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getTotalDebt()));
+        }
+
+        @Test
+        @DisplayName("getTotalDebt() sums principals of multiple loans")
+        void getTotalDebtSumsMultipleLoans() throws ExcessiveDebtException {
+            // Arrange — player starts with 1000, net worth=1000, capacity=500
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 0), converter);
+            // After first loan: money=1200, debt=200, net worth=1000, capacity=500, available=300
+            player.takeLoan(new Loan(offer, new BigDecimal("150.00"), 0), converter);
+            // Assert
+            assertEquals(0, new BigDecimal("350.00").compareTo(player.getTotalDebt()));
+        }
+
+        @Test
+        @DisplayName("getLoanCapacity() equals net worth times MAX_DEBT_RATIO")
+        void getLoanCapacityEqualsNetWorthTimesRatio() {
+            // Arrange
+            BigDecimal expected = player.getNetWorth(converter)
+                    .multiply(Player.MAX_DEBT_RATIO)
+                    .setScale(2, RoundingMode.HALF_UP);
+            // Act & Assert
+            assertEquals(0, expected.compareTo(player.getLoanCapacity(converter)));
+        }
+
+        @Test
+        @DisplayName("getAvailableLoanCapacity() equals loan capacity when no debt")
+        void getAvailableLoanCapacityEqualsCapacityWithNoDebt() {
+            // Act & Assert
+            assertEquals(0, player.getLoanCapacity(converter)
+                    .compareTo(player.getAvailableLoanCapacity(converter)));
+        }
+
+        @Test
+        @DisplayName("getAvailableLoanCapacity() decreases after taking a loan")
+        void getAvailableLoanCapacityDecreasesAfterLoan() throws ExcessiveDebtException {
+            // Arrange
+            BigDecimal before = player.getAvailableLoanCapacity(converter);
+            // Act
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 0), converter);
+            BigDecimal after = player.getAvailableLoanCapacity(converter);
+            // Assert
+            assertTrue(after.compareTo(before) < 0);
+        }
+
+        @Test
+        @DisplayName("takeLoan() increases player money by the principal")
+        void takeLoanIncreasesMoney() throws ExcessiveDebtException {
+            // Arrange
+            BigDecimal before = player.getMoney();
+            BigDecimal principal = new BigDecimal("300.00");
+            // Act
+            player.takeLoan(new Loan(offer, principal, 0), converter);
+            // Assert
+            assertEquals(0, before.add(principal).compareTo(player.getMoney()));
+        }
+
+        @Test
+        @DisplayName("takeLoan() adds the loan to active loans")
+        void takeLoanAddsToActiveLoans() throws ExcessiveDebtException {
+            // Arrange
+            Loan loan = new Loan(offer, new BigDecimal("300.00"), 0);
+            // Act
+            player.takeLoan(loan, converter);
+            // Assert
+            assertTrue(player.getActiveLoans().contains(loan));
+        }
+
+        @Test
+        @DisplayName("takeLoan() throws ExcessiveDebtException when limit would be breached")
+        void takeLoanThrowsWhenCapacityExceeded() {
+            // Arrange — player starts with 1000, capacity = 500; request 600 > 500
+            assertThrows(ExcessiveDebtException.class, () ->
+                    player.takeLoan(new Loan(offer, new BigDecimal("600.00"), 0), converter));
+        }
+
+        @Test
+        @DisplayName("takeLoan() throws NullPointerException when loan is null")
+        void takeLoanThrowsWhenLoanIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class, () ->
+                    player.takeLoan(null, converter));
+        }
+
+        @Test
+        @DisplayName("takeLoan() does not modify money or active loans when it throws")
+        void takeLoanIsAtomic() {
+            // Arrange
+            BigDecimal moneyBefore = player.getMoney();
+            int loanCountBefore = player.getActiveLoans().size();
+            // Act — request 600 > capacity 500 → throws
+            assertThrows(ExcessiveDebtException.class, () ->
+                    player.takeLoan(new Loan(offer, new BigDecimal("600.00"), 0), converter));
+            // Assert — state unchanged
+            assertEquals(0, moneyBefore.compareTo(player.getMoney()));
+            assertEquals(loanCountBefore, player.getActiveLoans().size());
+        }
+
+        @Test
+        @DisplayName("repayLoan() removes the loan from active loans")
+        void repayLoanRemovesFromActiveLoans() throws ExcessiveDebtException {
+            // Arrange
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
+            player.takeLoan(loan, converter);
+            // Act
+            player.repayLoan(loan, 1);
+            // Assert
+            assertFalse(player.getActiveLoans().contains(loan));
+        }
+
+        @Test
+        @DisplayName("repayLoan() deducts the principal from player money")
+        void repayLoanDeductsMoney() throws ExcessiveDebtException {
+            // Arrange
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
+            player.takeLoan(loan, converter); // money: 1000 + 200 = 1200
+            BigDecimal moneyAfterTake = player.getMoney();
+            // Act
+            player.repayLoan(loan, 1); // money: 1200 - 200 = 1000
+            // Assert
+            assertEquals(0, moneyAfterTake.subtract(new BigDecimal("200.00")).compareTo(player.getMoney()));
+        }
+
+        @Test
+        @DisplayName("repayLoan() throws when player cannot afford the principal")
+        void repayLoanThrowsWhenInsufficientFunds() throws ExcessiveDebtException {
+            // Arrange — give player a tiny balance by draining most of their cash
+            Player broke = new Player("Broke", new BigDecimal("100.00"));
+            // Manually add a loan with a principal larger than cash using internal via takeLoan
+            // Use a fresh offer with maxPrincipal matching the player's capacity
+            LoanOffer bigOffer = new LoanOffer("big", new BigDecimal("0.01"), 4,
+                    new BigDecimal("50.00"), edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel.LOW);
+            Loan loan = new Loan(bigOffer, new BigDecimal("50.00"), 0);
+            broke.takeLoan(loan, converter); // money: 100 + 50 = 150
+            broke.withdrawMoney(new BigDecimal("140.00")); // money: 10, principal: 50
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () -> broke.repayLoan(loan, 1));
+        }
+
+        @Test
+        @DisplayName("repayLoan() throws when loan is not in the active list")
+        void repayLoanThrowsForUnknownLoan() {
+            // Arrange
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
+            // Act & Assert — loan never taken, so not in active list
+            assertThrows(IllegalArgumentException.class, () -> player.repayLoan(loan, 1));
+        }
+
+        @Test
+        @DisplayName("getNetWorth() subtracts outstanding debt")
+        void getNetWorthSubtractsDebt() throws ExcessiveDebtException {
+            // Arrange — player starts with 1000 cash
+            BigDecimal principal = new BigDecimal("300.00");
+            player.takeLoan(new Loan(offer, principal, 0), converter);
+            // money = 1300, debt = 300 → net worth = 1300 - 300 = 1000
+            assertEquals(0, new BigDecimal("1000.00").compareTo(player.getNetWorth(converter)));
+        }
+
+        @Test
+        @DisplayName("Taking a loan does not change net worth")
+        void takingLoanDoesNotChangeNetWorth() throws ExcessiveDebtException {
+            // Arrange
+            BigDecimal before = player.getNetWorth(converter);
+            // Act
+            player.takeLoan(new Loan(offer, new BigDecimal("300.00"), 0), converter);
+            // Assert — cash up by 300, debt up by 300: net effect is zero
+            assertEquals(0, before.compareTo(player.getNetWorth(converter)));
+        }
+
+        @Test
+        @DisplayName("Repaying a loan does not change net worth")
+        void repayingLoanDoesNotChangeNetWorth() throws ExcessiveDebtException {
+            // Arrange
+            Loan loan = new Loan(offer, new BigDecimal("300.00"), 0);
+            player.takeLoan(loan, converter);
+            BigDecimal before = player.getNetWorth(converter);
+            // Act
+            player.repayLoan(loan, 1);
+            // Assert — cash down by 300, debt down by 300: net effect is zero
+            assertEquals(0, before.compareTo(player.getNetWorth(converter)));
+        }
+
+        @Test
+        @DisplayName("getNetWorth() can be negative when debt exceeds assets")
+        void getNetWorthCanBeNegative() throws ExcessiveDebtException {
+            // Arrange — take a loan, then drain cash below the principal
+            Loan loan = new Loan(offer, new BigDecimal("400.00"), 0);
+            player.takeLoan(loan, converter);        // cash=1400, debt=400, net worth=1000
+            player.withdrawMoney(new BigDecimal("1390.00")); // cash=10, debt=400, net worth=-390
+            // Act & Assert
+            assertTrue(player.getNetWorth(converter).compareTo(BigDecimal.ZERO) < 0);
+        }
+
+        @Test
+        @DisplayName("getLoanCapacity() clamps to zero when net worth is negative")
+        void getLoanCapacityIsZeroOnNegativeNetWorth() throws ExcessiveDebtException {
+            // Arrange — same setup as above produces negative net worth
+            Loan loan = new Loan(offer, new BigDecimal("400.00"), 0);
+            player.takeLoan(loan, converter);
+            player.withdrawMoney(new BigDecimal("1390.00"));
+            // Act & Assert
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getLoanCapacity(converter)));
+        }
+
+        @Test
+        @DisplayName("takeLoan() appends a DISBURSEMENT ledger entry")
+        void takeLoanAppendsDisbursementEntry() throws ExcessiveDebtException {
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 1);
+            player.takeLoan(loan, converter);
+            List<LoanLedgerEntry> ledger = player.getLoanLedger();
+            assertEquals(1, ledger.size());
+            LoanLedgerEntry entry = ledger.getFirst();
+            assertEquals(LoanLedgerEntryType.DISBURSEMENT, entry.type());
+            assertEquals(0, new BigDecimal("200.00").compareTo(entry.amount()));
+            assertEquals(loan, entry.loan());
+        }
+
+        @Test
+        @DisplayName("repayLoan() appends a REPAYMENT ledger entry with negative amount")
+        void repayLoanAppendsRepaymentEntry() throws ExcessiveDebtException {
+            Loan loan = new Loan(offer, new BigDecimal("200.00"), 1);
+            player.takeLoan(loan, converter);
+            player.repayLoan(loan, 2);
+            List<LoanLedgerEntry> ledger = player.getLoanLedger();
+            assertEquals(2, ledger.size());
+            LoanLedgerEntry repayment = ledger.getLast();
+            assertEquals(LoanLedgerEntryType.REPAYMENT, repayment.type());
+            assertEquals(0, new BigDecimal("-200.00").compareTo(repayment.amount()));
+            assertEquals(2, repayment.week());
+        }
+
+        @Test
+        @DisplayName("getLoanLedger() returns a defensive copy")
+        void getLoanLedgerReturnsDefensiveCopy() throws ExcessiveDebtException {
+            Loan loan = new Loan(offer, new BigDecimal("100.00"), 1);
+            player.takeLoan(loan, converter);
+            List<LoanLedgerEntry> ledger = player.getLoanLedger();
+            ledger.clear();
+            assertEquals(1, player.getLoanLedger().size());
+        }
+
+        @Test
+        @DisplayName("Ledger is empty for a player with no loan activity")
+        void ledgerIsEmptyWithNoActivity() {
+            assertTrue(player.getLoanLedger().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Stacking loans to bypass the 50% cap is blocked")
+        void stackingLoansIsBlocked() throws ExcessiveDebtException {
+            // Arrange — player starts with 10 000 NOK, capacity = 5 000
+            Player rich = new Player("Rich", new BigDecimal("10000.00"));
+            LoanOffer bigOffer = new LoanOffer("big", new BigDecimal("0.01"), 10,
+                    new BigDecimal("50000.00"), LoanRiskLevel.LOW);
+            // First loan fills capacity exactly: debt=5000, net worth still 10000, available=0
+            rich.takeLoan(new Loan(bigOffer, new BigDecimal("5000.00"), 0), converter);
+            // Act & Assert — any further loan must be rejected
+            assertThrows(ExcessiveDebtException.class, () ->
+                    rich.takeLoan(new Loan(bigOffer, new BigDecimal("1.00"), 0), converter));
+        }
+
+        @Test
+        @DisplayName("getWeeklyInterestDue() returns zero when no active loans")
+        void getWeeklyInterestDueIsZeroWhenNoActiveLoans() {
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getWeeklyInterestDue()));
+        }
+
+        @Test
+        @DisplayName("getWeeklyInterestDue() sums interest across all active loans")
+        void getWeeklyInterestDueSumsAllActiveLoans() throws ExcessiveDebtException {
+            // Arrange — player starts with 1000 NOK, capacity = 500.
+            // Two loans within capacity: 200 NOK at 1% = 2.00, 100 NOK at 1% = 1.00 → total 3.00
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            player.takeLoan(new Loan(offer, new BigDecimal("100.00"), 1), converter);
+            assertEquals(0, new BigDecimal("3.00").compareTo(player.getWeeklyInterestDue()));
+        }
+
+        @Test
+        @DisplayName("canCoverInterestThisWeek() returns true when cash >= interest due")
+        void canCoverInterestThisWeekReturnsTrueWhenMoneyExceedsDue() throws ExcessiveDebtException {
+            // Arrange — take 400 NOK loan (within 500 capacity): money = 1400, interest = 4.00
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertTrue(player.canCoverInterestThisWeek());
+        }
+
+        @Test
+        @DisplayName("canCoverInterestThisWeek() returns false when cash < interest due")
+        void canCoverInterestThisWeekReturnsFalseWhenMoneyIsLess() throws ExcessiveDebtException {
+            // Arrange — take 400 NOK loan: money = 1400, interest = 4.00. Then drain to 3.00.
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            player.withdrawMoney(new BigDecimal("1397.00")); // money = 3.00 < 4.00 interest
+            assertFalse(player.canCoverInterestThisWeek());
+        }
+
+        @Test
+        @DisplayName("getMaturityDueThisWeek() returns zero when no loans are maturing")
+        void getMaturityDueThisWeek_zeroWhenNoneAreMaturing() throws ExcessiveDebtException {
+            // Arrange — loan taken at week 1, term 10: due at week 11, not week 2
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getMaturityDueThisWeek(2)));
+        }
+
+        @Test
+        @DisplayName("getMaturityDueThisWeek() returns principal of maturing loan")
+        void getMaturityDueThisWeek_returnsPrincipalOfMaturingLoan() throws ExcessiveDebtException {
+            // Arrange — offer has term 10: taken at week 1, due at week 11
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            assertEquals(0, new BigDecimal("200.00").compareTo(player.getMaturityDueThisWeek(11)));
+        }
+
+        @Test
+        @DisplayName("getMaturityDueThisWeek() sums principals of multiple maturing loans")
+        void getMaturityDueThisWeek_sumsBothMaturingLoans() throws ExcessiveDebtException {
+            // Both loans taken at week 1 with term 10 → both mature at week 11
+            // player starts with 1000, capacity 500; two loans sum to 350 which is within limit
+            player.takeLoan(new Loan(offer, new BigDecimal("200.00"), 1), converter);
+            player.takeLoan(new Loan(offer, new BigDecimal("150.00"), 1), converter);
+            assertEquals(0, new BigDecimal("350.00").compareTo(player.getMaturityDueThisWeek(11)));
+        }
+
+        @Test
+        @DisplayName("getTotalObligationsThisWeek() equals interest-only when no loans mature")
+        void getTotalObligationsThisWeek_equalsInterestWhenNoMaturity() throws ExcessiveDebtException {
+            // Arrange — 400 NOK at 1% = 4.00 weekly; loan matures at week 11, not week 2
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertEquals(0, new BigDecimal("4.00").compareTo(player.getTotalObligationsThisWeek(2)));
+        }
+
+        @Test
+        @DisplayName("getTotalObligationsThisWeek() includes maturity principal when loan matures")
+        void getTotalObligationsThisWeek_includesMaturityPrincipal() throws ExcessiveDebtException {
+            // 400 NOK at 1%/week: interest = 4.00, maturity = 400.00 → obligations = 404.00
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertEquals(0, new BigDecimal("404.00").compareTo(player.getTotalObligationsThisWeek(11)));
+        }
+
+        @Test
+        @DisplayName("canCoverObligationsThisWeek() returns true when cash covers interest only")
+        void canCoverObligationsThisWeek_trueForInterestOnly() throws ExcessiveDebtException {
+            // 400 NOK loan at 1%: money=1400, interest=4.00, no maturity at week 2 → true
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            assertTrue(player.canCoverObligationsThisWeek(2));
+        }
+
+        @Test
+        @DisplayName("canCoverObligationsThisWeek() returns false when cash cannot cover interest + maturity")
+        void canCoverObligationsThisWeek_falseWhenObligationsExceedCash() throws ExcessiveDebtException {
+            // 400 NOK loan at 1%: money=1400 initially.
+            // At week 11, obligations = 4.00 + 400.00 = 404.00. Drain to 403.00.
+            player.takeLoan(new Loan(offer, new BigDecimal("400.00"), 1), converter);
+            player.withdrawMoney(new BigDecimal("997.00")); // money = 403.00 < 404.00
+            assertFalse(player.canCoverObligationsThisWeek(11));
+        }
+    }
+
+    @Nested
+    @DisplayName("getTotalLiquidationValue() and canCoverWithFullLiquidation()")
+    class LiquidationMethods {
+
+        @Test
+        @DisplayName("getTotalLiquidationValue() equals cash when portfolio is empty")
+        void liquidationValueEqualsCashWhenPortfolioEmpty() {
+            // Arrange — fresh player with no shares
+            // Act
+            BigDecimal result = player.getTotalLiquidationValue(converter);
+            // Assert
+            assertEquals(0, player.getMoney().compareTo(result));
+        }
+
+        @Test
+        @DisplayName("getTotalLiquidationValue() includes net share proceeds plus cash")
+        void liquidationValueIncludesShareProceeds() {
+            // Arrange — add a NOK share; compute expected net via SalesCalculator
+            Stock stock = nokStock("AAPL", "Apple", new BigDecimal("200.00"));
+            Share share = new Share(stock, new BigDecimal("2"), new BigDecimal("100.00"));
+            player.getPortfolio().addShare(share);
+            BigDecimal expectedNet = SalesCalculator.calculateNetNok(share, converter);
+            BigDecimal expected = player.getMoney().add(expectedNet);
+            // Act
+            BigDecimal result = player.getTotalLiquidationValue(converter);
+            // Assert
+            assertEquals(0, expected.compareTo(result));
+        }
+
+        @Test
+        @DisplayName("canCoverWithFullLiquidation() returns false when liquidation value is less than obligations")
+        void canCoverWithFullLiquidation_falseWhenTotalBelowObligations() throws ExcessiveDebtException {
+            // Arrange — drain cash and create a large loan obligation
+            LoanOffer highRisk = new LoanOffer("hr", new BigDecimal("0.05"), 2,
+                    new BigDecimal("500.00"), LoanRiskLevel.HIGH);
+            player.takeLoan(new Loan(highRisk, new BigDecimal("500.00"), 1), converter);
+            // obligations at week 2 = interest 25 + principal 500 = 525
+            // player has 1500 cash → can cover from cash; drain to 0 to force game-over scenario
+            player.withdrawMoney(player.getMoney()); // money = 0
+            // Liquidation value = 0 (no shares) < 525 obligations → false
+            assertFalse(player.canCoverWithFullLiquidation(2, converter));
         }
     }
 }

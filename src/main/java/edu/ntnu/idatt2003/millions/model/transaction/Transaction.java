@@ -12,7 +12,7 @@ import java.util.Objects;
  * used to process it. Subclasses must implement {@link #commit(Player)}.
  */
 public abstract class Transaction {
-    private final Share share;
+    private Share share;
     private final int week;
     private boolean committed;
 
@@ -46,6 +46,19 @@ public abstract class Transaction {
      */
     public Share getShare() {
         return share;
+    }
+
+    /**
+     * Relinks this transaction's share to point to the canonical {@link edu.ntnu.idatt2003.millions.model.stock.Stock}
+     * from the exchange after deserialization. For deserialization use only — mirrors
+     * {@link edu.ntnu.idatt2003.millions.model.player.Portfolio#setShares(java.util.List)}.
+     *
+     * @param newShare the replacement share; must not be null
+     * @throws NullPointerException if newShare is null
+     */
+    public void relinkShare(Share newShare) {
+        Objects.requireNonNull(newShare, "Share cannot be null");
+        this.share = newShare;
     }
 
     /**

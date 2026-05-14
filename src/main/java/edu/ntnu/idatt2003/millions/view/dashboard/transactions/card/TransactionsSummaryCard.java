@@ -23,55 +23,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Dashboard card that summarises the user's transactions over the
- * week range selected in {@code TransactionsCard}: total purchase
- * outflow, total sale inflow, and the net of the two.
+ * Dashboard card that summarises transactions over the selected week
+ * range: total purchase outflow, total sale inflow, and the net.
  *
- * <p>Layout: a header row with the section title on the left and a
- * read-only "Uke {from}–{to}" label on the right, followed by three
- * label/value rows (Kjøp, Salg, Total). The Total row is separated
- * from the others by the same divider {@code HoldingsCard} uses for
- * its total row, so the two cards read as part of the same visual
- * family.</p>
- *
- * <p>The card does not own a filter widget. It listens to the
- * {@link WeekRangeFilter} that {@code TransactionsView} created and
- * handed to both cards on the tab, so the summary always reflects
- * the same period the table shows. The spinner widget itself lives
- * inside {@code TransactionsCard}'s filter row; rendering it a
- * second time here would duplicate a control without adding any
- * functionality, and letting the summary have its own range would
- * make two cards on the same tab show data for different periods —
- * a confusing UX. The card shows the range as a plain "Uke
- * {from}–{to}" label that updates the moment the user changes the
- * spinner in the table card above.</p>
- *
- * <p>The type filter from the transactions table is intentionally
- * not applied here either: the whole point of the summary is to
- * compare purchases against sales, so filtering to one type would
- * zero out the other row and remove the comparison this card exists
- * to show.</p>
+ * <p>Listens to the shared {@link WeekRangeFilter} owned by
+ * {@code TransactionsCard}. The type filter is not applied here - the card exists to compare
+ * purchases against sales, and filtering to one type would zero out the other row.</p>
  *
  * <p>All aggregation is delegated to
- * {@link TransactionStatsService#getSummary} so the card stays a thin
- * presentation layer over a stateless read service.</p>
+ * {@link TransactionStatsService#getSummary} so the card stays a
+ * thin presentation layer over a stateless read service.</p>
  */
 public class TransactionsSummaryCard extends Card {
 
     /** Spacing between the header row and the value grid. */
     private static final int CARD_SPACING = 16;
 
-    /** Horizontal gap between label and value columns in the value grid. */
+    /** Horizontal gap between the label and value columns. */
     private static final int VALUE_HGAP = 20;
 
-    /**
-     * Column widths for the two-column value grid. Left column carries
-     * the label ("Kjøp" / "Salg" / "Total"), right column the NOK amount
-     * right-aligned to keep digits aligned across the three rows.
-     */
+    /** Equal-width two-column layout: label left, NOK amount right. */
     private static final double[] COLUMN_WIDTHS = {50, 50};
-
-    /** Left-aligned labels, right-aligned values. */
     private static final HPos[] COLUMN_ALIGNMENTS = {HPos.LEFT, HPos.RIGHT};
 
     private final GameService gameService;
@@ -83,12 +55,9 @@ public class TransactionsSummaryCard extends Card {
     private final GridPane grid = new GridPane();
 
     /**
-     * Constructs a new TransactionsSummaryCard.
-     *
-     * @param gameService     the game manager containing player and exchange
-     * @param weekRangeFilter the shared filter that scopes the table this
-     *                        card summarises; the card listens to it but
-     *                        does not render its spinner widget
+     * @param gameService     game manager containing player and exchange
+     * @param weekRangeFilter shared filter that scopes the table this
+     *                        card summarises
      */
     public TransactionsSummaryCard(GameService gameService, WeekRangeFilter weekRangeFilter) {
         super(gameService);
@@ -100,8 +69,8 @@ public class TransactionsSummaryCard extends Card {
         title = StyledText.sectionTitle(LanguageManager.get("transactions.summary.title"));
         weekRangeLabel = StyledText.weekLabel();
 
-        weekRangeFilter.fromWeekProperty().addListener((obs, oldVal, newVal) -> refresh());
-        weekRangeFilter.toWeekProperty().addListener((obs, oldVal, newVal) -> refresh());
+        weekRangeFilter.fromWeekProperty().addListener((_, _, _) -> refresh());
+        weekRangeFilter.toWeekProperty().addListener((_, _, _) -> refresh());
 
         HBox header = buildHeader();
 
@@ -112,14 +81,7 @@ public class TransactionsSummaryCard extends Card {
         refresh();
     }
 
-    /**
-     * Builds the title row: section title on the left, a flexible
-     * spacer in the middle, and a read-only "Uke {from}–{to}" label
-     * on the right. The label echoes the spinner that lives in
-     * {@code TransactionsCard} above; it is not interactive itself.
-     *
-     * @return the configured header row
-     */
+    /** Title on the left, flexible spacer, week-range label on the right. */
     private HBox buildHeader() {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -129,22 +91,11 @@ public class TransactionsSummaryCard extends Card {
         return header;
     }
 
-    /**
-     * Refreshes value rows whenever the model changes — the filter's
-     * upper bound is bumped by {@code TransactionsCard}, so this card
-     * only needs to recompute the totals against the (possibly new)
-     * transactions.
-     */
     @Override
     public void onGameUpdated() {
         refresh();
     }
 
-    /**
-     * Refreshes the section title, the week-range label, and the row
-     * contents so labels and value formatting follow the active
-     * language.
-     */
     @Override
     protected void onLanguageChanged() {
         title.setText(LanguageManager.get("transactions.summary.title"));
@@ -153,10 +104,9 @@ public class TransactionsSummaryCard extends Card {
 
     /**
      * Rebuilds the value rows from the current filter selection and
-     * updates the header's week-range label. The three rows (Kjøp,
-     * Salg, Total) are laid out with the Total row separated by the
-     * same divider {@code HoldingsCard} uses, so the two cards read
-     * as a visual family.
+     * updates the week-range label. The Total row uses the same
+     * divider as {@code HoldingsCard} so the two cards read as a
+     * visual family.
      */
     private void refresh() {
         int fromWeek = weekRangeFilter.getFromWeek();
@@ -187,14 +137,7 @@ public class TransactionsSummaryCard extends Card {
         grid.add(rowValue(summary.totalNok(), true), 1, 3);
     }
 
-    /**
-     * Creates a label for the leftmost column. Bold variant is used for
-     * the total row to match the {@code HoldingsCard} total-row styling.
-     *
-     * @param text the label text
-     * @param bold whether to apply the bold modifier
-     * @return a styled label
-     */
+    /** Left-column label; bold variant is used for the total row. */
     private Label rowLabel(String text, boolean bold) {
         Label label = TableCells.data(text);
         if (bold) {
@@ -204,18 +147,11 @@ public class TransactionsSummaryCard extends Card {
     }
 
     /**
-     * Creates a signed NOK amount label for the rightmost column. The
-     * positive sign is rendered explicitly so sale inflows display as
-     * {@code +1 234,56 NOK} rather than just {@code 1 234,56 NOK}, which
-     * matches the mockup and the visual cue used elsewhere in the app.
-     * Negative values keep the minus sign produced by
-     * {@link TableCells#NUMBER_FORMAT}; zero is shown without a sign.
-     * Color modifiers are not applied here — the summary card keeps a
-     * neutral palette, only weight distinguishes the total row.
-     *
-     * @param amount the NOK amount to render
-     * @param bold   whether to apply the bold modifier
-     * @return a styled label
+     * Signed NOK amount. Positives are rendered with an explicit
+     * {@code +} so sale inflows read as "+1 234,56 NOK"; negatives
+     * keep the minus produced by {@link TableCells#NUMBER_FORMAT};
+     * zero is unsigned. No color modifiers — the summary keeps a
+     * neutral palette and only weight distinguishes the total row.
      */
     private Label rowValue(BigDecimal amount, boolean bold) {
         String sign = amount.signum() > 0 ? "+" : "";
@@ -228,15 +164,9 @@ public class TransactionsSummaryCard extends Card {
     }
 
     /**
-     * Gathers every transaction in the archive within the given week
-     * range (inclusive on both ends). Ordering does not matter for the
-     * summary — only the sum does — so this method skips the sort that
+     * Gathers transactions in the inclusive week range. Ordering does
+     * not matter for the summary, so this skips the sort
      * {@code TransactionsCard} performs on the same data.
-     *
-     * @param archive  the archive to read transactions from
-     * @param fromWeek the first week to include (inclusive)
-     * @param toWeek   the last week to include (inclusive)
-     * @return the transactions in the range, in archive order
      */
     private List<Transaction> collectRange(TransactionArchive archive, int fromWeek, int toWeek) {
         List<Transaction> list = new ArrayList<>();
