@@ -6,6 +6,7 @@ import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,14 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for {@link StartController}.
- *
- * <p>Uses the test seam constructor that takes a {@link StartScreenInputs}
- * and a string {@link java.util.function.Consumer} so the start flow can be
- * exercised without initialising the JavaFX toolkit.</p>
- *
- * <p>{@link StubInputs} simulates the view's state and records path changes
- * written back by the controller. {@link RecordingGameService} records every
- * call made to the service layer and optionally throws a configured failure.</p>
  */
 class StartControllerTest {
 
@@ -44,6 +37,7 @@ class StartControllerTest {
     private StubInputs inputs;
     private RecordingGameService gameService;
     private List<String> errors;
+    private List<String> successes;
     private boolean showMainCalled;
     private StartController controller;
 
@@ -52,12 +46,14 @@ class StartControllerTest {
         inputs = new StubInputs();
         gameService = new RecordingGameService();
         errors = new ArrayList<>();
+        successes = new ArrayList<>();
         showMainCalled = false;
         controller = new StartController(
                 gameService,
                 inputs,
                 () -> showMainCalled = true,
-                errors::add);
+                supplier -> errors.add(supplier.get()),
+                supplier -> successes.add(supplier.get()));
     }
 
     @Nested
@@ -235,6 +231,25 @@ class StartControllerTest {
             assertEquals(0, gameService.createNewGameCalls);
             assertFalse(showMainCalled);
         }
+
+        @Test
+        @DisplayName("Should combine name and capital validation errors into a single message")
+        void combinesNameAndCapitalErrorsIntoSingleMessage() {
+            // Arrange: name too short AND capital negative
+            inputs.name = "ab";
+            inputs.capital = "-500";
+            // Act
+            controller.handleStartGame();
+            // Assert: one combined message containing both error strings
+            assertEquals(1, errors.size());
+            String combined = errors.getFirst();
+            assertTrue(combined.contains(LanguageManager.get("error.name.too.short")),
+                    "Combined message should contain the name-too-short error");
+            assertTrue(combined.contains(LanguageManager.get("error.capital.zero")),
+                    "Combined message should contain the capital-zero error");
+            assertEquals(0, gameService.createNewGameCalls);
+            assertFalse(showMainCalled);
+        }
     }
 
     @Nested
@@ -301,7 +316,7 @@ class StartControllerTest {
     class ValidateAndSetSaveFile {
 
         @Test
-        @DisplayName("Should store file path when save file is valid")
+        @DisplayName("Should store file path and emit success when save file is valid")
         void storesFilePathWhenSaveFileIsValid() throws IOException {
             // Arrange
             Path saveFile = tempDir.resolve("save.json");
@@ -318,6 +333,7 @@ class StartControllerTest {
             // Assert
             assertEquals(saveFile.toAbsolutePath().toString(), inputs.saveFilePath);
             assertTrue(errors.isEmpty());
+            assertEquals(1, successes.size());
         }
 
         @Test
@@ -331,6 +347,7 @@ class StartControllerTest {
             // Assert
             assertTrue(inputs.saveFilePath.isBlank());
             assertEquals(1, errors.size());
+            assertTrue(successes.isEmpty());
         }
 
         @Test
@@ -364,7 +381,7 @@ class StartControllerTest {
     class ValidateAndSetStockFile {
 
         @Test
-        @DisplayName("Should store file path when stock file is valid")
+        @DisplayName("Should store file path and emit success when stock file is valid")
         void storesFilePathWhenStockFileIsValid() throws IOException {
             // Arrange
             Path stockFile = tempDir.resolve("stocks.csv");
@@ -374,6 +391,7 @@ class StartControllerTest {
             // Assert
             assertEquals(stockFile.toAbsolutePath().toString(), inputs.stockFilePath);
             assertTrue(errors.isEmpty());
+            assertEquals(1, successes.size());
         }
 
         @Test
@@ -387,6 +405,7 @@ class StartControllerTest {
             // Assert
             assertTrue(inputs.stockFilePath.isBlank());
             assertEquals(1, errors.size());
+            assertTrue(successes.isEmpty());
         }
 
         @Test
