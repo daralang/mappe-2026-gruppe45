@@ -92,6 +92,9 @@ public class WatchlistNoteDialog extends Modal {
 
         Button save = new Button(LanguageManager.get("watchlist.note.save"));
         save.getStyleClass().addAll("modal-button", "modal-button-primary");
+        save.setDisable(true);
+        noteArea.textProperty().addListener((obs, oldText, newText) ->
+                save.setDisable(newText.equals(existingNote)));
         save.setOnAction(e -> {
             if (onSave != null) {
                 onSave.accept(noteArea.getText());
