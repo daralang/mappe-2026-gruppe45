@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard;
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.view.component.ExploreStocksButton;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.LoansView;
@@ -18,11 +19,8 @@ import java.util.List;
  * The dashboard view of the application.
  *
  * <p>Contains a tab bar for navigating between portfolio, transactions,
- * watchlist and loans. Each sub-view ({@link edu.ntnu.idatt2003.millions.view.dashboard.portfolio.PortfolioView},
- * {@link edu.ntnu.idatt2003.millions.view.dashboard.transactions.TransactionsView},
- * {@link edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistView},
- * {@link edu.ntnu.idatt2003.millions.view.dashboard.loans.LoansView}) is lazily
- * initialised on first tab selection. Tab navigation is purely visual state
+ * watchlist and loans. Each sub-view PortfolioView, TransactionsView, LoanView
+ * and WatchlistView is lazily initialised on first tab selection. Tab navigation is purely visual state
  * handled internally by this view.</p>
  */
 public class DashboardView extends VBox {

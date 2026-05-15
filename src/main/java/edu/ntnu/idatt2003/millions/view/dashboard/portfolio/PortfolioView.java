@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
 import edu.ntnu.idatt2003.millions.view.component.card.PortfolioValueCard;
+import edu.ntnu.idatt2003.millions.view.component.ExploreStocksButton;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -32,6 +33,7 @@ public class PortfolioView extends VBox {
         HBox topRow = buildTopRow(gameService);
         HoldingsCard holdingsCard = new HoldingsCard(gameService, controller, new PortfolioService());
         ExploreStocksButton exploreButton = new ExploreStocksButton(onExploreStocks);
+        exploreButton.setMaxWidth(Double.MAX_VALUE);
         RealizedReturnsCard realizedReturnsCard = new RealizedReturnsCard(gameService);
 
         getChildren().addAll(topRow, holdingsCard, exploreButton, realizedReturnsCard);
