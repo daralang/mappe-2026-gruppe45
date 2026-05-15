@@ -256,13 +256,7 @@ public class StartController {
         // Collect format errors for non-blank fields (without early return) so both
         // name and capital problems can surface together when both are invalid.
         List<String> validationErrorKeys = new ArrayList<>();
-        if (!name.isBlank()) {
-            if (name.length() < 3) {
-                validationErrorKeys.add("error.name.too.short");
-            } else if (!name.matches(".*[a-zA-ZæøåÆØÅ].*")) {
-                validationErrorKeys.add("error.name.invalid");
-            }
-        }
+        StartInputValidator.validateNameFormat(name).ifPresent(validationErrorKeys::add);
         StartInputValidator.validateCapitalFormat(capital).ifPresent(validationErrorKeys::add);
 
         // Collect missing fields separately so they can be combined into a single

@@ -2,7 +2,6 @@ package edu.ntnu.idatt2003.millions.view.start;
 
 import edu.ntnu.idatt2003.millions.view.StartView;
 import edu.ntnu.idatt2003.millions.view.component.AppTabPane;
-import edu.ntnu.idatt2003.millions.view.component.FileDropZone;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -15,23 +14,24 @@ import javafx.scene.Node;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 /**
- * Coordinates start-screen layout sizing and reveal animations.
+ * Coordinates start-screen layout binding and reveal animations.
  *
  * <p>This component keeps JavaFX animation and responsive height binding logic
  * out of {@link StartView} and {@link NewGameTab}. It owns only view concerns:
- * collapsed upload-section setup, the automatic downward upload reveal, and the
- * responsive card frame that lets the active tab resize cleanly.</p>
+ * the automatic downward upload reveal, and the responsive card frame that
+ * lets the active tab resize cleanly.</p>
+ *
+ * <p>Construction of the collapsed upload section is delegated to
+ * {@link UploadSectionFactory}.</p>
  */
 public final class StartLayoutAnimator {
 
     private static final double START_TITLE_ESTIMATED_HEIGHT = 72;
     private static final double START_GROUP_HEIGHT_RATIO = 0.72;
     private static final double START_TAB_HEADER_HEIGHT = 60;
-    private static final double UPLOAD_DROP_ZONE_HEIGHT = 190;
     private static final double UPLOAD_SECTION_MIN_HEIGHT = 200;
     private static final double UPLOAD_SECTION_BUFFER = 8;
     private static final double CONTENT_WIDTH_EXTRA = 48;
@@ -39,39 +39,6 @@ public final class StartLayoutAnimator {
     private static final Duration UPLOAD_REVEAL_DURATION = Duration.millis(820);
 
     private StartLayoutAnimator() {
-    }
-
-    /**
-     * Creates the collapsed upload section used by {@link NewGameTab}.
-     *
-     * <p>The returned section is clipped to its animated height, starts fully
-     * collapsed and transparent, and contains the provided {@link FileDropZone}
-     * followed by the currency row.</p>
-     *
-     * @param fileDropZone the drop zone to reveal
-     * @param currencyRow  the currency selector row shown below the drop zone
-     * @param maxWidth     the maximum visual width for the upload section
-     * @return a collapsed upload {@link VBox} ready for {@link #playUploadIntro(VBox, VBox, double)}
-     */
-    public static VBox createCollapsedUploadSection(FileDropZone fileDropZone,
-                                                    Node currencyRow,
-                                                    double maxWidth) {
-        fileDropZone.setMinHeight(UPLOAD_DROP_ZONE_HEIGHT);
-        fileDropZone.setPrefHeight(UPLOAD_DROP_ZONE_HEIGHT);
-
-        VBox uploadSection = new VBox(16, fileDropZone, currencyRow);
-        uploadSection.setMaxWidth(maxWidth);
-        uploadSection.setMinHeight(0);
-        uploadSection.setPrefHeight(0);
-        uploadSection.setMaxHeight(0);
-        uploadSection.setOpacity(0);
-
-        Rectangle uploadClip = new Rectangle();
-        uploadClip.widthProperty().bind(uploadSection.widthProperty());
-        uploadClip.heightProperty().bind(uploadSection.heightProperty());
-        uploadSection.setClip(uploadClip);
-
-        return uploadSection;
     }
 
     /**
