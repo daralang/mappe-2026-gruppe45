@@ -6,7 +6,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 
 /**
- * Factory for creating the collapsed upload section used in {@link NewGameTab}.
+ * Factory for creating the collapsed upload section used.
  *
  * <p>Centralises construction of the animated upload so that
  * {@link StartLayoutAnimator} can focus on binding and animation logic, and
