@@ -6,15 +6,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 
 /**
- * Factory for creating the collapsed upload section used.
+ * Factory for creating the collapsed upload section on the start screen.
  *
- * <p>Centralises construction of the animated upload so that
- * {@link StartLayoutAnimator} can focus on binding and animation logic, and
- * {@link NewGameTab} can focus on composing form controls </p>
- *
- * <p>The returned section starts fully collapsed and transparent. It is
- * intended to be reveale.
- * * after the first layout pass.</p>
+ * <p>The returned section starts fully collapsed and transparent,
+ * ready to be revealed after the first layout pass.</p>
  */
 public final class UploadSectionFactory {
 

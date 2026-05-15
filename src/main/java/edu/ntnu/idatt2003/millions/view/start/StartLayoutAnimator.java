@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.start;
 
 import edu.ntnu.idatt2003.millions.view.StartView;
 import edu.ntnu.idatt2003.millions.view.component.AppTabPane;
+import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.Node;
@@ -27,18 +28,9 @@ public final class StartLayoutAnimator {
 
     /**
      * Wires tab pane and reserved frame heights for the start card.
-     *
-     * <p>The tab pane tracks {@link NewGameTab} height changes directly (upload animation)
+     * The tab pane tracks height changes directly (upload animation)
      * and animates its height when the selected tab changes. The reserved frame is locked
-     * to the new-game tab height so the title and card never shift on tab switch.</p>
-     *
-     *  Inline feedback labels in both tabs are animated in/out by listening on
-     *  {@link FileDropTab#feedbackVisibleProperty()} and driving the surrounding
-     *  height by the exact pixel amount the feedback row reserves, obtained
-     *  from {@link FileDropTab#computeFeedbackReservedHeight()}. Listening on
-     *  the visibility property avoids the chicken-and-egg situation where the
-     *  button area cannot grow because the tab pane is locked, and therefore
-     *  no layout listener ever fires.
+     * to the new-game tab height so the title and card never shift on tab switch.
      *
      * @param tabPane            the start card tab pane
      * @param center             the available center area
@@ -102,7 +94,6 @@ public final class StartLayoutAnimator {
      * animation that grows or shrinks the start card by the row's reserved
      * height. Used for both error and success messages, since they share the
      * same label and only differ in tone.
-     *s
      * @param tab       the file drop tab whose feedback visibility drives the animation
      * @param tabPane   the surrounding tab pane
      * @param isNewGame {@code true} when {@code tab} is the new-game tab; otherwise it is
