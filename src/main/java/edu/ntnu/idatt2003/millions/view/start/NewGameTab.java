@@ -61,6 +61,15 @@ public class NewGameTab extends FileDropTab {
         currencySelector.setDisable(false);
 
         Stream.of(nameField, capitalField).forEach(f -> f.getStyleClass().add("start-field"));
+
+        nameField.setOnAction(e -> {
+            clearFeedback();
+            capitalField.requestFocus();
+        });
+        capitalField.setOnAction(e -> {
+            clearFeedback();
+            getActionButton().fire();
+        });
         Stream.of(nameLabel, capitalLabel,fileLabel).forEach(f -> f.getStyleClass().add("start-label"));
         fileInfoLabel.getStyleClass().add("start-info-label");
         currencySelector.getStyleClass().add("currency-selector");
