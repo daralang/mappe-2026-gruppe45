@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
 import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
 import edu.ntnu.idatt2003.millions.model.notification.Notification;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
+import edu.ntnu.idatt2003.millions.model.watchlist.WatchlistEntry;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,8 +20,9 @@ import java.util.UUID;
 
 /**
  * Represents a player in the game.
- * A player has a name, a starting balance, and owns a {@link Portfolio} of shares
- * and a {@link TransactionArchive} of committed transactions.
+ * A player has a name, a starting balance, and owns a {@link Portfolio} of shares,
+ * a {@link TransactionArchive} of committed transactions, and a watchlist of
+ * {@link WatchlistEntry} objects for stocks the player wants to monitor without owning.
  */
 public class Player {
 
@@ -43,6 +45,8 @@ public class Player {
     private List<BigDecimal> netWorthHistory;
     private List<BigDecimal> totalDebtHistory = new ArrayList<>();
     private List<LoanLedgerEntry> loanLedger = new ArrayList<>();
+
+    private List<WatchlistEntry> watchlist = new ArrayList<>();
 
     private List<Notification> notifications = new ArrayList<>();
     private int nextNotificationId = 1;
@@ -662,6 +666,77 @@ public class Player {
 
     public void setPreviousStatus(PlayerStatusLevel status) {
         this.previousStatus = status;
+    }
+
+    /**
+     * Returns a defensive copy of all entries currently on the player's watchlist.
+     *
+     * @return immutable snapshot of the watchlist; empty if no entries have been added
+     */
+    public List<WatchlistEntry> getWatchlist() {
+        if (watchlist == null) watchlist = new ArrayList<>();
+        return new ArrayList<>(watchlist);
+    }
+
+    /**
+     * Returns {@code true} if the given stock symbol is currently on the watchlist.
+     *
+     * @param symbol the ticker symbol to look up; must not be null
+     * @return {@code true} if an entry with that symbol exists
+     * @throws NullPointerException if symbol is null
+     */
+    public boolean isOnWatchlist(String symbol) {
+        Objects.requireNonNull(symbol, "Symbol cannot be null");
+        if (watchlist == null) watchlist = new ArrayList<>();
+        return watchlist.stream().anyMatch(e -> e.symbol().equals(symbol));
+    }
+
+    /**
+     * Adds the given entry to the watchlist.
+     * If an entry with the same symbol already exists, this call is a no-op.
+     *
+     * @param entry the entry to add; must not be null
+     * @throws NullPointerException if entry is null
+     */
+    public void addToWatchlist(WatchlistEntry entry) {
+        Objects.requireNonNull(entry, "WatchlistEntry cannot be null");
+        if (watchlist == null) watchlist = new ArrayList<>();
+        if (!isOnWatchlist(entry.symbol())) {
+            watchlist.add(entry);
+        }
+    }
+
+    /**
+     * Removes the entry with the given symbol from the watchlist.
+     * If no such entry exists, this call is a no-op.
+     *
+     * @param symbol the ticker symbol of the entry to remove; must not be null
+     * @throws NullPointerException if symbol is null
+     */
+    public void removeFromWatchlist(String symbol) {
+        Objects.requireNonNull(symbol, "Symbol cannot be null");
+        if (watchlist == null) watchlist = new ArrayList<>();
+        watchlist.removeIf(e -> e.symbol().equals(symbol));
+    }
+
+    /**
+     * Replaces the note on the watchlist entry identified by {@code symbol}.
+     * Uses {@link WatchlistEntry} to produce an updated copy.
+     * If no entry with that symbol exists, this call is a no-op.
+     *
+     * @param symbol  the ticker symbol of the entry to update; must not be null
+     * @param newNote the new note text; {@code null} is normalised to {@code ""}
+     * @throws NullPointerException if symbol is null
+     */
+    public void updateWatchlistNote(String symbol, String newNote) {
+        Objects.requireNonNull(symbol, "Symbol cannot be null");
+        if (watchlist == null) watchlist = new ArrayList<>();
+        for (int i = 0; i < watchlist.size(); i++) {
+            if (watchlist.get(i).symbol().equals(symbol)) {
+                watchlist.set(i, watchlist.get(i).withNote(newNote));
+                return;
+            }
+        }
     }
 
     /***

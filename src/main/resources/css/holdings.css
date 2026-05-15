@@ -15,16 +15,41 @@ Button.holdings-header {
     -fx-background-radius: 0;
     -fx-border-color: transparent;
     -fx-cursor: hand;
+    -fx-text-fill: -text-primary;
 }
 
 Button.holdings-header:hover {
     -fx-text-fill: -primary;
 }
 
+Button.holdings-header:disabled {
+    -fx-text-fill: -text-secondary;
+    -fx-opacity: 1.0;
+}
+
+Label.holdings-header:disabled {
+    -fx-text-fill: -text-secondary;
+    -fx-opacity: 1.0;
+}
+
 .holdings-cell {
     -fx-font-size: 13;
     -fx-text-fill: -text-primary;
     -fx-padding: 10 0 10 0;
+}
+
+.holdings-action-link.holdings-action-star {
+    -fx-padding: 5 0 5 0;
+    -fx-text-fill: -text-secondary; /* ikke watchlisted */
+    -fx-font-size: 16;
+}
+
+.holdings-action-link.holdings-action-star.holdings-action-star--active {
+    -fx-text-fill: -status-investor-border; /* watchlisted */
+}
+
+.holdings-action-link.holdings-action-star:hover {
+    -fx-text-fill: -status-investor-border;
 }
 
 .holdings-action-link {
@@ -90,4 +115,10 @@ Button.holdings-header:hover {
 }
 .holdings-details-chevron:focused {
     -fx-background-color: transparent;
+}
+
+/* Watchlist */
+.watchlist-action-remove {
+    -fx-font-size: 20;
+    -fx-text-fill: -danger;
 }

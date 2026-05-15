@@ -154,10 +154,15 @@ class TableHeaderRenderer<Column> {
      * Updates a cached header cell with the latest label text, sort state and
      * sortable flag.
      *
+     * <p>For sortable {@link Button} cells, {@code sortable} disables the button.
+     * For static {@link javafx.scene.control.Label} cells, {@code sortable} disables
+     * the label, triggering the {@code :disabled} CSS pseudo-class so header text
+     * turns grey when the table is empty.</p>
+     *
      * @param cell      the cached header cell to update
      * @param col       the latest column definition
      * @param onChanged callback invoked after any sort-state change
-     * @param sortable  {@code false} disables the sort button
+     * @param sortable  {@code false} disables the header cell (table is empty)
      */
     private void updateHeaderCell(
             HeaderCell<Column> cell,
@@ -174,6 +179,7 @@ class TableHeaderRenderer<Column> {
             });
         } else {
             label.setText(col.label());
+            label.setDisable(!sortable);
         }
     }
 
