@@ -31,6 +31,7 @@ public abstract class FileDropTab extends VBox {
 
     protected static final double CARD_WIDTH = 460;
     private static final double FORM_SPACING = 16;
+    private static final double BUTTON_AREA_TOP_OFFSET = -8;
 
     private final FileDropZone fileDropZone;
     private final Button actionButton;
@@ -78,6 +79,9 @@ public abstract class FileDropTab extends VBox {
         buttonArea = new VBox(8, errorLabel, actionButton);
         buttonArea.setAlignment(Pos.TOP_CENTER);
         buttonArea.setMaxWidth(CARD_WIDTH);
+        // Tighten the gap above the button area: the standard FORM_SPACING (16) feels
+        // too airy between the last form row and the inline feedback / action button.
+        VBox.setMargin(buttonArea, new Insets(BUTTON_AREA_TOP_OFFSET, 0, 0, 0));
 
         fileDropZone.getBrowseButton().setOnAction(e -> {
             if (onBrowse != null) {
