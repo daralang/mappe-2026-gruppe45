@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.controller;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.Optional;
 
 /**
@@ -32,6 +33,57 @@ final class StartInputValidator {
             throw new IllegalArgumentException(message);
         }
         return new File(filePath);
+    }
+
+    /**
+     * Validates that a player name is present and returns its trimmed value.
+     *
+     * @param name the player name entered by the user
+     * @return the trimmed player name
+     * @throws IllegalArgumentException if the name is null or blank
+     */
+    static String requireName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name must be provided");
+        }
+        return name.trim();
+    }
+
+    /**
+     * Parses and validates a starting capital string.
+     *
+     * <p>Throws {@link IllegalArgumentException} if the value is null, blank,
+     * or not greater than zero. Throws {@link NumberFormatException} if the
+     * value cannot be parsed as a {@link BigDecimal}.</p>
+     *
+     * @param capital the capital text entered by the user
+     * @return the parsed capital as a {@link BigDecimal}
+     * @throws IllegalArgumentException if the capital is null, blank, or not greater than zero
+     * @throws NumberFormatException    if the capital cannot be parsed as a number
+     */
+    static BigDecimal parseCapital(String capital) {
+        if (capital == null || capital.isBlank()) {
+            throw new IllegalArgumentException("Capital must be provided");
+        }
+        BigDecimal parsed = new BigDecimal(capital);
+        if (parsed.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Capital must be greater than zero");
+        }
+        return parsed;
+    }
+
+    /**
+     * Validates that a currency is present and returns it.
+     *
+     * @param currency the currency selected by the user
+     * @return the validated {@link Currency}
+     * @throws IllegalArgumentException if the currency is null
+     */
+    static Currency requireCurrency(Currency currency) {
+        if (currency == null) {
+            throw new IllegalArgumentException("Currency must be selected");
+        }
+        return currency;
     }
 
     /**
