@@ -86,8 +86,7 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
                 "search.placeholder", "search.button", searchCallback(), metadataRow);
         searchBar.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(searchBar, Priority.ALWAYS);
-        searchBar.addActionButton(pushScoreBtn);
-        HBox row = new HBox(8, searchBar, clearSortButton);
+        HBox row = new HBox(8, searchBar, pushScoreBtn, clearSortButton);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
