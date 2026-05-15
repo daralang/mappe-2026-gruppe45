@@ -136,11 +136,11 @@ public final class StartLayoutAnimator {
      * and animates its height when the selected tab changes. The reserved frame is locked
      * to the new-game tab height so the title and card never shift on tab switch.</p>
      *
-     *  Inline error labels in both tabs are animated in/out by listening on
-     *  {@link FileDropTab#errorVisibleProperty()} and driving the surrounding
-     *  height by the exact pixel amount the error row reserves, obtained from
-     *  {@link FileDropTab#computeErrorReservedHeight()}. Listening on the
-     *  visibility property avoids the chicken-and-egg situation where the
+     *  Inline feedback labels in both tabs are animated in/out by listening on
+     *  {@link FileDropTab#feedbackVisibleProperty()} and driving the surrounding
+     *  height by the exact pixel amount the feedback row reserves, obtained
+     *  from {@link FileDropTab#computeFeedbackReservedHeight()}. Listening on
+     *  the visibility property avoids the chicken-and-egg situation where the
      *  button area cannot grow because the tab pane is locked, and therefore
      *  no layout listener ever fires.
      *
@@ -187,12 +187,12 @@ public final class StartLayoutAnimator {
             playTabHeightTransition(tabPane, target);
         });
 
-        // Drive tab-content height explicitly from each tab's errorVisibleProperty
+        // Drive tab-content height explicitly from each tab's feedbackVisibleProperty
         // instead of waiting for the parent VBox to grow on its own — the parent
         // is constrained while the tab pane is locked, so the layout listener
         // would never observe a delta.
-        bindErrorHeightAnimation(newGameTab, tabPane, true);
-        bindErrorHeightAnimation(loadGameTab, tabPane, false);
+        bindFeedbackHeightAnimation(newGameTab, tabPane, true);
+        bindFeedbackHeightAnimation(loadGameTab, tabPane, false);
 
         reservedStartGroup.prefHeightProperty().bind(createResponsiveStartGroupHeight(
                 center, newGameTab, cardWidth, groupSpacing));
@@ -227,7 +227,7 @@ public final class StartLayoutAnimator {
             uploadSection.setOpacity(1);
             tabContent.setMinHeight(expandedHeight);
             tabContent.setPrefHeight(expandedHeight);
-            // Leave maxHeight unconstrained so the error label can push height upward.
+            // Leave maxHeight unconstrained so the feedback label can push height upward.
             tabContent.setMaxHeight(Double.MAX_VALUE);
         });
         reveal.play();
@@ -258,20 +258,22 @@ public final class StartLayoutAnimator {
     }
 
     /**
-     * Wires the inline-error visibility of a {@link FileDropTab} to a height
-     * animation that grows or shrinks the start card by the row's reserved height.
+     * Wires the inline-feedback visibility of a {@link FileDropTab} to a height
+     * animation that grows or shrinks the start card by the row's reserved
+     * height. Used for both error and success messages, since they share the
+     * same label and only differ in tone.
      *
-     * @param tab       the file drop tab whose error visibility drives the animation
+     * @param tab       the file drop tab whose feedback visibility drives the animation
      * @param tabPane   the surrounding tab pane
      * @param isNewGame {@code true} when {@code tab} is the new-game tab; otherwise it is
      *                  the load-game tab and only animates when actively selected
      */
-    private static void bindErrorHeightAnimation(FileDropTab tab,
-                                                 AppTabPane tabPane,
-                                                 boolean isNewGame) {
+    private static void bindFeedbackHeightAnimation(FileDropTab tab,
+                                                    AppTabPane tabPane,
+                                                    boolean isNewGame) {
         double[] baseHeight = {Double.NaN};
         Timeline[] active = {null};
-        tab.errorVisibleProperty().addListener((obs, wasVisible, isVisible) -> {
+        tab.feedbackVisibleProperty().addListener((obs, wasVisible, isVisible) -> {
             if (Double.isNaN(baseHeight[0])) {
                 baseHeight[0] = isNewGame ? tab.getPrefHeight() : tabPane.getPrefHeight();
             }
@@ -280,7 +282,7 @@ public final class StartLayoutAnimator {
                 active[0] = null;
             }
             double target = isVisible
-                    ? baseHeight[0] + tab.computeErrorReservedHeight()
+                    ? baseHeight[0] + tab.computeFeedbackReservedHeight()
                     : baseHeight[0];
             if (isNewGame) {
                 active[0] = playTabContentHeightTransition(tab, target);

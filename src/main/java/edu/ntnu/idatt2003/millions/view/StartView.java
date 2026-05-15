@@ -29,16 +29,9 @@ import java.util.function.Consumer;
  *
  * <p>Composes a tab-based layout from {@link NewGameTab} and {@link LoadGameTab},
  * each of which owns its own fields, layout, i18n updates, and event wiring.
- * This class is a thin shell: it builds the scene structure, delegates all
- * user input and callbacks to the tab components, and exposes the
- * {@link StartScreenInputs} contract to the controller. The title and start
- * card sit inside a responsive frame that is centered on the screen and
- * top-anchored internally. Responsive sizing and the animated {@link NewGameTab}
+ * Responsive sizing and the animated {@link NewGameTab}
  * reveal are delegated to {@link StartLayoutAnimator}.</p>
  *
- * <p>User interactions are forwarded to the controller via callback setters such as
- * {@link #setOnStartGame(Runnable)} and {@link #setOnStockFileDrop(Consumer)},
- * which in turn delegate to the relevant tab component.</p>
  */
 public class StartView implements StartScreenInputs {
 

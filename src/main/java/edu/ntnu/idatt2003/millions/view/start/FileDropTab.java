@@ -20,8 +20,7 @@ import java.util.function.Supplier;
  *
  * <p>Encapsulates the shared structure of the new-game and load-game tabs:
  * a drop zone for file selection and an action button that triggers the tab's
- * primary action. An inline error label sits above the button and is shown
- * via {@link #showError(String)} and hidden via {@link #clearError()}.</p>
+ * primary action.</p>
  *
  * <p>Event wiring for the browse button, drag-and-drop, and the action button
  * is handled here via callbacks injected through {@link #setOnBrowse(Runnable)},
@@ -33,20 +32,23 @@ public abstract class FileDropTab extends VBox {
     private static final double FORM_SPACING = 16;
     private static final double BUTTON_AREA_TOP_OFFSET = -8;
 
+    private static final String FEEDBACK_TONE_ERROR = "negative";
+    private static final String FEEDBACK_TONE_SUCCESS = "positive";
+
     private final FileDropZone fileDropZone;
     private final Button actionButton;
-    private final Label errorLabel;
+    private final Label feedbackLabel;
     private final VBox buttonArea;
 
     private String filePath = "";
     private Runnable onBrowse;
     private Consumer<File> onFileDrop;
     private Runnable onAction;
-    private Supplier<String> currentErrorSupplier;
+    private Supplier<String> currentFeedbackSupplier;
 
     /**
      * Initialises the shared VBox layout, creates the {@link FileDropZone},
-     * action button, and error label, and wires their events to the callback fields.
+     * action button, and feedback label, and wires their events to the callback fields.
      * Subclasses must call {@code getChildren().addAll(...)} to define the layout order.
      */
     protected FileDropTab() {
@@ -61,22 +63,22 @@ public abstract class FileDropTab extends VBox {
         actionButton.setMaxWidth(CARD_WIDTH);
         actionButton.getStyleClass().add("start-action-button");
 
-        errorLabel = new Label();
-        errorLabel.getStyleClass().addAll("detail-label", "negative");
-        errorLabel.setMaxWidth(CARD_WIDTH);
-        errorLabel.setWrapText(true);
-        errorLabel.setOpacity(0);
-        errorLabel.setVisible(false);
+        feedbackLabel = new Label();
+        feedbackLabel.getStyleClass().add("detail-label");
+        feedbackLabel.setMaxWidth(CARD_WIDTH);
+        feedbackLabel.setWrapText(true);
+        feedbackLabel.setOpacity(0);
+        feedbackLabel.setVisible(false);
         // Bind managed to visible so layout space is never reserved while hidden
-        errorLabel.managedProperty().bind(errorLabel.visibleProperty());
-        // Re-translate the active error message when the language changes
+        feedbackLabel.managedProperty().bind(feedbackLabel.visibleProperty());
+        // Re-translate the active feedback message when the language changes
         LanguageManager.addObserver(() -> {
-            if (currentErrorSupplier != null && errorLabel.isVisible()) {
-                errorLabel.setText(currentErrorSupplier.get());
+            if (currentFeedbackSupplier != null && feedbackLabel.isVisible()) {
+                feedbackLabel.setText(currentFeedbackSupplier.get());
             }
         });
 
-        buttonArea = new VBox(8, errorLabel, actionButton);
+        buttonArea = new VBox(8, feedbackLabel, actionButton);
         buttonArea.setAlignment(Pos.TOP_CENTER);
         buttonArea.setMaxWidth(CARD_WIDTH);
         // Tighten the gap above the button area: the standard FORM_SPACING (16) feels
@@ -94,7 +96,7 @@ public abstract class FileDropTab extends VBox {
             }
         });
         actionButton.setOnAction(e -> {
-            clearError();
+            clearFeedback();
             if (onAction != null) {
                 onAction.run();
             }
@@ -102,58 +104,79 @@ public abstract class FileDropTab extends VBox {
     }
 
     /**
-     * Shows an inline error above the action button with a fade-in.
-     * The supplier is stored so the message can be re-translated on language change.
+     * Shows an inline error above the action button with a fade-in, replacing
+     * any currently visible feedback. The supplier is stored so the message can
+     * be re-translated on language change.
      *
      * @param messageSupplier produces the localised error string
      */
     public void showError(Supplier<String> messageSupplier) {
-        this.currentErrorSupplier = messageSupplier;
-        errorLabel.setText(messageSupplier.get());
-        errorLabel.setOpacity(0);
-        errorLabel.setVisible(true);
-        FadeTransition fade = new FadeTransition(Duration.millis(200), errorLabel);
+        showFeedback(messageSupplier, FEEDBACK_TONE_ERROR);
+    }
+
+    /**
+     * Shows an inline success message above the action button with a fade-in,
+     * replacing any currently visible feedback. The supplier is stored so the
+     * message can be re-translated on language change.
+     *
+     * @param messageSupplier produces the localised success string
+     */
+    public void showSuccess(Supplier<String> messageSupplier) {
+        showFeedback(messageSupplier, FEEDBACK_TONE_SUCCESS);
+    }
+
+    /**
+     * Shows feedback in the shared inline label with the given tone style class
+     * applied (either {@link #FEEDBACK_TONE_ERROR} or {@link #FEEDBACK_TONE_SUCCESS}).
+     * Any previously applied tone class is removed first so the label cannot
+     * carry both at the same time.
+     *
+     * @param messageSupplier  produces the localised feedback string
+     * @param toneStyleClass   the tone CSS class to apply for this message
+     */
+    private void showFeedback(Supplier<String> messageSupplier, String toneStyleClass) {
+        this.currentFeedbackSupplier = messageSupplier;
+        feedbackLabel.setText(messageSupplier.get());
+        feedbackLabel.getStyleClass().removeAll(FEEDBACK_TONE_ERROR, FEEDBACK_TONE_SUCCESS);
+        feedbackLabel.getStyleClass().add(toneStyleClass);
+        feedbackLabel.setOpacity(0);
+        feedbackLabel.setVisible(true);
+        FadeTransition fade = new FadeTransition(Duration.millis(200), feedbackLabel);
         fade.setFromValue(0);
         fade.setToValue(1);
         fade.play();
     }
 
     /**
-     * Hides the inline error message and clears the stored supplier.
+     * Hides the inline feedback message, clears the stored supplier, and removes
+     * any applied tone class so the label is ready for the next message.
      */
-    public void clearError() {
-        currentErrorSupplier = null;
-        errorLabel.setVisible(false);
-        errorLabel.setOpacity(0);
-        errorLabel.setText("");
+    public void clearFeedback() {
+        currentFeedbackSupplier = null;
+        feedbackLabel.setVisible(false);
+        feedbackLabel.setOpacity(0);
+        feedbackLabel.setText("");
+        feedbackLabel.getStyleClass().removeAll(FEEDBACK_TONE_ERROR, FEEDBACK_TONE_SUCCESS);
     }
 
     /**
-     * Returns the visible property of the error label, used by
-     * {@link StartLayoutAnimator} to animate card height on error show/hide.
+     * Returns the visible property of the feedback label, used by
+     * {@link StartLayoutAnimator} to animate card height on feedback show/hide.
      *
-     * @return the error label's visible property
+     * @return the feedback label's visible property
      */
-    public javafx.beans.value.ObservableBooleanValue errorVisibleProperty() {
-        return errorLabel.visibleProperty();
+    public javafx.beans.value.ObservableBooleanValue feedbackVisibleProperty() {
+        return feedbackLabel.visibleProperty();
     }
 
     /**
-     * Returns the layout height the inline error row reserves when visible.
+     * Returns the layout height the inline feedback row reserves when visible.
      *
-     * <p>Computed as the error label's preferred height at the card width plus
-     * the spacing between the label and the action button inside
-     * {@link #getButtonArea()}. {@link StartLayoutAnimator} uses this value to
-     * grow and shrink the surrounding tab content by an exact pixel delta
-     * when the error is shown or hidden, instead of relying on the parent
-     * {@code VBox} to grow on its own (which is blocked when the tab pane
-     * height is explicitly constrained).</p>
-     *
-     * @return the height in pixels the error row adds to {@link #getButtonArea()} when shown
+     * @return the height in pixels the feedback row adds to {@link #getButtonArea()} when shown
      */
-    public double computeErrorReservedHeight() {
-        errorLabel.applyCss();
-        return errorLabel.prefHeight(CARD_WIDTH) + buttonArea.getSpacing();
+    public double computeFeedbackReservedHeight() {
+        feedbackLabel.applyCss();
+        return feedbackLabel.prefHeight(CARD_WIDTH) + buttonArea.getSpacing();
     }
 
     /**
