@@ -25,7 +25,7 @@ public class WatchlistView extends VBox {
                          Runnable onExploreStocks) {
         setSpacing(16);
 
-        WatchlistCard card = new WatchlistCard(gameService, controller, onExploreStocks);
+        WatchlistCard card = new WatchlistCard(gameService, controller);
         VBox.setVgrow(card, Priority.ALWAYS);
 
         ExploreStocksButton exploreButton = new ExploreStocksButton(onExploreStocks);

@@ -5,7 +5,6 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.watchlist.WatchlistEntry;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.ExploreStocksButton;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
@@ -36,21 +35,17 @@ public class WatchlistCard extends SortableTableCard<WatchlistItem, WatchlistSor
     private final GameService gameService;
     private final WatchlistRowRenderer rowRenderer;
     private final StyledText title;
-    private final Runnable onExploreStocks;
 
     /**
      * Constructs a new WatchlistCard.
      *
      * @param gameService     the game service containing player and exchange state
      * @param tradeController the controller used to open buy dialogs
-     * @param onExploreStocks callback invoked when the player clicks the explore button
      */
     public WatchlistCard(GameService gameService,
-                         TradeController tradeController,
-                         Runnable onExploreStocks) {
+                         TradeController tradeController) {
         super(gameService, PAGE_SIZE, "watchlist.status", "watchlist.empty");
         this.gameService = gameService;
-        this.onExploreStocks = onExploreStocks;
 
         WatchlistSort sort = new WatchlistSort(gameService.getCurrencyConverter());
         this.sortProvider = sort;
