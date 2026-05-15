@@ -12,7 +12,6 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.Node;
-import javafx.scene.control.Tab;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -101,11 +100,11 @@ public final class StartLayoutAnimator {
     }
 
     /**
-     * Binds the start card and reserved frame heights used by {@link StartView}.
+     * Wires tab pane and reserved frame heights for the start card.
      *
-     * <p>The tab pane follows the selected tab content height. The reserved
-     * frame is centered in the available area, but top-anchors its child so the
-     * upload reveal grows downward instead of re-centering during animation.</p>
+     * <p>The tab pane tracks {@link NewGameTab} height changes directly (upload animation)
+     * and animates its height when the selected tab changes. The reserved frame is locked
+     * to the new-game tab height so the title and card never shift on tab switch.</p>
      *
      * @param tabPane            the start card tab pane
      * @param center             the available center area
@@ -122,14 +121,36 @@ public final class StartLayoutAnimator {
                                            LoadGameTab loadGameTab,
                                            double cardWidth,
                                            double groupSpacing) {
-        DoubleBinding selectedTabHeight = createSelectedTabHeightBinding(tabPane,
-                newGameTab, loadGameTab, cardWidth);
-        tabPane.minHeightProperty().bind(selectedTabHeight);
-        tabPane.prefHeightProperty().bind(selectedTabHeight);
-        tabPane.maxHeightProperty().bind(selectedTabHeight);
+        // Set initial tab pane height before upload animation starts
+        double initialHeight = newGameTab.prefHeight(cardWidth + CONTENT_WIDTH_EXTRA)
+                + START_TAB_HEADER_HEIGHT;
+        tabPane.setMinHeight(initialHeight);
+        tabPane.setPrefHeight(initialHeight);
+        tabPane.setMaxHeight(initialHeight);
+
+        // Follow newGameTab height changes during the upload reveal animation
+        newGameTab.prefHeightProperty().addListener((obs, old, h) -> {
+            Node selected = tabPane.getSelectionModel().getSelectedItem() == null
+                    ? null : tabPane.getSelectionModel().getSelectedItem().getContent();
+            if (selected == newGameTab) {
+                double height = h.doubleValue() + START_TAB_HEADER_HEIGHT;
+                tabPane.setMinHeight(height);
+                tabPane.setPrefHeight(height);
+                tabPane.setMaxHeight(height);
+            }
+        });
+
+        // Animate tab pane height on tab switch
+        tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            if (newTab == null) return;
+            double target = newTab.getContent() == newGameTab
+                    ? newGameTab.getPrefHeight() + START_TAB_HEADER_HEIGHT
+                    : loadGameTab.prefHeight(cardWidth + CONTENT_WIDTH_EXTRA) + START_TAB_HEADER_HEIGHT;
+            playTabHeightTransition(tabPane, target);
+        });
 
         reservedStartGroup.prefHeightProperty().bind(createResponsiveStartGroupHeight(
-                center, tabPane, newGameTab, loadGameTab, cardWidth, groupSpacing));
+                center, newGameTab, cardWidth, groupSpacing));
         reservedStartGroup.minHeightProperty().bind(reservedStartGroup.prefHeightProperty());
         reservedStartGroup.maxHeightProperty().bind(reservedStartGroup.prefHeightProperty());
     }
@@ -165,30 +186,46 @@ public final class StartLayoutAnimator {
         reveal.play();
     }
 
-    private static DoubleBinding createSelectedTabHeightBinding(AppTabPane tabPane,
-                                                                NewGameTab newGameTab,
-                                                                LoadGameTab loadGameTab,
-                                                                double cardWidth) {
-        return Bindings.createDoubleBinding(
-                () -> getSelectedTabHeight(tabPane, newGameTab, cardWidth),
-                tabPane.getSelectionModel().selectedItemProperty(),
-                tabPane.widthProperty(),
-                newGameTab.minHeightProperty(),
-                newGameTab.prefHeightProperty(),
-                loadGameTab.minHeightProperty(),
-                loadGameTab.prefHeightProperty());
+    /**
+     * Animates the tab pane height from its current value to {@code targetHeight}.
+     *
+     * @param tabPane      the tab pane to animate
+     * @param targetHeight the target height in pixels
+     */
+    private static void playTabHeightTransition(AppTabPane tabPane, double targetHeight) {
+        double fromHeight = tabPane.getPrefHeight();
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.ZERO,
+                        new KeyValue(tabPane.prefHeightProperty(), fromHeight),
+                        new KeyValue(tabPane.minHeightProperty(), fromHeight),
+                        new KeyValue(tabPane.maxHeightProperty(), fromHeight)),
+                new KeyFrame(Duration.millis(350),
+                        new KeyValue(tabPane.prefHeightProperty(), targetHeight, Interpolator.EASE_BOTH),
+                        new KeyValue(tabPane.minHeightProperty(), targetHeight, Interpolator.EASE_BOTH),
+                        new KeyValue(tabPane.maxHeightProperty(), targetHeight, Interpolator.EASE_BOTH))
+        );
+        timeline.play();
     }
 
+    /**
+     * Returns a binding that locks the start group height to the new-game tab,
+     * preventing layout shifts when the selected tab changes.
+     *
+     * @param center       the available center area
+     * @param newGameTab   the new-game tab content
+     * @param cardWidth    the preferred card content width
+     * @param groupSpacing the spacing between title and card
+     * @return a {@link DoubleBinding} for the reserved start group height
+     */
     private static DoubleBinding createResponsiveStartGroupHeight(StackPane center,
-                                                                  AppTabPane tabPane,
                                                                   NewGameTab newGameTab,
-                                                                  LoadGameTab loadGameTab,
                                                                   double cardWidth,
                                                                   double groupSpacing) {
         return Bindings.createDoubleBinding(
                 () -> {
                     double availableHeight = center.getHeight();
                     double proportionalHeight = availableHeight * START_GROUP_HEIGHT_RATIO;
+                    // Always use newGameTab height to keep title and card position stable
                     double contentHeight = START_TITLE_ESTIMATED_HEIGHT
                             + groupSpacing
                             + newGameTab.prefHeight(cardWidth + CONTENT_WIDTH_EXTRA)
@@ -198,12 +235,5 @@ public final class StartLayoutAnimator {
                 center.heightProperty(),
                 newGameTab.minHeightProperty(),
                 newGameTab.prefHeightProperty());
-    }
-
-    private static double getSelectedTabHeight(AppTabPane tabPane, Node fallbackContent, double cardWidth) {
-        Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
-        Node content = selectedTab == null ? fallbackContent : selectedTab.getContent();
-        double contentWidth = tabPane.getWidth() > 0 ? tabPane.getWidth() : cardWidth;
-        return content.prefHeight(contentWidth) + START_TAB_HEADER_HEIGHT;
     }
 }
