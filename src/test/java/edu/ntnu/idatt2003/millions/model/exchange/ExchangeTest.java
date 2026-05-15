@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.model;
+package edu.ntnu.idatt2003.millions.model.exchange;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
