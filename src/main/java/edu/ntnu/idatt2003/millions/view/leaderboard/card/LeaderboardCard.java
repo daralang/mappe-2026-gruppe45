@@ -5,6 +5,8 @@ import edu.ntnu.idatt2003.millions.model.leaderboard.Outcome;
 import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.LeaderboardService;
+import edu.ntnu.idatt2003.millions.service.toast.ToastService;
+import edu.ntnu.idatt2003.millions.view.component.toast.ToastType;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
@@ -14,13 +16,10 @@ import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.leaderboard.LeaderboardSort;
-import javafx.animation.PauseTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,17 +37,18 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
     private final GameService gameService;
     private final LeaderboardService leaderboardService = new LeaderboardService();
     private final LeaderboardSort sort = new LeaderboardSort();
+    private final ToastService toastService;
     private Button pushScoreBtn;
-    private Label confirmLabel;
 
     /**
      * Constructs a new LeaderboardCard.
      *
      * @param gameService the game service used for observer registration and score updates
      */
-    public LeaderboardCard(GameService gameService) {
+    public LeaderboardCard(GameService gameService, ToastService toastService) {
         super(gameService, PAGE_SIZE, "leaderboard.status", "leaderboard.empty");
         this.gameService = gameService;
+        this.toastService = toastService;
         getStyleClass().add("leaderboard-card");
         this.sortProvider = sort;
         this.table = new SortColumnTable<>(sort::getColumnDefs);
@@ -61,23 +61,19 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
         pushScoreBtn.getStyleClass().add("leaderboard-push-score-btn");
         pushScoreBtn.setOnAction(e -> handlePushScore());
 
-        confirmLabel = new Label(LanguageManager.get("leaderboard.pushScore.confirm"));
-        confirmLabel.getStyleClass().add("leaderboard-score-confirm");
-        confirmLabel.setVisible(false);
-        confirmLabel.managedProperty().bind(confirmLabel.visibleProperty());
-
         setSpacing(16);
-        getChildren().addAll(buildSearchRow(clearSortButton), confirmLabel, table.asNode(), pagination);
+        getChildren().addAll(buildSearchRow(clearSortButton), table.asNode(), pagination);
         refresh();
     }
 
     private void handlePushScore() {
-        gameService.recordLeaderboardEntry();
-        refresh();
-        confirmLabel.setVisible(true);
-        PauseTransition pause = new PauseTransition(Duration.seconds(3));
-        pause.setOnFinished(e -> confirmLabel.setVisible(false));
-        pause.play();
+        try {
+            gameService.recordLeaderboardEntry();
+            refresh();
+            toastService.show(LanguageManager.get("toast.scoreUpdated"), ToastType.SUCCESS);
+        } catch (Exception e) {
+            toastService.show(LanguageManager.get("toast.scoreUpdateFailed"), ToastType.ERROR);
+        }
     }
 
     @Override
@@ -117,7 +113,6 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
     @Override
     protected void onLanguageChanged() {
         pushScoreBtn.setText(LanguageManager.get("leaderboard.pushScore"));
-        confirmLabel.setText(LanguageManager.get("leaderboard.pushScore.confirm"));
         super.onLanguageChanged();
     }
 
