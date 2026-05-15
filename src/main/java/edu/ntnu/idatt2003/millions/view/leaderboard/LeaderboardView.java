@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.leaderboard;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.leaderboard.card.LeaderboardCard;
@@ -22,14 +23,14 @@ public class LeaderboardView extends VBox {
      *
      * @param gameService the game service used by the card for observer registration
      */
-    public LeaderboardView(GameService gameService) {
+    public LeaderboardView(GameService gameService, ToastService toastService) {
         getStyleClass().add("content-area");
 
         StyledText pageTitle = StyledText.pageTitle(LanguageManager.get("leaderboard.title"));
         LanguageManager.addObserver(
                 () -> pageTitle.setText(LanguageManager.get("leaderboard.title")));
 
-        LeaderboardCard card = new LeaderboardCard(gameService);
+        LeaderboardCard card = new LeaderboardCard(gameService, toastService);
         VBox.setVgrow(card, Priority.ALWAYS);
 
         getChildren().addAll(pageTitle, card);
