@@ -21,7 +21,8 @@ import java.util.Currency;
  * and currency selection. The optional stock CSV upload area opens automatically
  * from a collapsed state when the view is first shown, while the start button is
  * pushed downward by normal {@link VBox} layout. The animation is delegated to
- * {@link StartLayoutAnimator} so this class can focus on composing controls.
+ * {@link UploadSectionFactory} and {@link StartLayoutAnimator} so this class
+ * can focus on composing controls.
  * The currency selector is disabled when no file is selected and re-enabled via
  * {@link #onFileSelected()} and {@link #onFileCleared()}.</p>
  */
@@ -43,9 +44,9 @@ public class NewGameTab extends FileDropTab {
     /**
      * Creates the new game tab, builds its layout, and registers
      * an i18n observer so labels update on language changes.
-     * The optional upload section starts collapsed and is revealed by
-     * {@link StartLayoutAnimator#playUploadIntro(VBox, VBox, double)} after the
-     * first layout pass.
+     * The optional upload section is built by {@link UploadSectionFactory} and
+     * revealed by {@link StartLayoutAnimator#playUploadIntro(VBox, VBox, double)}
+     * after the first layout pass.
      */
     public NewGameTab() {
         nameLabel = StyledText.paragraphOne();
@@ -68,7 +69,7 @@ public class NewGameTab extends FileDropTab {
         HBox nameRow = buildFormRow(nameLabel, nameField);
         HBox capitalRow = buildFormRow(capitalLabel, capitalField);
         HBox currencyRow = buildFormRow(currencyLabel, currencySelector);
-        VBox uploadSection = StartLayoutAnimator.createCollapsedUploadSection(
+        VBox uploadSection = UploadSectionFactory.createCollapsedUploadSection(
                 getFileDropZone(), currencyRow, CARD_WIDTH);
 
         VBox uploadArea = new VBox(10, fileLabel, fileInfoLabel, uploadSection);
