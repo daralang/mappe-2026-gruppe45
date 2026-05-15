@@ -205,6 +205,21 @@ public class StartView implements StartScreenInputs {
     }
 
     /**
+     * Shows an inline success message in the currently active tab, replacing
+     * any error message that was previously visible. The supplier is stored
+     * so the message re-translates on language change.
+     *
+     * @param messageSupplier produces the localised success string
+     */
+    public void showSuccess(java.util.function.Supplier<String> messageSupplier) {
+        if (tabPane.getSelectionModel().getSelectedItem() == newGameTab) {
+            newGameTabContent.showSuccess(messageSupplier);
+        } else {
+            loadGameContent.showSuccess(messageSupplier);
+        }
+    }
+
+    /**
      * Registers the callback invoked when the user clicks the start button.
      *
      * @param callback the action to run on start; {@code null} disables the handler

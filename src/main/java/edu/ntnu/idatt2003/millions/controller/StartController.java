@@ -35,7 +35,10 @@ import javafx.stage.Stage;
  * {@link StartInputValidator}. Both stock CSV files and save JSON files are
  * validated immediately on selection: the controller attempts a full parse via
  * {@link CsvStockFileHandler} or {@link JsonGameFileHandler} and clears the file
- * path if the file is invalid, preventing the user from proceeding with a bad file.</p>
+ * path if the file is invalid, preventing the user from proceeding with a bad
+ * file. On successful parsing the controller emits a localised confirmation via
+ * the {@code successSink} so the user sees an inline green message that
+ * replaces any previous error in the same row.</p>
  *
  * <p>Errors from the start flow are translated to user-facing messages by
  * a shared error-handling helper that catches the concrete exception types
@@ -50,6 +53,7 @@ public class StartController {
     private final GameService gameService;
     private final Runnable showMainViewAction;
     private final Consumer<Supplier<String>> errorSink;
+    private final Consumer<Supplier<String>> successSink;
 
     /**
      * Constructs a new StartController with a default {@link GameService}.
@@ -81,7 +85,8 @@ public class StartController {
         this(stage, gameService,
                 startView,
                 () -> new MainController(stage, gameService).show(),
-                startView::showError);
+                startView::showError,
+                startView::showSuccess);
     }
 
     /**
@@ -94,45 +99,47 @@ public class StartController {
      * @param view               the start view that exposes user input and controls
      * @param showMainViewAction the action used to navigate to the main view
      * @param errorSink          the consumer that displays user-facing error messages
+     * @param successSink        the consumer that displays user-facing success messages
      * @throws NullPointerException if any argument is null
      */
     StartController(Stage stage,
                     GameService gameService,
                     StartView view,
                     Runnable showMainViewAction,
-                    Consumer<Supplier<String>> errorSink) {
+                    Consumer<Supplier<String>> errorSink,
+                    Consumer<Supplier<String>> successSink) {
         this.stage = Objects.requireNonNull(stage, "Stage cannot be null");
         this.gameService = Objects.requireNonNull(gameService, "GameService cannot be null");
         this.view = Objects.requireNonNull(view, "StartView cannot be null");
         this.inputs = view;
         this.showMainViewAction = Objects.requireNonNull(showMainViewAction, "Show main view action cannot be null");
         this.errorSink = Objects.requireNonNull(errorSink, "Error sink cannot be null");
+        this.successSink = Objects.requireNonNull(successSink, "Success sink cannot be null");
     }
 
     /**
      * Test-only seam that constructs the controller without requiring a
-     * {@link Stage} or a fully built {@link StartView}. The controller
-     * reads user input, reports errors to {@code errorSink} and navigates
-     * through {@code showMainViewAction}.
-     * {@link #show()} and the file-chooser handlers are not safe to call
-     * on instances created through this constructor.
+     * {@link Stage} or a fully built {@link StartView}.
      *
      * @param gameService        the game manager used to create or load game state
      * @param inputs             the input seam the start flow reads from
      * @param showMainViewAction the action used to navigate to the main view
      * @param errorSink          the consumer that receives user-facing error messages
+     * @param successSink        the consumer that receives user-facing success messages
      * @throws NullPointerException if any argument is null
      */
     StartController(GameService gameService,
                     StartScreenInputs inputs,
                     Runnable showMainViewAction,
-                    Consumer<Supplier<String>> errorSink) {
+                    Consumer<Supplier<String>> errorSink,
+                    Consumer<Supplier<String>> successSink) {
         this.stage = null;
         this.view = null;
         this.gameService = Objects.requireNonNull(gameService, "GameService cannot be null");
         this.inputs = Objects.requireNonNull(inputs, "Inputs cannot be null");
         this.showMainViewAction = Objects.requireNonNull(showMainViewAction, "Show main view action cannot be null");
         this.errorSink = Objects.requireNonNull(errorSink, "Error sink cannot be null");
+        this.successSink = Objects.requireNonNull(successSink, "Success sink cannot be null");
     }
 
     /**
@@ -200,6 +207,7 @@ public class StartController {
                 .orElse(Currency.getInstance("USD"));
         try {
             new CsvStockFileHandler().readStocks(file.toPath(), currency);
+            successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
         } catch (InvalidStockDataException | UncheckedIOException e) {
             inputs.setStockFilePath("");
             String message = e.getMessage();
@@ -222,6 +230,7 @@ public class StartController {
         inputs.setSaveFilePath(file.getAbsolutePath());
         try {
             new JsonGameFileHandler().loadGame(file);
+            successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
         } catch (GameSaveCorruptException | UncheckedIOException e) {
             inputs.setSaveFilePath("");
             String message = e.getMessage();
@@ -243,41 +252,44 @@ public class StartController {
         boolean hasFile = !inputs.getStockFilePath().isBlank();
         Currency currency = inputs.getSelectedCurrency();
 
-        // Name format: min 3 chars, must contain at least one letter
+        // Collect format errors for non-blank fields (without early return) so both
+        // name and capital problems can surface together when both are invalid.
+        List<String> validationErrorKeys = new ArrayList<>();
         if (!name.isBlank()) {
             if (name.length() < 3) {
-                errorSink.accept(() -> LanguageManager.get("error.name.too.short"));
-                return;
-            }
-            if (!name.matches(".*[a-zA-ZæøåÆØÅ].*")) {
-                errorSink.accept(() -> LanguageManager.get("error.name.invalid"));
-                return;
+                validationErrorKeys.add("error.name.too.short");
+            } else if (!name.matches(".*[a-zA-ZæøåÆØÅ].*")) {
+                validationErrorKeys.add("error.name.invalid");
             }
         }
-
-        // Capital format takes priority: show immediately if value is present but invalid
         if (!capital.isBlank()) {
             try {
                 BigDecimal parsed = new BigDecimal(capital);
                 if (parsed.compareTo(BigDecimal.ZERO) <= 0) {
-                    errorSink.accept(() -> LanguageManager.get("error.capital.zero"));
-                    return;
+                    validationErrorKeys.add("error.capital.zero");
                 }
             } catch (NumberFormatException e) {
-                errorSink.accept(() -> LanguageManager.get("error.capital.invalid"));
-                return;
+                validationErrorKeys.add("error.capital.invalid");
             }
         }
 
-        // Collect all missing fields (as i18n keys) and show a single combined message
+        // Collect missing fields separately so they can be combined into a single
+        // "missing X and Y" sentence instead of being listed line by line.
         List<String> missingKeys = new ArrayList<>();
         if (name.isBlank()) missingKeys.add("field.name");
         if (capital.isBlank()) missingKeys.add("field.capital");
         if (hasFile && currency == null) missingKeys.add("field.currency");
 
-        if (!missingKeys.isEmpty()) {
-            errorSink.accept(() -> buildMissingMessage(
-                    missingKeys.stream().map(LanguageManager::get).toList()));
+        if (!validationErrorKeys.isEmpty() || !missingKeys.isEmpty()) {
+            errorSink.accept(() -> {
+                List<String> lines = new ArrayList<>();
+                validationErrorKeys.forEach(key -> lines.add(LanguageManager.get(key)));
+                if (!missingKeys.isEmpty()) {
+                    lines.add(buildMissingMessage(
+                            missingKeys.stream().map(LanguageManager::get).toList()));
+                }
+                return String.join("\n", lines);
+            });
             return;
         }
 
