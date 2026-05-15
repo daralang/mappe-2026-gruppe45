@@ -10,6 +10,7 @@ import edu.ntnu.idatt2003.millions.file.stock.StockFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.watchlist.WatchlistEntry;
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
 import edu.ntnu.idatt2003.millions.model.loan.InsufficientSaleProceedsException;
@@ -462,6 +463,50 @@ public class GameService {
     public void clearAllNotifications() {
         if (player == null) return;
         player.clearAllNotifications();
+        notifyObservers();
+    }
+
+    /**
+     * Adds the given stock symbol to the player's watchlist at the current week.
+     * No-op if the symbol is already on the watchlist or does not exist on the {@link Exchange}.
+     *
+     * @param symbol the ticker symbol to add
+     * @throws NullPointerException if symbol is null
+     */
+    public void addToWatchlist(String symbol) {
+        Objects.requireNonNull(symbol, "Symbol cannot be null");
+        if (player == null || exchange.getStock(symbol) == null) return;
+        player.addToWatchlist(new WatchlistEntry(symbol, exchange.getWeek(), ""));
+        notifyObservers();
+    }
+
+    /**
+     * Removes the given stock symbol from the player's watchlist.
+     * No-op if the symbol is not on the watchlist.
+     *
+     * @param symbol the ticker symbol to remove
+     * @throws NullPointerException if symbol is null
+     */
+    public void removeFromWatchlist(String symbol) {
+        Objects.requireNonNull(symbol, "Symbol cannot be null");
+        if (player == null) return;
+        player.removeFromWatchlist(symbol);
+        notifyObservers();
+    }
+
+    /**
+     * Updates the note for the given symbol in the player's watchlist via
+     * {@link WatchlistEntry}.
+     * No-op if the symbol is not on the watchlist.
+     *
+     * @param symbol  the ticker symbol of the entry to update
+     * @param newNote the new note text
+     * @throws NullPointerException if symbol is null
+     */
+    public void updateWatchlistNote(String symbol, String newNote) {
+        Objects.requireNonNull(symbol, "Symbol cannot be null");
+        if (player == null) return;
+        player.updateWatchlistNote(symbol, newNote);
         notifyObservers();
     }
 
