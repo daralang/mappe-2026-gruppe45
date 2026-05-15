@@ -55,7 +55,7 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
 
         Button clearSortButton = table.createClearSortButton(
-                () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
+                () -> LanguageManager.get("leaderboard.sort.clear"), this::refresh);
 
         pushScoreBtn = new Button(LanguageManager.get("leaderboard.pushScore"));
         pushScoreBtn.getStyleClass().add("leaderboard-push-score-btn");
@@ -84,10 +84,8 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
     protected HBox buildSearchRow(Button clearSortButton) {
         SearchBar searchBar = new SearchBar(
                 "leaderboard.search.placeholder", "search.button", searchCallback(), metadataRow);
-        searchBar.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(searchBar, Priority.ALWAYS);
-        HBox row = new HBox(8, searchBar, pushScoreBtn, clearSortButton);
-        row.setAlignment(Pos.CENTER_LEFT);
+        HBox row = new HBox(36, searchBar, pushScoreBtn, clearSortButton);
+        row.setAlignment(Pos.TOP_LEFT);
         return row;
     }
 
