@@ -7,13 +7,12 @@ import edu.ntnu.idatt2003.millions.util.CurrencyManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
+import java.util.List;
 import javafx.geometry.HPos;
 
-import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.Currency;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -108,28 +107,13 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
         return switch (column) {
             case TICKER -> Comparator.comparing(i -> i.stock().getSymbol());
             case COMPANY -> Comparator.comparing(i -> i.stock().getCompany());
-            case PRICE_NOK -> Comparator.comparing(this::priceInNok);
+            case PRICE_NOK -> Comparator.comparing(i -> priceInNok(i.stock(), converter, NOK));
             case PRICE_ALT -> Comparator.comparing(i -> i.stock().getSalesPrice());
-            case CHANGE_NOK -> Comparator.comparing(this::changeInNok);
+            case CHANGE_NOK -> Comparator.comparing(i -> changeInNok(i.stock(), converter, NOK));
             case CHANGE_PCT -> Comparator.comparing(i -> i.stock().getWeeklyChangePercent());
-            case HIGH_LOW -> Comparator.comparing(this::highLowRange);
+            case HIGH_LOW -> Comparator.comparing(i -> highLowRange(i.stock(), converter, NOK, HIGH_LOW_WEEKS));
             case ADDED_WEEK -> Comparator.comparingInt(i -> i.entry().addedAtWeek());
         };
     }
 
-    private BigDecimal priceInNok(WatchlistItem item) {
-        return converter.convert(item.stock().getSalesPrice(), item.stock().getCurrency(), NOK);
-    }
-
-    private BigDecimal changeInNok(WatchlistItem item) {
-        return converter.convert(item.stock().getLatestPriceChange(), item.stock().getCurrency(), NOK);
-    }
-
-    private BigDecimal highLowRange(WatchlistItem item) {
-        List<BigDecimal> prices = item.stock().getRecentPrices(HIGH_LOW_WEEKS);
-        if (prices.isEmpty()) return BigDecimal.ZERO;
-        BigDecimal low = prices.stream().min(BigDecimal::compareTo).orElseThrow();
-        BigDecimal high = prices.stream().max(BigDecimal::compareTo).orElseThrow();
-        return converter.convert(high.subtract(low), item.stock().getCurrency(), NOK);
-    }
 }
