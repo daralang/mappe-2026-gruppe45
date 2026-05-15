@@ -39,6 +39,9 @@
 .search-button {
     -fx-background-color: black;
     -fx-text-fill: -surface;
+    -fx-padding: 0 20 0 20;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
 }
 
 .search-button:hover {
