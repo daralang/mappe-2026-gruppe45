@@ -53,14 +53,17 @@ public class PlayerStatsService {
      * Returns the player's progress toward the next status level as a value
      * between 0.0 and 1.0 (inclusive).
      *
-     * <p>Progress is computed as the average of two sub-scores, each capped at 1.0:
-     * <ul>
-     *   <li>weeks-traded score: {@code weeksTraded / weeksThreshold}</li>
-     *   <li>growth score: {@code growthPercent / growthThreshold}</li>
-     * </ul>
+     * <p>Progress is computed relative to the band between the previous and next
+     * level thresholds, using {@code Math.min(weekProgress, returnProgress)} so
+     * the bar reflects the slower of the two requirements:
+     * <pre>
+     *   weekProgress   = (weeksTraded  − prevWeeks)  / (nextWeeks  − prevWeeks)
+     *   returnProgress = (growthPercent − prevReturn) / (nextReturn − prevReturn)
+     *   progress       = clamp(min(weekProgress, returnProgress), 0.0, 1.0)
+     * </pre>
      *
-     * <p>For {@link PlayerStatusLevel#NOVICE}, thresholds are 10 weeks and 20% growth.
-     * For {@link PlayerStatusLevel#INVESTOR}, thresholds are 20 weeks and 100% growth.
+     * <p>Thresholds: NOVICE→INVESTOR is 0→10 weeks / 0→20% growth;
+     * INVESTOR→SPECULATOR is 10→20 weeks / 20→100% growth.
      * For {@link PlayerStatusLevel#SPECULATOR}, always returns 1.0 (top level reached).
      *
      * @param player    the player to evaluate
@@ -74,12 +77,18 @@ public class PlayerStatsService {
         int weeksTraded = player.getTransactionArchive().countDistinctWeeks();
         double growthPercent = player.getNetWorthChangePercentSinceStart(converter).doubleValue();
 
-        double weeksThreshold = (status == PlayerStatusLevel.NOVICE) ? 10.0 : 20.0;
-        double growthThreshold = (status == PlayerStatusLevel.NOVICE) ? 20.0 : 100.0;
+        double prevWeeks, nextWeeks, prevReturn, nextReturn;
+        if (status == PlayerStatusLevel.NOVICE) {
+            prevWeeks = 0.0;  nextWeeks = 10.0;
+            prevReturn = 0.0; nextReturn = 20.0;
+        } else {
+            prevWeeks = 10.0; nextWeeks = 20.0;
+            prevReturn = 20.0; nextReturn = 100.0;
+        }
 
-        double weeksScore = Math.min(1.0, weeksTraded / weeksThreshold);
-        double growthScore = Math.min(1.0, Math.max(0.0, growthPercent / growthThreshold));
+        double weekProgress   = Math.min(1.0, Math.max(0.0, (weeksTraded - prevWeeks)  / (nextWeeks  - prevWeeks)));
+        double returnProgress = Math.min(1.0, Math.max(0.0, (growthPercent - prevReturn) / (nextReturn - prevReturn)));
 
-        return (weeksScore + growthScore) / 2.0;
+        return Math.min(weekProgress, returnProgress);
     }
 }

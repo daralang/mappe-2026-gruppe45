@@ -18,6 +18,7 @@ public interface TitleBar {
 
     void setOnDashboard(Runnable callback);
     void setOnExchange(Runnable callback);
+    default void setOnLeaderboard(Runnable callback) {}
     void setOnSave(Runnable callback);
     void setOnExit(Runnable callback);
 

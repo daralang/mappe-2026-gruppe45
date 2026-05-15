@@ -20,6 +20,8 @@ import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
+import edu.ntnu.idatt2003.millions.model.leaderboard.Outcome;
+import edu.ntnu.idatt2003.millions.service.LeaderboardService;
 import edu.ntnu.idatt2003.millions.service.notification.NotificationService;
 
 import java.io.File;
@@ -55,12 +57,27 @@ public class GameService {
     private final GameFileHandler gameFileHandler;
     private final List<GameObserver> observers = new ArrayList<>();
     private final NotificationService notificationService = new NotificationService();
+    private final LeaderboardService leaderboardService;
 
     /**
-     * Constructs a new GameService.
-     * Initializes the file handler for JSON serialization.
+     * Default constructor — uses production {@link LeaderboardService}
+     * that reads and writes {@code leaderboard.json} in the project root.
      */
     public GameService() {
+        this(new LeaderboardService());
+    }
+
+    /**
+     * Test-friendly constructor — accepts an injected
+     * {@link LeaderboardService} so tests can redirect leaderboard
+     * persistence to a temporary file.
+     *
+     * @param leaderboardService the leaderboard service to use
+     * @throws NullPointerException if {@code leaderboardService} is null
+     */
+    public GameService(LeaderboardService leaderboardService) {
+        this.leaderboardService = Objects.requireNonNull(
+                leaderboardService, "leaderboardService cannot be null");
         this.gameFileHandler = new JsonGameFileHandler();
     }
 
@@ -92,6 +109,10 @@ public class GameService {
      */
     public void declareGameOver() {
         this.gameOver = true;
+        if (player != null && exchange != null) {
+            leaderboardService.recordOrUpdate(
+                    player, exchange, exchange.getCurrencyConverter(), Outcome.GAME_OVER);
+        }
         notifyObservers();
     }
 
@@ -429,29 +450,13 @@ public class GameService {
     }
 
     /**
-     * Validates a stock CSV file by parsing it without mutating game state.
-     *
-     * @param file     the CSV file to validate
-     * @param currency the currency to tag stocks with during parsing
-     * @throws InvalidStockDataException if the file contains invalid stock data
-     * @throws UncheckedIOException      if the file cannot be read
+     * Records the player's current standing to the leaderboard as an active game.
+     * No-op if no game is currently active.
      */
-    public void validateStockFile(File file, Currency currency) throws InvalidStockDataException {
-        Objects.requireNonNull(file, "File cannot be null");
-        Objects.requireNonNull(currency, "Currency cannot be null");
-        new CsvStockFileHandler().readStocks(file.toPath(), currency);
-    }
-
-    /**
-     * Validates a save file by parsing it without mutating game state.
-     *
-     * @param file the JSON save file to validate
-     * @throws GameSaveCorruptException if the file is corrupt or has missing fields
-     * @throws UncheckedIOException     if the file cannot be read
-     */
-    public void validateSaveFile(File file) throws GameSaveCorruptException {
-        Objects.requireNonNull(file, "File cannot be null");
-        new JsonGameFileHandler().loadGame(file);
+    public void recordLeaderboardEntry() {
+        if (player != null && exchange != null) {
+            leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(), Outcome.ACTIVE);
+        }
     }
 
     public void clearAllNotifications() {

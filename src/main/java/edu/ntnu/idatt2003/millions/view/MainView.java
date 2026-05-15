@@ -9,6 +9,7 @@ import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.DashboardView;
 import edu.ntnu.idatt2003.millions.view.exchange.ExchangeView;
+import edu.ntnu.idatt2003.millions.view.leaderboard.LeaderboardView;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -59,6 +60,7 @@ public class MainView {
         this.weekBar = new WeekBar(gameService, onAdvanceWeek);
         titleBar.setOnDashboard(this::showDashboard);
         titleBar.setOnExchange(this::showExchange);
+        titleBar.setOnLeaderboard(this::showLeaderboard);
         this.footer = new StatusFooter(gameService);
         this.content = new BorderPane();
         content.getStyleClass().add("main-root");
@@ -127,6 +129,10 @@ public class MainView {
      */
     private void showExchange() {
         content.setCenter(wrapScrollable(new ExchangeView(gameService, weekBar, tradeController)));
+    }
+
+    private void showLeaderboard() {
+        content.setCenter(wrapScrollable(new LeaderboardView(gameService)));
     }
 
     private void showExchangeOnStocksTab() {

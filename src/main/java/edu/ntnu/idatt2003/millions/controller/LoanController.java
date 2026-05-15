@@ -8,7 +8,9 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.LoanPreviewService;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanApplicationDialog;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanDetailsModal;
+import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanRepaymentReceipt;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.RepayLoanDialog;
+import javafx.application.Platform;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -55,7 +57,7 @@ public class LoanController {
         RepayLoanDialog[] ref = new RepayLoanDialog[1];
         ref[0] = new RepayLoanDialog(loan, loanIndex, player.getMoney(), currentWeek,
                 validateRepay(loan));
-        ref[0].setOnConfirm(l -> handleRepayConfirm(ref[0], l));
+        ref[0].setOnConfirm(l -> handleRepayConfirm(ref[0], l, loanIndex));
         ref[0].show();
     }
 
@@ -115,10 +117,15 @@ public class LoanController {
         }
     }
 
-    private void handleRepayConfirm(RepayLoanDialog dialog, Loan loan) {
+    private void handleRepayConfirm(RepayLoanDialog dialog, Loan loan, int loanIndex) {
         try {
+            BigDecimal balanceBefore = gameService.getPlayer().getMoney();
+            int week = gameService.getExchange().getWeek();
             gameService.repayLoan(loan);
             dialog.close();
+            BigDecimal balanceAfter = gameService.getPlayer().getMoney();
+            Platform.runLater(() ->
+                    new LoanRepaymentReceipt(loan, loanIndex, balanceBefore, balanceAfter, week).show());
         } catch (IllegalArgumentException e) {
             dialog.showError(e.getMessage());
         }
