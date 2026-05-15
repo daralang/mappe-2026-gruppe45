@@ -39,7 +39,6 @@ public class ExchangeOverview extends VBox implements GameObserver {
         this.gameService = gameService;
         gameService.addObserver(this);
         setSpacing(16);
-        getStyleClass().add("content-area");
 
         HBox statCards = new HBox(16,
                 withGrow(new TotalStocksCard(gameService)),

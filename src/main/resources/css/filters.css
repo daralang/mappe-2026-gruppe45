@@ -2,12 +2,20 @@
     -fx-font-size: 13;
     -fx-text-fill: -text-primary;
     -fx-padding: 0 8 0 0;
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-max-height: 30;
+    -fx-alignment: center-left;
 }
 
 .filter-separator {
     -fx-font-size: 14px;
     -fx-text-fill: -text-muted;
     -fx-padding: 0 2 0 2;
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-max-height: 30;
+    -fx-alignment: center;
 }
 
 .transactions-filter-row {
@@ -16,19 +24,22 @@
 
 .week-spinner {
     -fx-font-size: 13px;
-    -fx-background-color: -border-strong, -surface;
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-max-height: 30;
+    -fx-background-color: -border, -surface;
     -fx-background-insets: 0, 1;
-    -fx-background-radius: 6, 5;
+    -fx-background-radius: 5, 4;
 }
 
 .week-spinner:focused {
-    -fx-background-color: -primary, -surface;
+    -fx-background-color: -primary-dark, -surface;
 }
 
 .week-spinner .text-field {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-padding: 2 6 2 6;
+    -fx-padding: 0 6 0 6;
     -fx-alignment: center;
     -fx-text-fill: -text-primary;
 }
@@ -51,11 +62,11 @@
 }
 
 .week-spinner .increment-arrow-button {
-    -fx-background-radius: 0 5 0 0;
+    -fx-background-radius: 0 4 0 0;
 }
 
 .week-spinner .decrement-arrow-button {
-    -fx-background-radius: 0 0 5 0;
+    -fx-background-radius: 0 0 4 0;
 }
 
 .week-spinner .increment-arrow,
@@ -66,26 +77,30 @@
 .type-filter {
     -fx-font-size: 13px;
     -fx-pref-width: 140px;
-    -fx-background-color: -border-strong, -surface;
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-max-height: 30;
+    -fx-background-color: -border, -surface;
     -fx-background-insets: 0, 1;
-    -fx-background-radius: 6, 5;
+    -fx-background-radius: 5, 4;
     -fx-padding: 0;
 }
 
 .type-filter:focused {
-    -fx-background-color: -primary, -surface;
+    -fx-background-color: -primary-dark, -surface;
 }
 
 .type-filter .list-cell {
     -fx-background-color: transparent;
-    -fx-padding: 4 8 4 8;
+    -fx-padding: 0 8 0 8;
     -fx-text-fill: -text-primary;
+    -fx-alignment: center-left;
 }
 
 .type-filter .arrow-button {
-    -fx-background-color: -border-strong, -surface-alt;
+    -fx-background-color: -border, -surface-alt;
     -fx-background-insets: 0, 0 0 0 1;
-    -fx-background-radius: 0 5 5 0;
+    -fx-background-radius: 0 4 4 0;
     -fx-padding: 0 6 0 6;
 }
 
@@ -98,9 +113,9 @@
 }
 
 .type-filter .combo-box-popup .list-view {
-    -fx-background-color: -border-strong, -surface;
+    -fx-background-color: -border, -surface;
     -fx-background-insets: 0, 1;
-    -fx-background-radius: 6, 5;
+    -fx-background-radius: 5, 4;
 }
 
 .type-filter .combo-box-popup .list-view .list-cell {
@@ -115,4 +130,21 @@
 .type-filter .combo-box-popup .list-view .list-cell:filled:selected {
     -fx-background-color: -primary;
     -fx-text-fill: -surface;
+}
+
+.week-spinner,
+.week-spinner .text-field,
+.week-spinner .increment-arrow-button,
+.week-spinner .decrement-arrow-button {
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-max-height: 30;
+}
+
+.type-filter,
+.type-filter .list-cell,
+.type-filter .arrow-button {
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-max-height: 30;
 }

@@ -28,7 +28,8 @@ public record TableColumnDef<Column>(
         Column sortColumn,
         String tooltipKey,
         double percentWidth,
-        HPos alignment
+        HPos alignment,
+        double leftInset
 ) {
 
     /**
@@ -42,7 +43,12 @@ public record TableColumnDef<Column>(
      */
     public static <Column> TableColumnDef<Column> of(
             String label, double percentWidth, HPos alignment) {
-        return new TableColumnDef<>(label, null, null, percentWidth, alignment);
+        return new TableColumnDef<>(label, null, null, percentWidth, alignment, 0.0);
+    }
+
+    public static <Column> TableColumnDef<Column> of(
+            String label, double percentWidth, HPos alignment, double leftInset) {
+        return new TableColumnDef<>(label, null, null, percentWidth, alignment, leftInset);
     }
 
     /**
@@ -57,7 +63,7 @@ public record TableColumnDef<Column>(
      */
     public static <Column> TableColumnDef<Column> sortable(
             String label, Column sortColumn, double percentWidth, HPos alignment) {
-        return new TableColumnDef<>(label, sortColumn, null, percentWidth, alignment);
+        return new TableColumnDef<>(label, sortColumn, null, percentWidth, alignment, 0.0);
     }
 
     /**
@@ -72,7 +78,7 @@ public record TableColumnDef<Column>(
      */
     public static <Column> TableColumnDef<Column> withTooltip(
             String label, String tooltipKey, double percentWidth, HPos alignment) {
-        return new TableColumnDef<>(label, null, tooltipKey, percentWidth, alignment);
+        return new TableColumnDef<>(label, null, tooltipKey, percentWidth, alignment, 0.0);
     }
 
     /**
@@ -93,7 +99,7 @@ public record TableColumnDef<Column>(
     public static <Column> TableColumnDef<Column> sortableWithTooltip(
             String label, Column sortColumn, String tooltipKey,
             double percentWidth, HPos alignment) {
-        return new TableColumnDef<>(label, sortColumn, tooltipKey, percentWidth, alignment);
+        return new TableColumnDef<>(label, sortColumn, tooltipKey, percentWidth, alignment, 0.0);
     }
 
     /**
