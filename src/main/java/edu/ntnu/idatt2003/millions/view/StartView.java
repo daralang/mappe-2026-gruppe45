@@ -10,7 +10,6 @@ import edu.ntnu.idatt2003.millions.view.start.StartLayoutAnimator;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.stage.Stage;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -132,16 +131,6 @@ public class StartView implements StartScreenInputs {
         root.setCenter(center);
 
         scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
-        scene.windowProperty().addListener((obs, oldWin, win) -> {
-            if (win instanceof Stage stage) {
-                tabPane.getSelectionModel().selectedItemProperty().addListener((o, old, tab) ->
-                        Platform.runLater(() -> {
-                            stage.sizeToScene();
-                            stage.centerOnScreen();
-                        })
-                );
-            }
-        });
         StylesheetLoader.load(scene,
                 StylesheetLoader.Stylesheet.TOKENS,
                 StylesheetLoader.Stylesheet.TITLE,
