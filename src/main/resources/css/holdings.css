@@ -116,3 +116,9 @@ Label.holdings-header:disabled {
 .holdings-details-chevron:focused {
     -fx-background-color: transparent;
 }
+
+/* Watchlist */
+.watchlist-action-remove {
+    -fx-font-size: 18;
+    -fx-text-fill: -danger;
+}
