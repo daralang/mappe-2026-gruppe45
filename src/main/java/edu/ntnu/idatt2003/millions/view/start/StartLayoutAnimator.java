@@ -262,7 +262,7 @@ public final class StartLayoutAnimator {
      * animation that grows or shrinks the start card by the row's reserved
      * height. Used for both error and success messages, since they share the
      * same label and only differ in tone.
-     *
+     *s
      * @param tab       the file drop tab whose feedback visibility drives the animation
      * @param tabPane   the surrounding tab pane
      * @param isNewGame {@code true} when {@code tab} is the new-game tab; otherwise it is
