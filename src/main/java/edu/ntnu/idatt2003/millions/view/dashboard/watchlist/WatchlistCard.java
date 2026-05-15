@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.watchlist.WatchlistEntry;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.ExploreStocksButton;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
@@ -12,8 +13,6 @@ import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -69,11 +68,13 @@ public class WatchlistCard extends SortableTableCard<WatchlistItem, WatchlistSor
         setSpacing(12);
         setMinWidth(0);
 
+
         getChildren().addAll(
                 buildTitleRow(),
                 buildSearchRow(clearSortButton),
                 table.asNode(),
-                pagination);
+                pagination
+                );
         refresh();
     }
 
@@ -121,16 +122,7 @@ public class WatchlistCard extends SortableTableCard<WatchlistItem, WatchlistSor
     }
 
     private HBox buildTitleRow() {
-        Button exploreButton = new Button(LanguageManager.get("watchlist.explore"));
-        exploreButton.getStyleClass().add("explore-stocks-button");
-        exploreButton.setOnAction(e -> onExploreStocks.run());
-        LanguageManager.addObserver(
-                () -> exploreButton.setText(LanguageManager.get("watchlist.explore")));
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox row = new HBox(title, spacer, exploreButton);
+        HBox row = new HBox(title);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
