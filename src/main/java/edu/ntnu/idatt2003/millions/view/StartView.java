@@ -44,6 +44,7 @@ import java.util.function.Consumer;
 public class StartView implements StartScreenInputs {
 
     private static final double SCENE_WIDTH = 900;
+    private static final double SCENE_HEIGHT = 700;
     private static final double ROOT_SPACING = 24;
     private static final double START_CARD_WIDTH = 540;
 
@@ -130,12 +131,15 @@ public class StartView implements StartScreenInputs {
         }
         root.setCenter(center);
 
-        scene = new Scene(root, SCENE_WIDTH, -1);
+        scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
         scene.windowProperty().addListener((obs, oldWin, win) -> {
             if (win instanceof Stage stage) {
-                tabPane.prefHeightProperty().addListener((o, old, h) ->
-                        Platform.runLater(stage::sizeToScene));
-                Platform.runLater(stage::sizeToScene);
+                tabPane.getSelectionModel().selectedItemProperty().addListener((o, old, tab) ->
+                        Platform.runLater(() -> {
+                            stage.sizeToScene();
+                            stage.centerOnScreen();
+                        })
+                );
             }
         });
         StylesheetLoader.load(scene,
