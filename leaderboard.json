@@ -9,5 +9,16 @@
     "status": "INVESTOR",
     "outcome": "ACTIVE",
     "lastUpdated": "2026-05-14T19:47:06.205178300Z"
+  },
+  {
+    "sessionId": "80651cf1-aef5-4e63-b1b9-96c109f64730",
+    "playerName": "dara",
+    "startingCapital": 100,
+    "finalNetWorth": 100,
+    "returnPercent": 0.0,
+    "weeksPlayed": 1,
+    "status": "NOVICE",
+    "outcome": "ACTIVE",
+    "lastUpdated": "2026-05-15T13:48:15.991022Z"
   }
 ]
