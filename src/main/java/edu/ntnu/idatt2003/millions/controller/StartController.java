@@ -211,8 +211,7 @@ public class StartController {
             successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
         } catch (InvalidStockDataException | UncheckedIOException e) {
             inputs.setStockFilePath("");
-            String message = e.getMessage();
-            errorSink.accept(() -> message);
+            errorSink.accept(e::getMessage);
         }
     }
 
@@ -234,8 +233,7 @@ public class StartController {
             successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
         } catch (GameSaveCorruptException | UncheckedIOException e) {
             inputs.setSaveFilePath("");
-            String message = e.getMessage();
-            errorSink.accept(() -> message);
+            errorSink.accept(e::getMessage);
         }
     }
 
@@ -349,8 +347,7 @@ public class StartController {
             action.execute();
         } catch (GameSaveCorruptException | InvalidStockDataException | IllegalArgumentException
                  | IllegalStateException | UncheckedIOException exception) {
-            String message = exception.getMessage();
-            errorSink.accept(() -> message);
+            errorSink.accept(exception::getMessage);
         }
     }
 
