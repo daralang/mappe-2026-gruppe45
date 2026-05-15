@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Represents a player in the game.
@@ -31,6 +32,7 @@ public class Player {
 
     private final String name;
     private final BigDecimal startingMoney;
+    private final String sessionId;
     private BigDecimal money;
 
     private final Portfolio portfolio;
@@ -66,6 +68,7 @@ public class Player {
 
         this.name = name;
         this.startingMoney = startingMoney;
+        this.sessionId = UUID.randomUUID().toString();
         this.money = startingMoney;
 
         this.portfolio = new Portfolio();
@@ -92,6 +95,19 @@ public class Player {
      */
     public BigDecimal getStartingMoney() {
         return startingMoney;
+    }
+
+    /**
+     * Returns the stable session identifier for this player, generated at
+     * construction time and preserved across save and load via Gson.
+     *
+     * <p>Used by the leaderboard to keep a single entry per game session,
+     * regardless of how many times the player saves.</p>
+     *
+     * @return the session UUID as a string
+     */
+    public String getSessionId() {
+        return sessionId;
     }
 
     /**

@@ -1,6 +1,8 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
+import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
@@ -203,7 +205,7 @@ public class StartController {
         Currency currency = Optional.ofNullable(inputs.getSelectedCurrency())
                 .orElse(Currency.getInstance("USD"));
         try {
-            gameService.validateStockFile(file, currency);
+            new CsvStockFileHandler().readStocks(file.toPath(), currency);
             successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
         } catch (InvalidStockDataException | UncheckedIOException e) {
             inputs.setStockFilePath("");
@@ -225,7 +227,7 @@ public class StartController {
     void validateAndSetSaveFile(File file) {
         inputs.setSaveFilePath(file.getAbsolutePath());
         try {
-            gameService.validateSaveFile(file);
+            new JsonGameFileHandler().loadGame(file);
             successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
         } catch (GameSaveCorruptException | UncheckedIOException e) {
             inputs.setSaveFilePath("");
