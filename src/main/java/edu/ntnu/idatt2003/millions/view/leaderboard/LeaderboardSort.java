@@ -62,9 +62,12 @@ public class LeaderboardSort extends SortProvider<LeaderboardEntry, LeaderboardS
     @Override
     protected Comparator<LeaderboardEntry> buildComparator(SortColumn column) {
         return switch (column) {
+            // No explicit rank field exists; rank is derived by returnPercent
+            // (highest return = rank 1). Reversed so ascending sort puts rank 1 at the top.
             case RANK ->
                     Comparator.comparing(LeaderboardEntry::returnPercent)
-                              .thenComparing(LeaderboardEntry::finalNetWorth);
+                              .thenComparing(LeaderboardEntry::finalNetWorth)
+                              .reversed();
             case PLAYER ->
                     Comparator.comparing(LeaderboardEntry::playerName, String.CASE_INSENSITIVE_ORDER);
             case RETURN ->
