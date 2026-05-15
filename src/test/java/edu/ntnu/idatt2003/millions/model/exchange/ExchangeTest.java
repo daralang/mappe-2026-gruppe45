@@ -1,8 +1,9 @@
-package edu.ntnu.idatt2003.millions.model;
+package edu.ntnu.idatt2003.millions.model.exchange;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.exchange.PriceSimulator;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -482,14 +483,17 @@ class ExchangeTest {
         }
 
         @Test
-        @DisplayName("Should update stock price when advance is called")
-        void updatesStockPrice() {
+        @DisplayName("Should apply the exact price returned by the simulator when advance is called")
+        void appliesExactSimulatorResult() {
             // Arrange
-            BigDecimal priceBefore = stock.getSalesPrice();
+            BigDecimal fixedPrice = new BigDecimal("200.00");
+            PriceSimulator fixed = currentPrice -> fixedPrice;
+            Exchange deterministicExchange = new Exchange(
+                    "NYSE", new ArrayList<>(List.of(stock)), converter, fixed);
             // Act
-            exchange.advance();
+            deterministicExchange.advance();
             // Assert
-            assertNotEquals(priceBefore, stock.getSalesPrice());
+            assertEquals(0, fixedPrice.compareTo(stock.getSalesPrice()));
         }
 
         @Test

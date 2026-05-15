@@ -18,10 +18,10 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +43,7 @@ import java.util.Map;
 public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedgerSort.SortColumn> {
 
     private static final int PAGE_SIZE = Pagination.DEFAULT_PAGE_SIZE;
+    private static final double ROW_HEIGHT = 34.0;
 
     private final GameService gameService;
     private final LoanLedgerSort sort;
@@ -73,6 +74,7 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
         this.sortProvider = sort;
         this.table = new SortColumnTable<>(sort::getColumnDefs);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
+        table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
         Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
 
@@ -106,10 +108,8 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
                 "search.button",
                 searchCallback(),
                 metadataRow);
-        searchBar.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(searchBar, Priority.ALWAYS);
         HBox row = new HBox(16, searchBar, typeFilter, weekRangeFilter, clearSortButton);
-        row.setAlignment(Pos.CENTER_LEFT);
+        row.setAlignment(Pos.TOP_LEFT);
         row.getStyleClass().add("transactions-filter-row");
         return row;
     }
@@ -136,6 +136,9 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
         return new ArrayList<>(allLedger.stream()
                 .filter(e -> e.week() >= fromWeek && e.week() <= toWeek)
                 .filter(e -> selectedType == null || e.type() == selectedType)
+                .sorted(Comparator.comparingInt(LoanLedgerEntry::week)
+                        .thenComparingInt(e -> typePriority(e.type()))
+                        .reversed())
                 .toList());
     }
 
@@ -239,6 +242,14 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
      * @param type the entry type to label
      * @return a styled badge label
      */
+    private static int typePriority(LoanLedgerEntryType type) {
+        return switch (type) {
+            case INTEREST     -> 0;
+            case DISBURSEMENT -> 1;
+            case REPAYMENT    -> 2;
+        };
+    }
+
     private Label typeBadge(LoanLedgerEntryType type) {
         String labelKey = switch (type) {
             case DISBURSEMENT -> "loans.ledger.type.disbursement";

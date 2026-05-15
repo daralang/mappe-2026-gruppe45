@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.component.table;
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -70,8 +71,12 @@ class TableHeaderRenderer<Column> {
     void renderInto(GridPane grid, List<TableColumnDef<Column>> columns, Runnable onChanged, boolean sortable) {
         ensureHeaderCells(columns, onChanged);
         for (int i = 0; i < columns.size(); i++) {
+            TableColumnDef<Column> col = columns.get(i);
             HeaderCell<Column> cell = headerCells.get(i);
-            updateHeaderCell(cell, columns.get(i), onChanged, sortable);
+            updateHeaderCell(cell, col, onChanged, sortable);
+            if (col.leftInset() > 0) {
+                GridPane.setMargin(cell.root(), new Insets(0, 0, 0, col.leftInset()));
+            }
             grid.add(cell.root(), i, 0);
         }
         updateClearSortButton();

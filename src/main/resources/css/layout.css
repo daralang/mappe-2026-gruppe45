@@ -32,6 +32,12 @@
     -fx-background-color: -surface-alt;
 }
 
+/* === Start === */
+.start-root {
+    -fx-background-color: -footer-bg;
+}
+
+
 /* === Card === */
 .card {
     -fx-background-color: -surface;

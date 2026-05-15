@@ -305,6 +305,28 @@ class JsonGameFileHandlerTest {
         }
 
         @Test
+        @DisplayName("Should throw GameSaveCorruptException when file is empty")
+        void throwsGameSaveCorruptExceptionWhenFileIsEmpty() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("empty.json");
+            Files.writeString(file, "");
+            // Act & Assert
+            assertThrows(GameSaveCorruptException.class, () ->
+                    handler.loadGame(file.toFile()));
+        }
+
+        @Test
+        @DisplayName("Should throw GameSaveCorruptException when file contains a JSON array instead of an object")
+        void throwsGameSaveCorruptExceptionWhenFileIsJsonArray() throws Exception {
+            // Arrange
+            Path file = tempDir.resolve("array.json");
+            Files.writeString(file, "[1, 2, 3]");
+            // Act & Assert
+            assertThrows(GameSaveCorruptException.class, () ->
+                    handler.loadGame(file.toFile()));
+        }
+
+        @Test
         @DisplayName("Should throw GameSaveCorruptException when file contains invalid JSON")
         void throwsGameSaveCorruptExceptionForInvalidJson() throws Exception {
             // Arrange
