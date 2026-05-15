@@ -68,14 +68,13 @@ public class NewGameTab extends FileDropTab {
         HBox nameRow = buildFormRow(nameLabel, nameField);
         HBox capitalRow = buildFormRow(capitalLabel, capitalField);
         HBox currencyRow = buildFormRow(currencyLabel, currencySelector);
-        HBox fileRow = buildFormRow(fileLabel, fileInfoLabel);
         VBox uploadSection = StartLayoutAnimator.createCollapsedUploadSection(
                 getFileDropZone(), currencyRow, CARD_WIDTH);
 
         VBox uploadArea = new VBox(10, fileLabel, fileInfoLabel, uploadSection);
         uploadArea.setMaxWidth(CARD_WIDTH);
 
-        getChildren().addAll(nameRow, capitalRow, fileRow, uploadArea, getButtonArea());
+        getChildren().addAll(nameRow, capitalRow, uploadArea, getButtonArea());
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
