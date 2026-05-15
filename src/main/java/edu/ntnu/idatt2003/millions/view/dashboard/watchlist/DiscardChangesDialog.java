@@ -31,6 +31,7 @@ class DiscardChangesDialog extends Modal {
     @Override
     protected Region buildContent() {
         VBox content = new VBox();
+        content.getStyleClass().add("modal-discard-changes");
         content.getChildren().addAll(
                 buildStandardHeader(LanguageManager.get("watchlist.note.discard.title")),
                 buildBody()
@@ -58,7 +59,7 @@ class DiscardChangesDialog extends Modal {
             onDiscard.run();
         });
 
-        VBox body = new VBox(12, heading, sub, ModalActions.row(continueBtn, discardBtn));
+        VBox body = new VBox(12, heading, sub, ModalActions.row(discardBtn, continueBtn));
         body.getStyleClass().add("modal-body");
         return body;
     }
