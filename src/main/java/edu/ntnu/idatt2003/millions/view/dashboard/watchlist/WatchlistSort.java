@@ -128,7 +128,7 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
     private BigDecimal highLowRange(WatchlistItem item) {
         List<BigDecimal> prices = item.stock().getRecentPrices(HIGH_LOW_WEEKS);
         if (prices.isEmpty()) return BigDecimal.ZERO;
-        BigDecimal low  = prices.stream().min(BigDecimal::compareTo).orElseThrow();
+        BigDecimal low = prices.stream().min(BigDecimal::compareTo).orElseThrow();
         BigDecimal high = prices.stream().max(BigDecimal::compareTo).orElseThrow();
         return converter.convert(high.subtract(low), item.stock().getCurrency(), NOK);
     }
