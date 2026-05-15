@@ -2,8 +2,13 @@ package edu.ntnu.idatt2003.millions.view.exchange.overview.card;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
+import edu.ntnu.idatt2003.millions.util.CurrencyManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
+import java.text.MessageFormat;
+import java.util.Currency;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -19,6 +24,10 @@ import java.util.Objects;
  * A table component displaying a ranked list of stocks with their
  * current price and weekly percentage change.
  * Used for both winners and losers in the exchange overview.
+ *
+ * <p>The price column header is formatted with the active currency code from
+ * {@link CurrencyManager} and refreshed automatically on both language and
+ * currency changes.</p>
  */
 public class StockRankingCard extends VBox {
 
@@ -28,6 +37,13 @@ public class StockRankingCard extends VBox {
 
     /** The most recently displayed stock list; used to re-render on language change. */
     private List<Stock> lastStocks = List.of();
+
+    /**
+     * Strong reference to the currency change listener.
+     * Required so the {@link WeakChangeListener} registered on
+     * {@link CurrencyManager#currencyProperty()} is not immediately garbage-collected.
+     */
+    private final ChangeListener<Currency> currencyListener = (obs, old, val) -> refreshLabels();
 
     private final Label symbolHeader;
     private final Label stockHeader;
@@ -56,7 +72,7 @@ public class StockRankingCard extends VBox {
         titleLabel = StyledText.widgetValue(LanguageManager.get(titleKey));
         symbolHeader = addHeaderLabel(LanguageManager.get("col.ticker"));
         stockHeader = addHeaderLabel(LanguageManager.get("col.stock"));
-        priceHeader = addHeaderLabel(LanguageManager.get("col.priceAlt"));
+        priceHeader = addHeaderLabel(addCurrencyPrice());
         changeHeader = addHeaderLabel(LanguageManager.get("col.change"));
 
         applyColumnConstraints(symbolHeader, stockHeader, priceHeader, changeHeader);
@@ -66,6 +82,7 @@ public class StockRankingCard extends VBox {
         getChildren().addAll(titleLabel, header, rows);
 
         LanguageManager.addObserver(this::refreshLabels);
+        CurrencyManager.currencyProperty().addListener(new WeakChangeListener<>(currencyListener));
         update(stocks);
     }
 
@@ -78,7 +95,7 @@ public class StockRankingCard extends VBox {
         titleLabel.setText(LanguageManager.get(titleKey));
         symbolHeader.setText(LanguageManager.get("col.ticker"));
         stockHeader.setText(LanguageManager.get("col.stock"));
-        priceHeader.setText(LanguageManager.get("col.priceAlt"));
+        priceHeader.setText(addCurrencyPrice());
         changeHeader.setText(LanguageManager.get("col.change"));
         update(lastStocks);
     }
@@ -102,6 +119,18 @@ public class StockRankingCard extends VBox {
         } else {
             stocks.forEach(stock -> rows.getChildren().add(addRow(stock)));
         }
+    }
+
+    /**
+     * Returns the formatted price column header using the active currency code
+     * from {@link CurrencyManager}.
+     *
+     * @return the resolved and formatted price header string
+     */
+    private String addCurrencyPrice() {
+        return MessageFormat.format(
+                LanguageManager.get("col.priceNative"),
+                CurrencyManager.get().getCurrencyCode());
     }
 
     /**
@@ -133,8 +162,6 @@ public class StockRankingCard extends VBox {
 
     /**
      * Builds a data row for the given stock.
-     * The price is formatted with Norwegian locale and the stock's native currency code.
-     * Uses {@link ChangeFormatter#styledPercent} for a coloured weekly change label.
      *
      * @param stock the stock to display
      * @return an HBox representing one table row

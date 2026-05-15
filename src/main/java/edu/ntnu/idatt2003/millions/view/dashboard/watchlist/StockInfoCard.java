@@ -81,7 +81,7 @@ class StockInfoCard extends VBox {
                               BigDecimal price, BigDecimal priceNok,
                               BigDecimal changePercent) {
         String priceLabelText = MessageFormat.format(
-                LanguageManager.get("col.priceAlt"), currencyCode);
+                LanguageManager.get("col.priceNative"), currencyCode);
 
         VBox priceCell = buildTextCell(
                 priceLabelText,
