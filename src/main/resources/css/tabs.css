@@ -84,10 +84,9 @@
 }
 
 .start-tab-pane .tab {
-    -fx-background-color: transparent, transparent;
-    -fx-background-insets: 0, 58 0 0 0;
+    -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-border-width: 0;
+    -fx-border-width: 0 0 2 0;
     -fx-padding: 0 24 0 24;
     -fx-pref-height: 60;
     -fx-min-height: 60;
@@ -96,7 +95,7 @@
 }
 
 .start-tab-pane .tab:selected {
-    -fx-background-color: transparent, black;
+    -fx-border-color: black;
 }
 
 .start-tab-pane .tab .tab-label {

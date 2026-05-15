@@ -8,13 +8,16 @@ import edu.ntnu.idatt2003.millions.view.start.LoadGameTab;
 import edu.ntnu.idatt2003.millions.view.start.NewGameTab;
 import edu.ntnu.idatt2003.millions.view.start.StartLayoutAnimator;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.stage.Stage;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -41,7 +44,6 @@ import java.util.function.Consumer;
 public class StartView implements StartScreenInputs {
 
     private static final double SCENE_WIDTH = 900;
-    private static final double SCENE_HEIGHT = 700;
     private static final double ROOT_SPACING = 24;
     private static final double START_CARD_WIDTH = 540;
 
@@ -83,6 +85,18 @@ public class StartView implements StartScreenInputs {
         tabPane.getTabs().addAll(newGameTab, loadGameTab);
         tabPane.setMaxWidth(START_CARD_WIDTH);
         tabPane.getStyleClass().add("start-tab-pane");
+        Platform.runLater(() -> {
+            Node headersRegion = tabPane.lookup(".headers-region");
+            if (headersRegion instanceof Region r) {
+                Runnable center = () -> {
+                    double offset = Math.max(0, (tabPane.getWidth() - r.getWidth()) / 2.0);
+                    r.setTranslateX(offset);
+                };
+                r.widthProperty().addListener((o, old, n) -> center.run());
+                tabPane.widthProperty().addListener((o, old, n) -> center.run());
+                center.run();
+            }
+        });
 
         HBox topBar = new HBox(languagePicker);
         topBar.setAlignment(Pos.CENTER_RIGHT);
@@ -116,7 +130,14 @@ public class StartView implements StartScreenInputs {
         }
         root.setCenter(center);
 
-        scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
+        scene = new Scene(root, SCENE_WIDTH, -1);
+        scene.windowProperty().addListener((obs, oldWin, win) -> {
+            if (win instanceof Stage stage) {
+                tabPane.prefHeightProperty().addListener((o, old, h) ->
+                        Platform.runLater(stage::sizeToScene));
+                Platform.runLater(stage::sizeToScene);
+            }
+        });
         StylesheetLoader.load(scene,
                 StylesheetLoader.Stylesheet.TOKENS,
                 StylesheetLoader.Stylesheet.TITLE,
