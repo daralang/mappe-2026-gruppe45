@@ -71,7 +71,18 @@ public class StartController {
      * @throws NullPointerException if stage or game manager is null
      */
     public StartController(Stage stage, GameService gameService) {
-        StartView startView = new StartView(TitleBarFactory.createForStartScreen(stage).getNode());
+        this(stage, gameService, new StartView(TitleBarFactory.createForStartScreen(stage).getNode()));
+    }
+
+    /**
+     * Intermediate constructor that resolves the {@link StartView} before delegating
+     * to the full DI constructor, ensuring {@code this()} is the first statement.
+     *
+     * @param stage       the primary application stage
+     * @param gameService the game manager used to create or load game state
+     * @param startView   the already-constructed start view
+     */
+    private StartController(Stage stage, GameService gameService, StartView startView) {
         this(stage, gameService,
                 startView,
                 () -> new MainController(stage, gameService).show(),
