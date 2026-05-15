@@ -49,6 +49,7 @@ public class StartView implements StartScreenInputs {
 
     private final Scene scene;
     private final StyledText title;
+    private final AppTabPane tabPane;
     private final Tab newGameTab;
     private final Tab loadGameTab;
     private final NewGameTab newGameTabContent;
@@ -81,7 +82,7 @@ public class StartView implements StartScreenInputs {
         loadGameTab = AppTabPane.createTab(
                 LanguageManager.get("start.tab.loadGame"), loadGameContent);
 
-        AppTabPane tabPane = new AppTabPane();
+        tabPane = new AppTabPane();
         tabPane.getTabs().addAll(newGameTab, loadGameTab);
         tabPane.setMaxWidth(START_CARD_WIDTH);
         tabPane.getStyleClass().add("start-tab-pane");
@@ -106,7 +107,7 @@ public class StartView implements StartScreenInputs {
         startGroup.setAlignment(Pos.TOP_CENTER);
 
         StackPane reservedStartGroup = new StackPane(startGroup);
-        reservedStartGroup.setAlignment(Pos.TOP_CENTER);
+        reservedStartGroup.setAlignment(Pos.CENTER);
 
         StackPane center = new StackPane(reservedStartGroup);
         center.setAlignment(Pos.CENTER);
@@ -194,6 +195,20 @@ public class StartView implements StartScreenInputs {
     @Override
     public void setSaveFilePath(String path) {
         loadGameContent.setFilePath(path);
+    }
+
+    /**
+     * Shows an inline error in the currently active tab.
+     * The supplier is stored so the message re-translates on language change.
+     *
+     * @param messageSupplier produces the localised error string
+     */
+    public void showError(java.util.function.Supplier<String> messageSupplier) {
+        if (tabPane.getSelectionModel().getSelectedItem() == newGameTab) {
+            newGameTabContent.showError(messageSupplier);
+        } else {
+            loadGameContent.showError(messageSupplier);
+        }
     }
 
     /**
