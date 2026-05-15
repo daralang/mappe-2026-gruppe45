@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
 
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.view.component.ExploreStocksButton;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
@@ -24,8 +25,14 @@ public class WatchlistView extends VBox {
     public WatchlistView(GameService gameService,
                          TradeController tradeController,
                          Runnable onExploreStocks) {
+        setSpacing(16);
+
         WatchlistCard card = new WatchlistCard(gameService, tradeController, onExploreStocks);
         VBox.setVgrow(card, Priority.ALWAYS);
-        getChildren().add(card);
+
+        ExploreStocksButton exploreButton = new ExploreStocksButton(onExploreStocks);
+        exploreButton.setMaxWidth(Double.MAX_VALUE);
+
+        getChildren().addAll(card,exploreButton);
     }
 }
