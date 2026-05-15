@@ -49,12 +49,12 @@ class StockInfoCard extends VBox {
         BigDecimal changePercent = stock.getWeeklyChangePercent();
 
         String priceLabelText = MessageFormat.format(
-                LanguageManager.get("watchlist.note.info.price"), currencyCode);
+                LanguageManager.get("exchange.stocks.col.priceCurrency"), currencyCode);
 
         getChildren().addAll(
                 buildTextRow(priceLabelText,
                         ChangeFormatter.formatPlain(price) + " " + currencyCode),
-                buildTextRow(LanguageManager.get("watchlist.note.info.priceNok"),
+                buildTextRow(LanguageManager.get("exchange.stocks.col.priceNOK"),
                         ChangeFormatter.formatPlain(priceNok) + " NOK"),
                 buildChangeRow(changePercent),
                 buildSparklineRow(stock)
@@ -85,8 +85,8 @@ class StockInfoCard extends VBox {
      * @return a styled {@link HBox} row with a coloured value label
      */
     private HBox buildChangeRow(BigDecimal changePercent) {
-        Label label = StyledText.detailLabel(LanguageManager.get("watchlist.note.info.change"));
-        Label value = ChangeFormatter.styledPercent(changePercent, "detail-value");
+        Label label = StyledText.detailLabel(LanguageManager.get("details.row.weeklyChange"));
+        Label value = ChangeFormatter.styledPercent(changePercent, "watchlist.col.trend");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox row = new HBox(label, spacer, value);
