@@ -1,1 +1,47 @@
 /* Leaderboard-specific component styles */
+
+/* Extra top padding to balance the bottom space taken by the pagination row. */
+.leaderboard-card.card {
+    -fx-padding: 24 16 16 16;
+}
+
+/* Fix the search row to a comfortable width so the control cluster stays tight. */
+.leaderboard-card .search-row {
+    -fx-min-width: 480;
+    -fx-max-width: 480;
+}
+
+/* Shared style for the two leaderboard action buttons (push-score and clear-sort).
+   Outlined at rest, fills with primary-dark on hover. Border simulated via background
+   layers so layout height stays exactly 30 px — matching the search bar row height. */
+.leaderboard-push-score-btn,
+.leaderboard-card .clear-sort-button {
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-max-height: 30;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 5, 4;
+    -fx-background-color: #EDEDED, white;
+    -fx-border-color: transparent;
+    -fx-font-size: 13px;
+    -fx-padding: 0 16 0 16;
+    -fx-cursor: hand;
+    -fx-text-fill: black;
+}
+.leaderboard-push-score-btn:hover,
+.leaderboard-card .clear-sort-button:hover {
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+    -fx-background-color: -primary-dark;
+    -fx-text-fill: white;
+}
+.leaderboard-push-score-btn:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
+
+.leaderboard-score-confirm {
+    -fx-text-fill: -success-text;
+    -fx-font-size: 13;
+}

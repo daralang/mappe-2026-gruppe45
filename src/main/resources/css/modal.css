@@ -197,6 +197,21 @@
     -fx-border-color: -danger-dark;
 }
 
+.modal-button-link {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 13;
+}
+.modal-button-link:hover {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -danger;
+}
+.modal-button-link-active {
+    -fx-text-fill: -danger;
+}
+
 .modal-button:disabled {
     -fx-opacity: 0.5;
     -fx-cursor: default;

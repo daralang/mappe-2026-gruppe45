@@ -21,14 +21,13 @@ import java.util.Objects;
  * <p>Every game session is identified by {@link Player#getSessionId()}, which
  * stays stable across save and load. {@link #recordOrUpdate} therefore upserts:
  * if an entry exists for the same session it is updated in place, otherwise a
- * new entry is appended. Entries with {@link Outcome#GAME_OVER} are locked and
- * never updated again, so a bankrupt player can't accidentally overwrite their
- * own final result.</p>
+ * new entry is appended. The leaderboard never locks — the most recent write
+ * always wins, regardless of the previous outcome.</p>
  *
  * <p>Primary ranking is by {@code returnPercent} descending, with
- * {@code finalNetWorth} as a tiebreaker. Players who lost their game are
- * still ranked alongside everyone else — the {@link Outcome#GAME_OVER} flag
- * lets the view mark them visually without affecting position.</p>
+ * {@code finalNetWorth} as a tiebreaker. The {@link Outcome} flag lets the
+ * view distinguish active, retired, and bankrupt sessions without affecting
+ * ranking position.</p>
  *
  * <h2>File location</h2>
  * The default file is {@code leaderboard.json} in the working directory, which
@@ -72,10 +71,10 @@ public class LeaderboardService {
     /**
      * Inserts or updates the leaderboard entry for the player's current session.
      *
-     * <p>If an entry exists with the same {@code sessionId} and its outcome is
-     * already {@link Outcome#GAME_OVER}, this call is a no-op — game-over entries
-     * are immutable. Otherwise the existing entry is replaced with a fresh
-     * snapshot, or a new entry is appended if none exists yet.</p>
+     * <p>If an entry already exists for the same {@code sessionId} it is replaced
+     * with a fresh snapshot; otherwise a new entry is appended. The leaderboard
+     * never locks — a later save can overwrite a {@link Outcome#BANKRUPTCY} entry
+     * with {@link Outcome#ACTIVE} if the player reloads and continues playing.</p>
      *
      * <p>Failures to read or write the leaderboard file are swallowed silently
      * (logged to stderr) rather than propagated. The leaderboard is a
@@ -85,8 +84,7 @@ public class LeaderboardService {
      * @param player    the active player
      * @param exchange  the active exchange (used for week number)
      * @param converter the converter used to compute net worth in NOK
-     * @param outcome   {@link Outcome#ACTIVE} for an in-progress save,
-     *                  {@link Outcome#GAME_OVER} when the player has been declared bankrupt
+     * @param outcome   the current outcome to record
      * @throws NullPointerException if any argument is null
      */
     public void recordOrUpdate(Player player, Exchange exchange,
@@ -101,11 +99,6 @@ public class LeaderboardService {
             String sessionId = player.getSessionId();
 
             int existingIndex = indexOfSession(entries, sessionId);
-            if (existingIndex >= 0 && entries.get(existingIndex).outcome() == Outcome.GAME_OVER) {
-                // Locked — do not overwrite a final result.
-                return;
-            }
-
             LeaderboardEntry snapshot = snapshot(player, exchange, converter, outcome);
             if (existingIndex >= 0) {
                 entries.set(existingIndex, snapshot);

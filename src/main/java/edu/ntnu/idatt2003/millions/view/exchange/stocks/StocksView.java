@@ -26,7 +26,7 @@ public class StocksView extends VBox {
      * @param controller  the controller used to open buy/sell dialogs
      */
     public StocksView(GameService gameService, TradeController controller) {
-        getStyleClass().add("content-area");
+        setSpacing(16);
 
         HBox summaryCards = createSummaryCards(gameService);
         StocksCard stocksCard = new StocksCard(gameService, controller);

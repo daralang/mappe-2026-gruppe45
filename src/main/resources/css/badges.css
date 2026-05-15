@@ -1,6 +1,7 @@
 .transaction-type-badge,
 .badge-owner,
 .badge-success,
+.badge-info,
 .badge-danger,
 .badge-status-novice,
 .badge-status-investor,
@@ -36,6 +37,12 @@
     -fx-background-color: -success-bg;
     -fx-text-fill: -success-text;
     -fx-border-color: -success-border;
+}
+
+.badge-info {
+    -fx-background-color: -info-bg;
+    -fx-text-fill: -info-text;
+    -fx-border-color: -info-border;
 }
 
 .badge-danger {
