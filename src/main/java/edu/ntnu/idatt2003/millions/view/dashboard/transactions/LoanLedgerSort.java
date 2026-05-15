@@ -2,7 +2,6 @@ package edu.ntnu.idatt2003.millions.view.dashboard.transactions;
 
 import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
 import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
@@ -54,27 +53,19 @@ public class LoanLedgerSort extends SortProvider<LoanLedgerEntry, LoanLedgerSort
      * Returns the ordered column definitions for the loan-ledger table.
      *
      * <p>Called by
-     * {@link edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable}
-     * on every header refresh so that column labels are re-resolved from
-     * {@link LanguageManager} and always reflect the active language.</p>
+     * {@link SortColumnTable}
+     * on every header refresh so that column labels are re-resolved and always
+     * reflect the active language.</p>
      *
      * @return a fresh list of {@link TableColumnDef} in display order
      */
     @Override
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.week"),
-                        SortColumn.WEEK, 10, HPos.LEFT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.loan"),
-                        SortColumn.LOAN, 38, HPos.LEFT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.type"),
-                        SortColumn.TYPE, 22, HPos.LEFT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.amount"),
-                        SortColumn.AMOUNT, 30, HPos.RIGHT)
+                TableColumnDef.sortable("col.week", SortColumn.WEEK, 10, HPos.LEFT),
+                TableColumnDef.sortable("col.loan", SortColumn.LOAN, 38, HPos.LEFT),
+                TableColumnDef.sortable("col.type", SortColumn.TYPE, 22, HPos.LEFT),
+                TableColumnDef.sortable("col.amount", SortColumn.AMOUNT, 30, HPos.RIGHT)
         );
     }
 

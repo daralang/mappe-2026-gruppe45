@@ -60,38 +60,21 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
      * @return a fresh list of {@link TableColumnDef} in display order
      */
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
-        String currencyCode = CurrencyManager.get().getCurrencyCode();
         return List.of(
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.watchlist"),
-                        SortColumn.WATCHLIST, 4, HPos.CENTER),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.ticker"),
-                        SortColumn.TICKER, 9, HPos.LEFT),
-                TableColumnDef.of(
-                        LanguageManager.get("col.company"),
-                        28, HPos.LEFT, 34.0),
-                TableColumnDef.sortable(
-                        MessageFormat.format(LanguageManager.get("col.priceNative"), currencyCode),
-                        SortColumn.PRICE_USD, 10, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.priceNok"),
-                        SortColumn.PRICE_NOK, 10, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.changeNok"),
-                        SortColumn.CHANGE_KR, 10, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.changePct"),
-                        SortColumn.CHANGE_PCT, 10, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.highLow"),
-                        SortColumn.HIGH_LOW, 10, HPos.RIGHT),
-                TableColumnDef.of(
-                        LanguageManager.get("col.trend"),
-                        10, HPos.CENTER),
-                TableColumnDef.of(
-                        LanguageManager.get("col.trade"),
-                        6, HPos.LEFT)
+                TableColumnDef.sortable("col.watchlist", SortColumn.WATCHLIST, 7, HPos.CENTER),
+                TableColumnDef.sortable("col.ticker", SortColumn.TICKER, 9, HPos.LEFT),
+                TableColumnDef.of("col.company", 25, HPos.LEFT),
+                new TableColumnDef<>(
+                        () -> MessageFormat.format(
+                                LanguageManager.get("col.priceNative"),
+                                CurrencyManager.get().getCurrencyCode()),
+                        SortColumn.PRICE_USD, null, 10, HPos.RIGHT),
+                TableColumnDef.sortable("col.priceNok", SortColumn.PRICE_NOK, 10, HPos.RIGHT),
+                TableColumnDef.sortable("col.changeNok", SortColumn.CHANGE_KR, 10, HPos.RIGHT),
+                TableColumnDef.sortable("col.changePct", SortColumn.CHANGE_PCT, 10, HPos.RIGHT),
+                TableColumnDef.sortable("col.highLow", SortColumn.HIGH_LOW, 10, HPos.RIGHT),
+                TableColumnDef.of("col.trend", 10, HPos.CENTER),
+                TableColumnDef.of("col.trade", 6, HPos.LEFT)
         );
     }
 
