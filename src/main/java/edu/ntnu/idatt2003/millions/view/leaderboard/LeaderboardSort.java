@@ -21,6 +21,11 @@ public class LeaderboardSort extends SortProvider<LeaderboardEntry, LeaderboardS
         RANK, PLAYER, RETURN, NET_WORTH, WEEKS, STATUS, OUTCOME
     }
 
+    /**
+     * Returns the ordered column definitions for the leaderboard table.
+     *
+     * @return a fresh list of {@link TableColumnDef} in display order
+     */
     @Override
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
@@ -48,6 +53,12 @@ public class LeaderboardSort extends SortProvider<LeaderboardEntry, LeaderboardS
         );
     }
 
+    /**
+     * Builds a {@link Comparator} for the given sort column.
+     *
+     * @param column the column to build a comparator for
+     * @return a comparator for the given column
+     */
     @Override
     protected Comparator<LeaderboardEntry> buildComparator(SortColumn column) {
         return switch (column) {

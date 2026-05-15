@@ -46,6 +46,16 @@ public record TableColumnDef<Column>(
         return new TableColumnDef<>(label, null, null, percentWidth, alignment, 0.0);
     }
 
+    /**
+     * Creates a static, non-sortable column without a tooltip, with a left inset applied to cells.
+     *
+     * @param <Column>     the sort-column type (inferred; not used for static columns)
+     * @param label        the resolved display text
+     * @param percentWidth the column width as a percentage of total table width
+     * @param alignment    the horizontal alignment for cells in this column
+     * @param leftInset    the left margin offset applied to cells in this column
+     * @return a new {@link TableColumnDef} with no sort column, no tooltip, and a left inset
+     */
     public static <Column> TableColumnDef<Column> of(
             String label, double percentWidth, HPos alignment, double leftInset) {
         return new TableColumnDef<>(label, null, null, percentWidth, alignment, leftInset);
