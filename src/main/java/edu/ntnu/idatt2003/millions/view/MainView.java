@@ -144,7 +144,7 @@ public class MainView {
     }
 
     private void showLeaderboard() {
-        content.setCenter(wrapScrollable(new LeaderboardView(gameService, toastService)));
+        content.setCenter(wrapScrollable(new LeaderboardView(gameService, toastService, weekBar)));
     }
 
     private void showExchangeOnStocksTab() {
