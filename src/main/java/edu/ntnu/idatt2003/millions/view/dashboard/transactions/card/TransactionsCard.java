@@ -190,14 +190,14 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
      * @param archive  the archive to read transactions from
      * @param fromWeek the first week to include (inclusive)
      * @param toWeek   the last week to include (inclusive)
-     * @return a chronologically sorted mutable list of transactions in the range
+     * @return a reverse-chronologically sorted mutable list of transactions in the range
      */
     private List<Transaction> collectRange(TransactionArchive archive, int fromWeek, int toWeek) {
         List<Transaction> list = new ArrayList<>();
         for (int week = fromWeek; week <= toWeek; week++) {
             list.addAll(archive.getTransactions(week));
         }
-        list.sort(Comparator.comparingInt(Transaction::getWeek));
+        list.sort(Comparator.comparingInt(Transaction::getWeek).reversed());
         return list;
     }
 
