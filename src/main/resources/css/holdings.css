@@ -38,6 +38,20 @@ Label.holdings-header:disabled {
     -fx-padding: 10 0 10 0;
 }
 
+.holdings-action-link.holdings-action-star {
+    -fx-padding: 5 0 5 0;
+    -fx-text-fill: -text-secondary; /* ikke watchlisted */
+    -fx-font-size: 16;
+}
+
+.holdings-action-link.holdings-action-star.holdings-action-star--active {
+    -fx-text-fill: -status-investor-border; /* watchlisted */
+}
+
+.holdings-action-link.holdings-action-star:hover {
+    -fx-text-fill: -status-investor-border;
+}
+
 .holdings-action-link {
     -fx-font-size: 13;
     -fx-font-weight: bold;

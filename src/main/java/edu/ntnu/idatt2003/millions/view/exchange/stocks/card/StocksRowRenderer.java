@@ -22,12 +22,13 @@ import javafx.scene.layout.HBox;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Responsible for rendering a single stock row into a {@link SortColumnTable}.
  *
  * <p>Each call to {@link #buildRow(Stock, int, SortColumnTable)} populates one row
- * with ticker, company, prices, weekly change, 4-week high/low,
+ * with a watchlist star toggle, ticker, company, prices, weekly change, 4-week high/low,
  * a {@link SparklineChart} trend and trade actions.
  *
  * <p>This class is stateless and may be reused across refreshes.
@@ -40,16 +41,22 @@ class StocksRowRenderer extends RowRenderer {
 
     private final GameService gameService;
     private final TradeController controller;
+    private final Consumer<String> onWatchlistToggle;
 
     /**
      * Constructs a new StocksRowRenderer.
      *
-     * @param gameService the game service used to read player portfolio state
-     * @param controller  the controller used to open buy/sell dialogs
+     * @param gameService       the game service used to read player portfolio and watchlist state
+     * @param controller        the controller used to open buy/sell dialogs
+     * @param onWatchlistToggle callback invoked with the stock symbol when the player
+     *                          clicks the watchlist star button
      */
-    StocksRowRenderer(GameService gameService, TradeController controller) {
+    StocksRowRenderer(GameService gameService,
+                      TradeController controller,
+                      Consumer<String> onWatchlistToggle) {
         this.gameService = gameService;
         this.controller = controller;
+        this.onWatchlistToggle = onWatchlistToggle;
     }
 
     /**
@@ -64,6 +71,14 @@ class StocksRowRenderer extends RowRenderer {
      */
     void buildRow(Stock stock, int rowIndex, SortColumnTable<?> table) {
         CurrencyConverter converter = gameService.getCurrencyConverter();
+
+        boolean watched = gameService.getPlayer().isOnWatchlist(stock.getSymbol());
+        Button starButton = new Button(watched ? "★" : "☆");
+        starButton.getStyleClass().addAll("holdings-action-link", "holdings-action-star");
+        if (watched) {
+            starButton.getStyleClass().add("holdings-action-star--active");
+        }
+        starButton.setOnAction(e -> onWatchlistToggle.accept(stock.getSymbol()));
 
         Label tickerLabel = new Label(stock.getSymbol());
         tickerLabel.getStyleClass().add("holdings-cell");
@@ -94,6 +109,7 @@ class StocksRowRenderer extends RowRenderer {
 
         HBox tradeButtons = buildBuyButton(stock);
 
+        GridPane.setValignment(starButton, VPos.TOP);
         GridPane.setValignment(tickerCell, VPos.TOP);
         GridPane.setValignment(companyLabel, VPos.TOP);
         GridPane.setValignment(priceLabel, VPos.TOP);
@@ -104,7 +120,7 @@ class StocksRowRenderer extends RowRenderer {
         GridPane.setValignment(sparkline, VPos.TOP);
         GridPane.setValignment(tradeButtons, VPos.TOP);
 
-        table.addRow(rowIndex, tickerCell, companyLabel, priceLabel, priceNokLabel,
+        table.addRow(rowIndex, starButton, tickerCell, companyLabel, priceLabel, priceNokLabel,
                 changeKrLabel, changePctLabel, highLowLabel, sparkline, tradeButtons);
     }
 
