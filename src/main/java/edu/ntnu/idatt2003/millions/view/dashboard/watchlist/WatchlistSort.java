@@ -60,37 +60,37 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
         String altCurrencyCode = CurrencyManager.get().getCurrencyCode();
         return List.of(
                 TableColumnDef.sortable(
-                        LanguageManager.get("watchlist.col.ticker"),
+                        LanguageManager.get("col.ticker"),
                         SortColumn.TICKER, 10, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("watchlist.col.company"),
+                        LanguageManager.get("col.company"),
                         SortColumn.COMPANY, 20, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("watchlist.col.priceNok"),
+                        LanguageManager.get("col.priceNok"),
                         SortColumn.PRICE_NOK, 15, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        MessageFormat.format(LanguageManager.get("watchlist.col.priceAlt"), altCurrencyCode),
+                        MessageFormat.format(LanguageManager.get("col.priceAlt"), altCurrencyCode),
                         SortColumn.PRICE_ALT, 15, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("watchlist.col.changeNok"),
+                        LanguageManager.get("col.changeNok"),
                         SortColumn.CHANGE_NOK, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("watchlist.col.changePct"),
+                        LanguageManager.get("col.changePct"),
                         SortColumn.CHANGE_PCT, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("watchlist.col.highLow"),
+                        LanguageManager.get("col.highLow"),
                         SortColumn.HIGH_LOW, 10, HPos.RIGHT),
                 TableColumnDef.of(
-                        LanguageManager.get("watchlist.col.trend"),
+                        LanguageManager.get("col.trend"),
                         12, HPos.CENTER),
                 TableColumnDef.sortable(
-                        LanguageManager.get("watchlist.col.addedWeek"),
+                        LanguageManager.get("col.addedWeek"),
                         SortColumn.ADDED_WEEK, 10, HPos.CENTER),
                 TableColumnDef.of(
-                        LanguageManager.get("watchlist.col.trade"),
+                        LanguageManager.get("col.trade"),
                         10, HPos.CENTER),
                 TableColumnDef.of(
-                        LanguageManager.get("watchlist.col.note"),
+                        LanguageManager.get("col.note"),
                         7, HPos.CENTER),
                 TableColumnDef.of(
                         "", 5, HPos.CENTER)

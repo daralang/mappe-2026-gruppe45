@@ -64,16 +64,16 @@ public class LoanLedgerSort extends SortProvider<LoanLedgerEntry, LoanLedgerSort
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.loans.col.week"),
+                        LanguageManager.get("col.week"),
                         SortColumn.WEEK, 10, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.loans.col.loan"),
+                        LanguageManager.get("col.loan"),
                         SortColumn.LOAN, 38, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.loans.col.type"),
+                        LanguageManager.get("col.type"),
                         SortColumn.TYPE, 22, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.loans.col.amount"),
+                        LanguageManager.get("col.amount"),
                         SortColumn.AMOUNT, 30, HPos.RIGHT)
         );
     }

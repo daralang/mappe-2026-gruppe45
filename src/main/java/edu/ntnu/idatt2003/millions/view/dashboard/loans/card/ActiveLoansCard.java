@@ -91,11 +91,11 @@ public class ActiveLoansCard extends Card {
 
     private void addHeaderRow() {
         TableCells.addHeaderRow(grid, new String[]{
-                LanguageManager.get("loans.active.col.loan"),
-                LanguageManager.get("loans.active.col.rate"),
-                LanguageManager.get("loans.active.col.weeksLeft"),
-                LanguageManager.get("loans.active.col.weeklyCost"),
-                LanguageManager.get("loans.active.col.remaining"),
+                LanguageManager.get("col.loan"),
+                LanguageManager.get("col.rate"),
+                LanguageManager.get("col.weeksLeft"),
+                LanguageManager.get("col.weeklyCost"),
+                LanguageManager.get("col.remaining"),
                 ""
         });
     }

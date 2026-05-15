@@ -54,10 +54,10 @@ public class StockRankingCard extends VBox {
         setSpacing(12);
 
         titleLabel = StyledText.widgetValue(LanguageManager.get(titleKey));
-        symbolHeader = addHeaderLabel(LanguageManager.get("exchange.overview.columnSymbol"));
-        stockHeader = addHeaderLabel(LanguageManager.get("exchange.overview.columnStock"));
-        priceHeader = addHeaderLabel(LanguageManager.get("exchange.overview.columnPrice"));
-        changeHeader = addHeaderLabel(LanguageManager.get("exchange.overview.columnChange"));
+        symbolHeader = addHeaderLabel(LanguageManager.get("col.ticker"));
+        stockHeader = addHeaderLabel(LanguageManager.get("col.stock"));
+        priceHeader = addHeaderLabel(LanguageManager.get("col.priceAlt"));
+        changeHeader = addHeaderLabel(LanguageManager.get("col.change"));
 
         applyColumnConstraints(symbolHeader, stockHeader, priceHeader, changeHeader);
         HBox header = addRow(symbolHeader, stockHeader, priceHeader, changeHeader);
@@ -76,10 +76,10 @@ public class StockRankingCard extends VBox {
      */
     private void refreshLabels() {
         titleLabel.setText(LanguageManager.get(titleKey));
-        symbolHeader.setText(LanguageManager.get("exchange.overview.columnSymbol"));
-        stockHeader.setText(LanguageManager.get("exchange.overview.columnStock"));
-        priceHeader.setText(LanguageManager.get("exchange.overview.columnPrice"));
-        changeHeader.setText(LanguageManager.get("exchange.overview.columnChange"));
+        symbolHeader.setText(LanguageManager.get("col.ticker"));
+        stockHeader.setText(LanguageManager.get("col.stock"));
+        priceHeader.setText(LanguageManager.get("col.priceAlt"));
+        changeHeader.setText(LanguageManager.get("col.change"));
         update(lastStocks);
     }
 
