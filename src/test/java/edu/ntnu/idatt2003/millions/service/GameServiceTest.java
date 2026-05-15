@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.service;
 import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.leaderboard.JsonLeaderboardFileHandler;
+import edu.ntnu.idatt2003.millions.model.leaderboard.Outcome;
 import edu.ntnu.idatt2003.millions.file.stock.EmptyStockFileException;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
@@ -57,6 +58,7 @@ class GameServiceTest {
     private static final BigDecimal SALE_COMMISSION = new BigDecimal("5.0000");
 
     private GameService gameService;
+    private LeaderboardService lbService;
 
     @TempDir
     Path tempDir;
@@ -74,10 +76,10 @@ class GameServiceTest {
         Path file = tempDir.resolve("save.json");
         new JsonGameFileHandler().saveGame(player, exchange, file.toFile());
 
-        LeaderboardService lb = new LeaderboardService(
+        lbService = new LeaderboardService(
                 new JsonLeaderboardFileHandler(),
                 tempDir.resolve("leaderboard.json").toFile());
-        gameService = new GameService(lb);
+        gameService = new GameService(lbService);
         gameService.loadGame(file.toFile());
     }
 
@@ -695,6 +697,50 @@ class GameServiceTest {
             new JsonGameFileHandler().saveGame(player, exchange, file.toFile());
             gameService.loadGame(file.toFile());
             assertFalse(gameService.isGameOver());
+        }
+    }
+
+    @Nested
+    @DisplayName("sellAllAndExit()")
+    class SellAllAndExit {
+
+        @Test
+        @DisplayName("liquidates portfolio, increases money, records RETIRED on leaderboard")
+        void sellAllAndExitLiquidatesPortfolioAndRecordsRetired() {
+            gameService.buy("EQNR", new BigDecimal("3"));
+            assertFalse(gameService.getPlayer().getPortfolio().getShares().isEmpty(),
+                    "player must own shares before sell-all");
+
+            BigDecimal moneyBeforeSell = gameService.getPlayer().getMoney();
+
+            gameService.sellAllAndExit();
+
+            assertTrue(gameService.getPlayer().getPortfolio().getShares().isEmpty(),
+                    "portfolio must be empty after sell-all");
+            assertTrue(gameService.getPlayer().getMoney().compareTo(moneyBeforeSell) > 0,
+                    "money must increase after liquidation");
+            assertEquals(1, lbService.getAllEntries().size());
+            assertEquals(Outcome.RETIRED, lbService.getAllEntries().get(0).outcome());
+        }
+
+        @Test
+        @DisplayName("works with an empty portfolio — no shares to sell")
+        void sellAllAndExitWithEmptyPortfolio() {
+            assertTrue(gameService.getPlayer().getPortfolio().getShares().isEmpty());
+
+            assertDoesNotThrow(() -> gameService.sellAllAndExit());
+
+            assertEquals(Outcome.RETIRED, lbService.getAllEntries().get(0).outcome());
+        }
+
+        @Test
+        @DisplayName("notifies observers")
+        void sellAllAndExitNotifiesObservers() {
+            CountingObserver observer = new CountingObserver();
+            gameService.addObserver(observer);
+            int before = observer.updateCount;
+            gameService.sellAllAndExit();
+            assertTrue(observer.updateCount > before);
         }
     }
 

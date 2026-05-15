@@ -114,20 +114,19 @@ class LeaderboardServiceTest {
     }
 
     @Test
-    void gameOverEntryIsLockedAgainstFurtherUpdates() {
+    void bankruptcyEntryCanBeOverwrittenByLaterSave() {
         Player p = player("Bob", "s-2", "10000");
-        service.recordOrUpdate(p, exchange(20), identityConverter, Outcome.GAME_OVER);
+        service.recordOrUpdate(p, exchange(20), identityConverter, Outcome.BANKRUPTCY);
 
-        BigDecimal beforeAttempt = fakeHandler.entries.get(0).finalNetWorth();
+        assertEquals(Outcome.BANKRUPTCY, fakeHandler.entries.get(0).outcome());
 
-        // Try to "win back" after game over — must be silently ignored.
-        p.addMoney(new BigDecimal("99999"));
-        service.recordOrUpdate(p, exchange(99), identityConverter, Outcome.ACTIVE);
+        // Player reloads the save and makes progress — the leaderboard must update.
+        p.addMoney(new BigDecimal("5000"));
+        service.recordOrUpdate(p, exchange(25), identityConverter, Outcome.ACTIVE);
 
-        assertEquals(1, fakeHandler.entries.size());
-        assertEquals(Outcome.GAME_OVER, fakeHandler.entries.get(0).outcome());
-        assertEquals(20, fakeHandler.entries.get(0).weeksPlayed());
-        assertEquals(beforeAttempt, fakeHandler.entries.get(0).finalNetWorth());
+        assertEquals(1, fakeHandler.entries.size(), "same session must not produce two entries");
+        assertEquals(Outcome.ACTIVE, fakeHandler.entries.get(0).outcome());
+        assertEquals(25, fakeHandler.entries.get(0).weeksPlayed());
     }
 
     @Test
