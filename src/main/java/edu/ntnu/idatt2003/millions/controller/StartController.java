@@ -62,10 +62,6 @@ public class StartController {
     /**
      * Constructs a new StartController with the given {@link GameService}.
      *
-     * <p>Injecting the manager keeps the controller flexible while preserving
-     * the normal production flow through {@link #StartController(Stage)}.
-     * Event bindings are deferred to {@link #show()}.</p>
-     *
      * @param stage       the primary application stage
      * @param gameService the game manager used to create or load game state
      * @throws NullPointerException if stage or game manager is null
@@ -76,7 +72,7 @@ public class StartController {
 
     /**
      * Intermediate constructor that resolves the {@link StartView} before delegating
-     * to the full DI constructor, ensuring {@code this()} is the first statement.
+     * to the full DI constructor.
      *
      * @param stage       the primary application stage
      * @param gameService the game manager used to create or load game state
@@ -165,7 +161,7 @@ public class StartController {
      */
     private void handleBrowseStockFile() {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Select stock file");
+        chooser.setTitle(LanguageManager.get("start.chooser.stock.title"));
         chooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("Data files", "*.csv"));
         File file = chooser.showOpenDialog(stage);
@@ -182,7 +178,7 @@ public class StartController {
      */
     private void handleBrowseSaveFile() {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Select save file");
+        chooser.setTitle(LanguageManager.get("start.chooser.save.title"));
         chooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("Save files", "*.json"));
         File file = chooser.showOpenDialog(stage);
@@ -316,10 +312,13 @@ public class StartController {
      * to call the handler without simulating a JavaFX button click.</p>
      */
     void handleLoadGame() {
+        String saveGameFilePath = inputs.getSaveFilePath();
+        if (saveGameFilePath.isBlank()) {
+            errorSink.accept(() -> LanguageManager.get("error.save.file.missing"));
+            return;
+        }
         runOrShowError(() -> {
-            String saveGameFilePath = inputs.getSaveFilePath();
-            File saveGameFile = StartInputValidator.requireFilePath(saveGameFilePath, "Save file must be selected");
-            gameService.loadGame(saveGameFile);
+            gameService.loadGame(new File(saveGameFilePath));
             showMainView();
         });
     }

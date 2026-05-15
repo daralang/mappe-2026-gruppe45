@@ -2,11 +2,11 @@ package edu.ntnu.idatt2003.millions.view.start;
 
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.FileDropZone;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
@@ -37,7 +37,7 @@ public abstract class FileDropTab extends VBox {
 
     private final FileDropZone fileDropZone;
     private final Button actionButton;
-    private final Label feedbackLabel;
+    private final StyledText feedbackLabel;
     private final VBox buttonArea;
 
     private String filePath = "";
@@ -63,8 +63,7 @@ public abstract class FileDropTab extends VBox {
         actionButton.setMaxWidth(CARD_WIDTH);
         actionButton.getStyleClass().add("start-action-button");
 
-        feedbackLabel = new Label();
-        feedbackLabel.getStyleClass().add("detail-label");
+        feedbackLabel = StyledText.detailLabel();
         feedbackLabel.setMaxWidth(CARD_WIDTH);
         feedbackLabel.setWrapText(true);
         feedbackLabel.setOpacity(0);
