@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.transactions;
 
 import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
+import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
@@ -86,10 +87,19 @@ public class LoanLedgerSort extends SortProvider<LoanLedgerEntry, LoanLedgerSort
     @Override
     protected Comparator<LoanLedgerEntry> buildComparator(SortColumn column) {
         return switch (column) {
-            case WEEK -> Comparator.comparingInt(LoanLedgerEntry::week);
+            case WEEK -> Comparator.comparingInt(LoanLedgerEntry::week)
+                    .thenComparingInt(e -> typePriority(e.type()));
             case LOAN -> Comparator.comparing(loanLabelFn);
             case TYPE -> Comparator.comparingInt(e -> e.type().ordinal());
             case AMOUNT -> Comparator.comparing(LoanLedgerEntry::amount);
+        };
+    }
+
+    private static int typePriority(LoanLedgerEntryType type) {
+        return switch (type) {
+            case INTEREST     -> 0;
+            case DISBURSEMENT -> 1;
+            case REPAYMENT    -> 2;
         };
     }
 }
