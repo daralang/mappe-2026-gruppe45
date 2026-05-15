@@ -14,6 +14,7 @@ import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
+import edu.ntnu.idatt2003.millions.model.watchlist.WatchlistEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -1146,6 +1147,144 @@ class PlayerTest {
                     "t", "b", List.of(), 1, false));
             player.clearAllNotifications();
             assertEquals(0, player.getNotifications().size());
+        }
+    }
+
+    @Nested
+    @DisplayName("Watchlist")
+    class Watchlist {
+
+        private WatchlistEntry entry;
+
+        @BeforeEach
+        void setUpEntry() {
+            entry = new WatchlistEntry("AAPL", 1, "");
+        }
+
+        @Test
+        @DisplayName("Should add entry to watchlist")
+        void addsEntryToWatchlist() {
+            // Act
+            player.addToWatchlist(entry);
+            // Assert
+            assertTrue(player.isOnWatchlist("AAPL"));
+        }
+
+        @Test
+        @DisplayName("Should add multiple different entries")
+        void addsMultipleDifferentEntries() {
+            // Arrange
+            WatchlistEntry second = new WatchlistEntry("TSLA", 2, "");
+            // Act
+            player.addToWatchlist(entry);
+            player.addToWatchlist(second);
+            // Assert
+            assertEquals(2, player.getWatchlist().size());
+        }
+
+        @Test
+        @DisplayName("Should not add duplicate symbol twice")
+        void doesNotAddDuplicateSymbol() {
+            // Arrange
+            WatchlistEntry duplicate = new WatchlistEntry("AAPL", 3, "other note");
+            // Act
+            player.addToWatchlist(entry);
+            player.addToWatchlist(duplicate);
+            // Assert
+            assertEquals(1, player.getWatchlist().size());
+        }
+
+
+        @Test
+        @DisplayName("Should remove entry from watchlist")
+        void removesEntryFromWatchlist() {
+            // Arrange
+            player.addToWatchlist(entry);
+            // Act
+            player.removeFromWatchlist("AAPL");
+            // Assert
+            assertFalse(player.isOnWatchlist("AAPL"));
+        }
+
+        @Test
+        @DisplayName("Should not throw when removing non-existent symbol")
+        void doesNotThrowWhenRemovingNonExistentSymbol() {
+            // Act & Assert
+            assertDoesNotThrow(() -> player.removeFromWatchlist("UNKNOWN"));
+        }
+
+        @Test
+        @DisplayName("Should not throw when removing from empty watchlist")
+        void doesNotThrowWhenRemovingFromEmptyWatchlist() {
+            // Act & Assert
+            assertDoesNotThrow(() -> player.removeFromWatchlist("AAPL"));
+        }
+
+        @Test
+        @DisplayName("Should return true for added symbol")
+        void returnsTrueForAddedSymbol() {
+            // Arrange
+            player.addToWatchlist(entry);
+            // Act & Assert
+            assertTrue(player.isOnWatchlist("AAPL"));
+        }
+
+        @Test
+        @DisplayName("Should return false for symbol never added")
+        void returnsFalseForSymbolNeverAdded() {
+            // Act & Assert
+            assertFalse(player.isOnWatchlist("AAPL"));
+        }
+
+        @Test
+        @DisplayName("Should return false after symbol is removed")
+        void returnsFalseAfterRemoval() {
+            // Arrange
+            player.addToWatchlist(entry);
+            player.removeFromWatchlist("AAPL");
+            // Act & Assert
+            assertFalse(player.isOnWatchlist("AAPL"));
+        }
+
+        @Test
+        @DisplayName("Should update note on existing entry")
+        void updatesNoteOnExistingEntry() {
+            // Arrange
+            player.addToWatchlist(entry);
+            // Act
+            player.updateWatchlistNote("AAPL", "new note");
+            // Assert
+            String updatedNote = player.getWatchlist().stream()
+                    .filter(e -> e.symbol().equals("AAPL"))
+                    .findFirst()
+                    .orElseThrow()
+                    .note();
+            assertEquals("new note", updatedNote);
+        }
+
+        @Test
+        @DisplayName("Should not throw when updating note for non-existent symbol")
+        void doesNotThrowWhenUpdatingNoteForNonExistentSymbol() {
+            // Act & Assert
+            assertDoesNotThrow(() -> player.updateWatchlistNote("UNKNOWN", "note"));
+        }
+
+        @Test
+        @DisplayName("Should return empty list when no entries added")
+        void returnsEmptyListInitially() {
+            // Act & Assert
+            assertTrue(player.getWatchlist().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should return defensive copy")
+        void returnsDefensiveCopy() {
+            // Arrange
+            player.addToWatchlist(entry);
+            // Act
+            player.getWatchlist().clear();
+            // Assert
+            assertEquals(1, player.getWatchlist().size());
         }
     }
 }
