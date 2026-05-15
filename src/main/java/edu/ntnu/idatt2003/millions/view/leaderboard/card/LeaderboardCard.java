@@ -10,7 +10,7 @@ import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
-import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.leaderboard.LeaderboardSort;
@@ -38,7 +38,6 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
     private final GameService gameService;
     private final LeaderboardService leaderboardService = new LeaderboardService();
     private final LeaderboardSort sort = new LeaderboardSort();
-    private final StyledText title;
     private Button pushScoreBtn;
     private Label confirmLabel;
 
@@ -50,6 +49,7 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
     public LeaderboardCard(GameService gameService) {
         super(gameService, PAGE_SIZE, "leaderboard.status", "leaderboard.empty");
         this.gameService = gameService;
+        getStyleClass().add("leaderboard-card");
         this.sortProvider = sort;
         this.table = new SortColumnTable<>(sort::getColumnDefs);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
@@ -57,22 +57,17 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
         Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
 
-        title = StyledText.sectionTitle(LanguageManager.get("leaderboard.title"));
-
         pushScoreBtn = new Button(LanguageManager.get("leaderboard.pushScore"));
-        pushScoreBtn.getStyleClass().addAll("modal-button", "modal-button-outlined");
+        pushScoreBtn.getStyleClass().add("leaderboard-push-score-btn");
         pushScoreBtn.setOnAction(e -> handlePushScore());
 
         confirmLabel = new Label(LanguageManager.get("leaderboard.pushScore.confirm"));
         confirmLabel.getStyleClass().add("leaderboard-score-confirm");
         confirmLabel.setVisible(false);
-
-        HBox titleRow = new HBox(title, pushScoreBtn);
-        HBox.setHgrow(title, Priority.ALWAYS);
-        titleRow.setAlignment(Pos.CENTER_LEFT);
+        confirmLabel.managedProperty().bind(confirmLabel.visibleProperty());
 
         setSpacing(16);
-        getChildren().addAll(titleRow, confirmLabel, buildSearchRow(clearSortButton), table.asNode(), pagination);
+        getChildren().addAll(buildSearchRow(clearSortButton), confirmLabel, table.asNode(), pagination);
         refresh();
     }
 
@@ -83,6 +78,18 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
         pause.setOnFinished(e -> confirmLabel.setVisible(false));
         pause.play();
+    }
+
+    @Override
+    protected HBox buildSearchRow(Button clearSortButton) {
+        SearchBar searchBar = new SearchBar(
+                "search.placeholder", "search.button", searchCallback(), metadataRow);
+        searchBar.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(searchBar, Priority.ALWAYS);
+        searchBar.addActionButton(pushScoreBtn);
+        HBox row = new HBox(8, searchBar, clearSortButton);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
     }
 
     @Override
@@ -112,7 +119,6 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
 
     @Override
     protected void onLanguageChanged() {
-        title.setText(LanguageManager.get("leaderboard.title"));
         pushScoreBtn.setText(LanguageManager.get("leaderboard.pushScore"));
         confirmLabel.setText(LanguageManager.get("leaderboard.pushScore.confirm"));
         super.onLanguageChanged();
