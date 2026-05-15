@@ -3,7 +3,9 @@ package edu.ntnu.idatt2003.millions.view;
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.view.component.Header;
+import edu.ntnu.idatt2003.millions.view.component.toast.ToastOverlay;
 import edu.ntnu.idatt2003.millions.view.component.StatusFooter;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBar;
@@ -34,6 +36,7 @@ public class MainView {
     private final GameService gameService;
     private final TradeController tradeController;
     private final LoanController loanController;
+    private final ToastService toastService;
     private final StackPane outerRoot;
     private final BorderPane content;
     private final WeekBar weekBar;
@@ -53,10 +56,12 @@ public class MainView {
                     TradeController tradeController,
                     LoanController loanController,
                     TitleBar titleBar,
-                    Runnable onAdvanceWeek) {
+                    Runnable onAdvanceWeek,
+                    ToastService toastService) {
         this.gameService = gameService;
         this.tradeController = tradeController;
         this.loanController = loanController;
+        this.toastService = toastService;
         this.weekBar = new WeekBar(gameService, onAdvanceWeek);
         titleBar.setOnDashboard(this::showDashboard);
         titleBar.setOnExchange(this::showExchange);
@@ -91,6 +96,13 @@ public class MainView {
         updateCorners.run();
 
         this.outerRoot = new StackPane(content);
+
+        ToastOverlay toastOverlay = new ToastOverlay(toastService);
+        toastOverlay.translateYProperty().bind(
+                Bindings.createDoubleBinding(
+                        () -> -(footer.getLayoutBounds().getHeight() + 8),
+                        footer.layoutBoundsProperty()));
+        outerRoot.getChildren().add(toastOverlay);
 
         Node overlay = titleBar.getOverlayNode();
         if (overlay != null) {
@@ -132,7 +144,7 @@ public class MainView {
     }
 
     private void showLeaderboard() {
-        content.setCenter(wrapScrollable(new LeaderboardView(gameService)));
+        content.setCenter(wrapScrollable(new LeaderboardView(gameService, toastService)));
     }
 
     private void showExchangeOnStocksTab() {

@@ -1,0 +1,36 @@
+.toast {
+    -fx-background-color: -surface;
+    -fx-background-radius: 6;
+    -fx-padding: 12 16 12 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0.2, 0, 3);
+    -fx-pref-width: 280;
+    -fx-min-width: 280;
+    -fx-max-width: 280;
+}
+
+.toast.success {
+    -fx-border-color: -success;
+    -fx-border-width: 0 0 0 4;
+}
+
+.toast.error {
+    -fx-border-color: -danger;
+    -fx-border-width: 0 0 0 4;
+}
+
+.toast-icon {
+    -fx-icon-size: 18;
+}
+
+.toast.success .toast-icon {
+    -fx-icon-color: -success;
+}
+
+.toast.error .toast-icon {
+    -fx-icon-color: -danger;
+}
+
+.toast-message {
+    -fx-text-fill: -text-primary;
+    -fx-font-size: 14;
+}
