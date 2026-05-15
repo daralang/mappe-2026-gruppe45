@@ -42,6 +42,7 @@ import java.util.Map;
 public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedgerSort.SortColumn> {
 
     private static final int PAGE_SIZE = Pagination.DEFAULT_PAGE_SIZE;
+    private static final double ROW_HEIGHT = 34.0;
 
     private final GameService gameService;
     private final LoanLedgerSort sort;
@@ -72,6 +73,7 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
         this.sortProvider = sort;
         this.table = new SortColumnTable<>(sort::getColumnDefs);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
+        table.setMinHeight(PAGE_SIZE * ROW_HEIGHT);
         Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
 
