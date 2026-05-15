@@ -124,7 +124,7 @@ public class WatchlistCard extends SortableTableCard<WatchlistItem, WatchlistSor
 
     private void openNoteDialog(WatchlistItem item) {
         WatchlistNoteDialog dialog = new WatchlistNoteDialog(
-                item.stock().getSymbol(), item.entry().note());
+                item.stock(), gameService.getCurrencyConverter(), item.entry().note());
         dialog.setOnSave(note ->
                 gameService.updateWatchlistNote(item.stock().getSymbol(), note));
         dialog.show();

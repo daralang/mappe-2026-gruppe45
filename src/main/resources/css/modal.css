@@ -258,6 +258,49 @@
     -fx-text-fill: -success-text;
 }
 
+/* ─── Watchlist modal note  ───────────────────────────────────────────────── */
+.modal-watchlist-note .modal-header {
+    -fx-border-color: -yellow-border;
+    -fx-background-color: -yellow-bg;
+    -fx-background-radius: 12 12 0 0;
+    -fx-padding: 16 20;
+    -fx-border-width: 0 0 1 0;
+}
+
+.modal-watchlist-note .modal-title {
+    -fx-text-fill: -yellow-text;
+}
+
+.modal-watchlist-note .modal-close {
+    -fx-text-fill: -yellow-text;
+}
+
+.modal-watchlist-note .modal-input {
+    -fx-font-size: 14;
+    -fx-padding: 0 0 0 0;
+    -fx-border-color: -border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.modal-watchlist-note .modal-input:focused {
+    -fx-border-color: -primary;
+}
+
+.modal-watchlist-note .modal-input .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.modal-watchlist-note .modal-input .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.modal-watchlist-note .modal-input .content {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
 /* ─── Game over modal ───────────────────────────────────────────────── */
 
 .game-over-title {

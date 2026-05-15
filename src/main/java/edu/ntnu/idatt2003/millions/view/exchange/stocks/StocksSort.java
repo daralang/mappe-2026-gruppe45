@@ -71,7 +71,7 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
                         LanguageManager.get("exchange.stocks.col.company"),
                         28, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.priceUSD"),
+                        LanguageManager.get("exchange.stocks.col.priceCurrency"),
                         SortColumn.PRICE_USD, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
                         LanguageManager.get("exchange.stocks.col.priceNOK"),

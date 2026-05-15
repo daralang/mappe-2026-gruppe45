@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Modal;
 import edu.ntnu.idatt2003.millions.view.component.ModalActions;
@@ -8,11 +10,14 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-import java.text.MessageFormat;
 import java.util.function.Consumer;
 
 /**
  * Modal dialog for adding or editing a free-text note on a watchlist entry.
+ *
+ * <p>Displays a {@link StockInfoCard} above the note field, showing the stock's
+ * current price in its native currency and in NOK, weekly change percentage,
+ * and a sparkline trend chart.</p>
  *
  * <p>Pre-fills the {@link TextArea} with the existing note (may be empty).
  * Calls the supplied {@link Consumer} with the new text when the player saves,
@@ -20,19 +25,24 @@ import java.util.function.Consumer;
  */
 public class WatchlistNoteDialog extends Modal {
 
-    private static final double NOTE_AREA_WIDTH = 380;
-    private static final double NOTE_AREA_HEIGHT = 120;
+    private static final double CARD_WIDTH = 640;
+    private static final double NOTE_AREA_HEIGHT = 220;
 
-    private final String symbol;
+    private final Stock stock;
+    private final CurrencyConverter converter;
     private final String existingNote;
     private Consumer<String> onSave;
 
     /**
-     * @param symbol       the ticker symbol shown in the dialog header
-     * @param existingNote the current note text to pre-fill; may be empty
+     * Constructs a new {@link WatchlistNoteDialog} for the given stock.
+     *
+     * @param stock        the stock whose price data is shown above the note field
+     * @param converter    the currency converter used to derive the NOK price
+     * @param existingNote the current note text to pre-fill; {@code null} is treated as empty
      */
-    public WatchlistNoteDialog(String symbol, String existingNote) {
-        this.symbol = symbol;
+    public WatchlistNoteDialog(Stock stock, CurrencyConverter converter, String existingNote) {
+        this.stock = stock;
+        this.converter = converter;
         this.existingNote = existingNote == null ? "" : existingNote;
     }
 
@@ -45,17 +55,36 @@ public class WatchlistNoteDialog extends Modal {
         this.onSave = callback;
     }
 
+    /**
+     * Widens the modal card to accommodate the {@link StockInfoCard} meta row.
+     * Uses inline style to override the {@code modal-card} CSS max-width constraint.
+     *
+     * @param card the modal card node
+     */
+    @Override
+    protected void configureCard(VBox card) {
+        card.setStyle("-fx-min-width: " + CARD_WIDTH + "; -fx-max-width: " + CARD_WIDTH + ";");
+    }
+
+    /**
+     * Forces a layout and resize pass after the stage is shown so the wider
+     * card dimensions are correctly reflected in the stage size.
+     */
+    @Override
+    protected void onBeforeShow() {
+        sizeToContent();
+    }
+
     @Override
     protected Region buildContent() {
-        String title = MessageFormat.format(
-                LanguageManager.get("watchlist.note.title"), symbol);
-
+        StockInfoCard infoCard = new StockInfoCard(stock, converter);
         TextArea noteArea = new TextArea(existingNote);
         noteArea.setPromptText(LanguageManager.get("watchlist.note.placeholder"));
         noteArea.setWrapText(true);
-        noteArea.setPrefWidth(NOTE_AREA_WIDTH);
+        noteArea.setMaxWidth(Double.MAX_VALUE);
         noteArea.setPrefHeight(NOTE_AREA_HEIGHT);
         noteArea.getStyleClass().add("modal-input");
+        noteArea.getStyleClass().addAll("modal-input", "content-scroll");
 
         Button cancel = new Button(LanguageManager.get("dialog.button.cancel"));
         cancel.getStyleClass().add("modal-button");
@@ -71,9 +100,10 @@ public class WatchlistNoteDialog extends Modal {
         });
 
         VBox content = new VBox();
+        content.getStyleClass().add("modal-watchlist-note");
         content.getChildren().addAll(
-                buildStandardHeader(title),
-                buildBody(noteArea, cancel, save)
+                buildStandardHeader(LanguageManager.get("watchlist.note.title")),
+                buildBody(infoCard, noteArea, cancel, save)
         );
         return content;
     }
@@ -83,8 +113,9 @@ public class WatchlistNoteDialog extends Modal {
         stage.showAndWait();
     }
 
-    private VBox buildBody(TextArea noteArea, Button cancel, Button save) {
-        VBox body = new VBox(12, noteArea, ModalActions.row(cancel, save));
+    private VBox buildBody(StockInfoCard infoCard, TextArea noteArea,
+                           Button cancel, Button save) {
+        VBox body = new VBox(12, infoCard, noteArea, ModalActions.row(cancel, save));
         body.getStyleClass().add("modal-body");
         return body;
     }

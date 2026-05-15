@@ -43,6 +43,7 @@ public abstract class Modal {
     public final void show() {
         VBox card = new VBox();
         card.getStyleClass().add("modal-card");
+        configureCard(card);
         card.getChildren().add(buildContent());
 
         StackPane root = new StackPane(card);
@@ -153,6 +154,19 @@ public abstract class Modal {
      * Default does nothing.
      */
     protected void onBeforeShow() {
+        // default: no-op
+    }
+
+    /**
+     * Called immediately after the modal card {@link VBox} is created, before
+     * content is added. Subclasses may override to adjust card dimensions or
+     * apply additional style classes without affecting other modals.
+     *
+     * <p>Default does nothing.
+     *
+     * @param card the modal card node
+     */
+    protected void configureCard(VBox card) {
         // default: no-op
     }
 

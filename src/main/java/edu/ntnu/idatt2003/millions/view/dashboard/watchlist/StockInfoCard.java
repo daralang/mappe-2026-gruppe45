@@ -9,8 +9,6 @@ import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
@@ -19,7 +17,7 @@ import java.util.Currency;
 import java.util.List;
 
 /**
- * A styled info box displaying key price data for a single stock.
+ * A styled info card displaying key price data for a single stock.
  *
  * <p>Renders four rows inside a {@code modal-summary}-styled container:
  * <ul>
@@ -28,6 +26,8 @@ import java.util.List;
  *   <li>Weekly price change as a signed, colour-coded percentage</li>
  *   <li>A {@link SparklineChart} showing the recent price trend</li>
  * </ul>
+ *
+ * <p>Intended for use inside {@link WatchlistNoteDialog}.
  */
 class StockInfoCard extends VBox {
 
@@ -41,67 +41,99 @@ class StockInfoCard extends VBox {
      * @param converter the currency converter used to derive the NOK price
      */
     StockInfoCard(Stock stock, CurrencyConverter converter) {
-        getStyleClass().add("modal-summary");
+        setSpacing(12);
 
         String currencyCode = stock.getCurrency().getCurrencyCode();
         BigDecimal price = stock.getSalesPrice();
         BigDecimal priceNok = converter.convert(price, stock.getCurrency(), NOK);
         BigDecimal changePercent = stock.getWeeklyChangePercent();
 
-        String priceLabelText = MessageFormat.format(
-                LanguageManager.get("exchange.stocks.col.priceCurrency"), currencyCode);
-
         getChildren().addAll(
-                buildTextRow(priceLabelText,
-                        ChangeFormatter.formatPlain(price) + " " + currencyCode),
-                buildTextRow(LanguageManager.get("exchange.stocks.col.priceNOK"),
-                        ChangeFormatter.formatPlain(priceNok) + " NOK"),
-                buildChangeRow(changePercent),
-                buildSparklineRow(stock)
+                buildStockSection(stock),
+                buildMetaRow(stock, currencyCode, price, priceNok, changePercent)
         );
     }
 
     /**
-     * Builds a plain label–value row.
+     * Builds the stock header: "Aksje" label above "TICKER, Company name".
      *
-     * @param labelText the left-hand label
-     * @param valueText the right-hand value string
-     * @return a styled {@link HBox} row
+     * @param stock the stock to display
+     * @return a {@link VBox} with the label and company name
      */
-    private HBox buildTextRow(String labelText, String valueText) {
-        Label label = StyledText.detailLabel(labelText);
-        Label value = StyledText.detailValue(valueText);
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox row = new HBox(label, spacer, value);
-        row.getStyleClass().add("modal-summary-row");
+    private VBox buildStockSection(Stock stock) {
+        StyledText label = StyledText.detailLabel(LanguageManager.get("receipt.stock.label"));
+        Label value = new Label(stock.getSymbol() + ", " + stock.getCompany());
+        value.getStyleClass().add("modal-section-value");
+        return new VBox(4, label, value);
+    }
+
+    /**
+     * Builds the horizontal row of four vertical meta cells.
+     *
+     * @param stock         the stock for sparkline data
+     * @param currencyCode  the stock's currency code
+     * @param price         the current price in native currency
+     * @param priceNok      the current price converted to NOK
+     * @param changePercent the weekly change percentage
+     * @return an {@link HBox} containing the four vertical cells
+     */
+    private HBox buildMetaRow(Stock stock, String currencyCode,
+                              BigDecimal price, BigDecimal priceNok,
+                              BigDecimal changePercent) {
+        String priceLabelText = MessageFormat.format(
+                LanguageManager.get("exchange.stocks.col.priceCurrency"), currencyCode);
+
+        VBox priceCell = buildTextCell(
+                priceLabelText,
+                ChangeFormatter.formatPlain(price) + " " + currencyCode);
+
+        VBox priceNokCell = buildTextCell(
+                LanguageManager.get("exchange.stocks.col.priceNOK"),
+                ChangeFormatter.formatPlain(priceNok) + " NOK");
+
+        VBox changeCell = buildChangeCell(changePercent);
+        VBox trendCell = buildTrendCell(stock);
+
+        HBox row = new HBox(24, priceCell, priceNokCell, changeCell, trendCell);
+        row.setAlignment(Pos.BOTTOM_LEFT);
         return row;
     }
 
     /**
-     * Builds a colour-coded change percentage row.
+     * Builds a plain vertical cell with a label on top and a value below.
      *
-     * @param changePercent the weekly price change percentage
-     * @return a styled {@link HBox} row with a coloured value label
+     * @param labelText the cell label
+     * @param valueText the cell value
+     * @return a {@link VBox} with label and value
      */
-    private HBox buildChangeRow(BigDecimal changePercent) {
-        Label label = StyledText.detailLabel(LanguageManager.get("details.row.weeklyChange"));
-        Label value = ChangeFormatter.styledPercent(changePercent, "watchlist.col.trend");
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox row = new HBox(label, spacer, value);
-        row.getStyleClass().add("modal-summary-row");
-        return row;
+    private VBox buildTextCell(String labelText, String valueText) {
+        StyledText label = StyledText.detailLabel(labelText);
+        Label value = new Label(valueText);
+        value.getStyleClass().add("modal-section-value");
+        return new VBox(4, label, value);
     }
 
     /**
-     * Builds a trend row containing a {@link SparklineChart} on the right.
+     * Builds a vertical cell for the weekly change percentage, colour-coded
+     * green for positive and red for negative values.
+     *
+     * @param changePercent the weekly change percentage
+     * @return a {@link VBox} with label and coloured value
+     */
+    private VBox buildChangeCell(BigDecimal changePercent) {
+        StyledText label = StyledText.detailLabel(LanguageManager.get("details.row.weeklyChange"));
+        Label value = ChangeFormatter.styledPercent(changePercent, "modal-section-value");
+        return new VBox(4, label, value);
+    }
+
+    /**
+     * Builds a vertical cell containing a {@link SparklineChart} below the trend label.
      *
      * @param stock the stock whose price history is plotted
-     * @return a styled {@link HBox} row with the sparkline on the right
+     * @return a {@link VBox} with label and sparkline
      */
-    private HBox buildSparklineRow(Stock stock) {
-        Label label = StyledText.detailLabel(LanguageManager.get("watchlist.note.info.trend"));
+    private VBox buildTrendCell(Stock stock) {
+        StyledText label = StyledText.detailLabel(LanguageManager.get("watchlist.note.info.trend"));
 
         List<BigDecimal> prices = stock.getHistoricalPrices();
         List<BigDecimal> sparkPrices = prices.subList(
@@ -109,11 +141,6 @@ class StockInfoCard extends VBox {
         SparklineChart sparkline = new SparklineChart();
         sparkline.update(sparkPrices);
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox row = new HBox(label, spacer, sparkline);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.getStyleClass().add("modal-summary-row");
-        return row;
+        return new VBox(4, label, sparkline);
     }
 }
