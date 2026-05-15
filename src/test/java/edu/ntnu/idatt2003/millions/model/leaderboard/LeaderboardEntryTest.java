@@ -133,7 +133,7 @@ class LeaderboardEntryTest {
         LeaderboardEntry entry = new LeaderboardEntry(
                 "s", "Alice", new BigDecimal("10000"), new BigDecimal("4000"),
                 new BigDecimal("-60.0"), 12, PlayerStatusLevel.NOVICE,
-                Outcome.GAME_OVER, Instant.now());
+                Outcome.BANKRUPTCY, Instant.now());
 
         assertEquals(new BigDecimal("-60.0"), entry.returnPercent());
     }

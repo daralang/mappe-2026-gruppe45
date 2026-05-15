@@ -54,6 +54,7 @@ public class GameService {
     private Player player;
     private Exchange exchange;
     private boolean gameOver = false;
+    private File currentSaveFile = null;
     private final GameFileHandler gameFileHandler;
     private final List<GameObserver> observers = new ArrayList<>();
     private final NotificationService notificationService = new NotificationService();
@@ -111,7 +112,14 @@ public class GameService {
         this.gameOver = true;
         if (player != null && exchange != null) {
             leaderboardService.recordOrUpdate(
-                    player, exchange, exchange.getCurrencyConverter(), Outcome.GAME_OVER);
+                    player, exchange, exchange.getCurrencyConverter(), Outcome.BANKRUPTCY);
+            if (currentSaveFile != null) {
+                try {
+                    gameFileHandler.saveGame(player, exchange, currentSaveFile);
+                } catch (Exception e) {
+                    System.err.println("Could not write save file on bankruptcy: " + e.getMessage());
+                }
+            }
         }
         notifyObservers();
     }
@@ -130,6 +138,8 @@ public class GameService {
             throw new IllegalStateException("No active game to save");
         }
         gameFileHandler.saveGame(player, exchange, file);
+        this.currentSaveFile = file;
+        leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(), Outcome.ACTIVE);
     }
 
     /**
@@ -251,6 +261,7 @@ public class GameService {
         this.exchange = state.exchange();
         this.exchange.reinitialize(new FixedRateCurrencyConverter());
         this.gameOver = false;
+        this.currentSaveFile = file;
         notifyObservers();
     }
 
@@ -446,6 +457,28 @@ public class GameService {
         if (gameOver) throw new IllegalStateException("Game is over");
         Objects.requireNonNull(loan, "Loan cannot be null");
         player.repayLoan(loan, exchange.getWeek());
+        notifyObservers();
+    }
+
+    /**
+     * Liquidates the entire portfolio at current market prices, records a
+     * {@link Outcome#RETIRED} leaderboard entry, and persists the final state
+     * to the current save file if one exists. The caller is responsible for
+     * closing the application after this returns.
+     */
+    public void sellAllAndExit() {
+        for (Share share : new ArrayList<>(player.getPortfolio().getShares())) {
+            sell(share);
+        }
+        leaderboardService.recordOrUpdate(
+                player, exchange, exchange.getCurrencyConverter(), Outcome.RETIRED);
+        if (currentSaveFile != null) {
+            try {
+                gameFileHandler.saveGame(player, exchange, currentSaveFile);
+            } catch (Exception e) {
+                System.err.println("Could not write save file on retire: " + e.getMessage());
+            }
+        }
         notifyObservers();
     }
 
