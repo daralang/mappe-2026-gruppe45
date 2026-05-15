@@ -136,7 +136,9 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
         return new ArrayList<>(allLedger.stream()
                 .filter(e -> e.week() >= fromWeek && e.week() <= toWeek)
                 .filter(e -> selectedType == null || e.type() == selectedType)
-                .sorted(Comparator.comparingInt(LoanLedgerEntry::week).reversed())
+                .sorted(Comparator.comparingInt(LoanLedgerEntry::week)
+                        .thenComparingInt(e -> typePriority(e.type()))
+                        .reversed())
                 .toList());
     }
 
@@ -240,6 +242,14 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
      * @param type the entry type to label
      * @return a styled badge label
      */
+    private static int typePriority(LoanLedgerEntryType type) {
+        return switch (type) {
+            case INTEREST     -> 0;
+            case DISBURSEMENT -> 1;
+            case REPAYMENT    -> 2;
+        };
+    }
+
     private Label typeBadge(LoanLedgerEntryType type) {
         String labelKey = switch (type) {
             case DISBURSEMENT -> "loans.ledger.type.disbursement";
