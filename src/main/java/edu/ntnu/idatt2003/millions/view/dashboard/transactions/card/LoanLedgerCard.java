@@ -21,6 +21,7 @@ import javafx.scene.layout.HBox;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,6 +136,7 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
         return new ArrayList<>(allLedger.stream()
                 .filter(e -> e.week() >= fromWeek && e.week() <= toWeek)
                 .filter(e -> selectedType == null || e.type() == selectedType)
+                .sorted(Comparator.comparingInt(LoanLedgerEntry::week).reversed())
                 .toList());
     }
 
