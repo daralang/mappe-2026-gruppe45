@@ -191,16 +191,13 @@ public final class StartLayoutAnimator {
                     double proportionalHeight = availableHeight * START_GROUP_HEIGHT_RATIO;
                     double contentHeight = START_TITLE_ESTIMATED_HEIGHT
                             + groupSpacing
-                            + getSelectedTabHeight(tabPane, newGameTab, cardWidth);
+                            + newGameTab.prefHeight(cardWidth + CONTENT_WIDTH_EXTRA)
+                            + START_TAB_HEADER_HEIGHT;
                     return Math.min(availableHeight, Math.max(proportionalHeight, contentHeight));
                 },
                 center.heightProperty(),
-                tabPane.getSelectionModel().selectedItemProperty(),
-                tabPane.widthProperty(),
                 newGameTab.minHeightProperty(),
-                newGameTab.prefHeightProperty(),
-                loadGameTab.minHeightProperty(),
-                loadGameTab.prefHeightProperty());
+                newGameTab.prefHeightProperty());
     }
 
     private static double getSelectedTabHeight(AppTabPane tabPane, Node fallbackContent, double cardWidth) {
