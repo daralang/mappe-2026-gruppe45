@@ -23,7 +23,7 @@ public class LoadGameTab extends FileDropTab {
         saveFileLabel = StyledText.paragraphOne();
         saveFileInfoLabel = StyledText.paragraphOne();
         saveFileInfoLabel.getStyleClass().add("save-file-info-label");
-        getChildren().addAll(saveFileLabel, saveFileInfoLabel, getFileDropZone(), getActionButton());
+        getChildren().addAll(saveFileLabel, saveFileInfoLabel, getFileDropZone(), getButtonArea());
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);

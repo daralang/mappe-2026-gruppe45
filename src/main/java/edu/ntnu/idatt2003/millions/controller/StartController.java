@@ -5,17 +5,21 @@ import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import edu.ntnu.idatt2003.millions.view.StartView;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBarFactory;
 import java.io.File;
 import java.io.UncheckedIOException;
-import javafx.application.Platform;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Currency;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -36,7 +40,7 @@ import javafx.stage.Stage;
  * <p>Errors from the start flow are translated to user-facing messages by
  * a shared error-handling helper that catches the concrete exception types
  * the flow can legitimately produce (input validation, missing game state,
- * and file I/O), while letting programming errors surface as crashes.</p>
+ * and file I/O), while letting programming errors surface as crashes.
  */
 public class StartController {
 
@@ -45,7 +49,7 @@ public class StartController {
     private final StartScreenInputs inputs;
     private final GameService gameService;
     private final Runnable showMainViewAction;
-    private final Consumer<String> errorSink;
+    private final Consumer<Supplier<String>> errorSink;
 
     /**
      * Constructs a new StartController with a default {@link GameService}.
@@ -73,10 +77,11 @@ public class StartController {
      * @throws NullPointerException if stage or game manager is null
      */
     public StartController(Stage stage, GameService gameService) {
+        StartView startView = new StartView(TitleBarFactory.createForStartScreen(stage).getNode());
         this(stage, gameService,
-                new StartView(TitleBarFactory.createForStartScreen(stage).getNode()),
+                startView,
                 () -> new MainController(stage, gameService).show(),
-                StartController::showAlert);
+                startView::showError);
     }
 
     /**
@@ -95,7 +100,7 @@ public class StartController {
                     GameService gameService,
                     StartView view,
                     Runnable showMainViewAction,
-                    Consumer<String> errorSink) {
+                    Consumer<Supplier<String>> errorSink) {
         this.stage = Objects.requireNonNull(stage, "Stage cannot be null");
         this.gameService = Objects.requireNonNull(gameService, "GameService cannot be null");
         this.view = Objects.requireNonNull(view, "StartView cannot be null");
@@ -121,7 +126,7 @@ public class StartController {
     StartController(GameService gameService,
                     StartScreenInputs inputs,
                     Runnable showMainViewAction,
-                    Consumer<String> errorSink) {
+                    Consumer<Supplier<String>> errorSink) {
         this.stage = null;
         this.view = null;
         this.gameService = Objects.requireNonNull(gameService, "GameService cannot be null");
@@ -197,7 +202,8 @@ public class StartController {
             new CsvStockFileHandler().readStocks(file.toPath(), currency);
         } catch (InvalidStockDataException | UncheckedIOException e) {
             inputs.setStockFilePath("");
-            errorSink.accept(e.getMessage());
+            String message = e.getMessage();
+            errorSink.accept(() -> message);
         }
     }
 
@@ -218,7 +224,8 @@ public class StartController {
             new JsonGameFileHandler().loadGame(file);
         } catch (GameSaveCorruptException | UncheckedIOException e) {
             inputs.setSaveFilePath("");
-            errorSink.accept(e.getMessage());
+            String message = e.getMessage();
+            errorSink.accept(() -> message);
         }
     }
 
@@ -231,20 +238,78 @@ public class StartController {
      * to call the handler without simulating a JavaFX button click.</p>
      */
     void handleStartGame() {
-        runOrShowError(() -> {
-            String name = StartInputValidator.requireName(inputs.getName());
-            BigDecimal parsedCapital = StartInputValidator.parseCapital(inputs.getCapital());
-            String stockFilePath = inputs.getStockFilePath();
+        String name = inputs.getName();
+        String capital = inputs.getCapital();
+        boolean hasFile = !inputs.getStockFilePath().isBlank();
+        Currency currency = inputs.getSelectedCurrency();
 
-            if (stockFilePath.isBlank()) {
-                gameService.createNewGame(name, parsedCapital);
-            } else {
-                File stockFile = StartInputValidator.requireCsvFilePath(stockFilePath);
-                Currency currency = StartInputValidator.requireCurrency(inputs.getSelectedCurrency());
+        // Name format: min 3 chars, must contain at least one letter
+        if (!name.isBlank()) {
+            if (name.length() < 3) {
+                errorSink.accept(() -> LanguageManager.get("error.name.too.short"));
+                return;
+            }
+            if (!name.matches(".*[a-zA-ZæøåÆØÅ].*")) {
+                errorSink.accept(() -> LanguageManager.get("error.name.invalid"));
+                return;
+            }
+        }
+
+        // Capital format takes priority: show immediately if value is present but invalid
+        if (!capital.isBlank()) {
+            try {
+                BigDecimal parsed = new BigDecimal(capital);
+                if (parsed.compareTo(BigDecimal.ZERO) <= 0) {
+                    errorSink.accept(() -> LanguageManager.get("error.capital.zero"));
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                errorSink.accept(() -> LanguageManager.get("error.capital.invalid"));
+                return;
+            }
+        }
+
+        // Collect all missing fields (as i18n keys) and show a single combined message
+        List<String> missingKeys = new ArrayList<>();
+        if (name.isBlank()) missingKeys.add("field.name");
+        if (capital.isBlank()) missingKeys.add("field.capital");
+        if (hasFile && currency == null) missingKeys.add("field.currency");
+
+        if (!missingKeys.isEmpty()) {
+            errorSink.accept(() -> buildMissingMessage(
+                    missingKeys.stream().map(LanguageManager::get).toList()));
+            return;
+        }
+
+        // All inputs valid — delegate to service
+        runOrShowError(() -> {
+            BigDecimal parsedCapital = new BigDecimal(capital);
+            if (hasFile) {
+                File stockFile = StartInputValidator.requireCsvFilePath(inputs.getStockFilePath());
                 gameService.createNewGame(name, parsedCapital, stockFile, currency);
+            } else {
+                gameService.createNewGame(name, parsedCapital);
             }
             showMainView();
         });
+    }
+
+    /**
+     * Builds a combined missing-fields message from a list of field names.
+     * Single field: "Navn mangler". Multiple: "Navn og Startkapital mangler".
+     *
+     * @param fields the localised field names that are missing
+     * @return a formatted error string
+     */
+    private String buildMissingMessage(List<String> fields) {
+        String suffix = " " + LanguageManager.get("error.missing.suffix");
+        List<String> lower = fields.stream().map(String::toLowerCase).toList();
+        String message = lower.size() == 1
+                ? lower.get(0) + suffix
+                : String.join(", ", lower.subList(0, lower.size() - 1))
+                  + " " + LanguageManager.get("error.and") + " "
+                  + lower.get(lower.size() - 1) + suffix;
+        return Character.toUpperCase(message.charAt(0)) + message.substring(1);
     }
 
     /**
@@ -286,7 +351,8 @@ public class StartController {
             action.execute();
         } catch (GameSaveCorruptException | InvalidStockDataException | IllegalArgumentException
                  | IllegalStateException | UncheckedIOException exception) {
-            errorSink.accept(exception.getMessage());
+            String message = exception.getMessage();
+            errorSink.accept(() -> message);
         }
     }
 

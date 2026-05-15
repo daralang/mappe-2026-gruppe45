@@ -75,7 +75,7 @@ public class NewGameTab extends FileDropTab {
         VBox uploadArea = new VBox(10, fileLabel, fileInfoLabel, uploadSection);
         uploadArea.setMaxWidth(CARD_WIDTH);
 
-        getChildren().addAll(nameRow, capitalRow, fileRow, uploadArea, getActionButton());
+        getChildren().addAll(nameRow, capitalRow, fileRow, uploadArea, getButtonArea());
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
