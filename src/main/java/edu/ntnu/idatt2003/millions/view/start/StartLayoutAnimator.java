@@ -12,6 +12,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.Node;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -31,7 +32,8 @@ public final class StartLayoutAnimator {
     private static final double START_GROUP_HEIGHT_RATIO = 0.72;
     private static final double START_TAB_HEADER_HEIGHT = 60;
     private static final double UPLOAD_DROP_ZONE_HEIGHT = 190;
-    private static final double UPLOAD_SECTION_EXPANDED_HEIGHT = 280;
+    private static final double UPLOAD_SECTION_MIN_HEIGHT = 200;
+    private static final double UPLOAD_SECTION_BUFFER = 8;
     private static final double CONTENT_WIDTH_EXTRA = 48;
     private static final Duration UPLOAD_REVEAL_DELAY = Duration.millis(380);
     private static final Duration UPLOAD_REVEAL_DURATION = Duration.millis(820);
@@ -88,16 +90,43 @@ public final class StartLayoutAnimator {
             tabContent.applyCss();
             tabContent.layout();
             double collapsedHeight = tabContent.prefHeight(cardWidth + CONTENT_WIDTH_EXTRA);
-            double expandedHeight = collapsedHeight + UPLOAD_SECTION_EXPANDED_HEIGHT;
+            double uploadExpandedHeight = computeUploadSectionExpandedHeight(uploadSection, cardWidth);
+            double expandedHeight = collapsedHeight + uploadExpandedHeight;
 
             tabContent.setMinHeight(collapsedHeight);
             tabContent.setPrefHeight(collapsedHeight);
             tabContent.setMaxHeight(expandedHeight);
 
             PauseTransition delay = new PauseTransition(UPLOAD_REVEAL_DELAY);
-            delay.setOnFinished(event -> playUploadTimeline(tabContent, uploadSection, collapsedHeight, expandedHeight));
+            delay.setOnFinished(event -> playUploadTimeline(
+                    tabContent, uploadSection, collapsedHeight, expandedHeight, uploadExpandedHeight));
             delay.play();
         });
+    }
+
+    /**
+     * Computes the natural expanded height of {@code uploadSection} by summing
+     * the preferred heights of its {@link Region} children and the spacing
+     * between them, plus a small safety buffer to absorb font and rendering
+     * rounding so the section's clip never cuts visible content.
+     *
+     * @param uploadSection the upload section whose children determine the height
+     * @param width         the width used to compute each child's preferred height
+     * @return the target expanded height in pixels
+     */
+    private static double computeUploadSectionExpandedHeight(VBox uploadSection, double width) {
+        double sum = 0;
+        int count = 0;
+        for (Node child : uploadSection.getChildrenUnmodifiable()) {
+            if (child instanceof Region region) {
+                sum += region.prefHeight(width);
+                count++;
+            }
+        }
+        if (count > 1) {
+            sum += uploadSection.getSpacing() * (count - 1);
+        }
+        return Math.max(UPLOAD_SECTION_MIN_HEIGHT, sum + UPLOAD_SECTION_BUFFER);
     }
 
     /**
@@ -174,7 +203,8 @@ public final class StartLayoutAnimator {
     private static void playUploadTimeline(VBox tabContent,
                                            VBox uploadSection,
                                            double collapsedHeight,
-                                           double expandedHeight) {
+                                           double expandedHeight,
+                                           double uploadExpandedHeight) {
         Timeline reveal = new Timeline(
                 new KeyFrame(Duration.ZERO,
                         new KeyValue(uploadSection.prefHeightProperty(), 0),
@@ -184,16 +214,16 @@ public final class StartLayoutAnimator {
                         new KeyValue(tabContent.prefHeightProperty(), collapsedHeight)),
                 new KeyFrame(UPLOAD_REVEAL_DURATION,
                         new KeyValue(uploadSection.prefHeightProperty(),
-                                UPLOAD_SECTION_EXPANDED_HEIGHT, Interpolator.EASE_BOTH),
+                                uploadExpandedHeight, Interpolator.EASE_BOTH),
                         new KeyValue(uploadSection.maxHeightProperty(),
-                                UPLOAD_SECTION_EXPANDED_HEIGHT, Interpolator.EASE_BOTH),
+                                uploadExpandedHeight, Interpolator.EASE_BOTH),
                         new KeyValue(uploadSection.opacityProperty(), 1, Interpolator.EASE_OUT),
                         new KeyValue(tabContent.minHeightProperty(), expandedHeight, Interpolator.EASE_BOTH),
                         new KeyValue(tabContent.prefHeightProperty(), expandedHeight, Interpolator.EASE_BOTH))
         );
         reveal.setOnFinished(finished -> {
-            uploadSection.setPrefHeight(UPLOAD_SECTION_EXPANDED_HEIGHT);
-            uploadSection.setMaxHeight(UPLOAD_SECTION_EXPANDED_HEIGHT);
+            uploadSection.setPrefHeight(uploadExpandedHeight);
+            uploadSection.setMaxHeight(uploadExpandedHeight);
             uploadSection.setOpacity(1);
             tabContent.setMinHeight(expandedHeight);
             tabContent.setPrefHeight(expandedHeight);
@@ -230,28 +260,6 @@ public final class StartLayoutAnimator {
     /**
      * Wires the inline-error visibility of a {@link FileDropTab} to a height
      * animation that grows or shrinks the start card by the row's reserved height.
-     *
-     * <p>The animation is anchored to a stable {@code baseHeight} captured the
-     * first time the error becomes visible. All subsequent show/hide cycles
-     * target {@code baseHeight + delta} (when shown) or {@code baseHeight}
-     * (when hidden), never reading {@code getPrefHeight()} mid-flight. This
-     * prevents the card from compounding upward when a click triggers
-     * {@code clearError} immediately followed by {@code showError} — both
-     * fire the listener within the same JavaFX pulse, and reading the live
-     * pref height between them would return the previous animation's target
-     * instead of the true base.</p>
-     *
-     * <p>A reference to the active {@link Timeline} is kept so a follow-up
-     * animation can stop the in-flight one, avoiding two timelines competing
-     * for the same property.</p>
-     *
-     * <p>For the new-game tab the explicit {@code prefHeight} on the content
-     * is animated, so the {@code prefHeightProperty} listener installed in
-     * {@link #bindStartCardLayout} propagates the change to the tab pane. For
-     * the load-game tab the tab pane height itself is animated via
-     * {@link #playTabHeightTransition}, and only when the load tab is the
-     * active selection — otherwise the regular tab-switch transition will
-     * pick up the new content height when the user navigates to it.</p>
      *
      * @param tab       the file drop tab whose error visibility drives the animation
      * @param tabPane   the surrounding tab pane
