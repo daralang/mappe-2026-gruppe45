@@ -68,7 +68,7 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
                         LanguageManager.get("col.priceNok"),
                         SortColumn.PRICE_NOK, 15, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        MessageFormat.format(LanguageManager.get("col.priceAlt"), altCurrencyCode),
+                        MessageFormat.format(LanguageManager.get("col.priceNative"), altCurrencyCode),
                         SortColumn.PRICE_ALT, 15, HPos.RIGHT),
                 TableColumnDef.sortable(
                         LanguageManager.get("col.changeNok"),

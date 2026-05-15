@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.value.WeakChangeListener;
 
 /**
  * Manages the active currency for the loaded stock data.
@@ -16,13 +19,30 @@ import java.util.Objects;
  * currency used by {@link CurrencyFormatter}. Display currency is currently
  * fixed in the formatter and tracked separately.
  *
- * <p>Follows the same utility pattern as {@link LanguageManager}.
+ * <p>Currency changes are observable via {@link #currencyProperty()}.
+ * Listeners registered on the property are notified automatically by JavaFX
+ * when {@link #setCurrency(Currency)} is called. Use
+ * {@link javafx.beans.value.WeakChangeListener} to avoid memory leaks in views.
  */
 public class CurrencyManager {
 
-    private static Currency current = Currency.getInstance("USD");
+    private static final ReadOnlyObjectWrapper<Currency> current =
+            new ReadOnlyObjectWrapper<>(Currency.getInstance("USD"));
 
     private CurrencyManager() {}
+
+    /**
+     * Returns a read-only property for the active currency.
+     *
+     * <p>Register a {@link WeakChangeListener} on this property
+     * to observe currency changes without preventing garbage
+     * collection of the observer.</p>
+     *
+     * @return the read-only currency property
+     */
+    public static ReadOnlyObjectProperty<Currency> currencyProperty() {
+        return current.getReadOnlyProperty();
+    }
 
     /**
      * Returns the list of currencies available for selection,
@@ -38,13 +58,14 @@ public class CurrencyManager {
 
     /**
      * Sets the active currency for the session.
+     * All listeners registered on {@link #currencyProperty()} are notified automatically.
      *
      * @param currency the currency to use
      * @throws NullPointerException if currency is null
      */
     public static void setCurrency(Currency currency) {
         Objects.requireNonNull(currency, "Currency cannot be null");
-        current = currency;
+        current.set(currency);
     }
 
     /**
@@ -53,6 +74,6 @@ public class CurrencyManager {
      * @return the active currency
      */
     public static Currency get() {
-        return current;
+        return current.get();
     }
 }
