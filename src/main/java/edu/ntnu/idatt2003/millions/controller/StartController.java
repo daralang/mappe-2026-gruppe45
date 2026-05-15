@@ -10,6 +10,7 @@ import edu.ntnu.idatt2003.millions.view.StartView;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBarFactory;
 import java.io.File;
 import java.io.UncheckedIOException;
+import javafx.application.Platform;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Objects;
@@ -319,5 +320,7 @@ public class StartController {
         stage.setTitle("Millions");
         stage.setScene(view.getScene());
         stage.show();
+        stage.setMaximized(true);
+        Platform.runLater(stage::centerOnScreen);
     }
 }
