@@ -14,12 +14,15 @@ import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -105,7 +108,7 @@ class WatchlistRowRenderer extends RowRenderer {
         GridPane.setValignment(noteButton, VPos.TOP);
         GridPane.setValignment(removeButton, VPos.TOP);
 
-        Node[] cells = {tickerLabel, companyLabel, priceNokLabel, priceAltLabel,
+        Node[] cells = {tickerLabel, companyLabel, priceAltLabel, priceNokLabel,
                 changeNokLabel, changePctLabel, highLowLabel, sparkline,
                 addedWeekLabel, actions, noteButton, removeButton};
         table.addRow(rowIndex, cells);
@@ -120,17 +123,45 @@ class WatchlistRowRenderer extends RowRenderer {
         return new HBox(buyButton);
     }
 
+    /**
+     * Builds the note button for the given watchlist item.
+     *
+     * @param item the watchlist item
+     * @return a styled {@link Button} with an icon graphic
+     */
     private Button buildNoteButton(WatchlistItem item) {
+        int size = 20;
         boolean hasNote = !item.entry().note().isBlank();
-        Button noteButton = new Button(hasNote ? "✎●" : "✎");
-        noteButton.getStyleClass().add("holdings-action-link");
+        String defaultPath = hasNote ? "/icons/edit-blue.png" : "/icons/edit-default.png";
+
+        Button noteButton = new Button();
+        noteButton.setGraphic(loadIcon(defaultPath, size));
+        noteButton.getStyleClass().addAll("holdings-action-link", "watchlist-note-btn");
+        noteButton.setOnMouseEntered(e -> noteButton.setGraphic(loadIcon("/icons/edit-blue.png", size)));
+        noteButton.setOnMouseExited(e -> noteButton.setGraphic(loadIcon(defaultPath, size)));
         noteButton.setOnAction(e -> onNote.accept(item));
         return noteButton;
     }
 
+    /**
+     * Loads an icon from the classpath and returns a sized {@link ImageView}.
+     *
+     * @param path the classpath resource path (e.g. {@code /icons/edit-blue.png})
+     * @param size the desired width and height in pixels
+     * @return an {@link ImageView} with preserved aspect ratio
+     */
+    private ImageView loadIcon(String path, int size) {
+        ImageView iv = new ImageView(new Image(
+                Objects.requireNonNull(getClass().getResource(path)).toExternalForm()));
+        iv.setFitWidth(size);
+        iv.setFitHeight(size);
+        iv.setPreserveRatio(true);
+        return iv;
+    }
+
     private Button buildRemoveButton(String symbol) {
         Button removeButton = new Button("×");
-        removeButton.getStyleClass().addAll("holdings-action-link", "holdings-action-sell");
+        removeButton.getStyleClass().addAll("holdings-action-link", "watchlist-action-remove");
         removeButton.setOnAction(e -> onRemove.accept(symbol));
         return removeButton;
     }

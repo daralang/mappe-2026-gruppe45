@@ -32,7 +32,7 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
      * Columns that support ascending/descending sort in the watchlist table.
      */
     enum SortColumn {
-        TICKER, COMPANY, PRICE_NOK, PRICE_ALT, CHANGE_NOK, CHANGE_PCT, HIGH_LOW, ADDED_WEEK
+        TICKER, COMPANY, PRICE_ALT, PRICE_NOK, CHANGE_NOK, CHANGE_PCT, HIGH_LOW, ADDED_WEEK
     }
 
     private final CurrencyConverter converter;
@@ -61,39 +61,39 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
         return List.of(
                 TableColumnDef.sortable(
                         LanguageManager.get("watchlist.col.ticker"),
-                        SortColumn.TICKER, 7, HPos.LEFT),
+                        SortColumn.TICKER, 10, HPos.LEFT),
                 TableColumnDef.sortable(
                         LanguageManager.get("watchlist.col.company"),
-                        SortColumn.COMPANY, 18, HPos.LEFT),
+                        SortColumn.COMPANY, 20, HPos.LEFT),
                 TableColumnDef.sortable(
                         LanguageManager.get("watchlist.col.priceNok"),
-                        SortColumn.PRICE_NOK, 8, HPos.RIGHT),
+                        SortColumn.PRICE_NOK, 15, HPos.RIGHT),
                 TableColumnDef.sortable(
                         MessageFormat.format(LanguageManager.get("watchlist.col.priceAlt"), altCurrencyCode),
-                        SortColumn.PRICE_ALT, 8, HPos.RIGHT),
+                        SortColumn.PRICE_ALT, 15, HPos.RIGHT),
                 TableColumnDef.sortable(
                         LanguageManager.get("watchlist.col.changeNok"),
-                        SortColumn.CHANGE_NOK, 8, HPos.RIGHT),
+                        SortColumn.CHANGE_NOK, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
                         LanguageManager.get("watchlist.col.changePct"),
-                        SortColumn.CHANGE_PCT, 7, HPos.RIGHT),
+                        SortColumn.CHANGE_PCT, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
                         LanguageManager.get("watchlist.col.highLow"),
-                        SortColumn.HIGH_LOW, 8, HPos.RIGHT),
+                        SortColumn.HIGH_LOW, 10, HPos.RIGHT),
                 TableColumnDef.of(
                         LanguageManager.get("watchlist.col.trend"),
-                        7, HPos.CENTER),
+                        12, HPos.CENTER),
                 TableColumnDef.sortable(
                         LanguageManager.get("watchlist.col.addedWeek"),
-                        SortColumn.ADDED_WEEK, 7, HPos.CENTER),
+                        SortColumn.ADDED_WEEK, 10, HPos.CENTER),
                 TableColumnDef.of(
                         LanguageManager.get("watchlist.col.trade"),
-                        6, HPos.LEFT),
+                        7, HPos.CENTER),
                 TableColumnDef.of(
                         LanguageManager.get("watchlist.col.note"),
-                        5, HPos.CENTER),
+                        7, HPos.CENTER),
                 TableColumnDef.of(
-                        "", 3, HPos.CENTER)
+                        "", 7, HPos.CENTER)
         );
     }
 
