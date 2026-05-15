@@ -1,20 +1,25 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
+import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import edu.ntnu.idatt2003.millions.view.StartView;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBarFactory;
 import java.io.File;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Currency;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import javafx.scene.control.Alert;
+import java.util.function.Supplier;
+import javafx.application.Platform;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -25,16 +30,12 @@ import javafx.stage.Stage;
  * file selection for stock data and saved games, as well as
  * starting or loading a game session.</p>
  *
- * <p>UI-input validation (name, capital, file extension) is delegated to
- * {@link StartInputValidator}. Stock CSV files are validated immediately on
- * selection, which attempts a full parse via {@link CsvStockFileHandler} and
- * clears the file path if the file is invalid, preventing the user from starting
- * with a bad file.</p>
+ * <p>UI-input validation is delegated to {@link StartInputValidator}. File
+ * validation on selection is delegated to {@link edu.ntnu.idatt2003.millions.service.GameService},
+ * which performs a trial parse without mutating game state.</p>
  *
- * <p>Errors from the start flow are translated to user-facing messages by
- * a shared error-handling helper that catches the concrete exception types
- * the flow can legitimately produce (input validation, missing game state,
- * and file I/O), while letting programming errors surface as crashes.</p>
+ * <p>Errors are surfaced via {@code errorSink} and successes via {@code successSink},
+ * both injected as {@link java.util.function.Supplier} consumers for i18n support.</p>
  */
 public class StartController {
 
@@ -43,7 +44,8 @@ public class StartController {
     private final StartScreenInputs inputs;
     private final GameService gameService;
     private final Runnable showMainViewAction;
-    private final Consumer<String> errorSink;
+    private final Consumer<Supplier<String>> errorSink;
+    private final Consumer<Supplier<String>> successSink;
 
     /**
      * Constructs a new StartController with a default {@link GameService}.
@@ -62,19 +64,28 @@ public class StartController {
     /**
      * Constructs a new StartController with the given {@link GameService}.
      *
-     * <p>Injecting the manager keeps the controller flexible while preserving
-     * the normal production flow through {@link #StartController(Stage)}.
-     * Event bindings are deferred to {@link #show()}.</p>
-     *
      * @param stage       the primary application stage
      * @param gameService the game manager used to create or load game state
      * @throws NullPointerException if stage or game manager is null
      */
     public StartController(Stage stage, GameService gameService) {
+        this(stage, gameService, new StartView(TitleBarFactory.createForStartScreen(stage).getNode()));
+    }
+
+    /**
+     * Intermediate constructor that resolves the {@link StartView} before delegating
+     * to the full DI constructor.
+     *
+     * @param stage       the primary application stage
+     * @param gameService the game manager used to create or load game state
+     * @param startView   the already-constructed start view
+     */
+    private StartController(Stage stage, GameService gameService, StartView startView) {
         this(stage, gameService,
-                new StartView(TitleBarFactory.createForStartScreen(stage).getNode()),
+                startView,
                 () -> new MainController(stage, gameService).show(),
-                StartController::showAlert);
+                startView::showError,
+                startView::showSuccess);
     }
 
     /**
@@ -87,63 +98,61 @@ public class StartController {
      * @param view               the start view that exposes user input and controls
      * @param showMainViewAction the action used to navigate to the main view
      * @param errorSink          the consumer that displays user-facing error messages
+     * @param successSink        the consumer that displays user-facing success messages
      * @throws NullPointerException if any argument is null
      */
     StartController(Stage stage,
                     GameService gameService,
                     StartView view,
                     Runnable showMainViewAction,
-                    Consumer<String> errorSink) {
+                    Consumer<Supplier<String>> errorSink,
+                    Consumer<Supplier<String>> successSink) {
         this.stage = Objects.requireNonNull(stage, "Stage cannot be null");
         this.gameService = Objects.requireNonNull(gameService, "GameService cannot be null");
         this.view = Objects.requireNonNull(view, "StartView cannot be null");
         this.inputs = view;
         this.showMainViewAction = Objects.requireNonNull(showMainViewAction, "Show main view action cannot be null");
         this.errorSink = Objects.requireNonNull(errorSink, "Error sink cannot be null");
+        this.successSink = Objects.requireNonNull(successSink, "Success sink cannot be null");
     }
 
     /**
      * Test-only seam that constructs the controller without requiring a
-     * {@link Stage} or a fully built {@link StartView}. The controller
-     * reads user input, reports errors to {@code errorSink} and navigates
-     * through {@code showMainViewAction}.
-     * {@link #show()} and the file-chooser handlers are not safe to call
-     * on instances created through this constructor.
+     * {@link Stage} or a fully built {@link StartView}.
      *
      * @param gameService        the game manager used to create or load game state
      * @param inputs             the input seam the start flow reads from
      * @param showMainViewAction the action used to navigate to the main view
      * @param errorSink          the consumer that receives user-facing error messages
+     * @param successSink        the consumer that receives user-facing success messages
      * @throws NullPointerException if any argument is null
      */
     StartController(GameService gameService,
                     StartScreenInputs inputs,
                     Runnable showMainViewAction,
-                    Consumer<String> errorSink) {
+                    Consumer<Supplier<String>> errorSink,
+                    Consumer<Supplier<String>> successSink) {
         this.stage = null;
         this.view = null;
         this.gameService = Objects.requireNonNull(gameService, "GameService cannot be null");
         this.inputs = Objects.requireNonNull(inputs, "Inputs cannot be null");
         this.showMainViewAction = Objects.requireNonNull(showMainViewAction, "Show main view action cannot be null");
         this.errorSink = Objects.requireNonNull(errorSink, "Error sink cannot be null");
+        this.successSink = Objects.requireNonNull(successSink, "Success sink cannot be null");
     }
 
     /**
-     * Registers event handlers for all interactive controls in the view.
+     * Injects callbacks into the view for all interactive controls.
+     * The view wires these callbacks to its own controls internally,
+     * so the controller never accesses individual UI components directly.
      */
     private void bindEvents() {
-        view.getBrowseStockFileButton().setOnAction(e -> handleBrowseStockFile());
-        view.getBrowseSaveFileButton().setOnAction(e -> handleBrowseSaveFile());
-        view.getStartButton().setOnAction(e -> handleStartGame());
-        view.getLoadButton().setOnAction(e -> handleLoadGame());
-        view.getDropZone().setOnDragDropped(e -> {
-            var db = e.getDragboard();
-            if (db.hasFiles()) {
-                validateAndSetStockFile(db.getFiles().getFirst());
-                e.setDropCompleted(true);
-            }
-            e.consume();
-        });
+        view.setOnStartGame(this::handleStartGame);
+        view.setOnLoadGame(this::handleLoadGame);
+        view.setOnBrowseStockFile(this::handleBrowseStockFile);
+        view.setOnBrowseSaveFile(this::handleBrowseSaveFile);
+        view.setOnStockFileDrop(this::validateAndSetStockFile);
+        view.setOnSaveFileDrop(this::validateAndSetSaveFile);
     }
 
     /**
@@ -154,7 +163,7 @@ public class StartController {
      */
     private void handleBrowseStockFile() {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Select stock file");
+        chooser.setTitle(LanguageManager.get("start.chooser.stock.title"));
         chooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("Data files", "*.csv"));
         File file = chooser.showOpenDialog(stage);
@@ -164,42 +173,65 @@ public class StartController {
     }
 
     /**
+     * Opens a file chooser for selecting a previously saved game file (JSON).
+     * If a file is chosen, it is validated immediately via
+     * {@link #validateAndSetSaveFile(File)}. The file path is only
+     * stored if the file parses without errors.
+     */
+    private void handleBrowseSaveFile() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(LanguageManager.get("start.chooser.save.title"));
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Save files", "*.json"));
+        File file = chooser.showOpenDialog(stage);
+        if (file != null) {
+            validateAndSetSaveFile(file);
+        }
+    }
+
+    /**
      * Validates the given stock file by attempting to parse it immediately.
      * If parsing succeeds, the file path is stored in the view. If parsing
      * fails, the file path is cleared and the error is shown to the user
      * via the {@link #errorSink} so they cannot proceed with an invalid file.
      *
-     * <p>The currency currently selected in the view is used for parsing.
-     * If no currency is selected yet, USD is used as a fallback so that
-     * structural errors (wrong field count, blank fields, invalid price) are
-     * still caught regardless of the currency choice.</p>
+     * <p>Package-private visibility allows controller tests in this package
+     * to invoke the handler directly without simulating a drag-and-drop event.</p>
      *
      * @param file the CSV file to validate and register
      */
-    private void validateAndSetStockFile(File file) {
+    void validateAndSetStockFile(File file) {
         inputs.setStockFilePath(file.getAbsolutePath());
         Currency currency = Optional.ofNullable(inputs.getSelectedCurrency())
                 .orElse(Currency.getInstance("USD"));
         try {
             new CsvStockFileHandler().readStocks(file.toPath(), currency);
+            successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
         } catch (InvalidStockDataException | UncheckedIOException e) {
             inputs.setStockFilePath("");
-            errorSink.accept(e.getMessage());
+            errorSink.accept(e::getMessage);
         }
     }
 
     /**
-     * Opens a file chooser for selecting a previously saved game file (JSON).
-     * If a file is chosen, the path is shown in the view.
+     * Validates the given save file by attempting to parse it immediately.
+     * If parsing succeeds, the file path is stored in the view. If parsing
+     * fails, the file path is cleared and the error is shown to the user
+     * via the {@link #errorSink} so they cannot proceed with a corrupt save file.
+     *
+     * <p>Package-private visibility allows controller tests in this package
+     * to invoke the handler directly without simulating a drag-and-drop event.</p>
+     *
+     * @param file the JSON save file to validate and register
      */
-    private void handleBrowseSaveFile() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Select save file");
-        chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Save files", "*.json"));
-        File file = chooser.showOpenDialog(stage);
-        if (file != null) {
-            inputs.setSaveFilePath(file.getAbsolutePath());
+    void validateAndSetSaveFile(File file) {
+        inputs.setSaveFilePath(file.getAbsolutePath());
+        try {
+            new JsonGameFileHandler().loadGame(file);
+            successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
+        } catch (GameSaveCorruptException | UncheckedIOException e) {
+            inputs.setSaveFilePath("");
+            errorSink.accept(e::getMessage);
         }
     }
 
@@ -212,20 +244,68 @@ public class StartController {
      * to call the handler without simulating a JavaFX button click.</p>
      */
     void handleStartGame() {
-        runOrShowError(() -> {
-            String name = StartInputValidator.requireName(inputs.getName());
-            BigDecimal parsedCapital = StartInputValidator.parseCapital(inputs.getCapital());
-            String stockFilePath = inputs.getStockFilePath();
+        String name = inputs.getName();
+        String capital = inputs.getCapital();
+        boolean hasFile = !inputs.getStockFilePath().isBlank();
+        Currency currency = inputs.getSelectedCurrency();
 
-            if (stockFilePath.isBlank()) {
-                gameService.createNewGame(name, parsedCapital);
+        // Collect format errors for non-blank fields (without early return) so both
+        // name and capital problems can surface together when both are invalid.
+        List<String> validationErrorKeys = new ArrayList<>();
+        StartInputValidator.validateNameFormat(name).ifPresent(validationErrorKeys::add);
+        StartInputValidator.validateCapitalFormat(capital).ifPresent(validationErrorKeys::add);
+
+        // Collect missing fields separately so they can be combined into a single
+        // "missing X and Y" sentence instead of being listed line by line.
+        List<String> missingKeys = new ArrayList<>();
+        if (name.isBlank()) missingKeys.add("field.name");
+        if (capital.isBlank()) missingKeys.add("field.capital");
+        if (hasFile && currency == null) missingKeys.add("field.currency");
+
+        if (!validationErrorKeys.isEmpty() || !missingKeys.isEmpty()) {
+            errorSink.accept(() -> {
+                List<String> lines = new ArrayList<>();
+                validationErrorKeys.forEach(key -> lines.add(LanguageManager.get(key)));
+                if (!missingKeys.isEmpty()) {
+                    lines.add(buildMissingMessage(
+                            missingKeys.stream().map(LanguageManager::get).toList()));
+                }
+                return String.join("\n", lines);
+            });
+            return;
+        }
+
+        // All inputs valid — delegate to service
+        runOrShowError(() -> {
+            String validatedName     = StartInputValidator.requireName(name);
+            BigDecimal parsedCapital = StartInputValidator.parseCapital(capital);
+            if (hasFile) {
+                Currency validatedCurrency = StartInputValidator.requireCurrency(currency);
+                File stockFile = StartInputValidator.requireCsvFilePath(inputs.getStockFilePath());
+                gameService.createNewGame(validatedName, parsedCapital, stockFile, validatedCurrency);
             } else {
-                File stockFile = StartInputValidator.requireCsvFilePath(stockFilePath);
-                Currency currency = StartInputValidator.requireCurrency(inputs.getSelectedCurrency());
-                gameService.createNewGame(name, parsedCapital, stockFile, currency);
+                gameService.createNewGame(validatedName, parsedCapital);
             }
             showMainView();
         });
+    }
+
+    /**
+     * Builds a combined missing-fields message from a list of field names.
+     * Single field: "Navn mangler". Multiple: "Navn og Startkapital mangler".
+     *
+     * @param fields the localised field names that are missing
+     * @return a formatted error string
+     */
+    private String buildMissingMessage(List<String> fields) {
+        String suffix = " " + LanguageManager.get("error.missing.suffix");
+        List<String> lower = fields.stream().map(String::toLowerCase).toList();
+        String message = lower.size() == 1
+                ? lower.get(0) + suffix
+                : String.join(", ", lower.subList(0, lower.size() - 1))
+                  + " " + LanguageManager.get("error.and") + " "
+                  + lower.get(lower.size() - 1) + suffix;
+        return Character.toUpperCase(message.charAt(0)) + message.substring(1);
     }
 
     /**
@@ -236,10 +316,13 @@ public class StartController {
      * to call the handler without simulating a JavaFX button click.</p>
      */
     void handleLoadGame() {
+        String saveGameFilePath = inputs.getSaveFilePath();
+        if (saveGameFilePath.isBlank()) {
+            errorSink.accept(() -> LanguageManager.get("error.save.file.missing"));
+            return;
+        }
         runOrShowError(() -> {
-            String saveFilePath = inputs.getSaveFilePath();
-            File saveFile = StartInputValidator.requireFilePath(saveFilePath, "Save file must be selected");
-            gameService.loadGame(saveFile);
+            gameService.loadGame(new File(saveGameFilePath));
             showMainView();
         });
     }
@@ -267,7 +350,7 @@ public class StartController {
             action.execute();
         } catch (GameSaveCorruptException | InvalidStockDataException | IllegalArgumentException
                  | IllegalStateException | UncheckedIOException exception) {
-            errorSink.accept(exception.getMessage());
+            errorSink.accept(exception::getMessage);
         }
     }
 
@@ -279,21 +362,6 @@ public class StartController {
     }
 
     /**
-     * Default error sink used in production. Displays the message in a JavaFX
-     * {@link Alert} dialog. Tests inject a different consumer to avoid
-     * starting the JavaFX toolkit.
-     *
-     * @param message the error message to show
-     */
-    private static void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Could not open game");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    /**
      * Displays the start screen on the primary stage and binds UI events.
      */
     public void show() {
@@ -301,5 +369,7 @@ public class StartController {
         stage.setTitle("Millions");
         stage.setScene(view.getScene());
         stage.show();
+        stage.setMaximized(true);
+        Platform.runLater(stage::centerOnScreen);
     }
 }

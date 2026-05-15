@@ -1,15 +1,24 @@
 package edu.ntnu.idatt2003.millions.controller;
 
+import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
+import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Currency;
@@ -19,17 +28,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for {@link StartController}.
- *
- * <p>Uses the test seam constructor that takes a {@link StartScreenInputs}
- * and a string {@link java.util.function.Consumer} so the start flow can be
- * exercised without initialising the JavaFX toolkit. All tests follow the
- * AAA pattern.</p>
  */
 class StartControllerTest {
+
+    @TempDir
+    Path tempDir;
 
     private StubInputs inputs;
     private RecordingGameService gameService;
     private List<String> errors;
+    private List<String> successes;
     private boolean showMainCalled;
     private StartController controller;
 
@@ -38,12 +46,14 @@ class StartControllerTest {
         inputs = new StubInputs();
         gameService = new RecordingGameService();
         errors = new ArrayList<>();
+        successes = new ArrayList<>();
         showMainCalled = false;
         controller = new StartController(
                 gameService,
                 inputs,
                 () -> showMainCalled = true,
-                errors::add);
+                supplier -> errors.add(supplier.get()),
+                supplier -> successes.add(supplier.get()));
     }
 
     @Nested
@@ -179,6 +189,67 @@ class StartControllerTest {
             assertEquals(1, errors.size());
             assertFalse(showMainCalled);
         }
+
+        @Test
+        @DisplayName("Should report error and not navigate when capital is zero")
+        void reportsErrorWhenCapitalIsZero() {
+            // Arrange
+            inputs.name = "Dara";
+            inputs.capital = "0";
+            // Act
+            controller.handleStartGame();
+            // Assert
+            assertEquals(1, errors.size());
+            assertEquals(0, gameService.createNewGameCalls);
+            assertFalse(showMainCalled);
+        }
+
+        @Test
+        @DisplayName("Should report error and not navigate when capital is negative")
+        void reportsErrorWhenCapitalIsNegative() {
+            // Arrange
+            inputs.name = "Dara";
+            inputs.capital = "-500";
+            // Act
+            controller.handleStartGame();
+            // Assert
+            assertEquals(1, errors.size());
+            assertEquals(0, gameService.createNewGameCalls);
+            assertFalse(showMainCalled);
+        }
+
+        @Test
+        @DisplayName("Should report error and not navigate when player name is only whitespace")
+        void reportsErrorWhenPlayerNameIsOnlyWhitespace() {
+            // Arrange
+            inputs.name = "   ";
+            inputs.capital = "10000.00";
+            // Act
+            controller.handleStartGame();
+            // Assert
+            assertEquals(1, errors.size());
+            assertEquals(0, gameService.createNewGameCalls);
+            assertFalse(showMainCalled);
+        }
+
+        @Test
+        @DisplayName("Should combine name and capital validation errors into a single message")
+        void combinesNameAndCapitalErrorsIntoSingleMessage() {
+            // Arrange: name too short AND capital negative
+            inputs.name = "ab";
+            inputs.capital = "-500";
+            // Act
+            controller.handleStartGame();
+            // Assert: one combined message containing both error strings
+            assertEquals(1, errors.size());
+            String combined = errors.getFirst();
+            assertTrue(combined.contains(LanguageManager.get("error.name.too.short")),
+                    "Combined message should contain the name-too-short error");
+            assertTrue(combined.contains(LanguageManager.get("error.capital.zero")),
+                    "Combined message should contain the capital-zero error");
+            assertEquals(0, gameService.createNewGameCalls);
+            assertFalse(showMainCalled);
+        }
     }
 
     @Nested
@@ -223,6 +294,143 @@ class StartControllerTest {
             assertEquals(1, errors.size());
             assertEquals("corrupt save file", errors.getFirst());
             assertFalse(showMainCalled);
+        }
+
+        @Test
+        @DisplayName("Should report error and not navigate when game manager throws UncheckedIOException on load")
+        void reportsErrorWhenGameServiceThrowsIoExceptionOnLoad() {
+            // Arrange
+            inputs.saveFilePath = "/tmp/save.json";
+            gameService.failNextLoad =
+                    new UncheckedIOException("read failed", new java.io.IOException("disk error"));
+            // Act
+            controller.handleLoadGame();
+            // Assert
+            assertEquals(1, errors.size());
+            assertFalse(showMainCalled);
+        }
+    }
+
+    @Nested
+    @DisplayName("validateAndSetSaveFile()")
+    class ValidateAndSetSaveFile {
+
+        @Test
+        @DisplayName("Should store file path and emit success when save file is valid")
+        void storesFilePathWhenSaveFileIsValid() throws IOException {
+            // Arrange
+            Path saveFile = tempDir.resolve("save.json");
+            Stock stock = new Stock("EQNR", "Equinor ASA",
+                    new ArrayList<>(List.of(new BigDecimal("276.43"))),
+                    Currency.getInstance("NOK"));
+            Exchange exchange = new Exchange("Oslo Børs",
+                    new ArrayList<>(List.of(stock)),
+                    new FixedRateCurrencyConverter());
+            Player player = new Player("Dara", new BigDecimal("10000.00"));
+            new JsonGameFileHandler().saveGame(player, exchange, saveFile.toFile());
+            // Act
+            controller.validateAndSetSaveFile(saveFile.toFile());
+            // Assert
+            assertEquals(saveFile.toAbsolutePath().toString(), inputs.saveFilePath);
+            assertTrue(errors.isEmpty());
+            assertEquals(1, successes.size());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when save file contains invalid JSON")
+        void clearsFilePathAndReportsErrorWhenSaveFileIsCorrupt() throws IOException {
+            // Arrange
+            Path saveFile = tempDir.resolve("corrupt.json");
+            Files.writeString(saveFile, "{ this is not valid json }");
+            // Act
+            controller.validateAndSetSaveFile(saveFile.toFile());
+            // Assert
+            assertTrue(inputs.saveFilePath.isBlank());
+            assertEquals(1, errors.size());
+            assertTrue(successes.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when save file is missing required fields")
+        void clearsFilePathAndReportsErrorWhenSaveFileMissingRequiredFields() throws IOException {
+            // Arrange
+            Path saveFile = tempDir.resolve("incomplete.json");
+            Files.writeString(saveFile, "{ \"player\": {} }");
+            // Act
+            controller.validateAndSetSaveFile(saveFile.toFile());
+            // Assert
+            assertTrue(inputs.saveFilePath.isBlank());
+            assertEquals(1, errors.size());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when save file does not exist")
+        void clearsFilePathAndReportsErrorWhenSaveFileDoesNotExist() {
+            // Arrange
+            File nonExistent = tempDir.resolve("ghost.json").toFile();
+            // Act
+            controller.validateAndSetSaveFile(nonExistent);
+            // Assert
+            assertTrue(inputs.saveFilePath.isBlank());
+            assertEquals(1, errors.size());
+        }
+    }
+
+    @Nested
+    @DisplayName("validateAndSetStockFile()")
+    class ValidateAndSetStockFile {
+
+        @Test
+        @DisplayName("Should store file path and emit success when stock file is valid")
+        void storesFilePathWhenStockFileIsValid() throws IOException {
+            // Arrange
+            Path stockFile = tempDir.resolve("stocks.csv");
+            Files.writeString(stockFile, "AAPL,Apple Inc.,276.43\n");
+            // Act
+            controller.validateAndSetStockFile(stockFile.toFile());
+            // Assert
+            assertEquals(stockFile.toAbsolutePath().toString(), inputs.stockFilePath);
+            assertTrue(errors.isEmpty());
+            assertEquals(1, successes.size());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when stock file has invalid format")
+        void clearsFilePathAndReportsErrorWhenStockFileHasInvalidFormat() throws IOException {
+            // Arrange
+            Path stockFile = tempDir.resolve("stocks.csv");
+            Files.writeString(stockFile, "INVALID_LINE\n");
+            // Act
+            controller.validateAndSetStockFile(stockFile.toFile());
+            // Assert
+            assertTrue(inputs.stockFilePath.isBlank());
+            assertEquals(1, errors.size());
+            assertTrue(successes.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when stock file is empty")
+        void clearsFilePathAndReportsErrorWhenStockFileIsEmpty() throws IOException {
+            // Arrange
+            Path stockFile = tempDir.resolve("stocks.csv");
+            Files.writeString(stockFile, "");
+            // Act
+            controller.validateAndSetStockFile(stockFile.toFile());
+            // Assert
+            assertTrue(inputs.stockFilePath.isBlank());
+            assertEquals(1, errors.size());
+        }
+
+        @Test
+        @DisplayName("Should clear file path and report error when stock file does not exist")
+        void clearsFilePathAndReportsErrorWhenStockFileDoesNotExist() {
+            // Arrange
+            File nonExistent = tempDir.resolve("ghost.csv").toFile();
+            // Act
+            controller.validateAndSetStockFile(nonExistent);
+            // Assert
+            assertTrue(inputs.stockFilePath.isBlank());
+            assertEquals(1, errors.size());
         }
     }
 

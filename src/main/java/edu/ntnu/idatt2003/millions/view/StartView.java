@@ -3,72 +3,50 @@ package edu.ntnu.idatt2003.millions.view;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.StylesheetLoader;
 import edu.ntnu.idatt2003.millions.view.component.AppTabPane;
-import edu.ntnu.idatt2003.millions.view.component.CurrencySelector;
 import edu.ntnu.idatt2003.millions.view.component.LanguagePicker;
+import edu.ntnu.idatt2003.millions.view.start.LoadGameTab;
+import edu.ntnu.idatt2003.millions.view.start.NewGameTab;
+import edu.ntnu.idatt2003.millions.view.start.StartLayoutAnimator;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import java.io.File;
 import java.util.Currency;
+import java.util.function.Consumer;
 
 /**
  * Start view for the application.
  *
- * <p>Contains a tab-based layout for either creating a new game
- * or loading an existing saved game. The new game tab shows a centered
- * card with inline label-field rows, a drag-and-drop file zone,
- * and a currency selector that activates once a file is chosen.
+ * <p>Composes a tab-based layout from {@link NewGameTab} and {@link LoadGameTab},
+ * each of which owns its own fields, layout, i18n updates, and event wiring.
+ * Responsive sizing and the animated {@link NewGameTab}
+ * reveal are delegated to {@link StartLayoutAnimator}.</p>
+ *
  */
 public class StartView implements StartScreenInputs {
 
     private static final double SCENE_WIDTH = 900;
     private static final double SCENE_HEIGHT = 700;
     private static final double ROOT_SPACING = 24;
-    private static final double FORM_SPACING = 16;
-    private static final double CARD_WIDTH = 460;
-    private static final double LABEL_WIDTH = 120;
-    private static final double DROP_ZONE_HEIGHT = 160;
+    private static final double START_CARD_WIDTH = 540;
 
     private final Scene scene;
     private final StyledText title;
-
-    private final TabPane tabPane;
+    private final AppTabPane tabPane;
     private final Tab newGameTab;
     private final Tab loadGameTab;
-
-    // New game tab
-    private final StyledText nameLabel;
-    private final StyledText capitalLabel;
-    private final StyledText fileLabel;
-    private final StyledText currencyLabel;
-    private final TextField nameField;
-    private final TextField capitalField;
-    private final CurrencySelector currencySelector;
-    private final Label dropZoneHint;
-    private final Label dropZoneOr;
-    private final Button browseStockFileButton;
-    private final Label stockFileNameLabel;
-    private final VBox dropZone;
-    private final Button startButton;
-    private String stockFilePath = "";
-
-    // Load game tab
-    private final StyledText saveFileLabel;
-    private final TextField saveFileField;
-    private final Button browseSaveFileButton;
-    private final Button loadButton;
+    private final NewGameTab newGameTabContent;
+    private final LoadGameTab loadGameContent;
 
     /**
      * Creates the start view with two tabs:
@@ -87,50 +65,58 @@ public class StartView implements StartScreenInputs {
     public StartView(Node titleBarControls) {
         LanguagePicker languagePicker = new LanguagePicker();
         title = StyledText.headingOne(LanguageManager.get("app.title"));
+        title.getStyleClass().add("start-title");
 
-        nameLabel = StyledText.paragraphOne();
-        capitalLabel = StyledText.paragraphOne();
-        currencyLabel = StyledText.paragraphOne();
-        fileLabel = StyledText.paragraphOne();
-        nameField = new TextField();
-        capitalField = new TextField();
-        currencySelector = new CurrencySelector();
-        currencySelector.setDisable(false);
-
-        dropZoneHint = new Label();
-        dropZoneOr = new Label();
-        browseStockFileButton = new Button();
-        stockFileNameLabel = new Label();
-        stockFileNameLabel.setVisible(false);
-        dropZone = buildDropZone();
-        startButton = new Button();
-
-        saveFileLabel = StyledText.paragraphOne();
-        saveFileField = new TextField();
-        browseSaveFileButton = new Button();
-        loadButton = new Button();
-
-        VBox newGameContent = createNewGameContent();
-        VBox loadGameContent = createLoadGameContent();
+        newGameTabContent = new NewGameTab();
+        loadGameContent = new LoadGameTab();
 
         newGameTab = AppTabPane.createTab(
-                LanguageManager.get("start.tab.newGame"), newGameContent);
+                LanguageManager.get("start.tab.newGame"), newGameTabContent);
         loadGameTab = AppTabPane.createTab(
                 LanguageManager.get("start.tab.loadGame"), loadGameContent);
 
         tabPane = new AppTabPane();
         tabPane.getTabs().addAll(newGameTab, loadGameTab);
-        tabPane.setMaxWidth(540);
+        tabPane.setMaxWidth(START_CARD_WIDTH);
+        tabPane.getStyleClass().add("start-tab-pane");
+        Platform.runLater(() -> {
+            Node headersRegion = tabPane.lookup(".headers-region");
+            if (headersRegion instanceof Region r) {
+                Runnable center = () -> {
+                    double offset = Math.max(0, (tabPane.getWidth() - r.getWidth()) / 2.0);
+                    r.setTranslateX(offset);
+                };
+                r.widthProperty().addListener((o, old, n) -> center.run());
+                tabPane.widthProperty().addListener((o, old, n) -> center.run());
+                center.run();
+            }
+        });
 
         HBox topBar = new HBox(languagePicker);
         topBar.setAlignment(Pos.CENTER_RIGHT);
         topBar.setPadding(new Insets(16, 24, 0, 24));
 
-        VBox center = new VBox(ROOT_SPACING, title, tabPane);
+        VBox startGroup = new VBox(ROOT_SPACING, title, tabPane);
+        startGroup.setAlignment(Pos.TOP_CENTER);
+
+        StackPane reservedStartGroup = new StackPane(startGroup);
+        reservedStartGroup.setAlignment(Pos.CENTER);
+
+        StackPane center = new StackPane(reservedStartGroup);
         center.setAlignment(Pos.CENTER);
         center.setPadding(new Insets(0, 24, 24, 24));
+        StartLayoutAnimator.bindStartCardLayout(
+                tabPane,
+                center,
+                reservedStartGroup,
+                newGameTabContent,
+                loadGameContent,
+                START_CARD_WIDTH,
+                ROOT_SPACING);
 
         BorderPane root = new BorderPane();
+        root.getStyleClass().add("start-root");
+
         if (titleBarControls != null) {
             root.setTop(new VBox(titleBarControls, topBar));
         } else {
@@ -150,170 +136,13 @@ public class StartView implements StartScreenInputs {
     }
 
     /**
-     * Builds an inline label + field row where the label has a fixed width.
-     *
-     * @param label the label node
-     * @param field the input node
-     * @return an {@link HBox} with label and field on the same line
-     */
-    private HBox buildFormRow(Label label, Node field) {
-        label.setMinWidth(LABEL_WIDTH);
-        HBox.setHgrow(field, Priority.ALWAYS);
-        HBox row = new HBox(12, label, field);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(CARD_WIDTH);
-        return row;
-    }
-
-    /**
-     * Builds the dashed drop zone for stock file upload.
-     * Supports both drag-and-drop and click-to-browse.
-     *
-     * @return a styled {@link VBox} acting as the drop zone
-     */
-    private VBox buildDropZone() {
-        dropZoneHint.getStyleClass().add("drop-zone-hint");
-        dropZoneOr.getStyleClass().add("drop-zone-or");
-        browseStockFileButton.getStyleClass().add("browse-button");
-
-        VBox zone =
-                new VBox(10, dropZoneHint, dropZoneOr, browseStockFileButton, stockFileNameLabel);
-        zone.setAlignment(Pos.CENTER);
-        zone.setMaxWidth(CARD_WIDTH);
-        zone.setPrefHeight(DROP_ZONE_HEIGHT);
-        zone.setPadding(new Insets(20));
-        zone.getStyleClass().add("drop-zone");
-
-        // Highlight on drag over
-        zone.setOnDragOver(e -> {
-            if (e.getDragboard().hasFiles()) {
-                e.acceptTransferModes(TransferMode.COPY);
-                zone.getStyleClass().add("drop-zone-highlight");
-            }
-            e.consume();
-        });
-
-        // Reset style on drag exit
-        zone.setOnDragExited(_ -> zone.getStyleClass().add("drop-zone"));
-
-        return zone;
-    }
-
-    /**
-     * Builds the layout for the "new game" tab.
-     *
-     * @return the assembled layout node
-     */
-    private VBox createNewGameContent() {
-        HBox nameRow = buildFormRow(nameLabel, nameField);
-        HBox capitalRow = buildFormRow(capitalLabel, capitalField);
-        HBox currencyRow = buildFormRow(currencyLabel, currencySelector);
-
-        startButton.setMaxWidth(CARD_WIDTH);
-
-        VBox content = new VBox(
-                FORM_SPACING,
-                nameRow,
-                capitalRow,
-                fileLabel,
-                dropZone,
-                currencyRow,
-                startButton
-        );
-        content.setAlignment(Pos.CENTER);
-        content.setPadding(new Insets(24));
-        return content;
-    }
-
-    /**
-     * Builds the layout for the "load game" tab.
-     *
-     * @return the assembled layout node
-     */
-    private VBox createLoadGameContent() {
-        saveFileField.setEditable(false);
-        saveFileField.setMaxWidth(CARD_WIDTH);
-        fileLabel.setMaxWidth(CARD_WIDTH);
-        browseSaveFileButton.setMaxWidth(CARD_WIDTH);
-        loadButton.setMaxWidth(CARD_WIDTH);
-
-        VBox content = new VBox(
-                FORM_SPACING,
-                saveFileLabel, saveFileField,
-                browseSaveFileButton,
-                loadButton
-        );
-        content.setAlignment(Pos.CENTER);
-        content.setPadding(new Insets(24));
-        return content;
-    }
-
-    /**
-     * Refreshes all visible UI texts from the current {@link LanguageManager} bundle.
+     * Refreshes the title and tab labels from the current {@link LanguageManager} bundle.
+     * Each tab component manages its own internal texts independently.
      */
     private void updateTexts() {
         title.setText(LanguageManager.get("app.title"));
-
         newGameTab.setText(LanguageManager.get("start.tab.newGame"));
         loadGameTab.setText(LanguageManager.get("start.tab.loadGame"));
-
-        nameLabel.setText(LanguageManager.get("start.new.nameLabel"));
-        capitalLabel.setText(LanguageManager.get("start.new.capitalLabel"));
-        currencyLabel.setText(LanguageManager.get("start.new.currencyLabel"));
-        fileLabel.setText(LanguageManager.get("start.new.fileLabel"));
-        dropZoneHint.setText(LanguageManager.get("start.new.dropZoneHint"));
-        dropZoneOr.setText(LanguageManager.get("start.new.dropZoneOr"));
-        browseStockFileButton.setText(LanguageManager.get("start.file.browse"));
-        startButton.setText(LanguageManager.get("start.startButton"));
-
-        saveFileLabel.setText(LanguageManager.get("start.resume.fileLabel"));
-        browseSaveFileButton.setText(LanguageManager.get("start.file.browse"));
-        loadButton.setText(LanguageManager.get("start.loadButton"));
-
-        nameField.setPromptText("");
-        capitalField.setPromptText("");
-    }
-
-    /**
-     * Returns the path to the stock data file selected by the user.
-     * The path is stored independently of any UI label so changes to the
-     * drop-zone presentation do not affect the controller's contract.
-     *
-     * @return stock file path, or empty string when none is selected
-     */
-    public String getStockFilePath() {
-        return stockFilePath;
-    }
-
-    /**
-     * Sets the stock file path. Updates the internal data field, mirrors the
-     * filename in the drop-zone label, and enables or disables the currency
-     * selector accordingly. The data field is the source of truth for
-     * {@link #getStockFilePath()}.
-     *
-     * @param path the absolute file path; {@code null} or blank resets the zone
-     */
-    public void setStockFilePath(String path) {
-        if (path == null || path.isBlank()) {
-            this.stockFilePath = "";
-            stockFileNameLabel.setText("");
-            stockFileNameLabel.setVisible(false);
-            currencySelector.setDisable(true);
-        } else {
-            this.stockFilePath = path;
-            stockFileNameLabel.setText(path);
-            stockFileNameLabel.setVisible(true);
-            currencySelector.setDisable(false);
-        }
-    }
-
-    /**
-     * Sets the save file path in the read-only field.
-     *
-     * @param path save file path to display
-     */
-    public void setSaveFilePath(String path) {
-        saveFileField.setText(path == null ? "" : path);
     }
 
     /**
@@ -325,113 +154,126 @@ public class StartView implements StartScreenInputs {
         return scene;
     }
 
-    /**
-     * Sets the player name input field.
-     *
-     * @param name the player name to display; {@code null} clears the field
-     */
-    public void setName(String name) {
-        nameField.setText(name == null ? "" : name);
-    }
 
-    /**
-     * Returns the trimmed player name entered by the user.
-     *
-     * @return trimmed player name
-     */
+    @Override
     public String getName() {
-        return nameField.getText().trim();
+        return newGameTabContent.getName();
     }
 
-    /**
-     * Sets the starting capital input field.
-     *
-     * @param capital the starting capital to display; {@code null} clears the field
-     */
-    public void setCapital(String capital) {
-        capitalField.setText(capital == null ? "" : capital);
-    }
-
-    /**
-     * Returns the trimmed starting capital entered by the user.
-     *
-     * @return trimmed starting capital
-     */
+    @Override
     public String getCapital() {
-        return capitalField.getText().trim();
+        return newGameTabContent.getCapital();
     }
 
-    /**
-     * Returns the currency currently selected in the currency selector.
-     * Used when uploading custom stock data so the controller can pass the
-     * chosen currency to the {@code GameService}.
-     *
-     * @return the selected currency, or {@code null} if none is selected
-     */
+    @Override
     public Currency getSelectedCurrency() {
-        return currencySelector.getValue();
+        return newGameTabContent.getSelectedCurrency();
     }
 
-    /**
-     * @return save file path, or empty string
-     *
-     */
+    @Override
+    public String getStockFilePath() {
+        return newGameTabContent.getFilePath();
+    }
+
+    @Override
+    public void setStockFilePath(String path) {
+        newGameTabContent.setFilePath(path);
+    }
+
+    @Override
     public String getSaveFilePath() {
-        return saveFileField.getText().trim();
+        return loadGameContent.getFilePath();
+    }
+
+    @Override
+    public void setSaveFilePath(String path) {
+        loadGameContent.setFilePath(path);
     }
 
     /**
-     * Returns the drop zone node so the controller can bind drag-and-drop
-     * handlers without depending on the internal layout structure.
+     * Shows an inline error in the currently active tab.
+     * The supplier is stored so the message re-translates on language change.
      *
-     * @return the drop zone node
+     * @param messageSupplier produces the localised error string
      */
-    public VBox getDropZone() {
-        return dropZone;
+    public void showError(java.util.function.Supplier<String> messageSupplier) {
+        if (tabPane.getSelectionModel().getSelectedItem() == newGameTab) {
+            newGameTabContent.showError(messageSupplier);
+        } else {
+            loadGameContent.showError(messageSupplier);
+        }
     }
 
     /**
-     * Returns the button that starts a new game.
+     * Shows an inline success message in the currently active tab, replacing
+     * any error message that was previously visible. The supplier is stored
+     * so the message re-translates on language change.
      *
-     * @return the start button
+     * @param messageSupplier produces the localised success string
      */
-    public Button getStartButton() {
-        return startButton;
+    public void showSuccess(java.util.function.Supplier<String> messageSupplier) {
+        if (tabPane.getSelectionModel().getSelectedItem() == newGameTab) {
+            newGameTabContent.showSuccess(messageSupplier);
+        } else {
+            loadGameContent.showSuccess(messageSupplier);
+        }
     }
 
     /**
-     * Returns the button that opens the stock file browser.
+     * Registers the callback invoked when the user clicks the start button.
      *
-     * @return the browse button for stock files
+     * @param callback the action to run on start; {@code null} disables the handler
      */
-    public Button getBrowseStockFileButton() {
-        return browseStockFileButton;
+    public void setOnStartGame(Runnable callback) {
+        newGameTabContent.setOnAction(callback);
     }
 
     /**
-     * Returns the button that opens the save file browser.
+     * Registers the callback invoked when the user clicks the load button.
      *
-     * @return the browse button for save files
+     * @param callback the action to run on load; {@code null} disables the handler
      */
-    public Button getBrowseSaveFileButton() {
-        return browseSaveFileButton;
+    public void setOnLoadGame(Runnable callback) {
+        loadGameContent.setOnAction(callback);
     }
 
     /**
-     * Returns the button that loads a saved game.
+     * Registers the callback invoked when the user clicks the browse button
+     * on the stock file drop zone.
      *
-     * @return the load button
+     * @param callback the action to run on browse; {@code null} disables the handler
      */
-    public Button getLoadButton() {
-        return loadButton;
+    public void setOnBrowseStockFile(Runnable callback) {
+        newGameTabContent.setOnBrowse(callback);
     }
 
     /**
-     * Returns the tab pane containing the new and load game tabs.
+     * Registers the callback invoked when the user clicks the browse button
+     * on the save file drop zone.
      *
-     * @return the tab pane
+     * @param callback the action to run on browse; {@code null} disables the handler
      */
-    public TabPane getTabPane() {
-        return tabPane;
+    public void setOnBrowseSaveFile(Runnable callback) {
+        loadGameContent.setOnBrowse(callback);
+    }
+
+    /**
+     * Registers the callback invoked when the user drops a file onto the
+     * stock file drop zone.
+     *
+     * @param callback the action to run with the dropped file; {@code null} disables the handler
+     */
+    public void setOnStockFileDrop(Consumer<File> callback) {
+        newGameTabContent.setOnFileDrop(callback);
+    }
+
+    /**
+     * Registers the callback invoked when the user drops a file onto the
+     * save file drop zone.
+     *
+     * @param callback the action to run with the dropped file; {@code null} disables the handler
+     */
+    public void setOnSaveFileDrop(Consumer<File> callback) {
+        loadGameContent.setOnFileDrop(callback);
     }
 }
