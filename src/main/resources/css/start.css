@@ -21,7 +21,8 @@
     -fx-font-weight: 600;
 }
 
-.start-info-label {
+.start-info-label,
+.save-file-info-label {
     -fx-font-size: 14px;
     -fx-text-fill: -text-secondary;
 }
