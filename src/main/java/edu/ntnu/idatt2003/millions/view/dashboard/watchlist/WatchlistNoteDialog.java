@@ -32,6 +32,7 @@ public class WatchlistNoteDialog extends Modal {
     private final CurrencyConverter converter;
     private final String existingNote;
     private Consumer<String> onSave;
+    private boolean hasChanges = false;
 
     /**
      * Constructs a new {@link WatchlistNoteDialog} for the given stock.
@@ -93,13 +94,15 @@ public class WatchlistNoteDialog extends Modal {
         Button save = new Button(LanguageManager.get("watchlist.note.save"));
         save.getStyleClass().addAll("modal-button", "modal-button-primary");
         save.setDisable(true);
-        noteArea.textProperty().addListener((obs, oldText, newText) ->
-                save.setDisable(newText.equals(existingNote)));
+        noteArea.textProperty().addListener((obs, oldText, newText) -> {
+            hasChanges = !newText.equals(existingNote);
+            save.setDisable(!hasChanges);
+        });
         save.setOnAction(e -> {
             if (onSave != null) {
                 onSave.accept(noteArea.getText());
             }
-            close();
+            forceClose();
         });
 
         VBox content = new VBox();
@@ -114,6 +117,29 @@ public class WatchlistNoteDialog extends Modal {
     @Override
     protected void showStage() {
         stage.showAndWait();
+    }
+
+    /**
+     * Intercepts close requests. If there are unsaved changes, shows a
+     * {@link DiscardChangesDialog} first. If there are no changes, closes immediately.
+     */
+    @Override
+    public void close() {
+        if (hasChanges) {
+            new DiscardChangesDialog(
+                    () -> {},
+                    this::forceClose
+            ).show();
+        } else {
+            forceClose();
+        }
+    }
+
+    /**
+     * Closes the dialog unconditionally, bypassing the unsaved-changes check.
+     */
+    private void forceClose() {
+        stage.close();
     }
 
     private VBox buildBody(StockInfoCard infoCard, TextArea noteArea,
