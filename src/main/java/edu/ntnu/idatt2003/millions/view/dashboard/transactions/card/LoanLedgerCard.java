@@ -104,7 +104,7 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
     @Override
     protected HBox buildSearchRow(Button clearSortButton) {
         SearchBar searchBar = new SearchBar(
-                "search.placeholder",
+                "loans.search.placeholder",
                 "search.button",
                 searchCallback(),
                 metadataRow);

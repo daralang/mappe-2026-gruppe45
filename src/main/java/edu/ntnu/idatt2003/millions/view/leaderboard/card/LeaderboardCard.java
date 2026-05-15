@@ -83,7 +83,7 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
     @Override
     protected HBox buildSearchRow(Button clearSortButton) {
         SearchBar searchBar = new SearchBar(
-                "search.placeholder", "search.button", searchCallback(), metadataRow);
+                "leaderboard.search.placeholder", "search.button", searchCallback(), metadataRow);
         searchBar.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(searchBar, Priority.ALWAYS);
         HBox row = new HBox(8, searchBar, pushScoreBtn, clearSortButton);

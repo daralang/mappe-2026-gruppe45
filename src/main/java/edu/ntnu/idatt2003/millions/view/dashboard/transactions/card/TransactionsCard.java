@@ -98,7 +98,7 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     @Override
     protected HBox buildSearchRow(Button clearSortButton) {
         SearchBar searchBar = new SearchBar(
-                "search.placeholder",
+                "transactions.search.placeholder",
                 "search.button",
                 searchCallback(),
                 metadataRow);
