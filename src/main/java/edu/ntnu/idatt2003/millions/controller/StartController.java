@@ -275,12 +275,14 @@ public class StartController {
 
         // All inputs valid — delegate to service
         runOrShowError(() -> {
-            BigDecimal parsedCapital = new BigDecimal(capital);
+            String validatedName     = StartInputValidator.requireName(name);
+            BigDecimal parsedCapital = StartInputValidator.parseCapital(capital);
             if (hasFile) {
+                Currency validatedCurrency = StartInputValidator.requireCurrency(currency);
                 File stockFile = StartInputValidator.requireCsvFilePath(inputs.getStockFilePath());
-                gameService.createNewGame(name, parsedCapital, stockFile, currency);
+                gameService.createNewGame(validatedName, parsedCapital, stockFile, validatedCurrency);
             } else {
-                gameService.createNewGame(name, parsedCapital);
+                gameService.createNewGame(validatedName, parsedCapital);
             }
             showMainView();
         });
