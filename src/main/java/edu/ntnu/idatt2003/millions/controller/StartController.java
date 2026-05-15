@@ -1,8 +1,6 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
-import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
-import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
@@ -20,7 +18,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -31,19 +28,12 @@ import javafx.stage.Stage;
  * file selection for stock data and saved games, as well as
  * starting or loading a game session.</p>
  *
- * <p>UI-input validation (name, capital, file extension) is delegated to
- * {@link StartInputValidator}. Both stock CSV files and save JSON files are
- * validated immediately on selection: the controller attempts a full parse via
- * {@link CsvStockFileHandler} or {@link JsonGameFileHandler} and clears the file
- * path if the file is invalid, preventing the user from proceeding with a bad
- * file. On successful parsing the controller emits a localised confirmation via
- * the {@code successSink} so the user sees an inline green message that
- * replaces any previous error in the same row.</p>
+ * <p>UI-input validation is delegated to {@link StartInputValidator}. File
+ * validation on selection is delegated to {@link edu.ntnu.idatt2003.millions.service.GameService},
+ * which performs a trial parse without mutating game state.</p>
  *
- * <p>Errors from the start flow are translated to user-facing messages by
- * a shared error-handling helper that catches the concrete exception types
- * the flow can legitimately produce (input validation, missing game state,
- * and file I/O), while letting programming errors surface as crashes.
+ * <p>Errors are surfaced via {@code errorSink} and successes via {@code successSink},
+ * both injected as {@link java.util.function.Supplier} consumers for i18n support.</p>
  */
 public class StartController {
 
@@ -206,7 +196,7 @@ public class StartController {
         Currency currency = Optional.ofNullable(inputs.getSelectedCurrency())
                 .orElse(Currency.getInstance("USD"));
         try {
-            new CsvStockFileHandler().readStocks(file.toPath(), currency);
+            gameService.validateStockFile(file, currency);
             successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
         } catch (InvalidStockDataException | UncheckedIOException e) {
             inputs.setStockFilePath("");
@@ -229,7 +219,7 @@ public class StartController {
     void validateAndSetSaveFile(File file) {
         inputs.setSaveFilePath(file.getAbsolutePath());
         try {
-            new JsonGameFileHandler().loadGame(file);
+            gameService.validateSaveFile(file);
             successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
         } catch (GameSaveCorruptException | UncheckedIOException e) {
             inputs.setSaveFilePath("");
@@ -373,21 +363,6 @@ public class StartController {
      */
     private void showMainView() {
         showMainViewAction.run();
-    }
-
-    /**
-     * Default error sink used in production. Displays the message in a JavaFX
-     * {@link Alert} dialog. Tests inject a different consumer to avoid
-     * starting the JavaFX toolkit.
-     *
-     * @param message the error message to show
-     */
-    private static void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Could not open game");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     /**

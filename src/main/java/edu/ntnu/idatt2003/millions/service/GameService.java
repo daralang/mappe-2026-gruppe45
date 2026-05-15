@@ -428,6 +428,32 @@ public class GameService {
         notifyObservers();
     }
 
+    /**
+     * Validates a stock CSV file by parsing it without mutating game state.
+     *
+     * @param file     the CSV file to validate
+     * @param currency the currency to tag stocks with during parsing
+     * @throws InvalidStockDataException if the file contains invalid stock data
+     * @throws UncheckedIOException      if the file cannot be read
+     */
+    public void validateStockFile(File file, Currency currency) throws InvalidStockDataException {
+        Objects.requireNonNull(file, "File cannot be null");
+        Objects.requireNonNull(currency, "Currency cannot be null");
+        new CsvStockFileHandler().readStocks(file.toPath(), currency);
+    }
+
+    /**
+     * Validates a save file by parsing it without mutating game state.
+     *
+     * @param file the JSON save file to validate
+     * @throws GameSaveCorruptException if the file is corrupt or has missing fields
+     * @throws UncheckedIOException     if the file cannot be read
+     */
+    public void validateSaveFile(File file) throws GameSaveCorruptException {
+        Objects.requireNonNull(file, "File cannot be null");
+        new JsonGameFileHandler().loadGame(file);
+    }
+
     public void clearAllNotifications() {
         if (player == null) return;
         player.clearAllNotifications();

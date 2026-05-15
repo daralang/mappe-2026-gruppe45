@@ -28,14 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for {@link StartController}.
- *
- * <p>Uses the test seam constructor that takes a {@link StartScreenInputs}
- * and a string {@link java.util.function.Consumer} so the start flow can be
- * exercised without initialising the JavaFX toolkit.</p>
- *
- * <p>{@link StubInputs} simulates the view's state and records path changes
- * written back by the controller. {@link RecordingGameService} records every
- * call made to the service layer and optionally throws a configured failure.</p>
  */
 class StartControllerTest {
 
