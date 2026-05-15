@@ -6,8 +6,7 @@
 }
 
 .search-bar,
-.search-button,
-.search-clear-button {
+.search-button {
     -fx-min-height: 30;
     -fx-pref-height: 30;
     -fx-max-height: 30;
@@ -15,7 +14,7 @@
 
 .search-bar {
     -fx-background-color: -surface;
-    -fx-padding: 2 18 2 18;
+    -fx-padding: 2 2 2 8;
     -fx-alignment: center-left;
     -fx-border-color: -border;
     -fx-border-radius: 5;
@@ -37,34 +36,32 @@
     -fx-border-color: transparent;
 }
 
-.search-button,
-.search-clear-button {
-    -fx-background-radius: 5;
-    -fx-font-size: 14px;
-    -fx-font-weight: 500;
-    -fx-padding: 0 22 0 22;
-    -fx-cursor: hand;
-}
 .search-button {
     -fx-background-color: black;
     -fx-text-fill: -surface;
+    -fx-padding: 0 20 0 20;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
 }
 
 .search-button:hover {
     -fx-background-color: -primary-dark;
 }
 
-.search-clear-button:hover {
-    -fx-background-color:  -info-border;
+.search-clear-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0 4 0 4;
+    -fx-cursor: hand;
 }
 
-.search-clear-button {
-    -fx-background-color: -primary-dark;
+.search-clear-button:hover .search-clear-icon {
+    -fx-icon-color: -text-primary;
 }
 
 .search-clear-icon {
     -fx-icon-size: 14;
-    -fx-icon-color: -surface;
+    -fx-icon-color: -text-secondary;
 }
 
 .search-icon {

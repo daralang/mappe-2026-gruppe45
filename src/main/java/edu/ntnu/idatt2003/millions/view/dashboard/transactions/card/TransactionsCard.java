@@ -20,7 +20,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -99,14 +98,12 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     @Override
     protected HBox buildSearchRow(Button clearSortButton) {
         SearchBar searchBar = new SearchBar(
-                "search.placeholder",
+                "transactions.search.placeholder",
                 "search.button",
                 searchCallback(),
                 metadataRow);
-        searchBar.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(searchBar, Priority.ALWAYS);
-        HBox row = new HBox(16, searchBar, typeFilter, weekRangeFilter, clearSortButton);
-        row.setAlignment(Pos.CENTER_LEFT);
+        HBox row = new HBox(36, searchBar, typeFilter, weekRangeFilter, clearSortButton);
+        row.setAlignment(Pos.TOP_LEFT);
         row.getStyleClass().add("transactions-filter-row");
         return row;
     }
@@ -193,14 +190,14 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
      * @param archive  the archive to read transactions from
      * @param fromWeek the first week to include (inclusive)
      * @param toWeek   the last week to include (inclusive)
-     * @return a chronologically sorted mutable list of transactions in the range
+     * @return a reverse-chronologically sorted mutable list of transactions in the range
      */
     private List<Transaction> collectRange(TransactionArchive archive, int fromWeek, int toWeek) {
         List<Transaction> list = new ArrayList<>();
         for (int week = fromWeek; week <= toWeek; week++) {
             list.addAll(archive.getTransactions(week));
         }
-        list.sort(Comparator.comparingInt(Transaction::getWeek));
+        list.sort(Comparator.comparingInt(Transaction::getWeek).reversed());
         return list;
     }
 

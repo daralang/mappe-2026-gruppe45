@@ -6,7 +6,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Region;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.text.MessageFormat;
 import java.util.function.IntConsumer;
@@ -14,13 +15,14 @@ import java.util.function.IntConsumer;
 /**
  * Generic pagination control rendered as an {@link HBox}.
  *
- * <p>Displays a centred page indicator label (e.g. {@code 1 / 20 sider})
- * over the full control width, with Prev and Next buttons right-aligned.
- * Layout: centred {@code pageLabel} plus right-aligned {@code [< Prev] [Next >]}.
+ * <p>Displays a muted status label on the left (e.g. {@code Side 2 av 5}) and
+ * two icon-only chevron buttons on the right. The previous button is disabled on
+ * the first page; the next button is disabled on the last.
  *
- * <p>Call {@link #update(int, int)} after each data refresh to rebuild the
- * control for the current page state. The control is cleared when there is
- * only one page or no items.
+ * <p>The control is cleared and left empty when there is only one page or no items.
+ *
+ * <p>Call {@link #update(int, int)} after each data refresh to rebuild the control
+ * for the current page state. The public API is unchanged from the previous version.
  *
  * <p>Example usage:
  * <pre>{@code
@@ -34,8 +36,6 @@ public class Pagination extends HBox {
     /** Default number of table rows shown before pagination is needed. */
     public static final int DEFAULT_PAGE_SIZE = 8;
 
-    private static final String PREV_KEY  = "pagination.prev";
-    private static final String NEXT_KEY  = "pagination.next";
     private static final String PAGES_KEY = "pagination.pages";
 
     private final int pageSize;
@@ -58,10 +58,9 @@ public class Pagination extends HBox {
     /**
      * Rebuilds the pagination control for the given page state.
      *
-     * <p>Shows a centred page indicator label and Prev / Next buttons.
-     * Prev is disabled on the first page; Next is disabled on the last.
-     * The control is cleared and left empty when there is only one page
-     * or no items.
+     * <p>Shows a muted status label on the left and icon-only prev/next buttons on the
+     * right. Prev is disabled on the first page; next is disabled on the last.
+     * The control is cleared and left empty when there is only one page or no items.
      *
      * @param currentPage the zero-based index of the currently visible page
      * @param totalItems  the total number of items across all pages
@@ -71,47 +70,37 @@ public class Pagination extends HBox {
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
         if (totalPages <= 1) return;
 
-        Label pageLabel = new Label(MessageFormat.format(
+        Label statusLabel = new Label(MessageFormat.format(
                 LanguageManager.get(PAGES_KEY),
                 currentPage + 1,
                 totalPages));
-        pageLabel.getStyleClass().add("pagination-label");
+        statusLabel.getStyleClass().add("pagination-label");
 
-        Button prevButton = buildButton(
-                LanguageManager.get(PREV_KEY),
-                currentPage - 1,
-                currentPage == 0);
+        Button prevButton = buildButton("fth-chevron-left", currentPage - 1, currentPage == 0);
+        Button nextButton = buildButton("fth-chevron-right", currentPage + 1, currentPage >= totalPages - 1);
 
-        Button nextButton = buildButton(
-                LanguageManager.get(NEXT_KEY),
-                currentPage + 1,
-                currentPage >= totalPages - 1);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox actions = new HBox(8, prevButton, nextButton);
+        HBox actions = new HBox(4, prevButton, nextButton);
         actions.setAlignment(Pos.CENTER_RIGHT);
 
-        StackPane centredLayout = new StackPane(pageLabel, actions);
-        centredLayout.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(centredLayout, Priority.ALWAYS);
-        StackPane.setAlignment(pageLabel, Pos.CENTER);
-        StackPane.setAlignment(actions, Pos.CENTER_RIGHT);
-
-        getChildren().add(centredLayout);
+        getChildren().addAll(statusLabel, spacer, actions);
     }
 
     /**
-     * Creates a single pagination navigation button.
+     * Creates a single icon-only pagination navigation button.
      *
-     * <p>Clicking the button invokes {@link #onPageChange} with the given
-     * target page index.
-     *
-     * @param text       the button label
-     * @param targetPage the page index to navigate to on click
-     * @param disabled   whether the button should be disabled
+     * @param iconLiteral the ikonli icon literal for the button graphic
+     * @param targetPage  the page index to navigate to on click
+     * @param disabled    whether the button should be disabled
      * @return a configured {@link Button}
      */
-    private Button buildButton(String text, int targetPage, boolean disabled) {
-        Button button = new Button(text);
+    private Button buildButton(String iconLiteral, int targetPage, boolean disabled) {
+        FontIcon icon = new FontIcon(iconLiteral);
+        icon.getStyleClass().add("pagination-icon");
+        Button button = new Button();
+        button.setGraphic(icon);
         button.getStyleClass().add("pagination-button");
         button.setDisable(disabled);
         button.setOnAction(e -> onPageChange.accept(targetPage));

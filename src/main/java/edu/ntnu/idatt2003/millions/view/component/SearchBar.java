@@ -92,13 +92,13 @@ public class SearchBar extends VBox {
             clearButton.setOpacity(0);
         });
 
-        HBox searchInput = new HBox(8, iconLabel, searchField);
+        HBox.setHgrow(searchField, Priority.ALWAYS);
+
+        HBox searchInput = new HBox(4, iconLabel, searchField, clearButton);
         searchInput.getStyleClass().add("search-bar");
         HBox.setHgrow(searchInput, Priority.ALWAYS);
 
-        HBox actionButtons = new HBox(10, searchButton, clearButton);
-
-        HBox content = new HBox(8, searchInput, actionButtons);
+        HBox content = new HBox(8, searchInput, searchButton);
         content.getStyleClass().add("search-row");
         getChildren().add(content);
         if (metadata != null) {

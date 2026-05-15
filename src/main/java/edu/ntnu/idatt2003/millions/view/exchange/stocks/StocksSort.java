@@ -69,7 +69,7 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
                         SortColumn.TICKER, 9, HPos.LEFT),
                 TableColumnDef.of(
                         LanguageManager.get("exchange.stocks.col.company"),
-                        28, HPos.LEFT),
+                        28, HPos.LEFT, 34.0),
                 TableColumnDef.sortable(
                         LanguageManager.get("exchange.stocks.col.priceCurrency"),
                         SortColumn.PRICE_USD, 10, HPos.RIGHT),

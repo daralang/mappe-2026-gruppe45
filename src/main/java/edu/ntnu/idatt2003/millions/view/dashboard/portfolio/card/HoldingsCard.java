@@ -15,6 +15,7 @@ import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.HoldingsSort;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -22,6 +23,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -59,7 +61,6 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     private final PortfolioService portfolioService;
     private final TradeController controller;
     private final HoldingsSort sort;
-    private final Region totalDivider = new Region();
     private final GridPane totalGrid = new GridPane();
 
     /**
@@ -83,15 +84,17 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
         Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
 
-        totalDivider.getStyleClass().add("holdings-total-divider");
         totalGrid.setHgap(20);
         initTotalGridColumns();
         setTotalVisible(false);
 
+        VBox.setMargin(pagination, new Insets(-16, 0, 0, 0));
+        VBox.setMargin(totalGrid, new Insets(-16, 0, 0, 0));
+
         StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
         setSpacing(16);
 
-        getChildren().addAll(title, buildSearchRow(clearSortButton), table.asNode(), pagination, totalDivider, totalGrid);
+        getChildren().addAll(title, buildSearchRow(clearSortButton), table.asNode(), pagination, totalGrid);
         refresh();
     }
 
@@ -179,19 +182,24 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     private void refreshTotal(Portfolio portfolio) {
         totalGrid.getChildren().clear();
 
+        Region divider = new Region();
+        divider.getStyleClass().add("holdings-total-divider");
+        GridPane.setColumnSpan(divider, sort.getColumnDefs().size());
+        totalGrid.add(divider, 0, 0);
+
         Label totalLabel = new Label(LanguageManager.get("dashboard.portfolio.total"));
         totalLabel.getStyleClass().addAll("holdings-cell", "bold");
-        totalGrid.add(totalLabel, TOTAL_COL_COMPANY, 0);
+        totalGrid.add(totalLabel, TOTAL_COL_COMPANY, 1);
 
         Label valueNok = new Label(TableCells.NUMBER_FORMAT.format(
                 portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
         valueNok.getStyleClass().addAll("holdings-cell", "bold");
-        totalGrid.add(valueNok, TOTAL_COL_VALUE_NOK, 0);
+        totalGrid.add(valueNok, TOTAL_COL_VALUE_NOK, 1);
 
         totalGrid.add(coloredPercentCell(portfolioService.getTotalReturnPercent(
-                gameService.getPlayer(), gameService.getCurrencyConverter())), TOTAL_COL_RETURN_PCT, 0);
+                gameService.getPlayer(), gameService.getCurrencyConverter())), TOTAL_COL_RETURN_PCT, 1);
         totalGrid.add(coloredAmountCell(portfolioService.getTotalReturnInNok(
-                gameService.getPlayer(), gameService.getCurrencyConverter())), TOTAL_COL_RETURN_NOK, 0);
+                gameService.getPlayer(), gameService.getCurrencyConverter())), TOTAL_COL_RETURN_NOK, 1);
     }
 
     /**
@@ -200,8 +208,6 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
      * @param visible {@code true} to show, {@code false} to hide and unmanage
      */
     private void setTotalVisible(boolean visible) {
-        totalDivider.setVisible(visible);
-        totalDivider.setManaged(visible);
         totalGrid.setVisible(visible);
         totalGrid.setManaged(visible);
     }
