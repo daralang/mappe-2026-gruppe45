@@ -62,7 +62,7 @@ public class WeekRangeFilter extends HBox {
         this.minWeek = minWeek;
 
         setSpacing(SPACING);
-        setAlignment(Pos.CENTER_LEFT);
+        setAlignment(Pos.TOP_LEFT);
         getStyleClass().add("week-range-filter");
 
         label = new Label(LanguageManager.get("filter.week"));
