@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.LoansView;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.PortfolioView;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.TransactionsView;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
@@ -15,9 +16,11 @@ import java.util.List;
 
 /**
  * The dashboard view of the application.
- * Contains a tab bar for navigating between portfolio, transactions,
- * watchlist and loans. Tab navigation is purely visual state and
- * handled internally by this view.
+ *
+ * <p>Contains a tab bar for navigating between portfolio, transactions,
+ * watchlist and loans. Each sub-view PortfolioView, TransactionsView, LoanView
+ * and WatchlistView is lazily initialised on first tab selection. Tab navigation is purely visual state
+ * handled internally by this view.</p>
  */
 public class DashboardView extends VBox {
 
@@ -29,6 +32,7 @@ public class DashboardView extends VBox {
 
     private PortfolioView portfolioView;
     private TransactionsView transactionsView;
+    private WatchlistView watchlistView;
     private LoansView loansView;
 
     /**
@@ -86,8 +90,10 @@ public class DashboardView extends VBox {
     }
 
     private void showWatchlist() {
-        contentArea.getChildren().clear(); // remove this when implementing setAll
-        // contentArea.getChildren().setAll(new WatchlistView(gameService));
+        if (watchlistView == null) {
+            watchlistView = new WatchlistView(gameService, tradeController, onExploreStocks);
+        }
+        contentArea.getChildren().setAll(watchlistView);
     }
 
     private void showLoans() {

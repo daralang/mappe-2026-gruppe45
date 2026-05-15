@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
 import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import javafx.geometry.Pos;
@@ -19,20 +20,20 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Currency;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Responsible for rendering a single stock row into a {@link SortColumnTable}.
  *
  * <p>Each call to {@link #buildRow(Stock, int, SortColumnTable)} populates one row
- * with ticker, company, prices, weekly change, 4-week high/low,
+ * with a watchlist star toggle, ticker, company, prices, weekly change, 4-week high/low,
  * a {@link SparklineChart} trend and trade actions.
  *
  * <p>This class is stateless and may be reused across refreshes.
  */
-class StocksRowRenderer {
+class StocksRowRenderer extends RowRenderer {
 
     private static final int MAX_SPARKLINE_WEEKS = 8;
     private static final int HIGH_LOW_WEEKS = 4;
@@ -40,16 +41,22 @@ class StocksRowRenderer {
 
     private final GameService gameService;
     private final TradeController controller;
+    private final Consumer<String> onWatchlistToggle;
 
     /**
      * Constructs a new StocksRowRenderer.
      *
-     * @param gameService the game service used to read player portfolio state
-     * @param controller  the controller used to open buy/sell dialogs
+     * @param gameService       the game service used to read player portfolio and watchlist state
+     * @param controller        the controller used to open buy/sell dialogs
+     * @param onWatchlistToggle callback invoked with the stock symbol when the player
+     *                          clicks the watchlist star button
      */
-    StocksRowRenderer(GameService gameService, TradeController controller) {
+    StocksRowRenderer(GameService gameService,
+                      TradeController controller,
+                      Consumer<String> onWatchlistToggle) {
         this.gameService = gameService;
         this.controller = controller;
+        this.onWatchlistToggle = onWatchlistToggle;
     }
 
     /**
@@ -64,6 +71,14 @@ class StocksRowRenderer {
      */
     void buildRow(Stock stock, int rowIndex, SortColumnTable<?> table) {
         CurrencyConverter converter = gameService.getCurrencyConverter();
+
+        boolean watched = gameService.getPlayer().isOnWatchlist(stock.getSymbol());
+        Button starButton = new Button(watched ? "★" : "☆");
+        starButton.getStyleClass().addAll("holdings-action-link", "holdings-action-star");
+        if (watched) {
+            starButton.getStyleClass().add("holdings-action-star--active");
+        }
+        starButton.setOnAction(e -> onWatchlistToggle.accept(stock.getSymbol()));
 
         Label tickerLabel = new Label(stock.getSymbol());
         tickerLabel.getStyleClass().add("holdings-cell");
@@ -88,16 +103,13 @@ class StocksRowRenderer {
         BigDecimal changeInNok = converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
         Label changeKrLabel = ChangeFormatter.styledAmount(changeInNok, "holdings-cell");
         Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "holdings-cell");
-        Label highLowLabel = TableCells.data(formatHighLow(stock));
+        Label highLowLabel = TableCells.data(formatHighLow(stock, HIGH_LOW_WEEKS));
 
-        List<BigDecimal> prices = stock.getHistoricalPrices();
-        List<BigDecimal> sparkPrices = prices.subList(
-                Math.max(0, prices.size() - MAX_SPARKLINE_WEEKS), prices.size());
-        SparklineChart sparkline = new SparklineChart();
-        sparkline.update(sparkPrices);
+        SparklineChart sparkline = buildSparkline(stock, MAX_SPARKLINE_WEEKS);
 
         HBox tradeButtons = buildBuyButton(stock);
 
+        GridPane.setValignment(starButton, VPos.TOP);
         GridPane.setValignment(tickerCell, VPos.TOP);
         GridPane.setValignment(companyLabel, VPos.TOP);
         GridPane.setValignment(priceLabel, VPos.TOP);
@@ -108,45 +120,8 @@ class StocksRowRenderer {
         GridPane.setValignment(sparkline, VPos.TOP);
         GridPane.setValignment(tradeButtons, VPos.TOP);
 
-        table.addRow(rowIndex, tickerCell, companyLabel, priceLabel, priceNokLabel,
+        table.addRow(rowIndex, starButton, tickerCell, companyLabel, priceLabel, priceNokLabel,
                 changeKrLabel, changePctLabel, highLowLabel, sparkline, tradeButtons);
-    }
-
-    /**
-     * Formats the lowest and highest prices from the latest
-     * {@value #HIGH_LOW_WEEKS} historical price entries.
-     *
-     * <p>Returns {@code "-"} when the stock has no historical price data,
-     * avoiding a {@link java.util.NoSuchElementException} on an empty stream.
-     *
-     * @param stock the stock to read prices from
-     * @return a formatted {@code "low / high"} string, or {@code "—"} if
-     *         insufficient price history is available
-     */
-    private String formatHighLow(Stock stock) {
-        List<BigDecimal> prices = lastPrices(stock, HIGH_LOW_WEEKS);
-        if (prices.isEmpty()) {
-            return "-";
-        }
-        BigDecimal low = prices.stream().min(BigDecimal::compareTo).orElseThrow();
-        BigDecimal high = prices.stream().max(BigDecimal::compareTo).orElseThrow();
-        return formatWhole(low) + " / " + formatWhole(high);
-    }
-
-    private String formatWhole(BigDecimal value) {
-        return value.setScale(0, RoundingMode.HALF_UP).toPlainString();
-    }
-
-    /**
-     * Returns the latest prices up to the given limit.
-     *
-     * @param stock the stock to read prices from
-     * @param limit the maximum number of prices to include
-     * @return the latest prices
-     */
-    private List<BigDecimal> lastPrices(Stock stock, int limit) {
-        List<BigDecimal> prices = stock.getHistoricalPrices();
-        return prices.subList(Math.max(0, prices.size() - limit), prices.size());
     }
 
     /**
