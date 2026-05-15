@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.MainView;
 import edu.ntnu.idatt2003.millions.view.dialog.ExitDialog;
@@ -31,7 +32,7 @@ public class MainController {
      * @param stage       the primary stage
      * @param gameService the game manager containing player and exchange
      */
-    public MainController(Stage stage, GameService gameService) {
+    public MainController(Stage stage, GameService gameService, ToastService toastService) {
         this.stage = stage;
         this.gameService = gameService;
         this.forcedSaleController = new ForcedSaleController(gameService);
@@ -49,7 +50,8 @@ public class MainController {
                 tradeController,
                 loanController,
                 titleBar,
-                this::handleAdvanceWeek
+                this::handleAdvanceWeek,
+                toastService
         );
     }
 
