@@ -15,10 +15,21 @@ Button.holdings-header {
     -fx-background-radius: 0;
     -fx-border-color: transparent;
     -fx-cursor: hand;
+    -fx-text-fill: -text-primary;
 }
 
 Button.holdings-header:hover {
     -fx-text-fill: -primary;
+}
+
+Button.holdings-header:disabled {
+    -fx-text-fill: -text-secondary;
+    -fx-opacity: 1.0;
+}
+
+Label.holdings-header:disabled {
+    -fx-text-fill: -text-secondary;
+    -fx-opacity: 1.0;
 }
 
 .holdings-cell {
