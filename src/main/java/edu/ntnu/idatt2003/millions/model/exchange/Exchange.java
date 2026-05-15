@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.model.exchange;
 
 import edu.ntnu.idatt2003.millions.factory.TransactionFactory;
+import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.transaction.Sale;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
@@ -9,14 +10,12 @@ import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.Currency;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.stream.Stream;
 
 /**
@@ -38,14 +37,8 @@ public class Exchange {
     private int week;
     private final Map<String, Stock> stockMap;
 
-    @SuppressWarnings("java:S2065") // transient is needed to prevent Gson from serializing Random
-    private transient Random random = new Random();
-
-    /** The lowest price a stock can have after a weekly update. */
-    private static final BigDecimal MIN_PRICE = new BigDecimal("0.01");
-
-    /** The maximum amount a stock price can change per week (10%). */
-    private static final BigDecimal MAX_WEEKLY_CHANGE = new BigDecimal("0.10");
+    @SuppressWarnings("java:S2065") // transient is needed to prevent Gson from serializing the simulator
+    private transient PriceSimulator simulator;
 
     private static final Currency NOK = Currency.getInstance("NOK");
 
@@ -53,22 +46,40 @@ public class Exchange {
     private transient CurrencyConverter currencyConverter;
 
     /**
-     * Creates a new exchange with the given name, list of stocks, and currency converter.
-     * The stocks are stored in a map using their symbol as the key. Week starts at 1.
-     * The converter is used by {@link #buy} and {@link #sell} to translate transaction
-     * amounts from each stock's native currency to NOK before adjusting the player's balance.
+     * Creates a new exchange with a {@link RandomPriceSimulator} as the default pricing model.
+     * Delegates to {@link #Exchange(String, List, CurrencyConverter, PriceSimulator)}.
      *
      * @param name              the name of the exchange
      * @param stocks            the stocks that can be traded on this exchange
      * @param currencyConverter the converter used to translate stock-currency amounts to NOK
      * @throws NullPointerException     if name, stocks, currencyConverter, or any stock in the list is null
+     * @throws IllegalArgumentException if name is blank, stocks is empty, contains null,
+     *                                  or contains duplicate symbols
+     */
+    public Exchange(String name, List<Stock> stocks, CurrencyConverter currencyConverter) {
+        this(name, stocks, currencyConverter, new RandomPriceSimulator());
+    }
+
+    /**
+     * Creates a new exchange with the given name, list of stocks, currency converter,
+     * and price simulator. The stocks are stored in a map using their symbol as the key.
+     * Week starts at 1.
+     *
+     * @param name              the name of the exchange
+     * @param stocks            the stocks that can be traded on this exchange
+     * @param currencyConverter the converter used to translate stock-currency amounts to NOK
+     * @param simulator         the strategy used to compute new stock prices each week
+     * @throws NullPointerException     if name, stocks, currencyConverter, simulator,
+     *                                  or any stock in the list is null
      * @throws IllegalArgumentException if name is blank, stocks is empty,
      *                                  contains null, or contains duplicate symbols
      */
-    public Exchange(String name, List<Stock> stocks, CurrencyConverter currencyConverter) {
+    public Exchange(String name, List<Stock> stocks, CurrencyConverter currencyConverter,
+                    PriceSimulator simulator) {
         Objects.requireNonNull(name, "Exchange name cannot be null");
         Objects.requireNonNull(stocks, "Exchange stocks cannot be null");
         Objects.requireNonNull(currencyConverter, "CurrencyConverter cannot be null");
+        Objects.requireNonNull(simulator, "PriceSimulator cannot be null");
 
         if (name.isBlank()) throw new IllegalArgumentException("Exchange name cannot be blank");
         if (stocks.isEmpty()) throw new IllegalArgumentException("Exchange stocks cannot be empty");
@@ -77,6 +88,7 @@ public class Exchange {
         this.week = 1;
         this.stockMap = new HashMap<>();
         this.currencyConverter = currencyConverter;
+        this.simulator = simulator;
 
         for (Stock stock : stocks) {
             Objects.requireNonNull(stock, "Stock list cannot contain null");
@@ -291,25 +303,12 @@ public class Exchange {
     /**
      * Moves the exchange forward by one week.
      * The week counter is incremented, and each stock gets a new price
-     * based on a random change of up to ±10%. No stock can go below MIN_PRICE.
+     * computed by the injected {@link PriceSimulator}.
      */
     public void advance() {
         week++;
         for (Stock stock : stockMap.values()) {
-            BigDecimal currentPrice = stock.getSalesPrice();
-
-            double randomFraction = (random.nextDouble() * 2.0) - 1.0;
-            BigDecimal percentChange = MAX_WEEKLY_CHANGE.multiply(BigDecimal.valueOf(randomFraction));
-
-            BigDecimal newPrice = currentPrice
-                    .multiply(BigDecimal.ONE.add(percentChange))
-                    .setScale(2, RoundingMode.HALF_UP);
-
-            if (newPrice.compareTo(MIN_PRICE) < 0) {
-                newPrice = MIN_PRICE;
-            }
-
-            stock.addNewSalesPrice(newPrice);
+            stock.addNewSalesPrice(simulator.nextPrice(stock.getSalesPrice()));
         }
     }
 
@@ -411,17 +410,15 @@ public class Exchange {
 
     /**
      * Reinitializes transient fields after deserialization.
-     * Must be called by {@link edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler}
-     * after loading a game from file, since Gson does not invoke constructors and
-     * the converter is marked transient.
+     * Must be called by {@link JsonGameFileHandler} after loading a game from file,
+     * since Gson does not invoke constructors and transient fields are not restored.
      *
      * @param currencyConverter the converter to use for the loaded game session
      * @throws NullPointerException if currencyConverter is null
      */
     public void reinitialize(CurrencyConverter currencyConverter) {
         Objects.requireNonNull(currencyConverter, "CurrencyConverter cannot be null");
-        this.random = new Random();
         this.currencyConverter = currencyConverter;
+        this.simulator = new RandomPriceSimulator();
     }
-
 }
