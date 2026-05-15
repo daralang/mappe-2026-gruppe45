@@ -6,6 +6,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.leaderboard.card.LeaderboardCard;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -41,6 +42,7 @@ public class LeaderboardView extends VBox {
 
         LeaderboardCard card = new LeaderboardCard(gameService, toastService);
         VBox.setVgrow(card, Priority.ALWAYS);
+        VBox.setMargin(card, new Insets(10, 0, 0, 0));
 
         getChildren().addAll(titleRow, card);
     }
