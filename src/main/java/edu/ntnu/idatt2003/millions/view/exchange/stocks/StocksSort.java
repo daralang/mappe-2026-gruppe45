@@ -8,14 +8,12 @@ import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.function.Predicate;
-import javafx.geometry.HPos;
-
-import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Currency;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
+import javafx.geometry.HPos;
 
 /**
  * Defines sortable columns and comparators for the stocks table.
@@ -109,43 +107,11 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
             case WATCHLIST -> Comparator.comparing(s -> !isWatched.test(s.getSymbol()));
             case TICKER -> Comparator.comparing(Stock::getSymbol);
             case PRICE_USD -> Comparator.comparing(Stock::getSalesPrice);
-            case PRICE_NOK -> Comparator.comparing(this::priceInNok);
-            case CHANGE_KR -> Comparator.comparing(this::changeInNok);
+            case PRICE_NOK -> Comparator.comparing(s -> priceInNok(s, converter, NOK));
+            case CHANGE_KR -> Comparator.comparing(s -> changeInNok(s, converter, NOK));
             case CHANGE_PCT -> Comparator.comparing(Stock::getWeeklyChangePercent);
-            case HIGH_LOW -> Comparator.comparing(this::highLowRange);
+            case HIGH_LOW -> Comparator.comparing(s -> highLowRange(s, converter, NOK, HIGH_LOW_WEEKS));
         };
     }
 
-    /**
-     * Returns the latest stock price converted to NOK.
-     *
-     * @param stock the stock to read from
-     * @return the latest price in NOK
-     */
-    private BigDecimal priceInNok(Stock stock) {
-        return converter.convert(stock.getSalesPrice(), stock.getCurrency(), NOK);
-    }
-
-    /**
-     * Returns the latest price change converted to NOK.
-     *
-     * @param stock the stock to read from
-     * @return the latest price change in NOK
-     */
-    private BigDecimal changeInNok(Stock stock) {
-        return converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
-    }
-
-    /**
-     * Returns the NOK range between the {@value #HIGH_LOW_WEEKS}-week high and low.
-     *
-     * @param stock the stock to read from
-     * @return the high-low range in NOK
-     */
-    private BigDecimal highLowRange(Stock stock) {
-        List<BigDecimal> prices = stock.getRecentPrices(HIGH_LOW_WEEKS);
-        BigDecimal low = prices.stream().min(BigDecimal::compareTo).orElseThrow();
-        BigDecimal high = prices.stream().max(BigDecimal::compareTo).orElseThrow();
-        return converter.convert(high.subtract(low), stock.getCurrency(), NOK);
-    }
 }
