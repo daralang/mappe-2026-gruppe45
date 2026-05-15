@@ -98,13 +98,22 @@ public class MainController {
      * by the callbacks passed to {@link ExitDialog}.
      */
     private void handleExitGame() {
-        new ExitDialog(this::handleSaveAndExit, this::handleExitWithoutSaving).show();
+        new ExitDialog(
+                this::handleSaveAndExit,
+                this::handleSellAllAndExit,
+                this::handleExitWithoutSaving
+        ).show();
     }
 
     private void handleSaveAndExit() {
         if (handleSaveGame()) {
             stage.close();
         }
+    }
+
+    private void handleSellAllAndExit() {
+        gameService.sellAllAndExit();
+        stage.close();
     }
 
     private void handleExitWithoutSaving() {

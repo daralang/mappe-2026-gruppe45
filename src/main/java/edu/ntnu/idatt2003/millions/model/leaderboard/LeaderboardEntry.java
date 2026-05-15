@@ -27,8 +27,8 @@ import java.util.Objects;
  *                        rounded to one decimal
  * @param weeksPlayed     the exchange week number when the snapshot was taken
  * @param status          the player's status level at snapshot time
- * @param outcome         {@link Outcome#ACTIVE} while the game can still be updated,
- *                        {@link Outcome#GAME_OVER} once the entry is locked
+ * @param outcome         the current state: {@link Outcome#ACTIVE}, {@link Outcome#RETIRED},
+ *                        or {@link Outcome#BANKRUPTCY}
  * @param lastUpdated     instant the entry was last written
  */
 public record LeaderboardEntry(

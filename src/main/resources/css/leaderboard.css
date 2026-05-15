@@ -1,1 +1,6 @@
 /* Leaderboard-specific component styles */
+
+.leaderboard-score-confirm {
+    -fx-text-fill: -success-text;
+    -fx-font-size: 13;
+}

@@ -14,8 +14,13 @@ import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.leaderboard.LeaderboardSort;
+import javafx.animation.PauseTransition;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,17 +35,21 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
 
     private static final int PAGE_SIZE = Pagination.DEFAULT_PAGE_SIZE;
 
+    private final GameService gameService;
     private final LeaderboardService leaderboardService = new LeaderboardService();
     private final LeaderboardSort sort = new LeaderboardSort();
     private final StyledText title;
+    private Button pushScoreBtn;
+    private Label confirmLabel;
 
     /**
      * Constructs a new LeaderboardCard.
      *
-     * @param gameService the game service used for observer registration
+     * @param gameService the game service used for observer registration and score updates
      */
     public LeaderboardCard(GameService gameService) {
         super(gameService, PAGE_SIZE, "leaderboard.status", "leaderboard.empty");
+        this.gameService = gameService;
         this.sortProvider = sort;
         this.table = new SortColumnTable<>(sort::getColumnDefs);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
@@ -49,13 +58,36 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
 
         title = StyledText.sectionTitle(LanguageManager.get("leaderboard.title"));
+
+        pushScoreBtn = new Button(LanguageManager.get("leaderboard.pushScore"));
+        pushScoreBtn.getStyleClass().addAll("modal-button", "modal-button-outlined");
+        pushScoreBtn.setOnAction(e -> handlePushScore());
+
+        confirmLabel = new Label(LanguageManager.get("leaderboard.pushScore.confirm"));
+        confirmLabel.getStyleClass().add("leaderboard-score-confirm");
+        confirmLabel.setVisible(false);
+
+        HBox titleRow = new HBox(title, pushScoreBtn);
+        HBox.setHgrow(title, Priority.ALWAYS);
+        titleRow.setAlignment(Pos.CENTER_LEFT);
+
         setSpacing(16);
-        getChildren().addAll(title, buildSearchRow(clearSortButton), table.asNode(), pagination);
+        getChildren().addAll(titleRow, confirmLabel, buildSearchRow(clearSortButton), table.asNode(), pagination);
         refresh();
+    }
+
+    private void handlePushScore() {
+        gameService.recordLeaderboardEntry();
+        refresh();
+        confirmLabel.setVisible(true);
+        PauseTransition pause = new PauseTransition(Duration.seconds(3));
+        pause.setOnFinished(e -> confirmLabel.setVisible(false));
+        pause.play();
     }
 
     @Override
     protected List<LeaderboardEntry> fetchAll() {
+        pushScoreBtn.setDisable(gameService.getPlayer() == null);
         return new ArrayList<>(leaderboardService.getAllEntries());
     }
 
@@ -81,6 +113,8 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
     @Override
     protected void onLanguageChanged() {
         title.setText(LanguageManager.get("leaderboard.title"));
+        pushScoreBtn.setText(LanguageManager.get("leaderboard.pushScore"));
+        confirmLabel.setText(LanguageManager.get("leaderboard.pushScore.confirm"));
         super.onLanguageChanged();
     }
 
@@ -105,12 +139,18 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
     }
 
     private Label outcomeBadge(Outcome outcome) {
-        String key = outcome == Outcome.ACTIVE
-                ? "leaderboard.outcome.active"
-                : "leaderboard.outcome.gameover";
+        String key = switch (outcome) {
+            case ACTIVE     -> "leaderboard.outcome.active";
+            case RETIRED    -> "leaderboard.outcome.retired";
+            case BANKRUPTCY -> "leaderboard.outcome.bankruptcy";
+        };
+        String cssClass = switch (outcome) {
+            case ACTIVE     -> "badge-success";
+            case RETIRED    -> "badge-info";
+            case BANKRUPTCY -> "badge-danger";
+        };
         Label badge = new Label(LanguageManager.get(key).toUpperCase());
-        badge.getStyleClass().addAll("transaction-type-badge",
-                outcome == Outcome.ACTIVE ? "badge-success" : "badge-danger");
+        badge.getStyleClass().addAll("transaction-type-badge", cssClass);
         return badge;
     }
 }
