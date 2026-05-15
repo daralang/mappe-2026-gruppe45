@@ -252,16 +252,7 @@ public class StartController {
                 validationErrorKeys.add("error.name.invalid");
             }
         }
-        if (!capital.isBlank()) {
-            try {
-                BigDecimal parsed = new BigDecimal(capital);
-                if (parsed.compareTo(BigDecimal.ZERO) <= 0) {
-                    validationErrorKeys.add("error.capital.zero");
-                }
-            } catch (NumberFormatException e) {
-                validationErrorKeys.add("error.capital.invalid");
-            }
-        }
+        StartInputValidator.validateCapitalFormat(capital).ifPresent(validationErrorKeys::add);
 
         // Collect missing fields separately so they can be combined into a single
         // "missing X and Y" sentence instead of being listed line by line.

@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.controller;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.Currency;
+import java.util.Optional;
 
 /**
  * Validates and converts input from the start screen.
@@ -80,6 +81,28 @@ final class StartInputValidator {
             throw new IllegalArgumentException("Currency must be selected");
         }
         return currency;
+    }
+
+    /**
+     * Validates the format of a capital string without checking presence.
+     * Returns an i18n error key if the value is present but invalid, or empty if valid or blank.
+     *
+     * @param capital the capital text entered by the user
+     * @return an {@link Optional} containing an i18n error key, or empty if the input is valid or blank
+     */
+    static Optional<String> validateCapitalFormat(String capital) {
+        if (capital == null || capital.isBlank()) {
+            return Optional.empty();
+        }
+        try {
+            BigDecimal parsed = new BigDecimal(capital);
+            if (parsed.compareTo(BigDecimal.ZERO) <= 0) {
+                return Optional.of("error.capital.zero");
+            }
+        } catch (NumberFormatException e) {
+            return Optional.of("error.capital.invalid");
+        }
+        return Optional.empty();
     }
 
     /**
