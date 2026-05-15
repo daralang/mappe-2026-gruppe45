@@ -10,6 +10,7 @@ import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
 import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -120,7 +121,9 @@ class WatchlistRowRenderer extends RowRenderer {
         buyButton.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
         buyButton.setDisable(gameOver);
         buyButton.setOnAction(e -> tradeController.openBuyDialog(item.stock()));
-        return new HBox(buyButton);
+        HBox box = new HBox(buyButton);
+        box.setAlignment(Pos.CENTER);
+        return box;
     }
 
     /**

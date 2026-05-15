@@ -88,12 +88,12 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
                         SortColumn.ADDED_WEEK, 10, HPos.CENTER),
                 TableColumnDef.of(
                         LanguageManager.get("watchlist.col.trade"),
-                        7, HPos.CENTER),
+                        10, HPos.CENTER),
                 TableColumnDef.of(
                         LanguageManager.get("watchlist.col.note"),
                         7, HPos.CENTER),
                 TableColumnDef.of(
-                        "", 7, HPos.CENTER)
+                        "", 5, HPos.CENTER)
         );
     }
 

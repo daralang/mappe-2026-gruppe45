@@ -119,6 +119,6 @@ Label.holdings-header:disabled {
 
 /* Watchlist */
 .watchlist-action-remove {
-    -fx-font-size: 18;
+    -fx-font-size: 20;
     -fx-text-fill: -danger;
 }
