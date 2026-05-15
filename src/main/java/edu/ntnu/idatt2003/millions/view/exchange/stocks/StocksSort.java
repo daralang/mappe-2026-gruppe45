@@ -2,10 +2,12 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.util.CurrencyManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.function.Predicate;
 import javafx.geometry.HPos;
@@ -53,43 +55,44 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
     /**
      * Returns the ordered column definitions for the stocks table.
      *
-     * <p>Called by {@link SortColumnTable} on every header refresh
-     * so that column labels are re-resolved from
-     * {@link LanguageManager}.</p>
+     * <p>Called by {@link SortColumnTable} on every header refresh so that labels are
+     * re-resolved from {@link LanguageManager} and the native-currency column header
+     * reflects the currently selected currency from {@link CurrencyManager}.</p>
      *
      * @return a fresh list of {@link TableColumnDef} in display order
      */
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
+        String currencyCode = CurrencyManager.get().getCurrencyCode();
         return List.of(
                 TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.watchlist"),
+                        LanguageManager.get("col.watchlist"),
                         SortColumn.WATCHLIST, 4, HPos.CENTER),
                 TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.ticker"),
+                        LanguageManager.get("col.ticker"),
                         SortColumn.TICKER, 9, HPos.LEFT),
                 TableColumnDef.of(
-                        LanguageManager.get("exchange.stocks.col.company"),
+                        LanguageManager.get("col.company"),
                         28, HPos.LEFT, 34.0),
                 TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.priceCurrency"),
+                        MessageFormat.format(LanguageManager.get("col.priceNative"), currencyCode),
                         SortColumn.PRICE_USD, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.priceNOK"),
+                        LanguageManager.get("col.priceNok"),
                         SortColumn.PRICE_NOK, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.changeKr"),
+                        LanguageManager.get("col.changeNok"),
                         SortColumn.CHANGE_KR, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.changePct"),
+                        LanguageManager.get("col.changePct"),
                         SortColumn.CHANGE_PCT, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.highLow4"),
+                        LanguageManager.get("col.highLow"),
                         SortColumn.HIGH_LOW, 10, HPos.RIGHT),
                 TableColumnDef.of(
-                        LanguageManager.get("exchange.stocks.col.trend"),
+                        LanguageManager.get("col.trend"),
                         10, HPos.CENTER),
                 TableColumnDef.of(
-                        LanguageManager.get("exchange.stocks.col.trade"),
+                        LanguageManager.get("col.trade"),
                         6, HPos.LEFT)
         );
     }

@@ -65,28 +65,28 @@ public class TransactionsSort extends SortProvider<Transaction, TransactionsSort
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.week"),
+                        LanguageManager.get("col.week"),
                         SortColumn.WEEK, 8, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.company"),
+                        LanguageManager.get("col.company"),
                         SortColumn.COMPANY, 26, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.type"),
+                        LanguageManager.get("col.type"),
                         SortColumn.TYPE, 8, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.quantity"),
+                        LanguageManager.get("col.quantity"),
                         SortColumn.QUANTITY, 7, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.price"),
+                        LanguageManager.get("col.price"),
                         SortColumn.PRICE, 12, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.commission"),
+                        LanguageManager.get("col.commission"),
                         SortColumn.COMMISSION, 12, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.tax"),
+                        LanguageManager.get("col.tax"),
                         SortColumn.TAX, 13, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.amount"),
+                        LanguageManager.get("col.amount"),
                         SortColumn.AMOUNT, 14, HPos.RIGHT)
         );
     }

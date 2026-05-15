@@ -57,25 +57,25 @@ public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
         return List.of(
                 TableColumnDef.of("", 18, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("dashboard.portfolio.company"),
+                        LanguageManager.get("col.company"),
                         SortColumn.COMPANY, 22, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("dashboard.portfolio.quantity"),
+                        LanguageManager.get("col.quantity"),
                         SortColumn.QUANTITY, 10, HPos.RIGHT),
                 TableColumnDef.sortableWithTooltip(
-                        LanguageManager.get("dashboard.portfolio.weeklyChange"),
+                        LanguageManager.get("col.weeklyChange"),
                         SortColumn.WEEKLY_CHANGE,
                         "tooltip.shared.weeklyChange", 12, HPos.RIGHT),
                 TableColumnDef.sortableWithTooltip(
-                        LanguageManager.get("dashboard.portfolio.valueNok"),
+                        LanguageManager.get("col.valueNok"),
                         SortColumn.VALUE_NOK,
                         "tooltip.holdings.valueNok", 12, HPos.RIGHT),
                 TableColumnDef.sortableWithTooltip(
-                        LanguageManager.get("dashboard.portfolio.returnPct"),
+                        LanguageManager.get("col.returnPct"),
                         SortColumn.RETURN_PCT,
                         "tooltip.shared.returnPct", 10, HPos.RIGHT),
                 TableColumnDef.sortableWithTooltip(
-                        LanguageManager.get("dashboard.portfolio.returnNok"),
+                        LanguageManager.get("col.returnNok"),
                         SortColumn.RETURN_NOK,
                         "tooltip.shared.returnNok", 11, HPos.RIGHT),
                 TableColumnDef.of("", 5, HPos.CENTER)

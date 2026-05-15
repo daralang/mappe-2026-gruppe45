@@ -30,25 +30,25 @@ public class LeaderboardSort extends SortProvider<LeaderboardEntry, LeaderboardS
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
                 TableColumnDef.sortable(
-                        LanguageManager.get("leaderboard.col.rank"),
+                        LanguageManager.get("col.rank"),
                         SortColumn.RANK, 8, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("leaderboard.col.player"),
+                        LanguageManager.get("col.player"),
                         SortColumn.PLAYER, 20, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("leaderboard.col.return"),
+                        LanguageManager.get("col.return"),
                         SortColumn.RETURN, 14, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("leaderboard.col.netWorth"),
+                        LanguageManager.get("col.netWorth"),
                         SortColumn.NET_WORTH, 14, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("leaderboard.col.weeks"),
+                        LanguageManager.get("col.weeks"),
                         SortColumn.WEEKS, 12, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("leaderboard.col.status"),
+                        LanguageManager.get("col.status"),
                         SortColumn.STATUS, 16, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("leaderboard.col.outcome"),
+                        LanguageManager.get("col.outcome"),
                         SortColumn.OUTCOME, 16, HPos.LEFT)
         );
     }
