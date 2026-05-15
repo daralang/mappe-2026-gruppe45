@@ -14,7 +14,10 @@
 @import "tooltip.css";
 @import "filters.css";
 @import "searchbar.css";
-@import "label.css";
 @import "buttons.css";
 @import "notifications.css";
+<<<<<<< HEAD
+@import "start.css";
+=======
 @import "leaderboard.css";
+>>>>>>> origin/main

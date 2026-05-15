@@ -130,7 +130,6 @@ public class GameService {
             throw new IllegalStateException("No active game to save");
         }
         gameFileHandler.saveGame(player, exchange, file);
-        leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(), Outcome.ACTIVE);
     }
 
     /**

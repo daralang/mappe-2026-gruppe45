@@ -17,8 +17,7 @@ import java.util.function.Consumer;
  * a browse button, and a filename label that appears once a file is selected.
  * Drag-over highlighting is handled internally as a purely visual concern.
  * Callers attach file-selection logic via {@link #getBrowseButton()} for browse
- * actions and {@link #setOnFileDropped(Consumer)} for drag-and-drop, which
- * abstracts away the JavaFX dragboard API. </p>
+ * actions and {@link #setOnFileDropped(Consumer)} for drag-and-drop </p>
  */
 public class FileDropZone extends VBox {
 

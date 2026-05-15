@@ -6,7 +6,9 @@ import edu.ntnu.idatt2003.millions.view.component.AppTabPane;
 import edu.ntnu.idatt2003.millions.view.component.LanguagePicker;
 import edu.ntnu.idatt2003.millions.view.start.LoadGameTab;
 import edu.ntnu.idatt2003.millions.view.start.NewGameTab;
+import edu.ntnu.idatt2003.millions.view.start.StartLayoutAnimator;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -14,6 +16,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.io.File;
@@ -25,22 +29,20 @@ import java.util.function.Consumer;
  *
  * <p>Composes a tab-based layout from {@link NewGameTab} and {@link LoadGameTab},
  * each of which owns its own fields, layout, i18n updates, and event wiring.
- * This class is a thin shell: it builds the scene structure, delegates all
- * user input and callbacks to the tab components, and exposes the
- * {@link StartScreenInputs} contract to the controller.</p>
+ * Responsive sizing and the animated {@link NewGameTab}
+ * reveal are delegated to {@link StartLayoutAnimator}.</p>
  *
- * <p>User interactions are forwarded to the controller via callback setters such as
- * {@link #setOnStartGame(Runnable)} and {@link #setOnStockFileDrop(Consumer)},
- * which in turn delegate to the relevant tab component.</p>
  */
 public class StartView implements StartScreenInputs {
 
     private static final double SCENE_WIDTH = 900;
     private static final double SCENE_HEIGHT = 700;
     private static final double ROOT_SPACING = 24;
+    private static final double START_CARD_WIDTH = 540;
 
     private final Scene scene;
     private final StyledText title;
+    private final AppTabPane tabPane;
     private final Tab newGameTab;
     private final Tab loadGameTab;
     private final NewGameTab newGameTabContent;
@@ -63,6 +65,7 @@ public class StartView implements StartScreenInputs {
     public StartView(Node titleBarControls) {
         LanguagePicker languagePicker = new LanguagePicker();
         title = StyledText.headingOne(LanguageManager.get("app.title"));
+        title.getStyleClass().add("start-title");
 
         newGameTabContent = new NewGameTab();
         loadGameContent = new LoadGameTab();
@@ -72,19 +75,48 @@ public class StartView implements StartScreenInputs {
         loadGameTab = AppTabPane.createTab(
                 LanguageManager.get("start.tab.loadGame"), loadGameContent);
 
-        AppTabPane tabPane = new AppTabPane();
+        tabPane = new AppTabPane();
         tabPane.getTabs().addAll(newGameTab, loadGameTab);
-        tabPane.setMaxWidth(540);
+        tabPane.setMaxWidth(START_CARD_WIDTH);
+        tabPane.getStyleClass().add("start-tab-pane");
+        Platform.runLater(() -> {
+            Node headersRegion = tabPane.lookup(".headers-region");
+            if (headersRegion instanceof Region r) {
+                Runnable center = () -> {
+                    double offset = Math.max(0, (tabPane.getWidth() - r.getWidth()) / 2.0);
+                    r.setTranslateX(offset);
+                };
+                r.widthProperty().addListener((o, old, n) -> center.run());
+                tabPane.widthProperty().addListener((o, old, n) -> center.run());
+                center.run();
+            }
+        });
 
         HBox topBar = new HBox(languagePicker);
         topBar.setAlignment(Pos.CENTER_RIGHT);
         topBar.setPadding(new Insets(16, 24, 0, 24));
 
-        VBox center = new VBox(ROOT_SPACING, title, tabPane);
+        VBox startGroup = new VBox(ROOT_SPACING, title, tabPane);
+        startGroup.setAlignment(Pos.TOP_CENTER);
+
+        StackPane reservedStartGroup = new StackPane(startGroup);
+        reservedStartGroup.setAlignment(Pos.CENTER);
+
+        StackPane center = new StackPane(reservedStartGroup);
         center.setAlignment(Pos.CENTER);
         center.setPadding(new Insets(0, 24, 24, 24));
+        StartLayoutAnimator.bindStartCardLayout(
+                tabPane,
+                center,
+                reservedStartGroup,
+                newGameTabContent,
+                loadGameContent,
+                START_CARD_WIDTH,
+                ROOT_SPACING);
 
         BorderPane root = new BorderPane();
+        root.getStyleClass().add("start-root");
+
         if (titleBarControls != null) {
             root.setTop(new VBox(titleBarControls, topBar));
         } else {
@@ -156,6 +188,35 @@ public class StartView implements StartScreenInputs {
     @Override
     public void setSaveFilePath(String path) {
         loadGameContent.setFilePath(path);
+    }
+
+    /**
+     * Shows an inline error in the currently active tab.
+     * The supplier is stored so the message re-translates on language change.
+     *
+     * @param messageSupplier produces the localised error string
+     */
+    public void showError(java.util.function.Supplier<String> messageSupplier) {
+        if (tabPane.getSelectionModel().getSelectedItem() == newGameTab) {
+            newGameTabContent.showError(messageSupplier);
+        } else {
+            loadGameContent.showError(messageSupplier);
+        }
+    }
+
+    /**
+     * Shows an inline success message in the currently active tab, replacing
+     * any error message that was previously visible. The supplier is stored
+     * so the message re-translates on language change.
+     *
+     * @param messageSupplier produces the localised success string
+     */
+    public void showSuccess(java.util.function.Supplier<String> messageSupplier) {
+        if (tabPane.getSelectionModel().getSelectedItem() == newGameTab) {
+            newGameTabContent.showSuccess(messageSupplier);
+        } else {
+            loadGameContent.showSuccess(messageSupplier);
+        }
     }
 
     /**

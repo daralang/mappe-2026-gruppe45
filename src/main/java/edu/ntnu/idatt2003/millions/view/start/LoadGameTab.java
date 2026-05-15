@@ -12,6 +12,8 @@ import edu.ntnu.idatt2003.millions.view.component.StyledText;
 public class LoadGameTab extends FileDropTab {
 
     private final StyledText saveFileLabel;
+    private final StyledText saveFileInfoLabel;
+
 
     /**
      * Creates the load game tab, builds its layout, and registers
@@ -19,7 +21,9 @@ public class LoadGameTab extends FileDropTab {
      */
     public LoadGameTab() {
         saveFileLabel = StyledText.paragraphOne();
-        getChildren().addAll(saveFileLabel, getFileDropZone(), getActionButton());
+        saveFileInfoLabel = StyledText.paragraphOne();
+        saveFileInfoLabel.getStyleClass().add("save-file-info-label");
+        getChildren().addAll(saveFileLabel, saveFileInfoLabel, getFileDropZone(), getButtonArea());
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
@@ -34,5 +38,6 @@ public class LoadGameTab extends FileDropTab {
         getFileDropZone().setOrText(LanguageManager.get("start.resume.dropZoneOr"));
         getFileDropZone().setBrowseText(LanguageManager.get("start.file.browse"));
         setActionButtonText(LanguageManager.get("start.loadButton"));
+        saveFileInfoLabel.setText(LanguageManager.get("start.resume.fileLabel.subtitle"));
     }
 }
