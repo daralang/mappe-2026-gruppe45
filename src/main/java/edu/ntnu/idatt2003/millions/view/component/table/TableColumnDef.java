@@ -113,6 +113,19 @@ public record TableColumnDef<Column>(
     }
 
     /**
+     * Creates a non-sortable spacer column with no label and no tooltip.
+     * Use this for action or padding columns that have no header text.
+     *
+     * @param <Column>     the sort-column type (inferred; not used for spacer columns)
+     * @param percentWidth the column width as a percentage of total table width
+     * @param alignment    the horizontal alignment for cells in this column
+     * @return a new {@link TableColumnDef} with an empty label and no sort column
+     */
+    public static <Column> TableColumnDef<Column> spacer(double percentWidth, HPos alignment) {
+        return new TableColumnDef<>("", null, null, percentWidth, alignment, 0.0);
+    }
+
+    /**
      * Returns true if this column supports sorting.
      *
      * @return {@code true} when {@code sortColumn} is non-null

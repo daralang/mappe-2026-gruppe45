@@ -55,7 +55,7 @@ public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
      */
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
-                TableColumnDef.of("", 18, HPos.LEFT),
+                TableColumnDef.spacer(18, HPos.LEFT),
                 TableColumnDef.sortable(
                         LanguageManager.get("col.company"),
                         SortColumn.COMPANY, 22, HPos.LEFT),
@@ -78,7 +78,7 @@ public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
                         LanguageManager.get("col.returnNok"),
                         SortColumn.RETURN_NOK,
                         "tooltip.shared.returnNok", 11, HPos.RIGHT),
-                TableColumnDef.of("", 5, HPos.CENTER)
+                TableColumnDef.spacer(5, HPos.CENTER)
         );
     }
 
