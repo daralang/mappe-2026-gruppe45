@@ -2,7 +2,6 @@ package edu.ntnu.idatt2003.millions.view.component.table;
 
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.ColumnConstraints;
@@ -35,7 +34,6 @@ public class SortColumnTable<Column> {
     private final SortState<Column> sortState = new SortState<>();
     private final GridPane grid = new GridPane();
     private final TableHeaderRenderer<Column> headerRenderer = new TableHeaderRenderer<>(sortState);
-    private double[] leftInsets;
 
     /**
      * Constructs a sortable table with default horizontal gap of 20px.
@@ -104,9 +102,6 @@ public class SortColumnTable<Column> {
      */
     public void addRow(int rowIndex, Node... cells) {
         for (int i = 0; i < cells.length; i++) {
-            if (leftInsets != null && i < leftInsets.length && leftInsets[i] > 0) {
-                GridPane.setMargin(cells[i], new Insets(0, 0, 0, leftInsets[i]));
-            }
             grid.add(cells[i], i, rowIndex);
         }
     }
@@ -222,10 +217,7 @@ public class SortColumnTable<Column> {
      * @param cols the initial column definitions
      */
     private void configureColumns(List<TableColumnDef<Column>> cols) {
-        leftInsets = new double[cols.size()];
-        for (int i = 0; i < cols.size(); i++) {
-            TableColumnDef<Column> col = cols.get(i);
-            leftInsets[i] = col.leftInset();
+        for (TableColumnDef<Column> col : cols) {
             ColumnConstraints cc = new ColumnConstraints();
             cc.setPercentWidth(col.percentWidth());
             cc.setHalignment(col.alignment());

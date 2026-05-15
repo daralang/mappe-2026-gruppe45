@@ -49,50 +49,38 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
     /**
      * Returns the ordered column definitions for the watchlist table.
      *
-     * <p>The alternative-currency column header is formatted with the currently
-     * active currency code from {@link CurrencyManager}.</p>
+     * <p>The alternative-currency column header is formatted lazily with the
+     * currently active currency code from {@link CurrencyManager} so it updates
+     * automatically on every header refresh.</p>
      *
      * @return a fresh list of {@link TableColumnDef} in display order
      */
     @Override
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
-        String altCurrencyCode = CurrencyManager.get().getCurrencyCode();
         return List.of(
                 TableColumnDef.sortable(
-                        LanguageManager.get("col.ticker"),
-                        SortColumn.TICKER, 10, HPos.LEFT),
+                        "col.ticker", SortColumn.TICKER, 10, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("col.company"),
-                        SortColumn.COMPANY, 20, HPos.LEFT),
+                        "col.company", SortColumn.COMPANY, 20, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("col.priceNok"),
-                        SortColumn.PRICE_NOK, 15, HPos.RIGHT),
+                        "col.priceNok", SortColumn.PRICE_NOK, 15, HPos.RIGHT),
+                new TableColumnDef<>(
+                        () -> MessageFormat.format(
+                                LanguageManager.get("col.priceNative"),
+                                CurrencyManager.get().getCurrencyCode()),
+                        SortColumn.PRICE_ALT, null, 15, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        MessageFormat.format(LanguageManager.get("col.priceNative"), altCurrencyCode),
-                        SortColumn.PRICE_ALT, 15, HPos.RIGHT),
+                        "col.changeNok", SortColumn.CHANGE_NOK, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("col.changeNok"),
-                        SortColumn.CHANGE_NOK, 10, HPos.RIGHT),
+                        "col.changePct", SortColumn.CHANGE_PCT, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("col.changePct"),
-                        SortColumn.CHANGE_PCT, 10, HPos.RIGHT),
+                        "col.highLow", SortColumn.HIGH_LOW, 10, HPos.RIGHT),
+                TableColumnDef.of("col.trend", 12, HPos.CENTER),
                 TableColumnDef.sortable(
-                        LanguageManager.get("col.highLow"),
-                        SortColumn.HIGH_LOW, 10, HPos.RIGHT),
-                TableColumnDef.of(
-                        LanguageManager.get("col.trend"),
-                        12, HPos.CENTER),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.addedWeek"),
-                        SortColumn.ADDED_WEEK, 10, HPos.CENTER),
-                TableColumnDef.of(
-                        LanguageManager.get("col.trade"),
-                        10, HPos.CENTER),
-                TableColumnDef.of(
-                        LanguageManager.get("col.note"),
-                        7, HPos.CENTER),
-                TableColumnDef.of(
-                        "", 5, HPos.CENTER)
+                        "col.addedWeek", SortColumn.ADDED_WEEK, 10, HPos.CENTER),
+                TableColumnDef.of("col.trade", 10, HPos.CENTER),
+                TableColumnDef.of("col.note", 7, HPos.CENTER),
+                TableColumnDef.spacer(5, HPos.CENTER)
         );
     }
 

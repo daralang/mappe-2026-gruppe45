@@ -3,7 +3,6 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.service.PortfolioService;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
@@ -48,8 +47,7 @@ public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
      * Returns the ordered column definitions for the holdings table.
      *
      * <p>Called by {@link SortColumnTable} on every header refresh so that
-     * column labels are re-resolved from {@link LanguageManager} and always
-     * reflect the active language.</p>
+     * column labels are re-resolved and always reflect the active language.</p>
      *
      * @return a fresh list of {@link TableColumnDef} in display order
      */
@@ -57,26 +55,20 @@ public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
         return List.of(
                 TableColumnDef.spacer(18, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("col.company"),
-                        SortColumn.COMPANY, 22, HPos.LEFT),
+                        "col.company", SortColumn.COMPANY, 22, HPos.LEFT),
                 TableColumnDef.sortable(
-                        LanguageManager.get("col.quantity"),
-                        SortColumn.QUANTITY, 10, HPos.RIGHT),
-                TableColumnDef.sortableWithTooltip(
-                        LanguageManager.get("col.weeklyChange"),
-                        SortColumn.WEEKLY_CHANGE,
+                        "col.quantity", SortColumn.QUANTITY, 10, HPos.RIGHT),
+                TableColumnDef.sortable(
+                        "col.weeklyChange", SortColumn.WEEKLY_CHANGE,
                         "tooltip.shared.weeklyChange", 12, HPos.RIGHT),
-                TableColumnDef.sortableWithTooltip(
-                        LanguageManager.get("col.valueNok"),
-                        SortColumn.VALUE_NOK,
+                TableColumnDef.sortable(
+                        "col.valueNok", SortColumn.VALUE_NOK,
                         "tooltip.holdings.valueNok", 12, HPos.RIGHT),
-                TableColumnDef.sortableWithTooltip(
-                        LanguageManager.get("col.returnPct"),
-                        SortColumn.RETURN_PCT,
+                TableColumnDef.sortable(
+                        "col.returnPct", SortColumn.RETURN_PCT,
                         "tooltip.shared.returnPct", 10, HPos.RIGHT),
-                TableColumnDef.sortableWithTooltip(
-                        LanguageManager.get("col.returnNok"),
-                        SortColumn.RETURN_NOK,
+                TableColumnDef.sortable(
+                        "col.returnNok", SortColumn.RETURN_NOK,
                         "tooltip.shared.returnNok", 11, HPos.RIGHT),
                 TableColumnDef.spacer(5, HPos.CENTER)
         );

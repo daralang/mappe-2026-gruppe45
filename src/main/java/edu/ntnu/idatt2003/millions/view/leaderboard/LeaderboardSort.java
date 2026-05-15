@@ -1,7 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.leaderboard;
 
 import edu.ntnu.idatt2003.millions.model.leaderboard.LeaderboardEntry;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import javafx.geometry.HPos;
@@ -29,27 +28,13 @@ public class LeaderboardSort extends SortProvider<LeaderboardEntry, LeaderboardS
     @Override
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.rank"),
-                        SortColumn.RANK, 8, HPos.LEFT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.player"),
-                        SortColumn.PLAYER, 20, HPos.LEFT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.return"),
-                        SortColumn.RETURN, 14, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.netWorth"),
-                        SortColumn.NET_WORTH, 14, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.weeks"),
-                        SortColumn.WEEKS, 12, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.status"),
-                        SortColumn.STATUS, 16, HPos.LEFT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("col.outcome"),
-                        SortColumn.OUTCOME, 16, HPos.LEFT)
+                TableColumnDef.sortable("col.rank", SortColumn.RANK, 8, HPos.LEFT),
+                TableColumnDef.sortable("col.player", SortColumn.PLAYER, 20, HPos.LEFT),
+                TableColumnDef.sortable("col.return", SortColumn.RETURN, 14, HPos.RIGHT),
+                TableColumnDef.sortable("col.netWorth", SortColumn.NET_WORTH, 14, HPos.RIGHT),
+                TableColumnDef.sortable("col.weeks", SortColumn.WEEKS, 12, HPos.RIGHT),
+                TableColumnDef.sortable("col.status", SortColumn.STATUS, 16, HPos.LEFT),
+                TableColumnDef.sortable("col.outcome", SortColumn.OUTCOME, 16, HPos.LEFT)
         );
     }
 

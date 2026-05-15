@@ -85,7 +85,7 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard {
 
     /**
      * Template Method implementing the common refresh algorithm:
-     * clear → fetch → search → header → metadata → hook → sort → render.
+     * clear > fetch > search > header > metadata > hook > sort > render.
      */
     @Override
     protected final void refresh() {
