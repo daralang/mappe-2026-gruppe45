@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import java.util.List;
+import java.util.function.Predicate;
 import javafx.geometry.HPos;
 
 import java.math.BigDecimal;
@@ -30,19 +31,23 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
      * Columns that support ascending/descending sort in the stocks table.
      */
     public enum SortColumn {
-        TICKER, PRICE_USD, PRICE_NOK, CHANGE_KR, CHANGE_PCT, HIGH_LOW
+        WATCHLIST, TICKER, PRICE_USD, PRICE_NOK, CHANGE_KR, CHANGE_PCT, HIGH_LOW
     }
 
     private final CurrencyConverter converter;
+    private final Predicate<String> isWatched;
 
     /**
-     * Creates a stock sorter using the given converter for NOK price sorting.
+     * Creates a stock sorter using the given converter and watchlist predicate.
      *
      * @param converter the converter used for NOK price values
-     * @throws NullPointerException if converter is null
+     * @param isWatched predicate that returns {@code true} if the given stock symbol
+     *                  is on the player's watchlist
+     * @throws NullPointerException if either argument is null
      */
-    public StocksSort(CurrencyConverter converter) {
+    public StocksSort(CurrencyConverter converter, Predicate<String> isWatched) {
         this.converter = Objects.requireNonNull(converter, "Converter cannot be null");
+        this.isWatched = Objects.requireNonNull(isWatched, "isWatched cannot be null");
     }
 
     /**
@@ -57,8 +62,11 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
                 TableColumnDef.sortable(
+                        LanguageManager.get("exchange.stocks.col.watchlist"),
+                        SortColumn.WATCHLIST, 4, HPos.CENTER),
+                TableColumnDef.sortable(
                         LanguageManager.get("exchange.stocks.col.ticker"),
-                        SortColumn.TICKER, 10, HPos.LEFT),
+                        SortColumn.TICKER, 9, HPos.LEFT),
                 TableColumnDef.of(
                         LanguageManager.get("exchange.stocks.col.company"),
                         28, HPos.LEFT),
@@ -95,6 +103,7 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
     @Override
     protected Comparator<Stock> buildComparator(SortColumn column) {
         return switch (column) {
+            case WATCHLIST -> Comparator.comparing(s -> !isWatched.test(s.getSymbol()));
             case TICKER -> Comparator.comparing(Stock::getSymbol);
             case PRICE_USD -> Comparator.comparing(Stock::getSalesPrice);
             case PRICE_NOK -> Comparator.comparing(this::priceInNok);

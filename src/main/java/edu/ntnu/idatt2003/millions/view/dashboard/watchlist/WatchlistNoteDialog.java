@@ -17,9 +17,6 @@ import java.util.function.Consumer;
  * <p>Pre-fills the {@link TextArea} with the existing note (may be empty).
  * Calls the supplied {@link Consumer} with the new text when the player saves,
  * or closes without invoking it when the player cancels.</p>
- *
- * <p>Business logic lives entirely in the callback supplied by the controller.
- * The dialog never touches {@link GameService} directly.</p>
  */
 public class WatchlistNoteDialog extends Modal {
 
