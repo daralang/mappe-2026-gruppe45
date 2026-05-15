@@ -8,7 +8,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
-import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
+import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -19,7 +19,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Currency;
 import java.util.List;
 
@@ -32,7 +31,7 @@ import java.util.List;
  *
  * <p>This class is stateless and may be reused across refreshes.
  */
-class StocksRowRenderer {
+class StocksRowRenderer extends RowRenderer {
 
     private static final int MAX_SPARKLINE_WEEKS = 8;
     private static final int HIGH_LOW_WEEKS = 4;
@@ -88,13 +87,9 @@ class StocksRowRenderer {
         BigDecimal changeInNok = converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
         Label changeKrLabel = ChangeFormatter.styledAmount(changeInNok, "holdings-cell");
         Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "holdings-cell");
-        Label highLowLabel = TableCells.data(formatHighLow(stock));
+        Label highLowLabel = TableCells.data(formatHighLow(stock, HIGH_LOW_WEEKS));
 
-        List<BigDecimal> prices = stock.getHistoricalPrices();
-        List<BigDecimal> sparkPrices = prices.subList(
-                Math.max(0, prices.size() - MAX_SPARKLINE_WEEKS), prices.size());
-        SparklineChart sparkline = new SparklineChart();
-        sparkline.update(sparkPrices);
+        SparklineChart sparkline = buildSparkline(stock, MAX_SPARKLINE_WEEKS);
 
         HBox tradeButtons = buildBuyButton(stock);
 
@@ -110,43 +105,6 @@ class StocksRowRenderer {
 
         table.addRow(rowIndex, tickerCell, companyLabel, priceLabel, priceNokLabel,
                 changeKrLabel, changePctLabel, highLowLabel, sparkline, tradeButtons);
-    }
-
-    /**
-     * Formats the lowest and highest prices from the latest
-     * {@value #HIGH_LOW_WEEKS} historical price entries.
-     *
-     * <p>Returns {@code "-"} when the stock has no historical price data,
-     * avoiding a {@link java.util.NoSuchElementException} on an empty stream.
-     *
-     * @param stock the stock to read prices from
-     * @return a formatted {@code "low / high"} string, or {@code "—"} if
-     *         insufficient price history is available
-     */
-    private String formatHighLow(Stock stock) {
-        List<BigDecimal> prices = lastPrices(stock, HIGH_LOW_WEEKS);
-        if (prices.isEmpty()) {
-            return "-";
-        }
-        BigDecimal low = prices.stream().min(BigDecimal::compareTo).orElseThrow();
-        BigDecimal high = prices.stream().max(BigDecimal::compareTo).orElseThrow();
-        return formatWhole(low) + " / " + formatWhole(high);
-    }
-
-    private String formatWhole(BigDecimal value) {
-        return value.setScale(0, RoundingMode.HALF_UP).toPlainString();
-    }
-
-    /**
-     * Returns the latest prices up to the given limit.
-     *
-     * @param stock the stock to read prices from
-     * @param limit the maximum number of prices to include
-     * @return the latest prices
-     */
-    private List<BigDecimal> lastPrices(Stock stock, int limit) {
-        List<BigDecimal> prices = stock.getHistoricalPrices();
-        return prices.subList(Math.max(0, prices.size() - limit), prices.size());
     }
 
     /**
