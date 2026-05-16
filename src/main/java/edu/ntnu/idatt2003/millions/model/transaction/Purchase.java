@@ -49,6 +49,26 @@ public class Purchase extends Transaction {
         this.settlementAmount = settlementAmount;
     }
 
+    @Override
+    public BigDecimal getCommissionNative() {
+        return new PurchaseCalculator(getShare()).calculateCommission();
+    }
+
+    @Override
+    public BigDecimal getTaxNative() {
+        return BigDecimal.ZERO;
+    }
+
+    @Override
+    public BigDecimal getSignedTotalNative() {
+        return new PurchaseCalculator(getShare()).calculateTotal().negate();
+    }
+
+    @Override
+    public BigDecimal getPricePerShare() {
+        return getShare().getPurchasePrice();
+    }
+
     /**
      * Commits this purchase for the given player.
      * Withdraws the settlement amount from the player's balance, adds the share
