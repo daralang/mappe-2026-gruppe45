@@ -19,6 +19,6 @@ public final class TitleBarFactory {
         if (OsDetector.isMac()) {
             return new NoOpTitleBar();
         }
-        return new WindowsTitleBar(stage, "title-bar-light", false);
+        return new WindowsTitleBar(stage, "title-bar", false);
     }
 }
