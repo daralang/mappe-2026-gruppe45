@@ -99,6 +99,7 @@ class StocksRowRenderer extends RowRenderer {
         Label companyLabel = TableCells.data(stock.getCompany());
         Label priceLabel = TableCells.data(
                 ChangeFormatter.formatPlain(stock.getSalesPrice()));
+        Label currencyLabel = TableCells.data(stock.getCurrency().getCurrencyCode());
         BigDecimal priceInNok = converter.convert(stock.getSalesPrice(), stock.getCurrency(), NOK);
         Label priceNokLabel = TableCells.data(
                 ChangeFormatter.formatPlain(priceInNok));
@@ -115,6 +116,7 @@ class StocksRowRenderer extends RowRenderer {
         GridPane.setValignment(tickerCell, VPos.TOP);
         GridPane.setValignment(companyLabel, VPos.TOP);
         GridPane.setValignment(priceLabel, VPos.TOP);
+        GridPane.setValignment(currencyLabel, VPos.TOP);
         GridPane.setValignment(priceNokLabel, VPos.TOP);
         GridPane.setValignment(changeKrLabel, VPos.TOP);
         GridPane.setValignment(changePctLabel, VPos.TOP);
@@ -122,8 +124,8 @@ class StocksRowRenderer extends RowRenderer {
         GridPane.setValignment(sparkline, VPos.TOP);
         GridPane.setValignment(tradeButtons, VPos.TOP);
 
-        table.addRow(rowIndex, starButton, tickerCell, companyLabel, priceLabel, priceNokLabel,
-                changeKrLabel, changePctLabel, highLowLabel, sparkline, tradeButtons);
+        table.addRow(rowIndex, starButton, tickerCell, companyLabel, currencyLabel, priceLabel,
+                priceNokLabel, changeKrLabel, changePctLabel, highLowLabel, sparkline, tradeButtons);
     }
 
     /**
