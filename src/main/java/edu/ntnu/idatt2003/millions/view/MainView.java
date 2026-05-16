@@ -27,9 +27,13 @@ import javafx.stage.Stage;
  * Contains a persistent {@link TitleBar} and a content area that switches
  * between different views depending on user navigation.
  *
- * <p>Navigation between Dashboard and Exchange is handled internally as
- * purely visual state. Domain-related actions (save, exit, advance week)
- * are delegated to the controller via callbacks supplied at construction.</p>
+ * <p>Navigation between Dashboard, Exchange and Leaderboard is handled
+ * internally as purely visual state. The {@link DashboardView} is cached
+ * so that sub-views survive tab switches and keyboard shortcuts
+ * (Shift+1–4) can jump directly to a dashboard tab.</p>
+ *
+ * <p>Domain-related actions (save, exit, advance week) are delegated to
+ * the controller via callbacks supplied at construction.</p>
  */
 public class MainView {
 
@@ -41,6 +45,9 @@ public class MainView {
     private final BorderPane content;
     private final WeekBar weekBar;
     private final StatusFooter footer;
+
+    private DashboardView dashboardView;
+    private ScrollPane dashboardScrollable;
 
     /**
      * Constructs a new MainView with a platform-appropriate title bar and
@@ -130,10 +137,48 @@ public class MainView {
 
     /**
      * Switches the content area to the dashboard view.
+     * The {@link DashboardView} is created once and reused on subsequent calls
+     * so sub-view state (lazy init, scroll position) survives navigation.
      */
     public void showDashboard() {
-        content.setCenter(wrapScrollable(
-                new DashboardView(gameService, tradeController, loanController, weekBar, this::showExchangeOnStocksTab)));
+        if (dashboardScrollable == null) {
+            dashboardView = new DashboardView(
+                    gameService, tradeController, loanController, weekBar, this::showExchangeOnStocksTab);
+            dashboardScrollable = wrapScrollable(dashboardView);
+        }
+        content.setCenter(dashboardScrollable);
+    }
+
+    /**
+     * Navigates to the dashboard and activates the Portfolio tab (Shift+1).
+     */
+    public void showDashboardPortfolio() {
+        showDashboard();
+        dashboardView.showPortfolio();
+    }
+
+    /**
+     * Navigates to the dashboard and activates the Transactions tab (Shift+2).
+     */
+    public void showDashboardTransactions() {
+        showDashboard();
+        dashboardView.showTransactions();
+    }
+
+    /**
+     * Navigates to the dashboard and activates the Watchlist tab (Shift+3).
+     */
+    public void showDashboardWatchlist() {
+        showDashboard();
+        dashboardView.showWatchlist();
+    }
+
+    /**
+     * Navigates to the dashboard and activates the Loans tab (Shift+4).
+     */
+    public void showDashboardLoans() {
+        showDashboard();
+        dashboardView.showLoans();
     }
 
     /**
