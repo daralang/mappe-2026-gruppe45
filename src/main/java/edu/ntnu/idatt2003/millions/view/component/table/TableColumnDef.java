@@ -60,6 +60,25 @@ public record TableColumnDef<Column>(
     }
 
     /**
+     * Creates a static, non-sortable column with an info tooltip icon.
+     *
+     * <p>Use this when the column is not sortable but still needs an
+     * {@link InfoTooltip} icon to explain its content (e.g. a sparkline trend column).</p>
+     *
+     * @param <Column>     the sort-column type (inferred; not used for static columns)
+     * @param labelKey     the i18n key for the column header label
+     * @param tooltipKey   the i18n key for the tooltip content
+     * @param percentWidth the column width as a percentage of total table width
+     * @param alignment    the horizontal alignment for cells in this column
+     * @return a new {@link TableColumnDef} with no sort column and an info tooltip
+     */
+    public static <Column> TableColumnDef<Column> of(
+            String labelKey, String tooltipKey, double percentWidth, HPos alignment) {
+        return new TableColumnDef<>(() -> LanguageManager.get(labelKey), null, tooltipKey,
+                percentWidth, alignment);
+    }
+
+    /**
      * Creates a sortable column without a tooltip.
      *
      * @param <Column>     the sort-column enum type

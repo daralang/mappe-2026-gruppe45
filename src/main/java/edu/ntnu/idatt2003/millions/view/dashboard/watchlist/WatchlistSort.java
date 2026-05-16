@@ -70,12 +70,15 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
                                 CurrencyManager.get().getCurrencyCode()),
                         SortColumn.PRICE_ALT, null, 15, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        "col.changeNok", SortColumn.CHANGE_NOK, 10, HPos.RIGHT),
+                        "col.changeNok", SortColumn.CHANGE_NOK,
+                        "tooltip.shared.changeNok", 10, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        "col.changePct", SortColumn.CHANGE_PCT, 10, HPos.RIGHT),
+                        "col.changePct", SortColumn.CHANGE_PCT,
+                        "tooltip.shared.weeklyChange", 10, HPos.RIGHT),
                 TableColumnDef.sortable(
-                        "col.highLow", SortColumn.HIGH_LOW, 10, HPos.RIGHT),
-                TableColumnDef.of("col.trend", 12, HPos.CENTER),
+                        "col.highLow", SortColumn.HIGH_LOW,
+                        "tooltip.shared.highLow", 10, HPos.RIGHT),
+                TableColumnDef.of("col.trend", "tooltip.shared.trend", 12, HPos.CENTER),
                 TableColumnDef.sortable(
                         "col.addedWeek", SortColumn.ADDED_WEEK, 10, HPos.CENTER),
                 TableColumnDef.of("col.trade", 10, HPos.CENTER),

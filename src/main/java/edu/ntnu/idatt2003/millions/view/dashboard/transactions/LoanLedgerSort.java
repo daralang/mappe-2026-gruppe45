@@ -64,7 +64,8 @@ public class LoanLedgerSort extends SortProvider<LoanLedgerEntry, LoanLedgerSort
         return List.of(
                 TableColumnDef.sortable("col.week", SortColumn.WEEK, 10, HPos.LEFT),
                 TableColumnDef.sortable("col.loan", SortColumn.LOAN, 38, HPos.LEFT),
-                TableColumnDef.sortable("col.type", SortColumn.TYPE, 22, HPos.LEFT),
+                TableColumnDef.sortable("col.type", SortColumn.TYPE,
+                        "tooltip.loans.ledger.type", 22, HPos.LEFT),
                 TableColumnDef.sortable("col.amount", SortColumn.AMOUNT, 30, HPos.RIGHT)
         );
     }
