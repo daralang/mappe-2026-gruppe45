@@ -8,15 +8,6 @@ import java.util.function.Supplier;
 
 /**
  * Preserves and restores keyboard focus across UI rebuilds.
- *
- * <p>After a {@code getChildren().clear()} the previously focused node is
- * detached from the scene and loses focus. Use {@link #wrap} to snapshot
- * focus before the rebuild and restore it afterward:</p>
- *
- * <p>If the focused node survives the rebuild (i.e. it is still part of a
- * scene), focus is restored to that exact node. Otherwise the fallback
- * supplier is used. The focus request is deferred with
- * {@link Platform#runLater} so it runs after the layout pass.</p>
  */
 public final class FocusRestorer {
 
@@ -52,7 +43,7 @@ public final class FocusRestorer {
 
     /**
      * Convenience method that snapshots focus, runs a rebuild, then restores
-     * focus — all in one call.
+     * focus, all in one call.
      *
      * @param scene    the scene to snapshot focus from
      * @param rebuild  the rebuild action (e.g. {@code getChildren().clear()} + repopulate)

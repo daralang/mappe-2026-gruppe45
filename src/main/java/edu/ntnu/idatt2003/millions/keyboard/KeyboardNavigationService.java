@@ -17,9 +17,9 @@ import java.util.Objects;
  *
  * <p>Dispatch order on each key event:</p>
  * <ol>
- *   <li>The universal {@link ShortcutRegistry} — always evaluated, even when a
+ *   <li>The universal {@link ShortcutRegistry}, always evaluated, even when a
  *       modal context is active. Use for shortcuts that must fire regardless of
- *       overlay state (e.g. Enter → fire focused button).</li>
+ *       overlay state (e.g. Enter > fire focused button).</li>
  *   <li>The top {@link KeyboardContext} on the stack (e.g. an open modal).</li>
  *   <li>If no context is active or the context did not handle the event,
  *       the global {@link ShortcutRegistry} is consulted.</li>
@@ -29,10 +29,6 @@ import java.util.Objects;
  * a modal dialog is on top of the stack; universal shortcuts are not.</p>
  *
  * <p>Components push themselves when shown and pop themselves when closed:</p>
- * <pre>{@code
- * keyboardService.pushContext(this);  // on show
- * keyboardService.popContext(this);   // on close
- * }</pre>
  */
 public final class KeyboardNavigationService {
 
