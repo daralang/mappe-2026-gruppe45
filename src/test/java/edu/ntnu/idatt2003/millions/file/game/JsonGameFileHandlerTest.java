@@ -20,6 +20,7 @@ import edu.ntnu.idatt2003.millions.model.notification.Notification;
 import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 
 import java.io.File;
+import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -306,46 +307,30 @@ class JsonGameFileHandlerTest {
 
         @Test
         @DisplayName("Should throw GameSaveCorruptException when file is empty")
-        void throwsGameSaveCorruptExceptionWhenFileIsEmpty() throws Exception {
-            // Arrange
-            Path file = tempDir.resolve("empty.json");
-            Files.writeString(file, "");
-            // Act & Assert
+        void parseThrowsGameSaveCorruptExceptionForEmptyInput() {
             assertThrows(GameSaveCorruptException.class, () ->
-                    handler.loadGame(file.toFile()));
+                    handler.parse(new StringReader(""), "test"));
         }
 
         @Test
         @DisplayName("Should throw GameSaveCorruptException when file contains a JSON array instead of an object")
-        void throwsGameSaveCorruptExceptionWhenFileIsJsonArray() throws Exception {
-            // Arrange
-            Path file = tempDir.resolve("array.json");
-            Files.writeString(file, "[1, 2, 3]");
-            // Act & Assert
+        void parseThrowsGameSaveCorruptExceptionForJsonArray() {
             assertThrows(GameSaveCorruptException.class, () ->
-                    handler.loadGame(file.toFile()));
+                    handler.parse(new StringReader("[1, 2, 3]"), "test"));
         }
 
         @Test
         @DisplayName("Should throw GameSaveCorruptException when file contains invalid JSON")
-        void throwsGameSaveCorruptExceptionForInvalidJson() throws Exception {
-            // Arrange
-            Path file = tempDir.resolve("corrupt.json");
-            Files.writeString(file, "{ this is not valid json }");
-            // Act & Assert
+        void parseThrowsGameSaveCorruptExceptionForInvalidJson() {
             assertThrows(GameSaveCorruptException.class, () ->
-                    handler.loadGame(file.toFile()));
+                    handler.parse(new StringReader("{ this is not valid json }"), "test"));
         }
 
         @Test
         @DisplayName("Should throw GameSaveCorruptException when file is missing required fields")
-        void throwsGameSaveCorruptExceptionForMissingFields() throws Exception {
-            // Arrange
-            Path file = tempDir.resolve("incomplete.json");
-            Files.writeString(file, "{ \"player\": {} }");
-            // Act & Assert
+        void parseThrowsGameSaveCorruptExceptionForMissingFields() {
             assertThrows(GameSaveCorruptException.class, () ->
-                    handler.loadGame(file.toFile()));
+                    handler.parse(new StringReader("{ \"player\": {} }"), "test"));
         }
 
         @Test
