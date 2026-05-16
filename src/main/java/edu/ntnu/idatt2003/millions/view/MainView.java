@@ -131,7 +131,7 @@ public class MainView {
     /**
      * Switches the content area to the dashboard view.
      */
-    private void showDashboard() {
+    public void showDashboard() {
         content.setCenter(wrapScrollable(
                 new DashboardView(gameService, tradeController, loanController, weekBar, this::showExchangeOnStocksTab)));
     }
@@ -139,11 +139,14 @@ public class MainView {
     /**
      * Switches the content area to the exchange view.
      */
-    private void showExchange() {
+    public void showExchange() {
         content.setCenter(wrapScrollable(new ExchangeView(gameService, weekBar, tradeController)));
     }
 
-    private void showLeaderboard() {
+    /**
+     * Switches the content area to the leaderboard view.
+     */
+    public void showLeaderboard() {
         content.setCenter(wrapScrollable(new LeaderboardView(gameService, toastService, weekBar)));
     }
 
