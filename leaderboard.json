@@ -3,12 +3,12 @@
     "sessionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "playerName": "Alva",
     "startingCapital": 10000.00,
-    "finalNetWorth": 12531.3311,
-    "returnPercent": 25.3,
-    "weeksPlayed": 37,
+    "finalNetWorth": 12014.8813,
+    "returnPercent": 20.2,
+    "weeksPlayed": 24,
     "status": "NOVICE",
-    "outcome": "ACTIVE",
-    "lastUpdated": "2026-05-16T00:45:52.637813200Z"
+    "outcome": "RETIRED",
+    "lastUpdated": "2026-05-16T01:22:04.902031200Z"
   },
   {
     "sessionId": "80651cf1-aef5-4e63-b1b9-96c109f64730",
