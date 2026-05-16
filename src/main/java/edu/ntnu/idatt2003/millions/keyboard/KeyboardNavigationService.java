@@ -1,10 +1,7 @@
 package edu.ntnu.idatt2003.millions.keyboard;
 
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 import java.util.ArrayDeque;
@@ -20,13 +17,16 @@ import java.util.Objects;
  *
  * <p>Dispatch order on each key event:</p>
  * <ol>
+ *   <li>The universal {@link ShortcutRegistry} — always evaluated, even when a
+ *       modal context is active. Use for shortcuts that must fire regardless of
+ *       overlay state (e.g. Enter → fire focused button).</li>
  *   <li>The top {@link KeyboardContext} on the stack (e.g. an open modal).</li>
  *   <li>If no context is active or the context did not handle the event,
  *       the global {@link ShortcutRegistry} is consulted.</li>
  * </ol>
  *
- * <p>This ensures that global shortcuts (Cmd+1, Cmd+S, …) are automatically
- * suppressed whenever a modal dialog is on top of the stack.</p>
+ * <p>Global shortcuts (Cmd+1, Cmd+S, …) are automatically suppressed whenever
+ * a modal dialog is on top of the stack; universal shortcuts are not.</p>
  *
  * <p>Components push themselves when shown and pop themselves when closed:</p>
  * <pre>{@code
@@ -37,6 +37,7 @@ import java.util.Objects;
 public final class KeyboardNavigationService {
 
     private final Deque<KeyboardContext> contextStack = new ArrayDeque<>();
+    private final ShortcutRegistry universalRegistry = new ShortcutRegistry();
     private final ShortcutRegistry globalRegistry = new ShortcutRegistry();
 
     private Scene attachedScene;
@@ -68,6 +69,7 @@ public final class KeyboardNavigationService {
         attachedScene = null;
         eventFilter = null;
         contextStack.clear();
+        universalRegistry.clear();
         globalRegistry.clear();
     }
 
@@ -106,8 +108,25 @@ public final class KeyboardNavigationService {
     }
 
     /**
+     * Returns the universal {@link ShortcutRegistry} for shortcuts that must
+     * fire regardless of whether a modal {@link KeyboardContext} is active.
+     *
+     * <p>Register here only shortcuts that should never be suppressed by an
+     * overlay (e.g. Enter → fire focused button). All other shortcuts belong
+     * in {@link #globalShortcuts()}.</p>
+     *
+     * @return the universal shortcut registry
+     */
+    public ShortcutRegistry universalShortcuts() {
+        return universalRegistry;
+    }
+
+    /**
      * Returns the global {@link ShortcutRegistry} for registering and
      * unregistering application-wide keyboard shortcuts.
+     *
+     * <p>Shortcuts registered here are suppressed while a modal
+     * {@link KeyboardContext} is on the stack.</p>
      *
      * @return the global shortcut registry
      */
@@ -125,13 +144,12 @@ public final class KeyboardNavigationService {
     }
 
     private void onKeyPressed(KeyEvent event) {
-        if (event.getCode() == KeyCode.ENTER && firesFocusedButton()) {
+        if (universalRegistry.dispatch(event)) {
             event.consume();
             return;
         }
         if (!contextStack.isEmpty()) {
-            boolean handled = contextStack.peek().handleKeyPressed(event);
-            if (handled) {
+            if (contextStack.peek().handleKeyPressed(event)) {
                 event.consume();
                 return;
             }
@@ -139,27 +157,5 @@ public final class KeyboardNavigationService {
         if (globalRegistry.dispatch(event)) {
             event.consume();
         }
-    }
-
-    /**
-     * If the scene's current focus owner is a {@link Button}, fires it and
-     * returns {@code true}. Returns {@code false} for any other node type.
-     *
-     * <p>Called before context-stack and global-shortcut dispatch so that
-     * Enter always activates the focused button, matching standard desktop
-     * keyboard conventions.</p>
-     *
-     * @return {@code true} if a button was fired
-     */
-    private boolean firesFocusedButton() {
-        if (attachedScene == null) {
-            return false;
-        }
-        Node focused = attachedScene.getFocusOwner();
-        if (focused instanceof Button button) {
-            button.fire();
-            return true;
-        }
-        return false;
     }
 }
