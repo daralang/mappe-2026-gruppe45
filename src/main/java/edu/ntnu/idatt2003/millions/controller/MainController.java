@@ -178,6 +178,10 @@ public class MainController {
      * <p>Top-level navigation uses Cmd/Ctrl (SHORTCUT). Dashboard tab shortcuts
      * use Shift+1–4 and jump directly to the respective sub-view, switching to
      * the dashboard first if another view is active.</p>
+     *
+     * <p>Cmd/Ctrl+F delegates to {@link MainView#focusActiveSearch()}, which
+     * routes focus to whichever search field belongs to the currently visible
+     * view — keeping shortcut registration out of the view layer.</p>
      */
     private void registerShortcuts() {
         keyboardService.attach(stage.getScene());
@@ -187,6 +191,7 @@ public class MainController {
         reg.register(KeyBinding.of(KeyCode.DIGIT3, Modifier.SHORTCUT), view::showLeaderboard);
         reg.register(KeyBinding.of(KeyCode.S,      Modifier.SHORTCUT), () -> handleSaveGame());
         reg.register(KeyBinding.of(KeyCode.ENTER,  Modifier.SHORTCUT), this::handleAdvanceWeek);
+        reg.register(KeyBinding.of(KeyCode.F,      Modifier.SHORTCUT), view::focusActiveSearch);
         reg.register(KeyBinding.of(KeyCode.DIGIT1, Modifier.SHIFT), view::showDashboardPortfolio);
         reg.register(KeyBinding.of(KeyCode.DIGIT2, Modifier.SHIFT), view::showDashboardTransactions);
         reg.register(KeyBinding.of(KeyCode.DIGIT3, Modifier.SHIFT), view::showDashboardWatchlist);

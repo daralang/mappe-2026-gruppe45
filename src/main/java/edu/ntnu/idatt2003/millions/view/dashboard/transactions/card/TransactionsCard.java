@@ -47,6 +47,7 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     private final TransactionsSort sort;
     private final LedgerTypeFilter<Class<? extends Transaction>> typeFilter;
     private final WeekRangeFilter weekRangeFilter;
+    private SearchBar ownSearchBar;
 
     /**
      * Constructs a new TransactionsCard.
@@ -98,15 +99,25 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
      */
     @Override
     protected HBox buildSearchRow(Button clearSortButton) {
-        SearchBar searchBar = new SearchBar(
+        ownSearchBar = new SearchBar(
                 "transactions.search.placeholder",
                 "search.button",
                 searchCallback(),
                 metadataRow);
-        HBox row = new HBox(36, searchBar, typeFilter, weekRangeFilter, clearSortButton);
+        HBox row = new HBox(36, ownSearchBar, typeFilter, weekRangeFilter, clearSortButton);
         row.setAlignment(Pos.TOP_LEFT);
         row.getStyleClass().add("transactions-filter-row");
         return row;
+    }
+
+    /**
+     * Focuses the transactions search field.
+     */
+    @Override
+    public void focusSearch() {
+        if (ownSearchBar != null) {
+            ownSearchBar.focus();
+        }
     }
 
     /**

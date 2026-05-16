@@ -1,6 +1,5 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
-import edu.ntnu.idatt2003.millions.keyboard.KeyboardContext;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -27,10 +26,13 @@ import java.util.Objects;
  * {@code configureCard()}, and {@code showStage()} (override to use
  * {@code showAndWait()} for blocking dialogs).</p>
  *
- * <p>Implements {@code KeyboardContext}: ESC closes the modal.
- * Override {@code handleKeyPressed} and call {@code super} to add shortcuts.</p>
+ * <p>ESC closes the modal via a scene-level event filter installed in {@link #show()}.
+ * Each modal has its own {@link javafx.stage.Stage} and {@link javafx.scene.Scene},
+ * so keyboard isolation is achieved naturally without the application-wide
+ * {@code KeyboardNavigationService} context stack.
+ * Override {@link #handleKeyPressed} and call {@code super} to add shortcuts.</p>
  */
-public abstract class Modal implements KeyboardContext {
+public abstract class Modal {
 
     protected final Stage stage = new Stage();
 
@@ -85,14 +87,19 @@ public abstract class Modal implements KeyboardContext {
     /**
      * Handles key events for this modal. ESC closes the modal.
      *
+     * <p>This method is registered directly on the modal's own {@link javafx.scene.Scene}
+     * event filter in {@link #show()}, giving each modal isolated keyboard handling
+     * without participating in the application-wide {@code KeyboardNavigationService}
+     * context stack (modals use their own {@link javafx.stage.Stage} and are naturally
+     * isolated).</p>
+     *
      * <p>Subclasses that need additional shortcuts should override this method
      * and call {@code super.handleKeyPressed(event)} to preserve ESC behaviour.</p>
      *
      * @param event the key event
      * @return {@code true} if the event was handled
      */
-    @Override
-    public boolean handleKeyPressed(KeyEvent event) {
+    protected boolean handleKeyPressed(KeyEvent event) {
         if (event.getCode() == KeyCode.ESCAPE) {
             close();
             event.consume();

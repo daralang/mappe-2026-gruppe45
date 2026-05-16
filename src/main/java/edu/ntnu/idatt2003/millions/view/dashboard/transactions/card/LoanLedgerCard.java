@@ -49,6 +49,7 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
     private final LoanLedgerSort sort;
     private final LedgerTypeFilter<LoanLedgerEntryType> typeFilter;
     private final WeekRangeFilter weekRangeFilter;
+    private SearchBar ownSearchBar;
 
     /**
      * The latest loan-label map computed from the full ledger.
@@ -103,15 +104,25 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
      */
     @Override
     protected HBox buildSearchRow(Button clearSortButton) {
-        SearchBar searchBar = new SearchBar(
+        ownSearchBar = new SearchBar(
                 "loans.search.placeholder",
                 "search.button",
                 searchCallback(),
                 metadataRow);
-        HBox row = new HBox(16, searchBar, typeFilter, weekRangeFilter, clearSortButton);
+        HBox row = new HBox(16, ownSearchBar, typeFilter, weekRangeFilter, clearSortButton);
         row.setAlignment(Pos.TOP_LEFT);
         row.getStyleClass().add("transactions-filter-row");
         return row;
+    }
+
+    /**
+     * Focuses the loan ledger search field.
+     */
+    @Override
+    public void focusSearch() {
+        if (ownSearchBar != null) {
+            ownSearchBar.focus();
+        }
     }
 
     /**

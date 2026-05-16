@@ -105,6 +105,25 @@ public final class ArrowKeyNavigator {
     }
 
     /**
+     * Silently updates the selected index without firing {@code onSelect}.
+     *
+     * <p>Use this to synchronise the navigator's internal index with an externally
+     * determined position — for example when the user arrives at an item via Tab
+     * rather than arrow keys — before delegating the first key event to
+     * {@link #navigate}. This prevents the navigator from jumping back to its
+     * previous position on the first arrow-key press.</p>
+     *
+     * @param index the index to synchronise to; clamped to valid range
+     */
+    public void syncIndex(int index) {
+        int size = sizeSupplier.getAsInt();
+        if (size == 0) {
+            return;
+        }
+        selectedIndex = Math.clamp(index, 0, size - 1);
+    }
+
+    /**
      * Programmatically selects the given index without firing {@code onConfirm}.
      * Clamps to valid range.
      *

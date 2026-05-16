@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.transactions;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
+import edu.ntnu.idatt2003.millions.view.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.LoanLedgerCard;
@@ -27,7 +28,7 @@ import javafx.scene.layout.VBox;
  * both sub-tab bodies, so the selected period is preserved when switching
  * between sub-tabs.</p>
  */
-public class TransactionsView extends VBox {
+public class TransactionsView extends VBox implements SearchFocusProvider {
 
     private static final int VERTICAL_SPACING   = 16;
     private static final int HORIZONTAL_SPACING = 16;
@@ -38,6 +39,7 @@ public class TransactionsView extends VBox {
     private final TransactionsCard tradesBody;
     private final LoanLedgerCard   loanLedgerBody;
     private Button activeSubTab;
+    private boolean tradesTabActive = true;
 
     public TransactionsView(GameService gameService) {
         setSpacing(VERTICAL_SPACING);
@@ -100,7 +102,22 @@ public class TransactionsView extends VBox {
         activeSubTab.getStyleClass().add("tab-button-active");
     }
 
+    /**
+     * Focuses the search field of the currently active sub-tab.
+     * Delegates to {@link TransactionsCard} or {@link LoanLedgerCard}
+     * depending on which sub-tab is shown.
+     */
+    @Override
+    public void focusSearch() {
+        if (tradesTabActive) {
+            tradesBody.focusSearch();
+        } else {
+            loanLedgerBody.focusSearch();
+        }
+    }
+
     private void showTrades() {
+        tradesTabActive = true;
         contentArea.getChildren().setAll(tradesBody);
         if (!getChildren().contains(bottomRow)) {
             getChildren().add(bottomRow);
@@ -108,6 +125,7 @@ public class TransactionsView extends VBox {
     }
 
     private void showLoanLedger() {
+        tradesTabActive = false;
         contentArea.getChildren().setAll(loanLedgerBody);
         getChildren().remove(bottomRow);
     }

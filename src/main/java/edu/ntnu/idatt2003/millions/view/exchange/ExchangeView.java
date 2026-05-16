@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.exchange;
 
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.view.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.ExchangeOverview;
@@ -16,12 +17,13 @@ import java.util.List;
  * Contains a tab bar for navigating between overview and stocks.
  * Tab navigation is purely visual state and handled internally by this view.
  */
-public class ExchangeView extends VBox {
+public class ExchangeView extends VBox implements SearchFocusProvider {
 
     private final GameService gameService;
     private final TradeController controller;
     private final ViewHeader viewHeader;
     private final VBox contentArea;
+    private SearchFocusProvider activeTabProvider;
 
     /**
      * Constructs a new ExchangeView with the overview tab active.
@@ -64,11 +66,25 @@ public class ExchangeView extends VBox {
         showStocks();
     }
 
+    /**
+     * Focuses the search field of the currently active exchange tab.
+     * The overview tab has no search bar; in that case this method is a no-op.
+     */
+    @Override
+    public void focusSearch() {
+        if (activeTabProvider != null) {
+            activeTabProvider.focusSearch();
+        }
+    }
+
     private void showOverview() {
+        activeTabProvider = null;
         contentArea.getChildren().setAll(new ExchangeOverview(gameService));
     }
 
     private void showStocks() {
-        contentArea.getChildren().setAll(new StocksView(gameService, controller));
+        StocksView stocksView = new StocksView(gameService, controller);
+        activeTabProvider = stocksView;
+        contentArea.getChildren().setAll(stocksView);
     }
 }
