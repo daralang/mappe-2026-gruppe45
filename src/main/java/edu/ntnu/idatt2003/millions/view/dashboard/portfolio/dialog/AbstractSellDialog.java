@@ -4,6 +4,7 @@ import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -44,7 +45,7 @@ public abstract class AbstractSellDialog extends TransactionDialog {
     @Override
     protected String getStockHint() {
         return MessageFormat.format(LanguageManager.get("dialog.stock.salesPriceHint"),
-                NUMBER_FORMAT.format(stock.getSalesPrice()),
+                MoneyFormatter.format(stock.getSalesPrice()),
                 stock.getCurrency().getCurrencyCode());
     }
 
@@ -74,15 +75,15 @@ public abstract class AbstractSellDialog extends TransactionDialog {
         TransactionPreview preview = controller.previewSell(share, quantity);
 
         summaryBox.addRow(LanguageManager.get("dialog.summary.gross"),
-                NUMBER_FORMAT.format(preview.gross()) + " " + currencyCode());
+                MoneyFormatter.format(preview.gross()) + " " + currencyCode());
         summaryBox.addRow(LanguageManager.get("dialog.summary.commissionSell"),
-                "\u2212" + NUMBER_FORMAT.format(preview.commission()) + " " + currencyCode());
+                "\u2212" + MoneyFormatter.format(preview.commission()) + " " + currencyCode());
         summaryBox.addRow(LanguageManager.get("dialog.summary.tax"),
-                "\u2212" + NUMBER_FORMAT.format(preview.tax()) + " " + currencyCode());
+                "\u2212" + MoneyFormatter.format(preview.tax()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("dialog.summary.totalReceived"),
-                NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
+                MoneyFormatter.format(preview.total()) + " " + currencyCode());
         if (!stock.getCurrency().equals(NOK)) {
-            summaryBox.addConversion("= " + NUMBER_FORMAT.format(preview.totalInNok()) + " NOK");
+            summaryBox.addConversion("= " + MoneyFormatter.format(preview.totalInNok()) + " NOK");
         }
 
         renderProfitLoss(preview);
@@ -97,19 +98,19 @@ public abstract class AbstractSellDialog extends TransactionDialog {
         String pctSign = positive ? "+" : "";
 
         String label = LanguageManager.get(positive ? "dialog.profit.gain" : "dialog.profit.loss");
-        String primaryValue = sign + NUMBER_FORMAT.format(preview.profit().abs()) + " " + currencyCode()
+        String primaryValue = sign + MoneyFormatter.format(preview.profit().abs()) + " " + currencyCode()
                 + " (" + pctSign + preview.profitPercent().toPlainString() + "%)";
 
         String secondaryValue = null;
         if (!stock.getCurrency().equals(NOK) && preview.profitInNok() != null) {
-            secondaryValue = "= " + sign + NUMBER_FORMAT.format(preview.profitInNok().abs()) + " NOK";
+            secondaryValue = "= " + sign + MoneyFormatter.format(preview.profitInNok().abs()) + " NOK";
         }
         setTransactionInfo(label, primaryValue, secondaryValue, positive);
     }
 
     private void renderBalanceAfter(TransactionPreview preview) {
         balanceAfterValue.setText(
-                NUMBER_FORMAT.format(preview.balanceAfter()) + " NOK");
+                MoneyFormatter.format(preview.balanceAfter()) + " NOK");
         balanceAfterValue.getStyleClass().removeAll("positive", "negative");
     }
 

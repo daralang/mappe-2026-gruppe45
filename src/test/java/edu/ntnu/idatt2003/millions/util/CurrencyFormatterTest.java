@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.util;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,17 @@ import static org.junit.jupiter.api.Assertions.*;
  * </p>
  */
 class CurrencyFormatterTest {
+
+    @BeforeEach
+    void setNorwegian() {
+        // Pin to Norwegian so locale-sensitive assertions are deterministic.
+        LanguageManager.setLanguage(Language.NORWEGIAN);
+    }
+
+    @AfterEach
+    void resetToNorwegian() {
+        LanguageManager.setLanguage(Language.NORWEGIAN);
+    }
 
     @Nested
     @DisplayName("format()")

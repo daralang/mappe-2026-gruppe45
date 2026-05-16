@@ -14,12 +14,11 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
+
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
 import java.util.Currency;
-import java.util.Locale;
 
 /**
  * Read-only details modal for a single share position. Shows the position
@@ -28,13 +27,7 @@ import java.util.Locale;
  */
 public class ShareDetailsModal extends Modal {
 
-    private static final DecimalFormat NUMBER_FORMAT;
     private static final Currency NOK = Currency.getInstance("NOK");
-
-    static {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("nb-NO"));
-        NUMBER_FORMAT = new DecimalFormat("#,##0.00", symbols);
-    }
 
     private final Share share;
     private final TradeController controller;
@@ -63,7 +56,7 @@ public class ShareDetailsModal extends Modal {
         String hint = MessageFormat.format(
                 LanguageManager.get("details.stock.hint"),
                 currencyCode,
-                NUMBER_FORMAT.format(stock.getSalesPrice()));
+                MoneyFormatter.format(stock.getSalesPrice()));
 
         boolean gameOver = controller.isGameOver();
 
@@ -108,14 +101,14 @@ public class ShareDetailsModal extends Modal {
         box.setSectionTitle(LanguageManager.get("details.section.position"));
         box.addRow(
                 LanguageManager.get("details.row.quantity"),
-                NUMBER_FORMAT.format(share.getQuantity()));
+                MoneyFormatter.format(share.getQuantity()));
         box.addRow(
                 LanguageManager.get("details.row.avgPrice"),
-                NUMBER_FORMAT.format(share.getPurchasePrice()) + " " + currencyCode,
+                MoneyFormatter.format(share.getPurchasePrice()) + " " + currencyCode,
                 null, "tooltip.details.gav");
         box.addRow(
                 LanguageManager.get("details.row.cost"),
-                NUMBER_FORMAT.format(share.getCost()) + " " + currencyCode);
+                MoneyFormatter.format(share.getCost()) + " " + currencyCode);
         return box;
     }
 
@@ -125,22 +118,22 @@ public class ShareDetailsModal extends Modal {
         if (isForeign) {
             box.addRow(
                     LanguageManager.get("details.row.marketValue"),
-                    NUMBER_FORMAT.format(share.getCurrentValue()) + " " + currencyCode,
+                    MoneyFormatter.format(share.getCurrentValue()) + " " + currencyCode,
                     null, "tooltip.details.marketValue");
             box.addRow(
                     LanguageManager.get("details.row.marketValueNok"),
-                    NUMBER_FORMAT.format(portfolioService.getShareValueInNok(
+                    MoneyFormatter.format(portfolioService.getShareValueInNok(
                             share, controller.getCurrencyConverter())) + " NOK",
                     null, "tooltip.details.marketValueNok");
         } else {
             box.addRow(
                     LanguageManager.get("details.row.marketValue"),
-                    NUMBER_FORMAT.format(share.getCurrentValue()) + " NOK",
+                    MoneyFormatter.format(share.getCurrentValue()) + " NOK",
                     null, "tooltip.details.marketValue");
         }
         box.addRow(
                 LanguageManager.get("details.row.liquidationValue"),
-                NUMBER_FORMAT.format(portfolioService.getLiquidationValueInNok(
+                MoneyFormatter.format(portfolioService.getLiquidationValueInNok(
                         share, controller.getCurrencyConverter())) + " NOK",
                 null, "tooltip.details.liquidation");
         return box;
@@ -153,7 +146,7 @@ public class ShareDetailsModal extends Modal {
         BigDecimal returnNative = share.getReturnNative();
         boolean positiveNative = returnNative.signum() >= 0;
         String signNative = positiveNative ? "+" : "−";
-        String returnNativeStr = signNative + NUMBER_FORMAT.format(returnNative.abs());
+        String returnNativeStr = signNative + MoneyFormatter.format(returnNative.abs());
 
         if (isForeign) {
             String returnNativeLabel = MessageFormat.format(
@@ -170,7 +163,7 @@ public class ShareDetailsModal extends Modal {
             String signNok = positiveNok ? "+" : "−";
             box.addRow(
                     LanguageManager.get("details.row.returnNok"),
-                    signNok + NUMBER_FORMAT.format(returnNok.abs()) + " NOK",
+                    signNok + MoneyFormatter.format(returnNok.abs()) + " NOK",
                     positiveNok ? "positive" : "negative",
                     "tooltip.shared.returnNok");
         } else {
