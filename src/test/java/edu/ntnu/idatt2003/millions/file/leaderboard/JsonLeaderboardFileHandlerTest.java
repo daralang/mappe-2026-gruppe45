@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.StringReader;
 import java.math.BigDecimal;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
@@ -47,19 +47,20 @@ class JsonLeaderboardFileHandlerTest {
     }
 
     @Test
-    void readAllReturnsEmptyListWhenFileIsEmptyJsonArray() throws Exception {
-        Files.writeString(leaderboardFile.toPath(), "[]");
-
-        List<LeaderboardEntry> entries = handler.readAll(leaderboardFile);
-
+    void readAllReturnsEmptyListWhenFileIsEmptyJsonArray() {
+        // Arrange
+        // Act
+        List<LeaderboardEntry> entries = handler.parse(new StringReader("[]"));
+        // Assert
         assertTrue(entries.isEmpty());
     }
 
     @Test
-    void readAllThrowsForCorruptFile() throws Exception {
-        Files.writeString(leaderboardFile.toPath(), "{not valid json");
-
-        assertThrows(IllegalStateException.class, () -> handler.readAll(leaderboardFile));
+    void readAllThrowsForCorruptFile() {
+        // Arrange
+        // Act & Assert
+        assertThrows(IllegalStateException.class,
+                () -> handler.parse(new StringReader("{not valid json")));
     }
 
     @Test

@@ -55,15 +55,29 @@ public class JsonLeaderboardFileHandler implements LeaderboardFileHandler {
             return new ArrayList<>();
         }
         try (FileReader reader = new FileReader(file)) {
-            Type listType = new TypeToken<List<LeaderboardEntry>>() {}.getType();
-            List<LeaderboardEntry> entries = gson.fromJson(reader, listType);
-            return entries == null ? new ArrayList<>() : new ArrayList<>(entries);
-        } catch (JsonParseException e) {
-            throw new IllegalStateException(
-                    "Leaderboard file is corrupt: " + file.getName(), e);
+            return parse(reader);
         } catch (IOException e) {
             throw new IllegalStateException(
                     "Could not read leaderboard file: " + file.getName(), e);
+        }
+    }
+
+    /**
+     * Parses leaderboard entries from an already-opened reader.
+     * The file-absent short-circuit and file-open I/O concerns remain in
+     * {@link #readAll(File)}; this method handles only JSON deserialisation.
+     *
+     * @param reader the reader positioned at the start of a JSON leaderboard array
+     * @return a mutable list of entries; empty if the JSON is {@code null} or {@code []}
+     * @throws IllegalStateException if the input is not valid JSON
+     */
+    List<LeaderboardEntry> parse(Reader reader) {
+        Type listType = new TypeToken<List<LeaderboardEntry>>() {}.getType();
+        try {
+            List<LeaderboardEntry> entries = gson.fromJson(reader, listType);
+            return entries == null ? new ArrayList<>() : new ArrayList<>(entries);
+        } catch (JsonParseException e) {
+            throw new IllegalStateException("Leaderboard JSON is corrupt", e);
         }
     }
 
