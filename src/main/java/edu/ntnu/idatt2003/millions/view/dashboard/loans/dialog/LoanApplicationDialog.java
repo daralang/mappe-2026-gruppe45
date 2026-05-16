@@ -7,11 +7,13 @@ import edu.ntnu.idatt2003.millions.view.component.Modal;
 import edu.ntnu.idatt2003.millions.view.component.ModalActions;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.SummaryBox;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
-import javafx.geometry.Pos;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -135,6 +137,12 @@ public class LoanApplicationDialog extends Modal {
         return info;
     }
 
+    /**
+     * Builds the amount input section with a slider and text field kept in sync.
+     *
+     * <p>Pressing {@code Enter} in the text field fires {@code onConfirm()} when
+     * the confirm button is enabled.</p>
+     */
     private VBox buildAmountSection() {
         StyledText labelLeft = StyledText.detailLabel(LanguageManager.get("loans.dialog.amount.label"));
         StyledText labelRight = StyledText.detailLabel(
@@ -179,6 +187,12 @@ public class LoanApplicationDialog extends Modal {
 
         amountField.getStyleClass().add("modal-input");
         amountField.setText("0");
+        amountField.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.ENTER && !confirmButton.isDisable()) {
+                onConfirm();
+                event.consume();
+            }
+        });
 
         amountSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (updatingAmount) return;
