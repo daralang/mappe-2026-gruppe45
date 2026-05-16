@@ -12,7 +12,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
-import java.text.MessageFormat;
 import java.util.Currency;
 import java.util.List;
 
@@ -80,8 +79,7 @@ class StockInfoCard extends VBox {
     private HBox buildMetaRow(Stock stock, String currencyCode,
                               BigDecimal price, BigDecimal priceNok,
                               BigDecimal changePercent) {
-        String priceLabelText = MessageFormat.format(
-                LanguageManager.get("col.priceNative"), currencyCode);
+        String priceLabelText = LanguageManager.get("col.priceNative");
 
         VBox priceCell = buildTextCell(
                 priceLabelText,
