@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.model;
+package edu.ntnu.idatt2003.millions.model.calculator;
 
 import edu.ntnu.idatt2003.millions.model.calculator.PurchaseCalculator;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
