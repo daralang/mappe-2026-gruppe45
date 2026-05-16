@@ -5,7 +5,6 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
-import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
@@ -79,13 +78,9 @@ class WatchlistRowRenderer extends RowRenderer {
         Label companyLabel = TableCells.data(stock.getCompany());
 
         BigDecimal priceNok = converter.convert(stock.getSalesPrice(), stock.getCurrency(), NOK);
-        Label priceNokLabel = TableCells.data(
-                ChangeFormatter.formatPlain(priceNok)
-                        + " " + CurrencyFormatter.symbol("NOK"));
-
-        Label priceAltLabel = TableCells.data(
-                ChangeFormatter.formatPlain(stock.getSalesPrice())
-                        + " " + CurrencyFormatter.symbol(stock.getCurrency()));
+        Label priceNokLabel = TableCells.data(ChangeFormatter.formatPlain(priceNok));
+        Label currencyLabel = TableCells.data(stock.getCurrency().getCurrencyCode());
+        Label priceAltLabel = TableCells.data(ChangeFormatter.formatPlain(stock.getSalesPrice()));
 
         BigDecimal changeNok = converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
         Label changeNokLabel = ChangeFormatter.styledAmount(changeNok, "holdings-cell");
@@ -104,6 +99,7 @@ class WatchlistRowRenderer extends RowRenderer {
         GridPane.setValignment(tickerLabel, VPos.TOP);
         GridPane.setValignment(companyLabel, VPos.TOP);
         GridPane.setValignment(priceNokLabel, VPos.TOP);
+        GridPane.setValignment(currencyLabel, VPos.TOP);
         GridPane.setValignment(priceAltLabel, VPos.TOP);
         GridPane.setValignment(changeNokLabel, VPos.TOP);
         GridPane.setValignment(changePctLabel, VPos.TOP);
@@ -114,7 +110,7 @@ class WatchlistRowRenderer extends RowRenderer {
         GridPane.setValignment(noteButton, VPos.TOP);
         GridPane.setValignment(removeButton, VPos.TOP);
 
-        Node[] cells = {tickerLabel, companyLabel, priceAltLabel, priceNokLabel,
+        Node[] cells = {tickerLabel, companyLabel, priceNokLabel, currencyLabel, priceAltLabel,
                 changeNokLabel, changePctLabel, highLowLabel, sparkline,
                 addedWeekLabel, actions, noteButton, removeButton};
         table.addRow(rowIndex, cells);
