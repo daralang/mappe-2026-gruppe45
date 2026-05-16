@@ -135,7 +135,7 @@ public class NotificationPanel {
         StyledText body = StyledText.widgetLabel(formatBody(n));
         body.setWrapText(true);
 
-        Label week = new Label("Uke " + n.week());
+        Label week = new Label(MessageFormat.format(LanguageManager.get("transactions.weekValue"), n.week()));
         week.getStyleClass().add("notification-week");
 
         VBox content = new VBox(2, title, body, week);
