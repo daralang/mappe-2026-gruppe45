@@ -1,7 +1,10 @@
 package edu.ntnu.idatt2003.millions.keyboard;
 
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 import java.util.ArrayDeque;
@@ -122,6 +125,10 @@ public final class KeyboardNavigationService {
     }
 
     private void onKeyPressed(KeyEvent event) {
+        if (event.getCode() == KeyCode.ENTER && firesFocusedButton()) {
+            event.consume();
+            return;
+        }
         if (!contextStack.isEmpty()) {
             boolean handled = contextStack.peek().handleKeyPressed(event);
             if (handled) {
@@ -132,5 +139,27 @@ public final class KeyboardNavigationService {
         if (globalRegistry.dispatch(event)) {
             event.consume();
         }
+    }
+
+    /**
+     * If the scene's current focus owner is a {@link Button}, fires it and
+     * returns {@code true}. Returns {@code false} for any other node type.
+     *
+     * <p>Called before context-stack and global-shortcut dispatch so that
+     * Enter always activates the focused button, matching standard desktop
+     * keyboard conventions.</p>
+     *
+     * @return {@code true} if a button was fired
+     */
+    private boolean firesFocusedButton() {
+        if (attachedScene == null) {
+            return false;
+        }
+        Node focused = attachedScene.getFocusOwner();
+        if (focused instanceof Button button) {
+            button.fire();
+            return true;
+        }
+        return false;
     }
 }

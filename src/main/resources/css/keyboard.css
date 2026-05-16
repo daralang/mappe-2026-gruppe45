@@ -40,3 +40,10 @@
     -fx-border-color: -primary;
     -fx-border-width: 2;
 }
+
+/* Browse button in FileDropZone */
+.browse-button:focused {
+    -fx-border-color: -primary;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+}
