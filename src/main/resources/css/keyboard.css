@@ -1,0 +1,42 @@
+/* Keyboard focus rings — all interactive elements */
+
+/* Suppress JavaFX default glow; replaced by explicit rings below */
+.root {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* Tab buttons (ViewHeader) */
+.tab-button:focused {
+    -fx-border-color: -primary -primary black -primary;
+    -fx-border-width: 0 0 2 0;
+    -fx-text-fill: -text-primary;
+}
+
+/* Modal and dialog buttons */
+.modal-button:focused {
+    -fx-border-color: -primary;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+}
+
+/* Pagination arrows */
+.pagination-button:focused {
+    -fx-background-color: -surface-alt;
+    -fx-border-color: -primary;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+}
+
+/* Loan offer cards */
+.loans-offer-card:focused {
+    -fx-border-color: -primary;
+    -fx-border-width: 2;
+}
+
+/* Text fields */
+.text-field:focused,
+.text-input:focused {
+    -fx-border-color: -primary;
+    -fx-border-width: 2;
+}

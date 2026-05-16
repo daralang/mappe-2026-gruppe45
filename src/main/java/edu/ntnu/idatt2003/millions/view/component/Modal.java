@@ -1,11 +1,13 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
+import edu.ntnu.idatt2003.millions.keyboard.KeyboardContext;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -18,21 +20,17 @@ import javafx.stage.StageStyle;
 import java.util.Objects;
 
 /**
- * Base class for modal windows in the application.
- * Encapsulates the boilerplate of building a transparent, modal stage
- * with a card-style content surface, an ESC handler, and common styling.
+ * Base class for all modal windows.
  *
- * <p>Subclasses provide their content via {@link #buildContent()} and may
- * optionally use {@link #buildStandardHeader(String)} for a consistent
- * header with title and close button. Override {@link #onBeforeShow()} for
- * any work that needs to run after the content is built but before the
- * modal is displayed (e.g. initial rendering).</p>
+ * <p>Subclasses implement {@code buildContent()} and optionally
+ * {@code buildStandardHeader()}, {@code onBeforeShow()},
+ * {@code configureCard()}, and {@code showStage()} (override to use
+ * {@code showAndWait()} for blocking dialogs).</p>
  *
- * <p>By default the modal uses non-blocking {@code show()}. Subclasses
- * that need to block the caller (e.g. dialogs awaiting user input) can
- * override {@link #showStage()} to use {@code showAndWait()} instead.</p>
+ * <p>Implements {@code KeyboardContext}: ESC closes the modal.
+ * Override {@code handleKeyPressed} and call {@code super} to add shortcuts.</p>
  */
-public abstract class Modal {
+public abstract class Modal implements KeyboardContext {
 
     protected final Stage stage = new Stage();
 
@@ -70,11 +68,7 @@ public abstract class Modal {
             stage.sizeToScene();
         }));
 
-        scene.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ESCAPE) {
-                close();
-            }
-        });
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPressed);
 
         onBeforeShow();
         stage.sizeToScene();
@@ -86,6 +80,25 @@ public abstract class Modal {
      */
     public void close() {
         stage.close();
+    }
+
+    /**
+     * Handles key events for this modal. ESC closes the modal.
+     *
+     * <p>Subclasses that need additional shortcuts should override this method
+     * and call {@code super.handleKeyPressed(event)} to preserve ESC behaviour.</p>
+     *
+     * @param event the key event
+     * @return {@code true} if the event was handled
+     */
+    @Override
+    public boolean handleKeyPressed(KeyEvent event) {
+        if (event.getCode() == KeyCode.ESCAPE) {
+            close();
+            event.consume();
+            return true;
+        }
+        return false;
     }
 
     /**
