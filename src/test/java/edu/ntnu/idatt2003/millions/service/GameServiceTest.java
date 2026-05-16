@@ -742,6 +742,20 @@ class GameServiceTest {
             gameService.sellAllAndExit();
             assertTrue(observer.updateCount > before);
         }
+
+        @Test
+        @DisplayName("works after declareGameOver — records BANKRUPTCY, not RETIRED")
+        void sellAllAndExitAfterGameOver_recordsBankruptcy() {
+            gameService.buy("EQNR", new BigDecimal("3"));
+            gameService.declareGameOver();
+            assertTrue(gameService.isGameOver());
+
+            assertDoesNotThrow(() -> gameService.sellAllAndExit());
+
+            assertTrue(gameService.getPlayer().getPortfolio().getShares().isEmpty());
+            assertEquals(1, lbService.getAllEntries().size());
+            assertEquals(Outcome.BANKRUPTCY, lbService.getAllEntries().get(0).outcome());
+        }
     }
 
     @Nested

@@ -57,7 +57,7 @@ public class JsonGameFileHandler implements GameFileHandler {
      * @throws UncheckedIOException if the file cannot be written to
      */
     @Override
-    public void saveGame(Player player, Exchange exchange, File file) {
+    public void saveGame(Player player, Exchange exchange, boolean gameOver, File file) {
         Objects.requireNonNull(player, "Player cannot be null");
         Objects.requireNonNull(exchange, "Exchange cannot be null");
         Objects.requireNonNull(file, "File cannot be null");
@@ -65,6 +65,7 @@ public class JsonGameFileHandler implements GameFileHandler {
         JsonObject gameState = new JsonObject();
         gameState.add("player", gson.toJsonTree(player));
         gameState.add("exchange", gson.toJsonTree(exchange));
+        gameState.addProperty("gameOver", gameOver);
 
         try (FileWriter writer = new FileWriter(file)) {
             gson.toJson(gameState, writer);
@@ -124,7 +125,8 @@ public class JsonGameFileHandler implements GameFileHandler {
             mergeSharesBySymbol(player);
             relinkArchive(player, exchange);
 
-            return new GameState(player, exchange);
+            boolean gameOver = gameState.has("gameOver") && gameState.get("gameOver").getAsBoolean();
+            return new GameState(player, exchange, gameOver);
 
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to load game from file: " + file.getName(), e);
