@@ -36,6 +36,10 @@ import java.util.function.Consumer;
  * a blue border. LEFT/RIGHT arrow keys move the selection via
  * {@link ArrowKeyNavigator}; ENTER fires the selected offer's apply action.</p>
  *
+ * <p>The key handler is stored as a named field ({@code keyHandler}) so that
+ * the scene event filter can be correctly removed when the card leaves a scene,
+ * preventing event-filter accumulation across scene transitions.</p>
+ *
  * <p>Wire up the apply callback via {@link #setOnApplyClicked(Consumer)}
  * after construction.</p>
  */
@@ -60,6 +64,12 @@ public class AvailableLoansCard extends Card {
             false
     );
 
+    private final javafx.event.EventHandler<KeyEvent> keyHandler = event -> {
+        if (navigator.navigate(event)) {
+            event.consume();
+        }
+    };
+
     public AvailableLoansCard(GameService gameService) {
         super(gameService);
         this.gameService = gameService;
@@ -78,8 +88,8 @@ public class AvailableLoansCard extends Card {
         refresh();
 
         sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (oldScene != null) oldScene.removeEventFilter(KeyEvent.KEY_PRESSED, this::onKeyPressed);
-            if (newScene != null) newScene.addEventFilter(KeyEvent.KEY_PRESSED, this::onKeyPressed);
+            if (oldScene != null) oldScene.removeEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
+            if (newScene != null) newScene.addEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
         });
     }
 
@@ -183,13 +193,6 @@ public class AvailableLoansCard extends Card {
             Button btn = applyButtons.get(i);
             btn.getStyleClass().removeAll("modal-button-primary", "modal-button-outlined");
             btn.getStyleClass().add(isSelected ? "modal-button-primary" : "modal-button-outlined");
-        }
-    }
-
-    /** Delegates key events to the navigator. */
-    private void onKeyPressed(KeyEvent event) {
-        if (navigator.navigate(event)) {
-            event.consume();
         }
     }
 
