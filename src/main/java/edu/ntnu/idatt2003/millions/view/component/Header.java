@@ -114,6 +114,7 @@ public class Header extends HBox {
         setAlignment(Pos.TOP_LEFT);
 
         LanguageManager.addObserver(this::updateTexts);
+        onGameUpdated();
     }
 
     public void setOnLeaderboard(Runnable callback) {
