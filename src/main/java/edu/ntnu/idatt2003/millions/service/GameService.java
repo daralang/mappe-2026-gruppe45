@@ -493,10 +493,11 @@ public class GameService {
      */
     public void sellAllAndExit() {
         for (Share share : new ArrayList<>(player.getPortfolio().getShares())) {
-            sell(share);
+            exchange.sell(share, player);
         }
         leaderboardService.recordOrUpdate(
-                player, exchange, exchange.getCurrencyConverter(), Outcome.RETIRED);
+                player, exchange, exchange.getCurrencyConverter(),
+                gameOver ? Outcome.BANKRUPTCY : Outcome.RETIRED);
         if (currentSaveFile != null) {
             try {
                 gameFileHandler.saveGame(player, exchange, gameOver, currentSaveFile);
