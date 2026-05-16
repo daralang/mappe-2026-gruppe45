@@ -4,6 +4,7 @@ import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.MainController;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;
+import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.view.component.Header;
@@ -49,6 +50,7 @@ public class MainView {
     private final LoanController loanController;
     private final ToastService toastService;
     private final SearchFocusRegistry searchFocusRegistry;
+    private final TabNavigationRegistry tabNavigationRegistry;
     private final StackPane outerRoot;
     private final BorderPane content;
     private final WeekBar weekBar;
@@ -65,9 +67,10 @@ public class MainView {
      * @param gameService         the game manager containing player and exchange
      * @param titleBar            the platform title bar; save/exit callbacks already wired by the controller
      * @param onAdvanceWeek       callback invoked when the user clicks "Advance week"
-     * @param searchFocusRegistry registry updated whenever the active view changes,
-     *                            allowing the controller to trigger search focus
-     *                            without depending on this view directly
+     * @param searchFocusRegistry   registry updated whenever the active view changes,
+     *                              allowing the controller to trigger search focus
+     *                              without depending on this view directly
+     * @param tabNavigationRegistry registry updated whenever the active view changes when tab changes
      */
     public MainView(Stage stage,
                     GameService gameService,
@@ -76,12 +79,14 @@ public class MainView {
                     TitleBar titleBar,
                     Runnable onAdvanceWeek,
                     ToastService toastService,
-                    SearchFocusRegistry searchFocusRegistry) {
+                    SearchFocusRegistry searchFocusRegistry,
+                    TabNavigationRegistry tabNavigationRegistry) {
         this.gameService = gameService;
         this.tradeController = tradeController;
         this.loanController = loanController;
         this.toastService = toastService;
         this.searchFocusRegistry = searchFocusRegistry;
+        this.tabNavigationRegistry = tabNavigationRegistry;
         this.weekBar = new WeekBar(gameService, onAdvanceWeek);
         titleBar.setOnDashboard(this::showDashboard);
         titleBar.setOnExchange(this::showExchange);
@@ -160,6 +165,7 @@ public class MainView {
             dashboardScrollable = wrapScrollable(dashboardView);
         }
         searchFocusRegistry.setActive(dashboardView);
+        tabNavigationRegistry.setActive(dashboardView::showTab);
         content.setCenter(dashboardScrollable);
     }
 
@@ -201,6 +207,7 @@ public class MainView {
     public void showExchange() {
         ExchangeView exchangeView = new ExchangeView(gameService, weekBar, tradeController);
         searchFocusRegistry.setActive(exchangeView);
+        tabNavigationRegistry.setActive(exchangeView::showTab);
         content.setCenter(wrapScrollable(exchangeView));
     }
 
@@ -210,6 +217,7 @@ public class MainView {
     public void showLeaderboard() {
         LeaderboardView leaderboardView = new LeaderboardView(gameService, toastService, weekBar);
         searchFocusRegistry.setActive(leaderboardView);
+        tabNavigationRegistry.setActive(null);
         content.setCenter(wrapScrollable(leaderboardView));
     }
 

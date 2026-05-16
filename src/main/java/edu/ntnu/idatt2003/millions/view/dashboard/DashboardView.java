@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard;
 
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
+import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
@@ -131,6 +132,23 @@ public class DashboardView extends VBox implements SearchFocusProvider {
         activeSubview = null;
         viewHeader.setActive(viewHeader.getTabButton(3));
         contentArea.getChildren().setAll(loansView);
+    }
+
+    /**
+     * Switches to the tab at the given zero-based index.
+     * Called by {@link TabNavigationRegistry} when a {@code Shift+N} shortcut fires.
+     * Indices out of range are ignored.
+     *
+     * @param index 0 = Portfolio, 1 = Transactions, 2 = Watchlist, 3 = Loans
+     */
+    public void showTab(int index) {
+        switch (index) {
+            case 0 -> showPortfolio();
+            case 1 -> showTransactions();
+            case 2 -> showWatchlist();
+            case 3 -> showLoans();
+            default -> { }
+        }
     }
 
     /**

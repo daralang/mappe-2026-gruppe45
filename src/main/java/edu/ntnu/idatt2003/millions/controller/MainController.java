@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.controller;
 import edu.ntnu.idatt2003.millions.keyboard.KeyboardContext;
 import edu.ntnu.idatt2003.millions.keyboard.KeyboardNavigationService;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;
+import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
@@ -37,6 +38,7 @@ public class MainController {
     private final GameOverController gameOverController;
     private final KeyboardNavigationService keyboardService = new KeyboardNavigationService();
     private final SearchFocusRegistry searchFocusRegistry = new SearchFocusRegistry();
+    private final TabNavigationRegistry tabNavigationRegistry = new TabNavigationRegistry();
 
     /**
      * Constructs a new MainController and creates the main view.
@@ -66,7 +68,8 @@ public class MainController {
                 titleBar,
                 this::handleAdvanceWeek,
                 toastService,
-                searchFocusRegistry
+                searchFocusRegistry,
+                tabNavigationRegistry
         );
     }
 
@@ -218,10 +221,10 @@ public class MainController {
         reg.register(new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHORTCUT_DOWN), this::handleAdvanceWeek);
         reg.register(new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), searchFocusRegistry::focusActive);
         reg.registerTabShortcuts(
-            view::showDashboardPortfolio,
-            view::showDashboardTransactions,
-            view::showDashboardWatchlist,
-            view::showDashboardLoans
+            () -> tabNavigationRegistry.selectTab(0),
+            () -> tabNavigationRegistry.selectTab(1),
+            () -> tabNavigationRegistry.selectTab(2),
+            () -> tabNavigationRegistry.selectTab(3)
         );
     }
 }

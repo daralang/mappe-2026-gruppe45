@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.exchange;
 
 import edu.ntnu.idatt2003.millions.controller.TradeController;
+import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.view.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
@@ -54,6 +55,21 @@ public class ExchangeView extends VBox implements SearchFocusProvider {
 
         getChildren().addAll(viewHeader, contentArea);
         showOverview();
+    }
+
+    /**
+     * Switches to the tab at the given zero-based index.
+     * Called by {@link TabNavigationRegistry} when a {@code Shift+N} shortcut fires.
+     * Indices out of range are ignored.
+     *
+     * @param index 0 = Overview, 1 = Stocks
+     */
+    public void showTab(int index) {
+        switch (index) {
+            case 0 -> { viewHeader.setActive(viewHeader.getTabButton(0)); showOverview(); }
+            case 1 -> { viewHeader.setActive(viewHeader.getTabButton(1)); showStocks(); }
+            default -> { }
+        }
     }
 
     /**
