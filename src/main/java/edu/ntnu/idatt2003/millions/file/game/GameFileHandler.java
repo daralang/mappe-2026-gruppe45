@@ -16,10 +16,11 @@ public interface GameFileHandler {
      *
      * @param player   the player whose state should be saved
      * @param exchange the exchange whose state should be saved
+     * @param gameOver whether the game has ended (bankruptcy)
      * @param file     the file to save the game state to
      * @throws NullPointerException if player, exchange or file is null
      */
-    void saveGame(Player player, Exchange exchange, File file);
+    void saveGame(Player player, Exchange exchange, boolean gameOver, File file);
 
     /**
      * Loads a saved game state from a file.
