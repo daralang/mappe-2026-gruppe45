@@ -90,8 +90,6 @@ class WatchlistRowRenderer extends RowRenderer {
 
         SparklineChart sparkline = buildSparkline(stock, MAX_SPARKLINE_WEEKS);
 
-        Label addedWeekLabel = TableCells.data(String.valueOf(item.entry().addedAtWeek()));
-
         HBox actions = buildActionButtons(item);
         Button noteButton = buildNoteButton(item);
         Button removeButton = buildRemoveButton(stock.getSymbol());
@@ -105,14 +103,13 @@ class WatchlistRowRenderer extends RowRenderer {
         GridPane.setValignment(changePctLabel, VPos.TOP);
         GridPane.setValignment(highLowLabel, VPos.TOP);
         GridPane.setValignment(sparkline, VPos.TOP);
-        GridPane.setValignment(addedWeekLabel, VPos.TOP);
         GridPane.setValignment(actions, VPos.TOP);
         GridPane.setValignment(noteButton, VPos.TOP);
         GridPane.setValignment(removeButton, VPos.TOP);
 
-        Node[] cells = {tickerLabel, companyLabel, priceNokLabel, currencyLabel, priceAltLabel,
+        Node[] cells = {tickerLabel, companyLabel, currencyLabel, priceAltLabel, priceNokLabel,
                 changeNokLabel, changePctLabel, highLowLabel, sparkline,
-                addedWeekLabel, actions, noteButton, removeButton};
+                actions, noteButton, removeButton};
         table.addRow(rowIndex, cells);
     }
 
