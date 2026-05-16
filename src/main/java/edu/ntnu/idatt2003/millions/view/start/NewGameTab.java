@@ -142,6 +142,15 @@ public class NewGameTab extends FileDropTab {
     }
 
     /**
+     * Requests keyboard focus on the first input field (player name).
+     * Called by {@link edu.ntnu.idatt2003.millions.view.StartView#focusFirstInput()}
+     * so the start screen is immediately keyboard-operable without a mouse click.
+     */
+    public void focusFirstInput() {
+        nameField.requestFocus();
+    }
+
+    /**
      * Returns the trimmed player name entered by the user.
      *
      * @return trimmed player name
