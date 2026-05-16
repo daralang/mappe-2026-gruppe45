@@ -1,35 +1,42 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
+import edu.ntnu.idatt2003.millions.keyboard.KeyBinding;
+import edu.ntnu.idatt2003.millions.keyboard.KeyBinding.Modifier;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * Reusable search bar for views that need explicit search input.
- * Assembles a search icon, a text field, a search button, and a
- * clear button into a single row, with optional metadata below it.
- * Search is triggered by pressing Enter or
- * clicking the search button. The clear button is hidden until a non-empty
- * search has been submitted; clicking it resets the field and notifies the
- * caller.
+ * Reusable search bar with icon, text field, search button, and clear button.
  *
+ * <p>Search is triggered by Enter or clicking the button. Cmd/Ctrl+F focuses
+ * the field from anywhere in the scene; ESC clears and blurs it.</p>
  */
 public class SearchBar extends VBox {
 
     private final TextField searchField = new TextField();
     private final Button searchButton = new Button();
     private final Button clearButton = new Button();
+    private static final KeyBinding FOCUS_BINDING = KeyBinding.of(KeyCode.F, Modifier.SHORTCUT);
+
     private final String placeholderKey;
     private final String buttonKey;
+    private final javafx.event.EventHandler<KeyEvent> sceneKeyHandler = event -> {
+        if (FOCUS_BINDING.matches(event)) {
+            searchField.requestFocus();
+            event.consume();
+        }
+    };
 
     /**
      * Creates a search bar with localized text.
@@ -83,7 +90,20 @@ public class SearchBar extends VBox {
         };
 
         searchField.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER) triggerSearch.run();
+            if (event.getCode() == KeyCode.ENTER) {
+                triggerSearch.run();
+            } else if (event.getCode() == KeyCode.ESCAPE) {
+                searchField.clear();
+                onSearch.accept("");
+                clearButton.setOpacity(0);
+                searchField.getParent().requestFocus();
+                event.consume();
+            }
+        });
+
+        sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (oldScene != null) oldScene.removeEventFilter(KeyEvent.KEY_PRESSED, sceneKeyHandler);
+            if (newScene != null) newScene.addEventFilter(KeyEvent.KEY_PRESSED, sceneKeyHandler);
         });
         searchButton.setOnAction(event -> triggerSearch.run());
         clearButton.setOnAction(event -> {

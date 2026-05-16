@@ -11,6 +11,8 @@ import edu.ntnu.idatt2003.millions.view.component.SummaryBox;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -109,11 +111,21 @@ public abstract class TransactionDialog extends Modal {
     /**
      * Builds the quantity input section. Subclasses can override to add
      * extras like a "Du eier"-info or a "Selg alt"-shortcut.
+     *
+     * <p>Pressing {@code Enter} in the input field fires {@code onConfirm()}
+     * when the confirm button is enabled, so the user does not need to Tab
+     * to the button.</p>
      */
     protected VBox buildQuantitySection() {
         StyledText label = StyledText.detailLabel(LanguageManager.get("dialog.quantity.label"));
         quantityInput.setText(getInitialQuantity().toPlainString());
         quantityInput.textProperty().addListener((obs, oldVal, newVal) -> updateSummary());
+        quantityInput.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.ENTER && !confirmButton.isDisable()) {
+                onConfirm();
+                event.consume();
+            }
+        });
         return new VBox(6, label, buildStepperRow());
     }
 
