@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.model;
+package edu.ntnu.idatt2003.millions.model.transaction;
 
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
