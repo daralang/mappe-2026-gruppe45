@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.controller;
 
+import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.loan.InsufficientSaleProceedsException;
 import edu.ntnu.idatt2003.millions.model.player.Player;
@@ -9,7 +10,9 @@ import edu.ntnu.idatt2003.millions.view.dialog.ForcedSaleDialog;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller for the forced-sale flow triggered when the player cannot cover
@@ -41,9 +44,14 @@ public class ForcedSaleController {
                 .sorted(Comparator.comparing(s -> s.getStock().getWeeklyChangePercent()))
                 .toList();
 
+        Map<Share, BigDecimal> netNokByShare = new LinkedHashMap<>();
+        for (Share share : shares) {
+            netNokByShare.put(share, SalesCalculator.calculateNetNok(share, converter));
+        }
+
         ForcedSaleDialog[] ref = new ForcedSaleDialog[1];
         ref[0] = new ForcedSaleDialog(
-                shares, interestDue, maturityDue, player.getMoney(), converter, currentWeek,
+                shares, interestDue, maturityDue, player.getMoney(), netNokByShare, currentWeek,
                 selectedShares -> handleConfirm(ref[0], selectedShares, currentWeek)
         );
         ref[0].show();
