@@ -72,7 +72,7 @@ class JsonGameFileHandlerTest {
             // Arrange
             Path file = tempDir.resolve("save.json");
             // Act
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Assert
             assertTrue(file.toFile().exists());
         }
@@ -83,7 +83,7 @@ class JsonGameFileHandlerTest {
             // Arrange
             Path file = tempDir.resolve("save.json");
             // Act
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             String content = Files.readString(file);
             // Assert
             assertTrue(content.contains("\"player\""));
@@ -100,7 +100,7 @@ class JsonGameFileHandlerTest {
             player.getPortfolio().addShare(share);
             // Act & Assert
             assertDoesNotThrow(() ->
-                    handler.saveGame(player, exchange, file.toFile()));
+                    handler.saveGame(player, exchange, false, file.toFile()));
         }
 
         @Test
@@ -111,7 +111,7 @@ class JsonGameFileHandlerTest {
             exchange.buy("EQNR", new BigDecimal("5"), player);
             // Act & Assert
             assertDoesNotThrow(() ->
-                    handler.saveGame(player, exchange, file.toFile()));
+                    handler.saveGame(player, exchange, false, file.toFile()));
         }
 
         @Test
@@ -119,7 +119,7 @@ class JsonGameFileHandlerTest {
         void throwsExceptionWhenFileIsNull() {
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    handler.saveGame(player, exchange, null));
+                    handler.saveGame(player, exchange, false, null));
         }
 
         @Test
@@ -129,7 +129,7 @@ class JsonGameFileHandlerTest {
             Path file = tempDir.resolve("save.json");
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    handler.saveGame(null, exchange, file.toFile()));
+                    handler.saveGame(null, exchange, false, file.toFile()));
         }
 
         @Test
@@ -139,7 +139,7 @@ class JsonGameFileHandlerTest {
             Path file = tempDir.resolve("save.json");
             // Act & Assert
             assertThrows(NullPointerException.class, () ->
-                    handler.saveGame(player, null, file.toFile()));
+                    handler.saveGame(player, null, false, file.toFile()));
         }
 
         @Test
@@ -149,7 +149,7 @@ class JsonGameFileHandlerTest {
             Path file = tempDir.resolve("nonexistent/save.json");
             // Act & Assert
             assertThrows(UncheckedIOException.class, () ->
-                    handler.saveGame(player, exchange, file.toFile()));
+                    handler.saveGame(player, exchange, false, file.toFile()));
         }
     }
 
@@ -162,7 +162,7 @@ class JsonGameFileHandlerTest {
         void returnsCorrectPlayerNameAfterLoad() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -174,7 +174,7 @@ class JsonGameFileHandlerTest {
         void returnsCorrectPlayerMoneyAfterLoad() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -187,7 +187,7 @@ class JsonGameFileHandlerTest {
         void returnsCorrectExchangeNameAfterLoad() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -200,7 +200,7 @@ class JsonGameFileHandlerTest {
             // Arrange
             Path file = tempDir.resolve("save.json");
             exchange.advance();
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -213,7 +213,7 @@ class JsonGameFileHandlerTest {
             // Arrange
             Path file = tempDir.resolve("save.json");
             exchange.buy("EQNR", new BigDecimal("5"), player);
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -226,7 +226,7 @@ class JsonGameFileHandlerTest {
             // Arrange
             Path file = tempDir.resolve("save.json");
             exchange.buy("EQNR", new BigDecimal("5"), player);
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             Share loadedShare = state.player().getPortfolio().getShares().getFirst();
@@ -241,7 +241,7 @@ class JsonGameFileHandlerTest {
             // Arrange
             Path file = tempDir.resolve("save.json");
             exchange.buy("EQNR", new BigDecimal("5"), player);
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -253,7 +253,7 @@ class JsonGameFileHandlerTest {
         void returnsEmptyPortfolioWhenNoSharesOwned() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -265,7 +265,7 @@ class JsonGameFileHandlerTest {
         void returnsEmptyTransactionArchiveWhenNoTransactionsMade() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -279,7 +279,7 @@ class JsonGameFileHandlerTest {
             Path file = tempDir.resolve("save.json");
             exchange.advance();
             exchange.advance();
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -295,7 +295,7 @@ class JsonGameFileHandlerTest {
             Share share1 = new Share(stock, new BigDecimal("5"), new BigDecimal("276.43"));
             Share share2 = new Share(stock, new BigDecimal("3"), new BigDecimal("300.00"));
             player.getPortfolio().setShares(List.of(share1, share2));
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -373,7 +373,7 @@ class JsonGameFileHandlerTest {
             Path file = tempDir.resolve("save.json");
             Loan loan = new Loan(LoanCatalog.getOffers().get(0), new BigDecimal("4000.00"), 1);
             player.takeLoan(loan, new FixedRateCurrencyConverter());
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -390,7 +390,7 @@ class JsonGameFileHandlerTest {
             Path file = tempDir.resolve("save.json");
             Loan loan = new Loan(LoanCatalog.getOffers().get(0), new BigDecimal("4000.00"), 1);
             player.takeLoan(loan, new FixedRateCurrencyConverter());
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -407,7 +407,7 @@ class JsonGameFileHandlerTest {
             Loan loan = new Loan(LoanCatalog.getOffers().get(0), new BigDecimal("4000.00"), 1);
             player.takeLoan(loan, new FixedRateCurrencyConverter());
             player.recordTotalDebt();
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -422,7 +422,7 @@ class JsonGameFileHandlerTest {
             // Arrange
             Path file = tempDir.resolve("save.json");
             exchange.buy("EQNR", new BigDecimal("5"), player);
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -440,7 +440,7 @@ class JsonGameFileHandlerTest {
             exchange.buy("EQNR", new BigDecimal("5"), player);
             Share portfolioShare = player.getPortfolio().getShares().getFirst();
             new Sale(portfolioShare, 1).commit(player);
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             // Act
             GameState state = handler.loadGame(file.toFile());
             // Assert
@@ -455,7 +455,7 @@ class JsonGameFileHandlerTest {
         void canAdvanceWeekAfterLoadingGameAndReinitialize() throws GameSaveCorruptException {
             // Arrange
             Path file = tempDir.resolve("save.json");
-            handler.saveGame(player, exchange, file.toFile());
+            handler.saveGame(player, exchange, false, file.toFile());
             GameState state = handler.loadGame(file.toFile());
             state.exchange().reinitialize(new FixedRateCurrencyConverter());
 
@@ -495,7 +495,7 @@ class JsonGameFileHandlerTest {
             ));
             File file = tempDir.resolve("notif-save.json").toFile();
 
-            handler.saveGame(player, exchange, file);
+            handler.saveGame(player, exchange, false, file);
             GameState loaded = handler.loadGame(file);
 
             assertEquals(1, loaded.player().getNotifications().size());
@@ -513,7 +513,7 @@ class JsonGameFileHandlerTest {
             player.setWasLowOnCash(true);
             File file = tempDir.resolve("flags-save.json").toFile();
 
-            handler.saveGame(player, exchange, file);
+            handler.saveGame(player, exchange, false, file);
             GameState loaded = handler.loadGame(file);
 
             assertTrue(loaded.player().wasAboveDebtThreshold());
@@ -530,7 +530,7 @@ class JsonGameFileHandlerTest {
                     List.of(), 1, false));
             File file = tempDir.resolve("next-id-save.json").toFile();
 
-            handler.saveGame(player, exchange, file);
+            handler.saveGame(player, exchange, false, file);
             GameState state = handler.loadGame(file);
 
             // Push a second notification on the loaded player — must get id=2, not id=1
@@ -549,7 +549,7 @@ class JsonGameFileHandlerTest {
             player.setPreviousStatus(PlayerStatusLevel.INVESTOR);
             File file = tempDir.resolve("status-save.json").toFile();
 
-            handler.saveGame(player, exchange, file);
+            handler.saveGame(player, exchange, false, file);
             GameState loaded = handler.loadGame(file);
 
             assertEquals(PlayerStatusLevel.INVESTOR, loaded.player().getPreviousStatus());

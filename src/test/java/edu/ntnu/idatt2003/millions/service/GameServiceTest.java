@@ -74,7 +74,7 @@ class GameServiceTest {
         Player player = new Player("Dara", STARTING_MONEY);
 
         Path file = tempDir.resolve("save.json");
-        new JsonGameFileHandler().saveGame(player, exchange, file.toFile());
+        new JsonGameFileHandler().saveGame(player, exchange, false, file.toFile());
 
         lbService = new LeaderboardService(
                 new JsonLeaderboardFileHandler(),
@@ -694,7 +694,7 @@ class GameServiceTest {
                             "NYSE", new ArrayList<>(List.of(stock)),
                             new FixedRateCurrencyConverter());
             Player player = new Player("Dara", STARTING_MONEY);
-            new JsonGameFileHandler().saveGame(player, exchange, file.toFile());
+            new JsonGameFileHandler().saveGame(player, exchange, false, file.toFile());
             gameService.loadGame(file.toFile());
             assertFalse(gameService.isGameOver());
         }
