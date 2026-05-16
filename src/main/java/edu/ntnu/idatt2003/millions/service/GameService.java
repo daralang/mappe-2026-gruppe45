@@ -141,7 +141,8 @@ public class GameService {
         gameFileHandler.saveGame(player, exchange, gameOver, file);
         this.currentSaveFile = file;
         try {
-            leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(), Outcome.ACTIVE);
+            leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(),
+                    gameOver ? Outcome.BANKRUPTCY : Outcome.ACTIVE);
         } catch (RuntimeException e) {
             System.err.println("Could not update leaderboard after save: " + e.getMessage());
         }
@@ -512,7 +513,8 @@ public class GameService {
      */
     public void recordLeaderboardEntry() {
         if (player != null && exchange != null) {
-            leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(), Outcome.ACTIVE);
+            leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(),
+                    gameOver ? Outcome.BANKRUPTCY : Outcome.ACTIVE);
         }
     }
 
