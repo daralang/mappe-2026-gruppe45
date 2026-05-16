@@ -5,15 +5,12 @@ import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.keyboard.KeyboardNavigationService;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import edu.ntnu.idatt2003.millions.view.StartView;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBarFactory;
-import javafx.scene.input.KeyCode;
 import java.io.File;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
@@ -393,7 +390,6 @@ public class StartController {
     private void registerShortcuts() {
         keyboardService.attach(view.getScene());
         var reg = keyboardService.globalShortcuts();
-        reg.register(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHIFT_DOWN), view::showNewGameTab);
-        reg.register(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHIFT_DOWN), view::showLoadGameTab);
+        reg.registerTabShortcuts(view::showNewGameTab, view::showLoadGameTab);
     }
 }
