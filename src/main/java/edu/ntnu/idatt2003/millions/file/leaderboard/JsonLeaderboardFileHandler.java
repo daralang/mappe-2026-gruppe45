@@ -46,24 +46,38 @@ public class JsonLeaderboardFileHandler implements LeaderboardFileHandler {
      *
      * @param file the file to read from
      * @return list of entries; empty if the file is missing or contains no entries
-     * @throws IllegalStateException if the file exists but cannot be parsed
+     * @throws LeaderboardCorruptException if the file exists but cannot be parsed
      */
     @Override
-    public List<LeaderboardEntry> readAll(File file) {
+    public List<LeaderboardEntry> readAll(File file) throws LeaderboardCorruptException {
         Objects.requireNonNull(file, "File cannot be null");
         if (!file.exists()) {
             return new ArrayList<>();
         }
         try (FileReader reader = new FileReader(file)) {
-            Type listType = new TypeToken<List<LeaderboardEntry>>() {}.getType();
-            List<LeaderboardEntry> entries = gson.fromJson(reader, listType);
-            return entries == null ? new ArrayList<>() : new ArrayList<>(entries);
-        } catch (JsonParseException e) {
-            throw new IllegalStateException(
-                    "Leaderboard file is corrupt: " + file.getName(), e);
+            return parse(reader);
         } catch (IOException e) {
             throw new IllegalStateException(
                     "Could not read leaderboard file: " + file.getName(), e);
+        }
+    }
+
+    /**
+     * Parses leaderboard entries from an already-opened reader.
+     * The file-absent short-circuit and file-open I/O concerns remain in
+     * {@link #readAll(File)}; this method handles only JSON deserialisation.
+     *
+     * @param reader the reader positioned at the start of a JSON leaderboard array
+     * @return a mutable list of entries; empty if the JSON is {@code null} or {@code []}
+     * @throws LeaderboardCorruptException if the input is not valid JSON
+     */
+    List<LeaderboardEntry> parse(Reader reader) throws LeaderboardCorruptException {
+        Type listType = new TypeToken<List<LeaderboardEntry>>() {}.getType();
+        try {
+            List<LeaderboardEntry> entries = gson.fromJson(reader, listType);
+            return entries == null ? new ArrayList<>() : new ArrayList<>(entries);
+        } catch (JsonParseException e) {
+            throw new LeaderboardCorruptException("Leaderboard JSON is corrupt", e);
         }
     }
 
