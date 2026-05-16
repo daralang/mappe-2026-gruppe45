@@ -51,10 +51,12 @@ public class LoansSort extends SortProvider<Loan, LoansSort.SortColumn> {
         return List.of(
                 TableColumnDef.sortable("col.loan",SortColumn.LOAN, 30, HPos.LEFT),
                 TableColumnDef.sortable("col.rate", SortColumn.RATE, 12, HPos.RIGHT),
-                TableColumnDef.sortable("col.weeksLeft", SortColumn.WEEKS_LEFT, 14, HPos.RIGHT),
+                TableColumnDef.sortable("col.weeksLeft", SortColumn.WEEKS_LEFT,
+                        "tooltip.loans.weeksLeft", 14, HPos.RIGHT),
                 TableColumnDef.sortable("col.weeklyCost", SortColumn.WEEKLY_COST,
-                        "tooltip.loans.weeklyCost",18, HPos.RIGHT),
-                TableColumnDef.sortable("col.remaining", SortColumn.REMAINING,  18, HPos.RIGHT),
+                        "tooltip.loans.weeklyCost", 18, HPos.RIGHT),
+                TableColumnDef.sortable("col.remaining", SortColumn.REMAINING,
+                        "tooltip.loans.remaining", 18, HPos.RIGHT),
                 TableColumnDef.spacer(8, HPos.RIGHT)
         );
     }

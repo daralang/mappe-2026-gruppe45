@@ -66,7 +66,8 @@ public class LoanLedgerSort extends SortProvider<LoanLedgerEntry, LoanLedgerSort
                 TableColumnDef.sortable("col.loan", SortColumn.LOAN, 38, HPos.LEFT),
                 TableColumnDef.sortable("col.type", SortColumn.TYPE,
                         "tooltip.loans.ledger.type", 22, HPos.LEFT),
-                TableColumnDef.sortable("col.amount", SortColumn.AMOUNT, 30, HPos.RIGHT)
+                TableColumnDef.sortable("col.amount", SortColumn.AMOUNT,
+                        "tooltip.loans.ledger.amount", 30, HPos.RIGHT)
         );
     }
 
