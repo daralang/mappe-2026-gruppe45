@@ -20,7 +20,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javafx.application.Platform;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -363,14 +362,12 @@ public class StartController {
     }
 
     /**
-     * Displays the start screen on the primary stage and binds UI events.
+     * Displays the start screen by swapping the root of the app-lifetime scene
+     * and binding UI events.
      */
     public void show() {
         bindEvents();
         stage.setTitle("Millions");
-        stage.setScene(view.getScene());
-        stage.show();
-        stage.setMaximized(true);
-        Platform.runLater(stage::centerOnScreen);
+        stage.getScene().setRoot(view.getRoot());
     }
 }
