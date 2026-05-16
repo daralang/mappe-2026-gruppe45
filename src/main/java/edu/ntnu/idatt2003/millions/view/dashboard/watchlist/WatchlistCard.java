@@ -82,7 +82,7 @@ public class WatchlistCard extends SortableTableCard<WatchlistItem, WatchlistSor
                     return stock != null ? new WatchlistItem(stock, entry) : null;
                 })
                 .filter(Objects::nonNull)
-                .collect(Collectors.toCollection(ArrayList::new));
+                .toList();
     }
 
     @Override

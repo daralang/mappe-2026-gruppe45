@@ -20,7 +20,6 @@ import javafx.scene.layout.Region;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -108,6 +107,12 @@ public class TransactionsSummaryCard extends Card {
      * updates the week-range label. The Total row uses the same
      * divider as {@code HoldingsCard} so the two cards read as a
      * visual family.
+     *
+     * <p>Transactions are fetched via
+     * {@link TransactionArchive#getTransactionsInRange} without additional
+     * sorting — ordering does not matter for the summary aggregation, so
+     * the newest-first sort that {@code TransactionsCard} applies is
+     * intentionally skipped here.</p>
      */
     private void refresh() {
         int fromWeek = weekRangeFilter.getFromWeek();
@@ -117,7 +122,7 @@ public class TransactionsSummaryCard extends Card {
                 LanguageManager.get("transactions.summary.weekRange"), fromWeek, toWeek));
 
         TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
-        List<Transaction> transactions = collectRange(archive, fromWeek, toWeek);
+        List<Transaction> transactions = archive.getTransactionsInRange(fromWeek, toWeek);
         TransactionStatsService.TransactionSummary summary =
                 statsService.getSummary(transactions, gameService.getCurrencyConverter());
 
@@ -164,16 +169,4 @@ public class TransactionsSummaryCard extends Card {
         return label;
     }
 
-    /**
-     * Gathers transactions in the inclusive week range. Ordering does
-     * not matter for the summary, so this skips the sort
-     * {@code TransactionsCard} performs on the same data.
-     */
-    private List<Transaction> collectRange(TransactionArchive archive, int fromWeek, int toWeek) {
-        List<Transaction> list = new ArrayList<>();
-        for (int week = fromWeek; week <= toWeek; week++) {
-            list.addAll(archive.getTransactions(week));
-        }
-        return list;
-    }
 }
