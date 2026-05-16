@@ -22,6 +22,7 @@ public class WindowsTitleBar implements TitleBar {
     private Runnable onDashboard   = () -> {};
     private Runnable onExchange    = () -> {};
     private Runnable onLeaderboard = () -> {};
+    private Runnable onNewGame     = () -> {};
     private Runnable onSave        = () -> {};
     private Runnable onExit        = () -> {};
 
@@ -48,6 +49,7 @@ public class WindowsTitleBar implements TitleBar {
                     gameService
             );
             header.setOnLeaderboard(() -> onLeaderboard.run());
+            header.setOnNewGame(() -> onNewGame.run());
             node = new VBox(controls, header);
         } else if (includeNavHeader) {
             node = new VBox(controls);
@@ -61,6 +63,7 @@ public class WindowsTitleBar implements TitleBar {
     @Override public void setOnDashboard(Runnable r)      { onDashboard = r; }
     @Override public void setOnExchange(Runnable r)       { onExchange = r; }
     @Override public void setOnLeaderboard(Runnable r)    { onLeaderboard = r; if (header != null) header.setOnLeaderboard(r); }
+    @Override public void setOnNewGame(Runnable r)        { onNewGame = r; if (header != null) header.setOnNewGame(r); }
     @Override public void setOnSave(Runnable r)           { onSave = r; }
     @Override public void setOnExit(Runnable r)           { onExit = r; }
     @Override public void onGameUpdated()                 { if (header != null) header.onGameUpdated(); }

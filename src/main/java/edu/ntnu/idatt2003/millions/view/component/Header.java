@@ -24,6 +24,7 @@ public class Header extends HBox {
     private final Button leaderboardButton;
     private final Button helpButton;
     private final Button bellButton;
+    private final Button newGameButton;
     private final Button saveButton;
     private final Button exitButton;
     private final Label badge;
@@ -58,15 +59,17 @@ public class Header extends HBox {
         HBox navLinks = new HBox(60, dashboardButton, exchangeButton, leaderboardButton, helpButton);
         navLinks.setAlignment(Pos.TOP_CENTER);
 
+        newGameButton = new Button(LanguageManager.get("nav.newGame"));
         saveButton = new Button(LanguageManager.get("nav.saveGame"));
         exitButton = new Button(LanguageManager.get("nav.exitGame"));
+        newGameButton.getStyleClass().add("navbar-action");
         saveButton.getStyleClass().add("navbar-action");
         exitButton.getStyleClass().add("navbar-action");
 
         saveButton.setOnAction(e -> onSaveGame.run());
         exitButton.setOnAction(e -> onExitGame.run());
 
-        HBox actions = new HBox(16, saveButton, exitButton);
+        HBox actions = new HBox(16, newGameButton, saveButton, exitButton);
         actions.setAlignment(Pos.CENTER_RIGHT);
 
         FontIcon bellIcon = new FontIcon("fth-bell");
@@ -117,6 +120,10 @@ public class Header extends HBox {
         leaderboardButton.setOnAction(e -> callback.run());
     }
 
+    public void setOnNewGame(Runnable callback) {
+        newGameButton.setOnAction(e -> callback.run());
+    }
+
     public void onGameUpdated() {
         if (gameService.getPlayer() == null) return;
         int unread = gameService.getPlayer().getUnreadNotificationCount();
@@ -134,6 +141,7 @@ public class Header extends HBox {
         exchangeButton.setText(LanguageManager.get("nav.exchange"));
         leaderboardButton.setText(LanguageManager.get("nav.leaderboard"));
         helpButton.setText(LanguageManager.get("nav.help"));
+        newGameButton.setText(LanguageManager.get("nav.newGame"));
         saveButton.setText(LanguageManager.get("nav.saveGame"));
         exitButton.setText(LanguageManager.get("nav.exitGame"));
     }

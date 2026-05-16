@@ -9,6 +9,7 @@ public class MacTitleBar implements TitleBar {
     private Runnable onDashboard   = () -> {};
     private Runnable onExchange    = () -> {};
     private Runnable onLeaderboard = () -> {};
+    private Runnable onNewGame     = () -> {};
     private Runnable onSave        = () -> {};
     private Runnable onExit        = () -> {};
 
@@ -29,6 +30,7 @@ public class MacTitleBar implements TitleBar {
     @Override public void setOnDashboard(Runnable r)      { onDashboard = r; }
     @Override public void setOnExchange(Runnable r)       { onExchange = r; }
     @Override public void setOnLeaderboard(Runnable r)    { onLeaderboard = r; header.setOnLeaderboard(r); }
+    @Override public void setOnNewGame(Runnable r)        { onNewGame = r; header.setOnNewGame(r); }
     @Override public void setOnSave(Runnable r)           { onSave = r; }
     @Override public void setOnExit(Runnable r)           { onExit = r; }
     @Override public void onGameUpdated()                 { header.onGameUpdated(); }
