@@ -1,5 +1,8 @@
 package edu.ntnu.idatt2003.millions.controller;
 
+import edu.ntnu.idatt2003.millions.keyboard.KeyBinding;
+import edu.ntnu.idatt2003.millions.keyboard.KeyBinding.Modifier;
+import edu.ntnu.idatt2003.millions.keyboard.KeyboardNavigationService;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
@@ -8,6 +11,7 @@ import edu.ntnu.idatt2003.millions.view.component.toast.ToastType;
 import edu.ntnu.idatt2003.millions.view.dialog.EndGameDialog;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBar;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBarFactory;
+import javafx.scene.input.KeyCode;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -16,9 +20,8 @@ import java.util.Optional;
 
 /**
  * Controller for the main view of the application.
- * Handles save, exit and advance-week actions and delegates them to
- * {@link GameService}. Navigation between Dashboard and Exchange is
- * purely visual state and handled inside the view.
+ * Handles save, exit, advance-week actions and global keyboard shortcuts.
+ * Delegates game state changes to {@code GameService}.
  */
 public class MainController {
 
@@ -28,6 +31,7 @@ public class MainController {
     private final ToastService toastService;
     private final ForcedSaleController forcedSaleController;
     private final GameOverController gameOverController;
+    private final KeyboardNavigationService keyboardService = new KeyboardNavigationService();
 
     /**
      * Constructs a new MainController and creates the main view.
@@ -159,11 +163,26 @@ public class MainController {
     }
 
     /**
-     * Shows the main view on the stage.
+     * Shows the main view on the stage and registers global keyboard shortcuts.
      */
     public void show() {
         stage.getScene().setRoot(view.getRoot());
         stage.setTitle(LanguageManager.get("app.title"));
+        registerShortcuts();
         stage.show();
+    }
+
+    /**
+     * Registers application-wide keyboard shortcuts on the app-lifetime scene.
+     * Cmd on macOS, Ctrl on Windows/Linux (via {@code SHORTCUT}).
+     */
+    private void registerShortcuts() {
+        keyboardService.attach(stage.getScene());
+        var reg = keyboardService.globalShortcuts();
+        reg.register(KeyBinding.of(KeyCode.DIGIT1, Modifier.SHORTCUT), view::showDashboard);
+        reg.register(KeyBinding.of(KeyCode.DIGIT2, Modifier.SHORTCUT), view::showExchange);
+        reg.register(KeyBinding.of(KeyCode.DIGIT3, Modifier.SHORTCUT), view::showLeaderboard);
+        reg.register(KeyBinding.of(KeyCode.S,      Modifier.SHORTCUT), () -> handleSaveGame());
+        reg.register(KeyBinding.of(KeyCode.ENTER,  Modifier.SHORTCUT), this::handleAdvanceWeek);
     }
 }
