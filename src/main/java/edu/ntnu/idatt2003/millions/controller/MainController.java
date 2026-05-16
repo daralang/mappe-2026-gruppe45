@@ -158,7 +158,13 @@ public class MainController {
         ).show();
     }
 
+    /**
+     * Detaches the keyboard service from the current scene and navigates to
+     * the start screen. Detaching first ensures the event filter is removed
+     * before {@link StartController#show()} replaces the scene on the stage.
+     */
     private void showStartView() {
+        keyboardService.detach();
         new StartController(stage, gameService).show();
     }
 
