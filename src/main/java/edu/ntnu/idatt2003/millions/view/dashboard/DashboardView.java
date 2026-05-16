@@ -21,7 +21,9 @@ import java.util.List;
  * <p>Contains a tab bar for navigating between portfolio, transactions,
  * watchlist and loans. Each sub-view is lazily initialised on first tab selection.
  * The four tab methods are public so {@code MainView} can drive them from
- * keyboard shortcuts (Shift+1–4).</p>
+ * keyboard shortcuts (Shift+1–4). Each method also updates the active tab
+ * indicator in {@link ViewHeader} directly, ensuring the highlight is correct
+ * whether the tab was activated by click or by keyboard shortcut.</p>
  */
 public class DashboardView extends VBox implements SearchFocusProvider {
 
@@ -30,6 +32,7 @@ public class DashboardView extends VBox implements SearchFocusProvider {
     private final LoanController loanController;
     private final Runnable onExploreStocks;
     private final VBox contentArea;
+    private final ViewHeader viewHeader;
 
     private PortfolioView portfolioView;
     private TransactionsView transactionsView;
@@ -54,7 +57,7 @@ public class DashboardView extends VBox implements SearchFocusProvider {
         this.onExploreStocks = onExploreStocks;
         getStyleClass().add("content-area");
 
-        ViewHeader viewHeader = new ViewHeader(
+        viewHeader = new ViewHeader(
                 "dashboard.title",
                 List.of(
                         "dashboard.tab.portfolio",
@@ -86,6 +89,7 @@ public class DashboardView extends VBox implements SearchFocusProvider {
             portfolioView = new PortfolioView(gameService, tradeController, onExploreStocks);
         }
         activeSubview = portfolioView;
+        viewHeader.setActive(viewHeader.getTabButton(0));
         contentArea.getChildren().setAll(portfolioView);
     }
 
@@ -98,6 +102,7 @@ public class DashboardView extends VBox implements SearchFocusProvider {
             transactionsView = new TransactionsView(gameService);
         }
         activeSubview = transactionsView;
+        viewHeader.setActive(viewHeader.getTabButton(1));
         contentArea.getChildren().setAll(transactionsView);
     }
 
@@ -110,6 +115,7 @@ public class DashboardView extends VBox implements SearchFocusProvider {
             watchlistView = new WatchlistView(gameService, tradeController, onExploreStocks);
         }
         activeSubview = watchlistView;
+        viewHeader.setActive(viewHeader.getTabButton(2));
         contentArea.getChildren().setAll(watchlistView);
     }
 
@@ -123,6 +129,7 @@ public class DashboardView extends VBox implements SearchFocusProvider {
             loansView.getAvailableLoansCard().setOnApplyClicked(loanController::openLoanDialog);
         }
         activeSubview = null;
+        viewHeader.setActive(viewHeader.getTabButton(3));
         contentArea.getChildren().setAll(loansView);
     }
 
