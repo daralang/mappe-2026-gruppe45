@@ -1,6 +1,10 @@
 package edu.ntnu.idatt2003.millions.controller;
 
+import edu.ntnu.idatt2003.millions.keyboard.KeyboardContext;
 import edu.ntnu.idatt2003.millions.keyboard.KeyboardNavigationService;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import edu.ntnu.idatt2003.millions.service.GameService;
@@ -11,7 +15,6 @@ import edu.ntnu.idatt2003.millions.view.component.toast.ToastType;
 import edu.ntnu.idatt2003.millions.view.dialog.EndGameDialog;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBar;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBarFactory;
-import javafx.scene.input.KeyCode;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -179,6 +182,19 @@ public class MainController {
     }
 
     /**
+     * Fires the currently focused {@link Button} in the scene, if any.
+     * Registered as a universal shortcut on {@link KeyCode#ENTER} so that
+     * Enter always activates the focused button regardless of whether a
+     * modal {@link KeyboardContext} is active.
+     */
+    private void fireCurrentButton() {
+        Node focused = stage.getScene().getFocusOwner();
+        if (focused instanceof Button button) {
+            button.fire();
+        }
+    }
+
+    /**
      * Registers application-wide keyboard shortcuts on the app-lifetime scene.
      *
      * <p>Top-level navigation uses {@link KeyCombination#SHORTCUT_DOWN} (Cmd on macOS,
@@ -188,17 +204,20 @@ public class MainController {
      *
      * <p>Cmd/Ctrl+F delegates to {@link MainView#focusActiveSearch()}, which
      * routes focus to whichever search field belongs to the currently visible
-     * view — keeping shortcut registration out of the view layer.</p>
+     * view.</p>
      */
     private void registerShortcuts() {
         keyboardService.attach(stage.getScene());
+        keyboardService.universalShortcuts().register(
+            new KeyCodeCombination(KeyCode.ENTER), this::fireCurrentButton
+        );
         var reg = keyboardService.globalShortcuts();
         reg.register(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHORTCUT_DOWN), view::showDashboard);
         reg.register(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHORTCUT_DOWN), view::showExchange);
         reg.register(new KeyCodeCombination(KeyCode.DIGIT3, KeyCombination.SHORTCUT_DOWN), view::showLeaderboard);
-        reg.register(new KeyCodeCombination(KeyCode.S,      KeyCombination.SHORTCUT_DOWN), () -> handleSaveGame());
-        reg.register(new KeyCodeCombination(KeyCode.ENTER,  KeyCombination.SHORTCUT_DOWN), this::handleAdvanceWeek);
-        reg.register(new KeyCodeCombination(KeyCode.F,      KeyCombination.SHORTCUT_DOWN), view::focusActiveSearch);
+        reg.register(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN), () -> handleSaveGame());
+        reg.register(new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHORTCUT_DOWN), this::handleAdvanceWeek);
+        reg.register(new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), view::focusActiveSearch);
         reg.registerTabShortcuts(
             view::showDashboardPortfolio,
             view::showDashboardTransactions,
