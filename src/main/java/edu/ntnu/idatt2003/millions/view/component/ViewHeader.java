@@ -9,6 +9,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,6 +24,7 @@ public class ViewHeader extends VBox {
     private Button activeButton;
     private final String titleKey;
     private final List<String> labelKeys;
+    private final List<Button> tabButtons = new ArrayList<>();
     private final StyledText titleLabel;
     private final HBox tabBar;
 
@@ -55,13 +57,14 @@ public class ViewHeader extends VBox {
             button.setFocusTraversable(true);
             button.setOnAction(e -> setActive(button));
             tabBar.getChildren().add(button);
+            tabButtons.add(button);
         }
 
         tabBar.getStyleClass().add("tab-bar");
         tabBar.addEventFilter(KeyEvent.KEY_PRESSED, this::handleTabKeyNavigation);
 
-        if (!tabBar.getChildren().isEmpty()) {
-            setActive((Button) tabBar.getChildren().getFirst());
+        if (!tabButtons.isEmpty()) {
+            setActive(tabButtons.getFirst());
         }
 
         getChildren().addAll(titleRow, tabBar);
@@ -97,9 +100,8 @@ public class ViewHeader extends VBox {
      */
     private void updateTexts() {
         titleLabel.setText(LanguageManager.get(titleKey));
-        List<Node> buttons = tabBar.getChildren();
-        for (int i = 0; i < buttons.size(); i++) {
-            ((Button) buttons.get(i)).setText(LanguageManager.get(labelKeys.get(i)));
+        for (int i = 0; i < tabButtons.size(); i++) {
+            tabButtons.get(i).setText(LanguageManager.get(labelKeys.get(i)));
         }
     }
 
@@ -110,7 +112,7 @@ public class ViewHeader extends VBox {
      * @return the tab button at the given index
      */
     public Button getTabButton(int index) {
-        return (Button) tabBar.getChildren().get(index);
+        return tabButtons.get(index);
     }
 
     /**
@@ -136,15 +138,15 @@ public class ViewHeader extends VBox {
      */
     private void handleTabKeyNavigation(KeyEvent event) {
         Node focused = tabBar.getScene() != null ? tabBar.getScene().getFocusOwner() : null;
-        int index = tabBar.getChildren().indexOf(focused);
+        int index = tabButtons.indexOf(focused);
         if (index < 0) {
             return;
         }
-        int last = tabBar.getChildren().size() - 1;
+        int last = tabButtons.size() - 1;
         switch (event.getCode()) {
             case LEFT  -> { if (index > 0)    { activateTabAt(index - 1); event.consume(); } }
             case RIGHT -> { if (index < last) { activateTabAt(index + 1); event.consume(); } }
-            case SPACE -> { ((Button) tabBar.getChildren().get(index)).fire(); event.consume(); }
+            case SPACE -> { tabButtons.get(index).fire(); event.consume(); }
             default -> {}
         }
     }
