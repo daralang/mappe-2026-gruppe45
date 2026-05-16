@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.util;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.util.Currency;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -10,11 +11,11 @@ import java.util.Objects;
  *
  * <p>All amounts are formatted in NOK, since portfolio values and net worth
  * are converted to NOK by {@code GameService} before being passed in.
- * Language-based display currency is tracked separately.
+ * Language-based display currency is tracked separately.</p>
  */
 public class CurrencyFormatter {
 
-    private static final String DISPLAY_CURRENCY_CODE = "NOK";
+    private static final Currency NOK_CURRENCY = Currency.getInstance("NOK");
     private static final NumberFormat FORMAT;
 
     static {
@@ -31,11 +32,51 @@ public class CurrencyFormatter {
      * Formats the given amount in NOK.
      *
      * @param amount the amount to format
-     * @return the formatted string, e.g. "5 000,00 NOK"
+     * @return the formatted string, e.g. {@code "5 000,00 NOK"}
      * @throws NullPointerException if amount is null
      */
     public static String format(BigDecimal amount) {
         Objects.requireNonNull(amount, "Amount cannot be null");
-        return FORMAT.format(amount) + " " + DISPLAY_CURRENCY_CODE;
+        return FORMAT.format(amount) + " NOK";
+    }
+
+    /**
+     * Returns the display symbol for the given currency.
+     *
+     * <p>Supported mappings:
+     * USD > $, NOK > kr, EUR > €, GBP > £, SEK > Skr, DKK → Dkr.
+     * Falls back to the ISO code for unsupported currencies.</p>
+     *
+     * @param currency the currency to look up
+     * @return the display symbol
+     * @throws NullPointerException if currency is null
+     */
+    public static String symbol(Currency currency) {
+        Objects.requireNonNull(currency, "Currency cannot be null");
+        return switch (currency.getCurrencyCode()) {
+            case "USD" -> "$";
+            case "NOK" -> "kr";
+            case "EUR" -> "€";
+            case "GBP" -> "£";
+            case "SEK" -> "Skr";
+            case "DKK" -> "Dkr";
+            default    -> currency.getCurrencyCode();
+        };
+    }
+
+    /**
+     * Returns the display symbol for the currency identified by the given ISO code.
+     *
+     * <p>Convenience overload of {@link #symbol(Currency)} for call sites that
+     * already hold the ISO code as a {@link String}, such as
+     * {@link edu.ntnu.idatt2003.millions.service.TransactionStatsService.TransactionStats}.</p>
+     *
+     * @param isoCode the ISO 4217 currency code, e.g. {@code "USD"}
+     * @return the display symbol
+     * @throws NullPointerException     if isoCode is null
+     * @throws IllegalArgumentException if isoCode is not a known ISO currency code
+     */
+    public static String symbol(String isoCode) {
+        return symbol(Currency.getInstance(isoCode));
     }
 }

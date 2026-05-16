@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
+import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
@@ -219,10 +220,11 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
                 typeBadge(transaction),
                 TableCells.data(TableCells.NUMBER_FORMAT.format(stats.quantity())),
                 TableCells.data(TableCells.NUMBER_FORMAT.format(stats.pricePerShare())
-                        + " " + stats.nativeCurrencyCode()),
-                TableCells.data(TableCells.NUMBER_FORMAT.format(stats.commissionNok()) + " NOK"),
+                        + " " + CurrencyFormatter.symbol(stats.nativeCurrencyCode())),
+                TableCells.data(TableCells.NUMBER_FORMAT.format(stats.commissionNok())
+                        + " " + CurrencyFormatter.symbol("NOK")),
                 taxCell(stats),
-                ChangeFormatter.styledAmount(stats.amountNok(), "holdings-cell")
+                amountCell(stats.amountNok())
         );
     }
 
@@ -242,6 +244,19 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     }
 
     /**
+     * Creates a coloured signed amount label for the Beløp column,
+     * with the NOK currency symbol appended.
+     *
+     * @param amountNok the NOK amount to format
+     * @return a styled label with currency symbol
+     */
+    private Label amountCell(java.math.BigDecimal amountNok) {
+        Label label = ChangeFormatter.styledAmount(amountNok, "holdings-cell");
+        label.setText(label.getText() + " " + CurrencyFormatter.symbol("NOK"));
+        return label;
+    }
+
+    /**
      * Renders the tax cell. Purchases show an en-dash instead of "0,00 NOK".
      *
      * @param stats the row stats supplying the NOK tax amount
@@ -251,6 +266,7 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
         if (stats.taxNok().signum() == 0) {
             return TableCells.data("–");
         }
-        return TableCells.data(TableCells.NUMBER_FORMAT.format(stats.taxNok()) + " NOK");
+        return TableCells.data(TableCells.NUMBER_FORMAT.format(stats.taxNok())
+                + " " + CurrencyFormatter.symbol("NOK"));
     }
 }
