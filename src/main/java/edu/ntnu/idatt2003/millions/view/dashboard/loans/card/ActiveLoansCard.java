@@ -3,56 +3,75 @@ package edu.ntnu.idatt2003.millions.view.dashboard.loans.card;
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
-import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import javafx.geometry.HPos;
+import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
+import edu.ntnu.idatt2003.millions.view.dashboard.loans.LoansSort;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Card showing the player's outstanding loans in a table.
- *
- * <p>Follows the same structure as {@code HoldingsCard} and
- * {@code TransactionsCard}: a section title above a {@link GridPane}
- * built via {@link TableCells}, rebuilt on every game or language change.</p>
+ * Card showing the player's outstanding loans in a sortable table.
+ * Uses {@link SortColumnTable} with {@link LoansSort} for consistent headers,
+ * sort arrows and tooltips, the same infrastructure as HoldingsCard and TransactionsCard.
  */
 public class ActiveLoansCard extends Card {
 
-    private static final int COLUMN_COUNT = 6;
-    private static final double[] COLUMN_WIDTHS = {30, 12, 14, 18, 18, 8};
-    private static final HPos[] COLUMN_ALIGNMENTS = {
-            HPos.LEFT, HPos.RIGHT, HPos.RIGHT, HPos.RIGHT, HPos.RIGHT, HPos.RIGHT
-    };
+    /** Grid column index for the loan name cell in the total row. */
+    private static final int TOTAL_COL_LABEL = 0;
+
+    /** Grid column index for the weekly cost cell in the total row. */
+    private static final int TOTAL_COL_WEEKLY_COST = 3;
+
+    /** Grid column index for the remaining principal cell in the total row. */
+    private static final int TOTAL_COL_REMAINING = 4;
 
     private final GameService gameService;
     private final LoanController controller;
-    private final GridPane grid = new GridPane();
+    private final LoansSort loansSort;
+    private final SortColumnTable<LoansSort.SortColumn> table;
     private final StyledText title = StyledText.sectionTitle();
+    private final GridPane totalGrid = new GridPane();
 
+    /**
+     * Constructs a new ActiveLoansCard.
+     *
+     * @param gameService the game service used to read active loans and exchange state
+     * @param controller  the controller handling repay and details actions
+     */
     public ActiveLoansCard(GameService gameService, LoanController controller) {
         super(gameService);
         this.gameService = gameService;
         this.controller = controller;
+        this.loansSort = new LoansSort(gameService);
+        this.table = new SortColumnTable<>(loansSort::getColumnDefs);
+
+        totalGrid.setHgap(20);
+        initTotalGridColumns();
+        setTotalVisible(false);
+
+        VBox.setMargin(totalGrid, new Insets(-16, 0, 0, 0));
 
         setSpacing(16);
-
-        grid.setHgap(20);
-        TableCells.configureColumns(grid, COLUMN_WIDTHS, COLUMN_ALIGNMENTS);
-
-        getChildren().addAll(title, grid);
+        getChildren().addAll(title, table.asNode(), totalGrid);
         refresh();
     }
 
@@ -66,42 +85,51 @@ public class ActiveLoansCard extends Card {
         refresh();
     }
 
+    /**
+     * Rebuilds the table from the current loan list.
+     * Clears existing rows, refreshes the header, applies any active sort,
+     * then renders one data row per loan followed by a total row.
+     */
     private void refresh() {
         title.setText(LanguageManager.get("loans.active.title"));
-        grid.getChildren().clear();
+        table.clearRows();
 
         List<Loan> loans = gameService.getPlayer().getActiveLoans();
 
-        addHeaderRow();
+        table.refreshHeader(this::refresh);
 
         if (loans.isEmpty()) {
-            TableCells.renderEmptyState(grid, LanguageManager.get("loans.active.empty"), COLUMN_COUNT);
+            table.renderEmptyState(LanguageManager.get("loans.active.empty"));
+            setTotalVisible(false);
             return;
         }
 
-        int row = 1;
-        Map<String, Integer> typeCount = new HashMap<>();
-        for (Loan loan : loans) {
-            int count = typeCount.merge(loan.offer().id(), 1, Integer::sum);
-            addDataRow(row++, loan, count, count);
+        if (table.isSortActive()) {
+            loansSort.applySort(loans, table.getSortState());
         }
 
-        addTotalRow(row, loans);
+        Map<String, Integer> typeCount = new HashMap<>();
+        int row = 1;
+        for (Loan loan : loans) {
+            int count = typeCount.merge(loan.offer().id(), 1, Integer::sum);
+            addDataRow(row++, loan, count);
+        }
+
+        setTotalVisible(true);
+        refreshTotal(loans);
     }
 
-    private void addHeaderRow() {
-        TableCells.addHeaderRow(grid, new String[]{
-                LanguageManager.get("col.loan"),
-                LanguageManager.get("col.rate"),
-                LanguageManager.get("col.weeksLeft"),
-                LanguageManager.get("col.weeklyCost"),
-                LanguageManager.get("col.remaining"),
-                ""
-        });
-    }
-
-    private void addDataRow(int row, Loan loan, int typeCount, int loanIndex) {
+    /**
+     * Renders one loan as a data row in the table.
+     *
+     * @param row       the table row index to write to
+     * @param loan      the loan to render
+     * @param typeIndex the sequential index of this loan within its offer type,
+     *                  used to build the display label and passed to the controller
+     */
+    private void addDataRow(int row, Loan loan, int typeIndex) {
         String offerName = LanguageManager.get("loans.offer." + loan.offer().id() + ".name");
+        String loanLabel = offerName + " #" + typeIndex;
 
         BigDecimal weeklyRate = loan.offer().weeklyInterestRate()
                 .multiply(BigDecimal.valueOf(100))
@@ -112,43 +140,92 @@ public class ActiveLoansCard extends Card {
         String weeksLeftText = MessageFormat.format(
                 LanguageManager.get("loans.active.weeksLeft"), weeksLeft, loan.offer().termWeeks());
 
-        BigDecimal weeklyCost = loan.weeklyInterest();
-
-        grid.add(TableCells.data(offerName + " #" + typeCount), 0, row);
-        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(weeklyRate) + " %"), 1, row);
-        grid.add(TableCells.data(weeksLeftText), 2, row);
-        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(weeklyCost) + " NOK"), 3, row);
-        grid.add(TableCells.data(TableCells.NUMBER_FORMAT.format(loan.principal()) + " NOK"), 4, row);
-        grid.add(buildActionCell(loan, loanIndex), 5, row);
+        table.addRow(row,
+                TableCells.data(loanLabel),
+                TableCells.data(TableCells.NUMBER_FORMAT.format(weeklyRate) + " %"),
+                TableCells.data(weeksLeftText),
+                TableCells.data(TableCells.NUMBER_FORMAT.format(loan.weeklyInterest())
+                        + " " + CurrencyFormatter.symbol("NOK")),
+                TableCells.data(TableCells.NUMBER_FORMAT.format(loan.principal())
+                        + " " + CurrencyFormatter.symbol("NOK")),
+                buildActionCell(loan, typeIndex)
+        );
     }
 
-    private void addTotalRow(int row, List<Loan> loans) {
+    /**
+     * Rebuilds the total row in {@link #totalGrid} with aggregated values
+     * from the full loans list.
+     *
+     * @param loans the active loan list used to compute totals
+     */
+    private void refreshTotal(List<Loan> loans) {
+        totalGrid.getChildren().clear();
+
         Region divider = new Region();
         divider.getStyleClass().add("holdings-total-divider");
-        GridPane.setColumnSpan(divider, COLUMN_COUNT);
-        grid.add(divider, 0, row);
+        GridPane.setColumnSpan(divider, loansSort.getColumnDefs().size());
+        totalGrid.add(divider, 0, 0);
 
-        int dataRow = row + 1;
+        Label totalLabel = new Label(LanguageManager.get("loans.active.total"));
+        totalLabel.getStyleClass().addAll("holdings-cell", "bold");
+        totalGrid.add(totalLabel, TOTAL_COL_LABEL, 1);
 
         BigDecimal totalWeeklyCost = loans.stream()
                 .map(Loan::weeklyInterest)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        Label weeklyCostLabel = new Label(
+                TableCells.NUMBER_FORMAT.format(totalWeeklyCost)
+                        + " " + CurrencyFormatter.symbol("NOK"));
+        weeklyCostLabel.getStyleClass().addAll("holdings-cell", "bold");
+        totalGrid.add(weeklyCostLabel, TOTAL_COL_WEEKLY_COST, 1);
 
-        grid.add(TableCells.boldData(LanguageManager.get("loans.active.total")), 0, dataRow);
-        grid.add(TableCells.boldData(TableCells.NUMBER_FORMAT.format(totalWeeklyCost) + " NOK"), 3, dataRow);
-        grid.add(TableCells.boldData(
-                TableCells.NUMBER_FORMAT.format(gameService.getPlayer().getTotalDebt()) + " NOK"), 4, dataRow);
+        Label remainingLabel = new Label(
+                TableCells.NUMBER_FORMAT.format(gameService.getPlayer().getTotalDebt())
+                        + " " + CurrencyFormatter.symbol("NOK"));
+        remainingLabel.getStyleClass().addAll("holdings-cell", "bold");
+        totalGrid.add(remainingLabel, TOTAL_COL_REMAINING, 1);
     }
 
-    private HBox buildActionCell(Loan loan, int loanIndex) {
+    /**
+     * Configures {@link #totalGrid} with percentage column constraints mirroring
+     * {@link LoansSort#getColumnDefs()} so total values align with table columns.
+     */
+    private void initTotalGridColumns() {
+        for (TableColumnDef<LoansSort.SortColumn> col : loansSort.getColumnDefs()) {
+            ColumnConstraints cc = new ColumnConstraints();
+            cc.setPercentWidth(col.percentWidth());
+            cc.setHalignment(col.alignment());
+            totalGrid.getColumnConstraints().add(cc);
+        }
+    }
+
+    /**
+     * Shows or hides the total divider and grid.
+     *
+     * @param visible {@code true} to show, {@code false} to hide and unmanage
+     */
+    private void setTotalVisible(boolean visible) {
+        totalGrid.setVisible(visible);
+        totalGrid.setManaged(visible);
+    }
+
+    /**
+     * Builds the repay and details action buttons for a loan row.
+     * Both buttons are disabled when the game is over.
+     *
+     * @param loan      the loan the buttons act on
+     * @param typeIndex the sequential index within its offer type, passed to the controller
+     * @return an {@link HBox} containing the action buttons
+     */
+    private HBox buildActionCell(Loan loan, int typeIndex) {
         Button repay = new Button(LanguageManager.get("loans.active.button.repay"));
         repay.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
         repay.setDisable(gameService.isGameOver());
-        repay.setOnAction(e -> controller.openRepayDialog(loan, loanIndex));
+        repay.setOnAction(e -> controller.openRepayDialog(loan, typeIndex));
 
         Button details = new Button("❯");
         details.getStyleClass().add("holdings-details-chevron");
-        details.setOnAction(e -> controller.openLoanDetailsModal(loan, loanIndex));
+        details.setOnAction(e -> controller.openLoanDetailsModal(loan, typeIndex));
 
         HBox box = new HBox(24, repay, details);
         box.setAlignment(Pos.CENTER_RIGHT);
