@@ -46,6 +46,8 @@ public final class MoneyFormatter {
     }
 
     private static DecimalFormat buildFormat(Locale locale) {
-        return new DecimalFormat("#,##0.00", new DecimalFormatSymbols(locale));
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
+        symbols.setMinusSign('-');
+        return new DecimalFormat("#,##0.00", symbols);
     }
 }

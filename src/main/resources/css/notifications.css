@@ -156,11 +156,6 @@
     -fx-font-weight: normal;
 }
 
-.notification-body {
-    -fx-font-size: 12px;
-    -fx-text-fill: -text-secondary;
-}
-
 .notification-week {
     -fx-font-size: 11px;
     -fx-text-fill: -text-muted;

@@ -63,6 +63,23 @@ class MoneyFormatterTest {
         }
 
         @Test
+        @DisplayName("negative value uses ASCII hyphen-minus not Unicode minus sign")
+        void negativeValueUsesAsciiMinus() {
+            // Spec: MoneyFormatter normalises the minus character to ASCII U+002D
+            // for all locales. Without setMinusSign('-'), the nb-NO locale returns
+            // U+2212 (MINUS SIGN) on some platforms (e.g. Windows), making output
+            // inconsistent with ChangeFormatter and the rest of the display layer.
+            // Arrange
+            BigDecimal amount = new BigDecimal("-500.00");
+            // Act
+            String result = MoneyFormatter.format(amount);
+            // Assert: first character must be U+002D HYPHEN-MINUS, not U+2212 MINUS SIGN
+            assertEquals('-', result.charAt(0),
+                    "Expected ASCII hyphen-minus U+002D but got U+" +
+                    Integer.toHexString(result.charAt(0)).toUpperCase() + ": " + result);
+        }
+
+        @Test
         @DisplayName("formats large value with grouping")
         void largeValueHasGrouping() {
             String result = MoneyFormatter.format(new BigDecimal("1000000.00"));

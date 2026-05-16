@@ -15,7 +15,6 @@ import edu.ntnu.idatt2003.millions.view.dashboard.loans.LoansSort;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -167,24 +166,18 @@ public class ActiveLoansCard extends Card {
         GridPane.setColumnSpan(divider, loansSort.getColumnDefs().size());
         totalGrid.add(divider, 0, 0);
 
-        Label totalLabel = new Label(LanguageManager.get("loans.active.total"));
-        totalLabel.getStyleClass().addAll("holdings-cell", "bold");
-        totalGrid.add(totalLabel, TOTAL_COL_LABEL, 1);
+        totalGrid.add(TableCells.boldData(LanguageManager.get("loans.active.total")), TOTAL_COL_LABEL, 1);
 
         BigDecimal totalWeeklyCost = loans.stream()
                 .map(Loan::weeklyInterest)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        Label weeklyCostLabel = new Label(
+        totalGrid.add(TableCells.boldData(
                 MoneyFormatter.format(totalWeeklyCost)
-                        + " " + CurrencyFormatter.symbol("NOK"));
-        weeklyCostLabel.getStyleClass().addAll("holdings-cell", "bold");
-        totalGrid.add(weeklyCostLabel, TOTAL_COL_WEEKLY_COST, 1);
+                        + " " + CurrencyFormatter.symbol("NOK")), TOTAL_COL_WEEKLY_COST, 1);
 
-        Label remainingLabel = new Label(
+        totalGrid.add(TableCells.boldData(
                 MoneyFormatter.format(gameService.getPlayer().getTotalDebt())
-                        + " " + CurrencyFormatter.symbol("NOK"));
-        remainingLabel.getStyleClass().addAll("holdings-cell", "bold");
-        totalGrid.add(remainingLabel, TOTAL_COL_REMAINING, 1);
+                        + " " + CurrencyFormatter.symbol("NOK")), TOTAL_COL_REMAINING, 1);
     }
 
     /**
