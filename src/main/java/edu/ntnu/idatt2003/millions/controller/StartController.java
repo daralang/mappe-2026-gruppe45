@@ -4,9 +4,9 @@ import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
-import edu.ntnu.idatt2003.millions.keyboard.KeyBinding;
-import edu.ntnu.idatt2003.millions.keyboard.KeyBinding.Modifier;
 import edu.ntnu.idatt2003.millions.keyboard.KeyboardNavigationService;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
@@ -379,6 +379,7 @@ public class StartController {
         stage.show();
         stage.setMaximized(true);
         Platform.runLater(stage::centerOnScreen);
+        Platform.runLater(view::focusFirstInput);
     }
 
     /**
@@ -392,7 +393,7 @@ public class StartController {
     private void registerShortcuts() {
         keyboardService.attach(view.getScene());
         var reg = keyboardService.globalShortcuts();
-        reg.register(KeyBinding.of(KeyCode.DIGIT1, Modifier.SHIFT), view::showNewGameTab);
-        reg.register(KeyBinding.of(KeyCode.DIGIT2, Modifier.SHIFT), view::showLoadGameTab);
+        reg.register(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHIFT_DOWN), view::showNewGameTab);
+        reg.register(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHIFT_DOWN), view::showLoadGameTab);
     }
 }

@@ -1,8 +1,8 @@
 package edu.ntnu.idatt2003.millions.controller;
 
-import edu.ntnu.idatt2003.millions.keyboard.KeyBinding;
-import edu.ntnu.idatt2003.millions.keyboard.KeyBinding.Modifier;
 import edu.ntnu.idatt2003.millions.keyboard.KeyboardNavigationService;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
@@ -175,9 +175,10 @@ public class MainController {
     /**
      * Registers application-wide keyboard shortcuts on the app-lifetime scene.
      *
-     * <p>Top-level navigation uses Cmd/Ctrl (SHORTCUT). Dashboard tab shortcuts
-     * use Shift+1–4 and jump directly to the respective sub-view, switching to
-     * the dashboard first if another view is active.</p>
+     * <p>Top-level navigation uses {@link KeyCombination#SHORTCUT_DOWN} (Cmd on macOS,
+     * Ctrl on Windows/Linux). Dashboard tab shortcuts use {@link KeyCombination#SHIFT_DOWN}+1–4
+     * and jump directly to the respective sub-view, switching to the dashboard first
+     * if another view is active.</p>
      *
      * <p>Cmd/Ctrl+F delegates to {@link MainView#focusActiveSearch()}, which
      * routes focus to whichever search field belongs to the currently visible
@@ -186,15 +187,15 @@ public class MainController {
     private void registerShortcuts() {
         keyboardService.attach(stage.getScene());
         var reg = keyboardService.globalShortcuts();
-        reg.register(KeyBinding.of(KeyCode.DIGIT1, Modifier.SHORTCUT), view::showDashboard);
-        reg.register(KeyBinding.of(KeyCode.DIGIT2, Modifier.SHORTCUT), view::showExchange);
-        reg.register(KeyBinding.of(KeyCode.DIGIT3, Modifier.SHORTCUT), view::showLeaderboard);
-        reg.register(KeyBinding.of(KeyCode.S,      Modifier.SHORTCUT), () -> handleSaveGame());
-        reg.register(KeyBinding.of(KeyCode.ENTER,  Modifier.SHORTCUT), this::handleAdvanceWeek);
-        reg.register(KeyBinding.of(KeyCode.F,      Modifier.SHORTCUT), view::focusActiveSearch);
-        reg.register(KeyBinding.of(KeyCode.DIGIT1, Modifier.SHIFT), view::showDashboardPortfolio);
-        reg.register(KeyBinding.of(KeyCode.DIGIT2, Modifier.SHIFT), view::showDashboardTransactions);
-        reg.register(KeyBinding.of(KeyCode.DIGIT3, Modifier.SHIFT), view::showDashboardWatchlist);
-        reg.register(KeyBinding.of(KeyCode.DIGIT4, Modifier.SHIFT), view::showDashboardLoans);
+        reg.register(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHORTCUT_DOWN), view::showDashboard);
+        reg.register(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHORTCUT_DOWN), view::showExchange);
+        reg.register(new KeyCodeCombination(KeyCode.DIGIT3, KeyCombination.SHORTCUT_DOWN), view::showLeaderboard);
+        reg.register(new KeyCodeCombination(KeyCode.S,      KeyCombination.SHORTCUT_DOWN), () -> handleSaveGame());
+        reg.register(new KeyCodeCombination(KeyCode.ENTER,  KeyCombination.SHORTCUT_DOWN), this::handleAdvanceWeek);
+        reg.register(new KeyCodeCombination(KeyCode.F,      KeyCombination.SHORTCUT_DOWN), view::focusActiveSearch);
+        reg.register(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHIFT_DOWN), view::showDashboardPortfolio);
+        reg.register(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHIFT_DOWN), view::showDashboardTransactions);
+        reg.register(new KeyCodeCombination(KeyCode.DIGIT3, KeyCombination.SHIFT_DOWN), view::showDashboardWatchlist);
+        reg.register(new KeyCodeCombination(KeyCode.DIGIT4, KeyCombination.SHIFT_DOWN), view::showDashboardLoans);
     }
 }
