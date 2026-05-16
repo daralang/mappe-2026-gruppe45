@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.keyboard;
 
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 
@@ -18,6 +20,10 @@ import java.util.Objects;
  * application thread.</p>
  */
 public final class ShortcutRegistry {
+
+    private static final KeyCode[] DIGIT_KEYS = {
+        KeyCode.DIGIT1, KeyCode.DIGIT2, KeyCode.DIGIT3, KeyCode.DIGIT4
+    };
 
     private final Map<KeyCombination, Runnable> shortcuts = new LinkedHashMap<>();
 
@@ -58,6 +64,24 @@ public final class ShortcutRegistry {
             }
         }
         return false;
+    }
+
+    /**
+     * Registers a sequence of tab actions on {@code Shift+1}, {@code Shift+2}, …
+     * {@code Shift+N}, up to a maximum of four tabs.
+     *
+     * <p>This is a convenience wrapper around {@link #register} that eliminates
+     * the repeated {@code new KeyCodeCombination(KeyCode.DIGIT_N, SHIFT_DOWN)}
+     * construction found at every call site that maps tabs to digit keys.</p>
+     *
+     * @param tabActions the actions to register, in tab order; at most four
+     *                   entries are used
+     * @throws NullPointerException if any element of {@code tabActions} is null
+     */
+    public void registerTabShortcuts(Runnable... tabActions) {
+        for (int i = 0; i < tabActions.length && i < DIGIT_KEYS.length; i++) {
+            register(new KeyCodeCombination(DIGIT_KEYS[i], KeyCombination.SHIFT_DOWN), tabActions[i]);
+        }
     }
 
     /**

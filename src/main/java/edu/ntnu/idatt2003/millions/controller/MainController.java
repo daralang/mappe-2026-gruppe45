@@ -199,9 +199,11 @@ public class MainController {
         reg.register(new KeyCodeCombination(KeyCode.S,      KeyCombination.SHORTCUT_DOWN), () -> handleSaveGame());
         reg.register(new KeyCodeCombination(KeyCode.ENTER,  KeyCombination.SHORTCUT_DOWN), this::handleAdvanceWeek);
         reg.register(new KeyCodeCombination(KeyCode.F,      KeyCombination.SHORTCUT_DOWN), view::focusActiveSearch);
-        reg.register(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHIFT_DOWN), view::showDashboardPortfolio);
-        reg.register(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHIFT_DOWN), view::showDashboardTransactions);
-        reg.register(new KeyCodeCombination(KeyCode.DIGIT3, KeyCombination.SHIFT_DOWN), view::showDashboardWatchlist);
-        reg.register(new KeyCodeCombination(KeyCode.DIGIT4, KeyCombination.SHIFT_DOWN), view::showDashboardLoans);
+        reg.registerTabShortcuts(
+            view::showDashboardPortfolio,
+            view::showDashboardTransactions,
+            view::showDashboardWatchlist,
+            view::showDashboardLoans
+        );
     }
 }
