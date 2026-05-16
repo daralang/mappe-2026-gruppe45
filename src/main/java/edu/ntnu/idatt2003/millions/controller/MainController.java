@@ -41,7 +41,10 @@ public class MainController {
         this.toastService = toastService;
         this.forcedSaleController = new ForcedSaleController(gameService);
         this.gameOverController = new GameOverController(gameService, stage,
-                () -> new StartController(stage, gameService).show());
+                () -> new StartController(stage, gameService).show(),
+                this::handleSaveGame,
+                gameService::sellAllAndExit,
+                gameService::recordLeaderboardEntry);
         TradeController tradeController = new TradeController(gameService);
         LoanController loanController = new LoanController(gameService);
         TitleBar titleBar = TitleBarFactory.create(stage, gameService);
