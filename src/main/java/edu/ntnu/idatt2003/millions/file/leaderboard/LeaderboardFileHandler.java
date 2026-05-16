@@ -11,8 +11,8 @@ import java.util.List;
  *
  * <p>Implementations must tolerate a missing file on read — that is the normal
  * state before the first entry is recorded — and return an empty list rather
- * than throwing. Malformed content, however, should surface as an
- * {@link IllegalStateException} so the caller can decide how to react.</p>
+ * than throwing. Malformed content, however, should surface as a
+ * {@link LeaderboardCorruptException} so the caller can decide how to react.</p>
  */
 public interface LeaderboardFileHandler {
 
@@ -21,10 +21,10 @@ public interface LeaderboardFileHandler {
      *
      * @param file the file to read from
      * @return a list of entries; empty if the file does not exist or contains no entries
-     * @throws NullPointerException  if file is null
-     * @throws IllegalStateException if the file exists but cannot be parsed
+     * @throws NullPointerException         if file is null
+     * @throws LeaderboardCorruptException  if the file exists but cannot be parsed
      */
-    List<LeaderboardEntry> readAll(File file);
+    List<LeaderboardEntry> readAll(File file) throws LeaderboardCorruptException;
 
     /**
      * Writes all entries to the leaderboard file, replacing any existing content.
