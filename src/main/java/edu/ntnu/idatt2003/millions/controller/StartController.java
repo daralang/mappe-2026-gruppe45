@@ -4,12 +4,16 @@ import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
 import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
+import edu.ntnu.idatt2003.millions.keyboard.KeyBinding;
+import edu.ntnu.idatt2003.millions.keyboard.KeyBinding.Modifier;
+import edu.ntnu.idatt2003.millions.keyboard.KeyboardNavigationService;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import edu.ntnu.idatt2003.millions.view.StartView;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBarFactory;
+import javafx.scene.input.KeyCode;
 import java.io.File;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
@@ -47,6 +51,7 @@ public class StartController {
     private final Runnable showMainViewAction;
     private final Consumer<Supplier<String>> errorSink;
     private final Consumer<Supplier<String>> successSink;
+    private final KeyboardNavigationService keyboardService = new KeyboardNavigationService();
 
     /**
      * Constructs a new StartController with a default {@link GameService}.
@@ -363,14 +368,31 @@ public class StartController {
     }
 
     /**
-     * Displays the start screen on the primary stage and binds UI events.
+     * Displays the start screen on the primary stage, binds UI events,
+     * and registers global keyboard shortcuts on the start scene.
      */
     public void show() {
         bindEvents();
         stage.setTitle("Millions");
         stage.setScene(view.getScene());
+        registerShortcuts();
         stage.show();
         stage.setMaximized(true);
         Platform.runLater(stage::centerOnScreen);
+    }
+
+    /**
+     * Registers application-wide keyboard shortcuts on the start scene.
+     *
+     * <p>{@code Shift+1} and {@code Shift+2} jump directly to the New Game
+     * and Load Game tabs respectively, mirroring the {@code Shift+1–4}
+     * shortcuts registered in
+     * {@link edu.ntnu.idatt2003.millions.controller.MainController}.</p>
+     */
+    private void registerShortcuts() {
+        keyboardService.attach(view.getScene());
+        var reg = keyboardService.globalShortcuts();
+        reg.register(KeyBinding.of(KeyCode.DIGIT1, Modifier.SHIFT), view::showNewGameTab);
+        reg.register(KeyBinding.of(KeyCode.DIGIT2, Modifier.SHIFT), view::showLoadGameTab);
     }
 }
