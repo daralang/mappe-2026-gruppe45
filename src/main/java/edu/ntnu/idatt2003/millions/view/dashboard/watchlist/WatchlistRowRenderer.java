@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
+import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
@@ -78,9 +79,13 @@ class WatchlistRowRenderer extends RowRenderer {
         Label companyLabel = TableCells.data(stock.getCompany());
 
         BigDecimal priceNok = converter.convert(stock.getSalesPrice(), stock.getCurrency(), NOK);
-        Label priceNokLabel = TableCells.data(ChangeFormatter.formatPlain(priceNok));
+        Label priceNokLabel = TableCells.data(
+                ChangeFormatter.formatPlain(priceNok)
+                        + " " + CurrencyFormatter.symbol("NOK"));
 
-        Label priceAltLabel = TableCells.data(ChangeFormatter.formatPlain(stock.getSalesPrice()));
+        Label priceAltLabel = TableCells.data(
+                ChangeFormatter.formatPlain(stock.getSalesPrice())
+                        + " " + CurrencyFormatter.symbol(stock.getCurrency()));
 
         BigDecimal changeNok = converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
         Label changeNokLabel = ChangeFormatter.styledAmount(changeNok, "holdings-cell");

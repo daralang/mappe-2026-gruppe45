@@ -1,8 +1,12 @@
 package edu.ntnu.idatt2003.millions.view.component.table;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.SortState;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.Currency;
 import java.util.List;
 
 /**
@@ -60,4 +64,47 @@ public abstract class SortProvider<T, C> {
      * @return a comparator for the given column
      */
     protected abstract Comparator<T> buildComparator(C column);
+
+    /**
+     * Returns the latest price of the given stock converted to NOK.
+     *
+     * @param stock     the stock to read from
+     * @param converter the converter used for currency conversion
+     * @param nok       the NOK currency instance
+     * @return the latest price in NOK
+     */
+    protected static BigDecimal priceInNok(Stock stock, CurrencyConverter converter, Currency nok) {
+        return converter.convert(stock.getSalesPrice(), stock.getCurrency(), nok);
+    }
+
+    /**
+     * Returns the latest price change of the given stock converted to NOK.
+     *
+     * @param stock     the stock to read from
+     * @param converter the converter used for currency conversion
+     * @param nok       the NOK currency instance
+     * @return the latest price change in NOK
+     */
+    protected static BigDecimal changeInNok(Stock stock, CurrencyConverter converter, Currency nok) {
+        return converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), nok);
+    }
+
+    /**
+     * Returns the NOK range between the high and low price over the given number of weeks.
+     * Returns {@link BigDecimal#ZERO} if no price history is available.
+     *
+     * @param stock     the stock to read from
+     * @param converter the converter used for currency conversion
+     * @param nok       the NOK currency instance
+     * @param weeks     the number of recent weeks to consider
+     * @return the high-low range in NOK, or zero if no data
+     */
+    protected static BigDecimal highLowRange(Stock stock, CurrencyConverter converter,
+                                             Currency nok, int weeks) {
+        List<BigDecimal> prices = stock.getRecentPrices(weeks);
+        if (prices.isEmpty()) return BigDecimal.ZERO;
+        BigDecimal low = prices.stream().min(BigDecimal::compareTo).orElseThrow();
+        BigDecimal high = prices.stream().max(BigDecimal::compareTo).orElseThrow();
+        return converter.convert(high.subtract(low), stock.getCurrency(), nok);
+    }
 }
