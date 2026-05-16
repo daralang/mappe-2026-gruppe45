@@ -44,6 +44,10 @@ public class NotificationPopupOverlay {
         stack.setMaxWidth(TOAST_WIDTH);
         stack.setPickOnBounds(false);
         stack.setVisible(false);
+        this.lastShownId = gameService.getPlayer().getNotifications().stream()
+                .mapToInt(Notification::id)
+                .max()
+                .orElse(0);
     }
 
     public Node getNode() {
