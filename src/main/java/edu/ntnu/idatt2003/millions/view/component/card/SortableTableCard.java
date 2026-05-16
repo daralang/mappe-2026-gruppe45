@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.component.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.SearchMetadataRow;
@@ -19,8 +20,9 @@ import java.util.function.Consumer;
 /**
  * Abstract base for paginated, sortable, searchable table cards.
  *
- * <p>Extends {@link PaginatedCard} with shared fields and implements
- * {@link #refresh()} as a sealed Template Method.
+ * <p>Extends {@link PaginatedCard} with shared fields, implements
+ * {@link #refresh()} as a sealed Template Method, and satisfies
+ * {@link SearchFocusProvider} via {@link #focusSearch()}.
  *
  * <p>{@link #table}, {@link #pagination} and {@link #sortProvider} are
  * non-final protected fields that subclasses must assign in their constructors
@@ -35,7 +37,7 @@ import java.util.function.Consumer;
  * @param <T>      the item type displayed in the table rows
  * @param <Column> the sort-column enum type
  */
-public abstract class SortableTableCard<T, Column> extends PaginatedCard {
+public abstract class SortableTableCard<T, Column> extends PaginatedCard implements SearchFocusProvider {
 
     /**
      * The sortable table. Must be assigned by the subclass constructor
