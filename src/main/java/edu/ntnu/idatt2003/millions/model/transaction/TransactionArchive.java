@@ -88,6 +88,40 @@ public class TransactionArchive {
     }
 
     /**
+     * Counts all purchase transactions in the given inclusive week range.
+     *
+     * @param fromWeek the first week to include (inclusive); must be at least 1
+     * @param toWeek   the last week to include (inclusive); if less than fromWeek returns 0
+     * @return the number of purchases in the range
+     * @throws IllegalArgumentException if fromWeek is less than 1
+     */
+    public int countPurchasesInRange(int fromWeek, int toWeek) {
+        if (fromWeek < 1) throw new IllegalArgumentException("fromWeek must be at least 1");
+        int total = 0;
+        for (int week = fromWeek; week <= toWeek; week++) {
+            total += getPurchases(week).size();
+        }
+        return total;
+    }
+
+    /**
+     * Counts all sale transactions in the given inclusive week range.
+     *
+     * @param fromWeek the first week to include (inclusive); must be at least 1
+     * @param toWeek   the last week to include (inclusive); if less than fromWeek returns 0
+     * @return the number of sales in the range
+     * @throws IllegalArgumentException if fromWeek is less than 1
+     */
+    public int countSalesInRange(int fromWeek, int toWeek) {
+        if (fromWeek < 1) throw new IllegalArgumentException("fromWeek must be at least 1");
+        int total = 0;
+        for (int week = fromWeek; week <= toWeek; week++) {
+            total += getSales(week).size();
+        }
+        return total;
+    }
+
+    /**
      * Returns all purchase transactions that took place in the specified week.
      *
      * @param week the week number to filter by
