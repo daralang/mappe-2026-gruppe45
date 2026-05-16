@@ -153,6 +153,18 @@ public class TransactionArchive {
     }
 
     /**
+     * Returns all sale transactions in the archive regardless of week.
+     *
+     * @return an unmodifiable list of all sales
+     */
+    public List<Sale> getAllSales() {
+        return transactions.stream()
+                .filter(Sale.class::isInstance)
+                .map(Sale.class::cast)
+                .toList();
+    }
+
+    /**
      * Returns the total number of completed sales in the archive.
      *
      * @return the number of sales
@@ -172,8 +184,7 @@ public class TransactionArchive {
             java.util.function.Predicate<BigDecimal> filter,
             java.util.function.UnaryOperator<BigDecimal> mapper) {
         Map<Currency, BigDecimal> result = new HashMap<>();
-        for (Transaction transaction : transactions) {
-            if (!(transaction instanceof Sale sale)) continue;
+        for (Sale sale : getAllSales()) {
             BigDecimal profit = sale.getProfit();
             if (!filter.test(profit)) continue;
             Currency currency = sale.getShare().getStock().getCurrency();
@@ -189,12 +200,10 @@ public class TransactionArchive {
      */
     private Map<Currency, BigDecimal> sumSalesAttribute(
             java.util.function.Function<Sale, BigDecimal> extractor) {
-        Map<Currency, BigDecimal> result = new HashMap<>();
-        for (Transaction transaction : transactions) {
-            if (!(transaction instanceof Sale sale)) continue;
-            Currency currency = sale.getShare().getStock().getCurrency();
-            result.merge(currency, extractor.apply(sale), BigDecimal::add);
-        }
-        return result;
+        return getAllSales().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        sale -> sale.getShare().getStock().getCurrency(),
+                        extractor,
+                        BigDecimal::add));
     }
 }
