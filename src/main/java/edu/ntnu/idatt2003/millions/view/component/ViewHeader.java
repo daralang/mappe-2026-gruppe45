@@ -4,6 +4,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -11,9 +12,11 @@ import javafx.scene.layout.VBox;
 import java.util.List;
 
 /**
- * A reusable view header component containing a title, a {@link WeekBar},
- * and a tab bar for navigation.
- * Automatically updates all text when the language changes.
+ * Reusable view header with a title, a tab bar, and a {@code WeekBar}.
+ *
+ * <p>Arrow keys navigate between tabs when a tab button has focus.
+ * LEFT/RIGHT move to the adjacent tab and activate it; ENTER/SPACE fire
+ * the focused tab. Language changes update all labels automatically.</p>
  */
 public class ViewHeader extends VBox {
 
@@ -49,11 +52,13 @@ public class ViewHeader extends VBox {
         for (String key : labelKeys) {
             Button button = new Button(LanguageManager.get(key));
             button.getStyleClass().add("tab-button");
+            button.setFocusTraversable(true);
             button.setOnAction(e -> setActive(button));
             tabBar.getChildren().add(button);
         }
 
         tabBar.getStyleClass().add("tab-bar");
+        tabBar.addEventFilter(KeyEvent.KEY_PRESSED, this::handleTabKeyNavigation);
 
         if (!tabBar.getChildren().isEmpty()) {
             setActive((Button) tabBar.getChildren().getFirst());
@@ -119,5 +124,35 @@ public class ViewHeader extends VBox {
     public void setTabAction(int index, Runnable action) {
         Button button = getTabButton(index);
         button.setOnAction(e -> { setActive(button); action.run(); });
+    }
+
+    /**
+     * Handles LEFT/RIGHT arrow navigation and ENTER/SPACE activation
+     * when focus is inside the tab bar.
+     */
+    private void handleTabKeyNavigation(KeyEvent event) {
+        Node focused = tabBar.getScene() != null ? tabBar.getScene().getFocusOwner() : null;
+        int index = tabBar.getChildren().indexOf(focused);
+        if (index < 0) {
+            return;
+        }
+        int last = tabBar.getChildren().size() - 1;
+        switch (event.getCode()) {
+            case LEFT  -> { if (index > 0)    { activateTabAt(index - 1); event.consume(); } }
+            case RIGHT -> { if (index < last) { activateTabAt(index + 1); event.consume(); } }
+            case ENTER, SPACE -> { ((Button) tabBar.getChildren().get(index)).fire(); event.consume(); }
+            default -> {}
+        }
+    }
+
+    /**
+     * Requests focus on and fires the tab at the given index.
+     *
+     * @param index zero-based tab index
+     */
+    private void activateTabAt(int index) {
+        Button button = getTabButton(index);
+        button.requestFocus();
+        button.fire();
     }
 }
