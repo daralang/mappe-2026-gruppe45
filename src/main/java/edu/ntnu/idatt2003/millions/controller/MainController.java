@@ -174,7 +174,10 @@ public class MainController {
 
     /**
      * Registers application-wide keyboard shortcuts on the app-lifetime scene.
-     * Cmd on macOS, Ctrl on Windows/Linux (via {@code SHORTCUT}).
+     *
+     * <p>Top-level navigation uses Cmd/Ctrl (SHORTCUT). Dashboard tab shortcuts
+     * use Shift+1–4 and jump directly to the respective sub-view, switching to
+     * the dashboard first if another view is active.</p>
      */
     private void registerShortcuts() {
         keyboardService.attach(stage.getScene());
@@ -184,5 +187,9 @@ public class MainController {
         reg.register(KeyBinding.of(KeyCode.DIGIT3, Modifier.SHORTCUT), view::showLeaderboard);
         reg.register(KeyBinding.of(KeyCode.S,      Modifier.SHORTCUT), () -> handleSaveGame());
         reg.register(KeyBinding.of(KeyCode.ENTER,  Modifier.SHORTCUT), this::handleAdvanceWeek);
+        reg.register(KeyBinding.of(KeyCode.DIGIT1, Modifier.SHIFT), view::showDashboardPortfolio);
+        reg.register(KeyBinding.of(KeyCode.DIGIT2, Modifier.SHIFT), view::showDashboardTransactions);
+        reg.register(KeyBinding.of(KeyCode.DIGIT3, Modifier.SHIFT), view::showDashboardWatchlist);
+        reg.register(KeyBinding.of(KeyCode.DIGIT4, Modifier.SHIFT), view::showDashboardLoans);
     }
 }
