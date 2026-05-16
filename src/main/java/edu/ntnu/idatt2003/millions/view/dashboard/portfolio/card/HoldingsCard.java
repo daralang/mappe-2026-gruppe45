@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
+import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
@@ -192,7 +193,8 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
         totalGrid.add(totalLabel, TOTAL_COL_COMPANY, 1);
 
         Label valueNok = new Label(TableCells.NUMBER_FORMAT.format(
-                portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
+                portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter()))
+                + " " + CurrencyFormatter.symbol("NOK"));
         valueNok.getStyleClass().addAll("holdings-cell", "bold");
         totalGrid.add(valueNok, TOTAL_COL_VALUE_NOK, 1);
 
@@ -226,7 +228,8 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
                 TableCells.data(TableCells.NUMBER_FORMAT.format(share.getQuantity())),
                 coloredPercentCell(stock.getWeeklyChangePercent()),
                 TableCells.data(TableCells.NUMBER_FORMAT.format(
-                        portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))),
+                        portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))
+                        + " " + CurrencyFormatter.symbol("NOK")),
                 coloredPercentCell(share.getReturnPercent()),
                 coloredAmountCell(
                         portfolioService.getShareReturnInNok(share, gameService.getCurrencyConverter())),
@@ -301,12 +304,15 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     }
 
     /**
-     * Creates a coloured signed amount label using {@link ChangeFormatter}.
+     * Creates a coloured signed amount label using {@link ChangeFormatter},
+     * with the NOK currency symbol appended.
      *
      * @param value the amount value to format
      * @return a styled label
      */
     private Label coloredAmountCell(BigDecimal value) {
-        return ChangeFormatter.styledAmount(value, "holdings-cell");
+        Label label = ChangeFormatter.styledAmount(value, "holdings-cell");
+        label.setText(label.getText() + " " + CurrencyFormatter.symbol("NOK"));
+        return label;
     }
 }

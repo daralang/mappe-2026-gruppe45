@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.exchange.overview.card;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
+import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.CurrencyManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
@@ -112,7 +113,7 @@ public class StockRankingCard extends VBox {
      */
     private void addDataRow(int rowIndex, Stock stock) {
         String formattedPrice = ChangeFormatter.formatPlain(stock.getSalesPrice())
-                + " " + stock.getCurrency().getCurrencyCode();
+                + " " + CurrencyFormatter.symbol(stock.getCurrency());
         Label changeLabel = ChangeFormatter.styledPercent(
                 stock.getWeeklyChangePercent(), "holdings-cell");
         table.addRow(rowIndex,
