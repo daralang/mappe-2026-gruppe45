@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.component.notification;
 import edu.ntnu.idatt2003.millions.model.notification.Notification;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -131,11 +132,10 @@ public class NotificationPanel {
         title.getStyleClass().addAll("notification-title", severityTitleClass(n.severity()));
         title.setWrapText(true);
 
-        Label body = new Label(formatBody(n));
-        body.getStyleClass().add("notification-body");
+        StyledText body = StyledText.widgetLabel(formatBody(n));
         body.setWrapText(true);
 
-        Label week = new Label("Uke " + n.week());
+        Label week = new Label(MessageFormat.format(LanguageManager.get("transactions.weekValue"), n.week()));
         week.getStyleClass().add("notification-week");
 
         VBox content = new VBox(2, title, body, week);

@@ -1,7 +1,5 @@
 package edu.ntnu.idatt2003.millions.view.dialog;
 
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
-import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.ColourChange;
@@ -43,11 +41,10 @@ public class ForcedSaleDialog extends Modal {
     private final BigDecimal maturityDue;
     private final BigDecimal totalObligations;
     private final BigDecimal availableCash;
-    private final CurrencyConverter converter;
     private final int currentWeek;
     private final Consumer<List<Share>> onConfirm;
 
-    private final Map<Share, BigDecimal> netNokByShare = new LinkedHashMap<>();
+    private final Map<Share, BigDecimal> netNokByShare;
     private final List<Share> selectedShares = new ArrayList<>();
 
     private Label selectedTotalLabel;
@@ -58,7 +55,7 @@ public class ForcedSaleDialog extends Modal {
                             BigDecimal interestDue,
                             BigDecimal maturityDue,
                             BigDecimal availableCash,
-                            CurrencyConverter converter,
+                            Map<Share, BigDecimal> netNokByShare,
                             int currentWeek,
                             Consumer<List<Share>> onConfirm) {
         this.shares = shares;
@@ -66,13 +63,9 @@ public class ForcedSaleDialog extends Modal {
         this.maturityDue = maturityDue;
         this.totalObligations = interestDue.add(maturityDue);
         this.availableCash = availableCash;
-        this.converter = converter;
+        this.netNokByShare = netNokByShare;
         this.currentWeek = currentWeek;
         this.onConfirm = onConfirm;
-
-        for (Share share : shares) {
-            netNokByShare.put(share, SalesCalculator.calculateNetNok(share, converter));
-        }
     }
 
     /**
