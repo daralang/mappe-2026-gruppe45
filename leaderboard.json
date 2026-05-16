@@ -42,5 +42,16 @@
     "status": "NOVICE",
     "outcome": "ACTIVE",
     "lastUpdated": "2026-05-15T22:46:59.604251Z"
+  },
+  {
+    "sessionId": "5f20b7e2-92b5-4543-8776-2bee80e182dd",
+    "playerName": "start",
+    "startingCapital": 100,
+    "finalNetWorth": 100,
+    "returnPercent": 0.0,
+    "weeksPlayed": 1,
+    "status": "NOVICE",
+    "outcome": "ACTIVE",
+    "lastUpdated": "2026-05-16T16:03:03.165367Z"
   }
 ]
