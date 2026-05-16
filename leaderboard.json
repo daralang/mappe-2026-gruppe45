@@ -3,12 +3,12 @@
     "sessionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "playerName": "Alva",
     "startingCapital": 10000.00,
-    "finalNetWorth": 12508.9508,
-    "returnPercent": 25.1,
-    "weeksPlayed": 39,
+    "finalNetWorth": 12584.3503,
+    "returnPercent": 25.8,
+    "weeksPlayed": 48,
     "status": "NOVICE",
     "outcome": "ACTIVE",
-    "lastUpdated": "2026-05-16T02:18:34.673578700Z"
+    "lastUpdated": "2026-05-16T04:26:16.681206900Z"
   },
   {
     "sessionId": "80651cf1-aef5-4e63-b1b9-96c109f64730",
@@ -42,5 +42,16 @@
     "status": "NOVICE",
     "outcome": "ACTIVE",
     "lastUpdated": "2026-05-15T22:46:59.604251Z"
+  },
+  {
+    "sessionId": "deadbeef-0000-4000-a000-000000000001",
+    "playerName": "TestNearGameOver",
+    "startingCapital": 10000.00,
+    "finalNetWorth": -79971.7110,
+    "returnPercent": -899.7,
+    "weeksPlayed": 28,
+    "status": "NOVICE",
+    "outcome": "BANKRUPTCY",
+    "lastUpdated": "2026-05-16T04:33:47.739156800Z"
   }
 ]
