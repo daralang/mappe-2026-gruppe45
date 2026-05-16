@@ -3,14 +3,11 @@ package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.watchlist.WatchlistEntry;
-import edu.ntnu.idatt2003.millions.util.CurrencyManager;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import java.util.List;
 import javafx.geometry.HPos;
 
-import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.Currency;
 import java.util.Objects;
@@ -64,11 +61,7 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
                         "col.company", SortColumn.COMPANY, 20, HPos.LEFT),
                 TableColumnDef.sortable(
                         "col.priceNok", SortColumn.PRICE_NOK, 15, HPos.RIGHT),
-                new TableColumnDef<>(
-                        () -> MessageFormat.format(
-                                LanguageManager.get("col.priceNative"),
-                                CurrencyManager.get().getCurrencyCode()),
-                        SortColumn.PRICE_ALT, null, 15, HPos.RIGHT),
+                TableColumnDef.sortable("col.priceNative", SortColumn.PRICE_ALT, 15, HPos.RIGHT),
                 TableColumnDef.sortable(
                         "col.changeNok", SortColumn.CHANGE_NOK,
                         "tooltip.shared.changeNok", 10, HPos.RIGHT),
