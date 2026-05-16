@@ -4,7 +4,6 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
@@ -57,37 +56,24 @@ public class TransactionsSort extends SortProvider<Transaction, TransactionsSort
      * Returns the ordered column definitions for the transactions table.
      *
      * <p>Called by {@link SortColumnTable} on every header refresh so that
-     * column labels are re-resolved from {@link LanguageManager} and always
-     * reflect the active language.</p>
+     * column labels are re-resolved and always reflect the active language.</p>
      *
      * @return a fresh list of {@link TableColumnDef} in display order
      */
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
-                TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.week"),
-                        SortColumn.WEEK, 8, HPos.LEFT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.company"),
-                        SortColumn.COMPANY, 26, HPos.LEFT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.type"),
-                        SortColumn.TYPE, 8, HPos.LEFT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.quantity"),
-                        SortColumn.QUANTITY, 7, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.price"),
-                        SortColumn.PRICE, 12, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.commission"),
-                        SortColumn.COMMISSION, 12, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.tax"),
-                        SortColumn.TAX, 13, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("transactions.col.amount"),
-                        SortColumn.AMOUNT, 14, HPos.RIGHT)
+                TableColumnDef.sortable("col.week", SortColumn.WEEK, 8, HPos.LEFT),
+                TableColumnDef.sortable("col.company", SortColumn.COMPANY, 26, HPos.LEFT),
+                TableColumnDef.sortable("col.type", SortColumn.TYPE,
+                        "tooltip.transactions.type", 8, HPos.LEFT),
+                TableColumnDef.sortable("col.quantity", SortColumn.QUANTITY, 7, HPos.RIGHT),
+                TableColumnDef.sortable("col.price", SortColumn.PRICE, 12, HPos.RIGHT),
+                TableColumnDef.sortable("col.commission", SortColumn.COMMISSION,
+                        "tooltip.transactions.commission", 12, HPos.RIGHT),
+                TableColumnDef.sortable("col.tax", SortColumn.TAX,
+                        "tooltip.transactions.tax", 13, HPos.RIGHT),
+                TableColumnDef.sortable("col.amount", SortColumn.AMOUNT,
+                        "tooltip.transactions.amount", 14, HPos.RIGHT)
         );
     }
 

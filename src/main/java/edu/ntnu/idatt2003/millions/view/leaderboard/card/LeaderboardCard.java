@@ -22,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -89,6 +90,22 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
     protected List<LeaderboardEntry> fetchAll() {
         pushScoreBtn.setDisable(gameService.getPlayer() == null);
         return new ArrayList<>(leaderboardService.getAllEntries());
+    }
+
+    /**
+     * Applies a default sort by {@link LeaderboardEntry} descending
+     * when no explicit column sort is active, so rank 1 always shows the best performer.
+     *
+     * @param all      the full entry list before text-search filtering
+     * @param filtered the text-filtered entry list
+     */
+    @Override
+    protected void afterFilter(List<LeaderboardEntry> all, List<LeaderboardEntry> filtered) {
+        if (!table.isSortActive()) {
+            filtered.sort(Comparator.comparing(LeaderboardEntry::returnPercent)
+                    .thenComparing(LeaderboardEntry::finalNetWorth)
+                    .reversed());
+        }
     }
 
     @Override

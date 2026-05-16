@@ -2,18 +2,18 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.util.CurrencyManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
-import java.util.List;
-import java.util.function.Predicate;
-import javafx.geometry.HPos;
-
-import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.Currency;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
+import javafx.geometry.HPos;
 
 /**
  * Defines sortable columns and comparators for the stocks table.
@@ -53,44 +53,32 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
     /**
      * Returns the ordered column definitions for the stocks table.
      *
-     * <p>Called by {@link SortColumnTable} on every header refresh
-     * so that column labels are re-resolved from
-     * {@link LanguageManager}.</p>
+     * <p>Called by {@link SortColumnTable} on every header refresh so that labels are
+     * re-resolved from {@link LanguageManager} and the native-currency column header
+     * reflects the currently selected currency from {@link CurrencyManager}.</p>
      *
      * @return a fresh list of {@link TableColumnDef} in display order
      */
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
-                TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.watchlist"),
-                        SortColumn.WATCHLIST, 4, HPos.CENTER),
-                TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.ticker"),
-                        SortColumn.TICKER, 9, HPos.LEFT),
-                TableColumnDef.of(
-                        LanguageManager.get("exchange.stocks.col.company"),
-                        28, HPos.LEFT, 34.0),
-                TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.priceCurrency"),
-                        SortColumn.PRICE_USD, 10, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.priceNOK"),
-                        SortColumn.PRICE_NOK, 10, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.changeKr"),
-                        SortColumn.CHANGE_KR, 10, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.changePct"),
-                        SortColumn.CHANGE_PCT, 10, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        LanguageManager.get("exchange.stocks.col.highLow4"),
-                        SortColumn.HIGH_LOW, 10, HPos.RIGHT),
-                TableColumnDef.of(
-                        LanguageManager.get("exchange.stocks.col.trend"),
-                        10, HPos.CENTER),
-                TableColumnDef.of(
-                        LanguageManager.get("exchange.stocks.col.trade"),
-                        6, HPos.LEFT)
+                TableColumnDef.sortable("col.watchlist", SortColumn.WATCHLIST,
+                        "tooltip.stocks.watchlist", 7, HPos.CENTER),
+                TableColumnDef.sortable("col.ticker", SortColumn.TICKER, 9, HPos.LEFT),
+                TableColumnDef.of("col.company", 25, HPos.LEFT),
+                new TableColumnDef<>(
+                        () -> MessageFormat.format(
+                                LanguageManager.get("col.priceNative"),
+                                CurrencyManager.get().getCurrencyCode()),
+                        SortColumn.PRICE_USD, null, 10, HPos.RIGHT),
+                TableColumnDef.sortable("col.priceNok", SortColumn.PRICE_NOK, 10, HPos.RIGHT),
+                TableColumnDef.sortable("col.changeNok", SortColumn.CHANGE_KR,
+                        "tooltip.shared.changeNok", 10, HPos.RIGHT),
+                TableColumnDef.sortable("col.changePct", SortColumn.CHANGE_PCT,
+                        "tooltip.shared.weeklyChange", 10, HPos.RIGHT),
+                TableColumnDef.sortable("col.highLow", SortColumn.HIGH_LOW,
+                        "tooltip.shared.highLow", 10, HPos.RIGHT),
+                TableColumnDef.of("col.trend", "tooltip.shared.trend", 10, HPos.CENTER),
+                TableColumnDef.of("col.trade", 6, HPos.LEFT)
         );
     }
 
@@ -106,43 +94,11 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
             case WATCHLIST -> Comparator.comparing(s -> !isWatched.test(s.getSymbol()));
             case TICKER -> Comparator.comparing(Stock::getSymbol);
             case PRICE_USD -> Comparator.comparing(Stock::getSalesPrice);
-            case PRICE_NOK -> Comparator.comparing(this::priceInNok);
-            case CHANGE_KR -> Comparator.comparing(this::changeInNok);
+            case PRICE_NOK -> Comparator.comparing(s -> priceInNok(s, converter, NOK));
+            case CHANGE_KR -> Comparator.comparing(s -> changeInNok(s, converter, NOK));
             case CHANGE_PCT -> Comparator.comparing(Stock::getWeeklyChangePercent);
-            case HIGH_LOW -> Comparator.comparing(this::highLowRange);
+            case HIGH_LOW -> Comparator.comparing(s -> highLowRange(s, converter, NOK, HIGH_LOW_WEEKS));
         };
     }
 
-    /**
-     * Returns the latest stock price converted to NOK.
-     *
-     * @param stock the stock to read from
-     * @return the latest price in NOK
-     */
-    private BigDecimal priceInNok(Stock stock) {
-        return converter.convert(stock.getSalesPrice(), stock.getCurrency(), NOK);
-    }
-
-    /**
-     * Returns the latest price change converted to NOK.
-     *
-     * @param stock the stock to read from
-     * @return the latest price change in NOK
-     */
-    private BigDecimal changeInNok(Stock stock) {
-        return converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
-    }
-
-    /**
-     * Returns the NOK range between the {@value #HIGH_LOW_WEEKS}-week high and low.
-     *
-     * @param stock the stock to read from
-     * @return the high-low range in NOK
-     */
-    private BigDecimal highLowRange(Stock stock) {
-        List<BigDecimal> prices = stock.getRecentPrices(HIGH_LOW_WEEKS);
-        BigDecimal low = prices.stream().min(BigDecimal::compareTo).orElseThrow();
-        BigDecimal high = prices.stream().max(BigDecimal::compareTo).orElseThrow();
-        return converter.convert(high.subtract(low), stock.getCurrency(), NOK);
-    }
 }
