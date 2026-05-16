@@ -36,9 +36,10 @@ import java.util.function.Consumer;
  * a blue border. LEFT/RIGHT arrow keys move the selection via
  * {@link ArrowKeyNavigator}; ENTER fires the selected offer's apply action.</p>
  *
- * <p>The key handler is stored as a named field ({@code keyHandler}) so that
- * the scene event filter can be correctly removed when the card leaves a scene,
- * preventing event-filter accumulation across scene transitions.</p>
+ * <p>The key handler is registered directly on this node via
+ * {@code addEventFilter}, so it only fires when focus is within the card.
+ * This avoids coupling to the scene and respects modal suppression naturally,
+ * since a modal takes focus away from this card.</p>
  *
  * <p>Wire up the apply callback via {@link #setOnApplyClicked(Consumer)}
  * after construction.</p>
@@ -87,10 +88,7 @@ public class AvailableLoansCard extends Card {
         getChildren().addAll(title, offersGrid);
         refresh();
 
-        sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (oldScene != null) oldScene.removeEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
-            if (newScene != null) newScene.addEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
-        });
+        addEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
     }
 
     /**
