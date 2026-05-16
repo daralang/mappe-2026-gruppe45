@@ -61,7 +61,8 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
      */
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
-                TableColumnDef.sortable("col.watchlist", SortColumn.WATCHLIST, 7, HPos.CENTER),
+                TableColumnDef.sortable("col.watchlist", SortColumn.WATCHLIST,
+                        "tooltip.stocks.watchlist", 7, HPos.CENTER),
                 TableColumnDef.sortable("col.ticker", SortColumn.TICKER, 9, HPos.LEFT),
                 TableColumnDef.of("col.company", 25, HPos.LEFT),
                 new TableColumnDef<>(
@@ -70,10 +71,13 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
                                 CurrencyManager.get().getCurrencyCode()),
                         SortColumn.PRICE_USD, null, 10, HPos.RIGHT),
                 TableColumnDef.sortable("col.priceNok", SortColumn.PRICE_NOK, 10, HPos.RIGHT),
-                TableColumnDef.sortable("col.changeNok", SortColumn.CHANGE_KR, 10, HPos.RIGHT),
-                TableColumnDef.sortable("col.changePct", SortColumn.CHANGE_PCT, 10, HPos.RIGHT),
-                TableColumnDef.sortable("col.highLow", SortColumn.HIGH_LOW, 10, HPos.RIGHT),
-                TableColumnDef.of("col.trend", 10, HPos.CENTER),
+                TableColumnDef.sortable("col.changeNok", SortColumn.CHANGE_KR,
+                        "tooltip.shared.changeNok", 10, HPos.RIGHT),
+                TableColumnDef.sortable("col.changePct", SortColumn.CHANGE_PCT,
+                        "tooltip.shared.weeklyChange", 10, HPos.RIGHT),
+                TableColumnDef.sortable("col.highLow", SortColumn.HIGH_LOW,
+                        "tooltip.shared.highLow", 10, HPos.RIGHT),
+                TableColumnDef.of("col.trend", "tooltip.shared.trend", 10, HPos.CENTER),
                 TableColumnDef.of("col.trade", 6, HPos.LEFT)
         );
     }

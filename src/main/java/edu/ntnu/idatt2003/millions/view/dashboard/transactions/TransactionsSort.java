@@ -64,12 +64,16 @@ public class TransactionsSort extends SortProvider<Transaction, TransactionsSort
         return List.of(
                 TableColumnDef.sortable("col.week", SortColumn.WEEK, 8, HPos.LEFT),
                 TableColumnDef.sortable("col.company", SortColumn.COMPANY, 26, HPos.LEFT),
-                TableColumnDef.sortable("col.type", SortColumn.TYPE, 8, HPos.LEFT),
+                TableColumnDef.sortable("col.type", SortColumn.TYPE,
+                        "tooltip.transactions.type", 8, HPos.LEFT),
                 TableColumnDef.sortable("col.quantity", SortColumn.QUANTITY, 7, HPos.RIGHT),
                 TableColumnDef.sortable("col.price", SortColumn.PRICE, 12, HPos.RIGHT),
-                TableColumnDef.sortable("col.commission", SortColumn.COMMISSION, 12, HPos.RIGHT),
-                TableColumnDef.sortable("col.tax", SortColumn.TAX, 13, HPos.RIGHT),
-                TableColumnDef.sortable("col.amount", SortColumn.AMOUNT, 14, HPos.RIGHT)
+                TableColumnDef.sortable("col.commission", SortColumn.COMMISSION,
+                        "tooltip.transactions.commission", 12, HPos.RIGHT),
+                TableColumnDef.sortable("col.tax", SortColumn.TAX,
+                        "tooltip.transactions.tax", 13, HPos.RIGHT),
+                TableColumnDef.sortable("col.amount", SortColumn.AMOUNT,
+                        "tooltip.transactions.amount", 14, HPos.RIGHT)
         );
     }
 
