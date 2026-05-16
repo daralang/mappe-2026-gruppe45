@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.CsvStockFileHandler;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.StartScreenInputs;
 import edu.ntnu.idatt2003.millions.view.StartView;
@@ -83,7 +84,7 @@ public class StartController {
     private StartController(Stage stage, GameService gameService, StartView startView) {
         this(stage, gameService,
                 startView,
-                () -> new MainController(stage, gameService).show(),
+                () -> new MainController(stage, gameService, new ToastService()).show(),
                 startView::showError,
                 startView::showSuccess);
     }
