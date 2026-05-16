@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.leaderboard.JsonLeaderboardFileHandler;
+import edu.ntnu.idatt2003.millions.file.leaderboard.LeaderboardCorruptException;
 import edu.ntnu.idatt2003.millions.file.leaderboard.LeaderboardFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
@@ -111,7 +112,7 @@ public class LeaderboardService {
                 entries.add(snapshot);
             }
             fileHandler.writeAll(entries, file);
-        } catch (IllegalStateException | UncheckedIOException e) {
+        } catch (LeaderboardCorruptException | IllegalStateException | UncheckedIOException e) {
             LOGGER.log(Level.WARNING, "Could not update leaderboard", e);
         }
     }
@@ -144,7 +145,7 @@ public class LeaderboardService {
         List<LeaderboardEntry> entries;
         try {
             entries = readMutable();
-        } catch (IllegalStateException e) {
+        } catch (LeaderboardCorruptException | IllegalStateException e) {
             LOGGER.log(Level.WARNING, "Could not read leaderboard", e);
             return List.of();
         }
@@ -158,7 +159,7 @@ public class LeaderboardService {
      * Reads the leaderboard file into a fresh mutable list so callers can
      * upsert without affecting any internal cache.
      */
-    private List<LeaderboardEntry> readMutable() {
+    private List<LeaderboardEntry> readMutable() throws LeaderboardCorruptException {
         return new ArrayList<>(fileHandler.readAll(file));
     }
 
