@@ -28,7 +28,7 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
      * Columns that support ascending/descending sort in the watchlist table.
      */
     enum SortColumn {
-        TICKER, COMPANY, PRICE_ALT, PRICE_NOK, CHANGE_NOK, CHANGE_PCT, HIGH_LOW, ADDED_WEEK
+        TICKER, COMPANY, PRICE_NOK, CURRENCY, PRICE_ALT, CHANGE_NOK, CHANGE_PCT, HIGH_LOW, ADDED_WEEK
     }
 
     private final CurrencyConverter converter;
@@ -58,10 +58,11 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
                 TableColumnDef.sortable(
                         "col.ticker", SortColumn.TICKER, 10, HPos.LEFT),
                 TableColumnDef.sortable(
-                        "col.company", SortColumn.COMPANY, 20, HPos.LEFT),
+                        "col.company", SortColumn.COMPANY, 18, HPos.LEFT),
                 TableColumnDef.sortable(
-                        "col.priceNok", SortColumn.PRICE_NOK, 15, HPos.RIGHT),
-                TableColumnDef.sortable("col.priceNative", SortColumn.PRICE_ALT, 15, HPos.RIGHT),
+                        "col.priceNok", SortColumn.PRICE_NOK, 14, HPos.RIGHT),
+                TableColumnDef.sortable("col.currency", SortColumn.CURRENCY, 6, HPos.LEFT),
+                TableColumnDef.sortable("col.priceNative", SortColumn.PRICE_ALT, 14, HPos.RIGHT),
                 TableColumnDef.sortable(
                         "col.changeNok", SortColumn.CHANGE_NOK,
                         "tooltip.shared.changeNok", 10, HPos.RIGHT),
@@ -76,7 +77,7 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
                         "col.addedWeek", SortColumn.ADDED_WEEK, 10, HPos.CENTER),
                 TableColumnDef.of("col.trade", 10, HPos.CENTER),
                 TableColumnDef.of("col.note", 7, HPos.CENTER),
-                TableColumnDef.spacer(5, HPos.CENTER)
+                TableColumnDef.spacer(3, HPos.CENTER)
         );
     }
 
@@ -92,6 +93,7 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
             case TICKER -> Comparator.comparing(i -> i.stock().getSymbol());
             case COMPANY -> Comparator.comparing(i -> i.stock().getCompany());
             case PRICE_NOK -> Comparator.comparing(i -> priceInNok(i.stock(), converter, NOK));
+            case CURRENCY -> Comparator.comparing(i -> i.stock().getCurrency().getCurrencyCode());
             case PRICE_ALT -> Comparator.comparing(i -> i.stock().getSalesPrice());
             case CHANGE_NOK -> Comparator.comparing(i -> changeInNok(i.stock(), converter, NOK));
             case CHANGE_PCT -> Comparator.comparing(i -> i.stock().getWeeklyChangePercent());
