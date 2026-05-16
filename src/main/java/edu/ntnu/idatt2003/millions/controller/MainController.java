@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.keyboard.KeyboardContext;
 import edu.ntnu.idatt2003.millions.keyboard.KeyboardNavigationService;
+import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
@@ -35,6 +36,7 @@ public class MainController {
     private final ForcedSaleController forcedSaleController;
     private final GameOverController gameOverController;
     private final KeyboardNavigationService keyboardService = new KeyboardNavigationService();
+    private final SearchFocusRegistry searchFocusRegistry = new SearchFocusRegistry();
 
     /**
      * Constructs a new MainController and creates the main view.
@@ -63,7 +65,8 @@ public class MainController {
                 loanController,
                 titleBar,
                 this::handleAdvanceWeek,
-                toastService
+                toastService,
+                searchFocusRegistry
         );
     }
 
@@ -197,14 +200,8 @@ public class MainController {
     /**
      * Registers application-wide keyboard shortcuts on the app-lifetime scene.
      *
-     * <p>Top-level navigation uses {@link KeyCombination#SHORTCUT_DOWN} (Cmd on macOS,
-     * Ctrl on Windows/Linux). Dashboard tab shortcuts use {@link KeyCombination#SHIFT_DOWN}+1–4
-     * and jump directly to the respective sub-view, switching to the dashboard first
-     * if another view is active.</p>
-     *
-     * <p>Cmd/Ctrl+F delegates to {@link MainView#focusActiveSearch()}, which
-     * routes focus to whichever search field belongs to the currently visible
-     * view.</p>
+     * <p>Cmd/Ctrl+F delegates to {@link SearchFocusRegistry},
+     * which routes focus to whichever search field belongs to the currently visible view.</p>
      */
     private void registerShortcuts() {
         keyboardService.attach(stage.getScene());
@@ -217,7 +214,7 @@ public class MainController {
         reg.register(new KeyCodeCombination(KeyCode.DIGIT3, KeyCombination.SHORTCUT_DOWN), view::showLeaderboard);
         reg.register(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN), () -> handleSaveGame());
         reg.register(new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHORTCUT_DOWN), this::handleAdvanceWeek);
-        reg.register(new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), view::focusActiveSearch);
+        reg.register(new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), searchFocusRegistry::focusActive);
         reg.registerTabShortcuts(
             view::showDashboardPortfolio,
             view::showDashboardTransactions,

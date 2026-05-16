@@ -13,8 +13,7 @@ import java.util.Objects;
  * Registry that maps {@link KeyCombination}s to actions.
  *
  * <p>Shortcuts are evaluated in insertion order; the first match wins.
- * Register shortcuts via {@link #register} and remove them via
- * {@link #unregister} when a component is torn down.</p>
+ * Register shortcuts and remove them when a component is torn down.</p>
  *
  * <p>Instances are not thread-safe and must be used on the JavaFX
  * application thread.</p>
@@ -69,10 +68,6 @@ public final class ShortcutRegistry {
     /**
      * Registers a sequence of tab actions on {@code Shift+1}, {@code Shift+2}, …
      * {@code Shift+N}, up to a maximum of four tabs.
-     *
-     * <p>This is a convenience wrapper around {@link #register} that eliminates
-     * the repeated {@code new KeyCodeCombination(KeyCode.DIGIT_N, SHIFT_DOWN)}
-     * construction found at every call site that maps tabs to digit keys.</p>
      *
      * @param tabActions the actions to register, in tab order; at most four
      *                   entries are used
