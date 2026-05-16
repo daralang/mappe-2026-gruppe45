@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.loans.card;
 
+import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
+import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator.Orientation;
 import edu.ntnu.idatt2003.millions.model.loan.LoanCatalog;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel;
@@ -9,7 +11,6 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
@@ -28,15 +29,15 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Card displaying all available loan offers from {@link LoanCatalog}.
+ * Card displaying all available loan offers from {@code LoanCatalog}.
  * Three offer nodes are shown side-by-side in equal-width columns.
  *
  * <p>The selected offer is highlighted with a filled blue apply button and
- * a blue border around its box. LEFT/RIGHT arrow keys move the selection;
- * ENTER fires the selected offer's apply action.</p>
+ * a blue border. LEFT/RIGHT arrow keys move the selection via
+ * {@link ArrowKeyNavigator}; ENTER fires the selected offer's apply action.</p>
  *
  * <p>Wire up the apply callback via {@link #setOnApplyClicked(Consumer)}
- * after construction; the controller hooks in there.</p>
+ * after construction.</p>
  */
 public class AvailableLoansCard extends Card {
 
@@ -48,11 +49,16 @@ public class AvailableLoansCard extends Card {
 
     private final List<VBox> offerNodes = new ArrayList<>();
     private final List<Button> applyButtons = new ArrayList<>();
-    private int selectedIndex = 0;
 
     private Consumer<LoanOffer> onApplyClicked;
 
-    private final EventHandler<KeyEvent> keyHandler = this::handleKeyPress;
+    private final ArrowKeyNavigator navigator = new ArrowKeyNavigator(
+            Orientation.HORIZONTAL,
+            offerNodes::size,
+            this::select,
+            index -> applyButtons.get(index).fire(),
+            false
+    );
 
     public AvailableLoansCard(GameService gameService) {
         super(gameService);
@@ -72,8 +78,8 @@ public class AvailableLoansCard extends Card {
         refresh();
 
         sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (oldScene != null) oldScene.removeEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
-            if (newScene != null) newScene.addEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
+            if (oldScene != null) oldScene.removeEventFilter(KeyEvent.KEY_PRESSED, this::onKeyPressed);
+            if (newScene != null) newScene.addEventFilter(KeyEvent.KEY_PRESSED, this::onKeyPressed);
         });
     }
 
@@ -111,8 +117,7 @@ public class AvailableLoansCard extends Card {
             offersGrid.add(node, i, 0);
         }
 
-        selectedIndex = Math.min(selectedIndex, offerNodes.size() - 1);
-        select(selectedIndex);
+        navigator.select(Math.min(navigator.getSelectedIndex(), offerNodes.size() - 1));
     }
 
     private VBox buildOfferNode(LoanOffer offer, int index) {
@@ -164,11 +169,10 @@ public class AvailableLoansCard extends Card {
     }
 
     /**
-     * Moves the selection to the given index. The selected offer gets a blue
-     * border and a filled primary button; the others get an outlined button.
+     * Updates visual selection state. The selected offer gets a blue border
+     * and a primary button; others get an outlined button.
      */
     private void select(int index) {
-        selectedIndex = index;
         for (int i = 0; i < offerNodes.size(); i++) {
             boolean isSelected = i == index;
 
@@ -182,13 +186,10 @@ public class AvailableLoansCard extends Card {
         }
     }
 
-    private void handleKeyPress(KeyEvent e) {
-        if (offerNodes.isEmpty()) return;
-        switch (e.getCode()) {
-            case LEFT  -> select(Math.max(0, selectedIndex - 1));
-            case RIGHT -> select(Math.min(offerNodes.size() - 1, selectedIndex + 1));
-            case ENTER -> { applyButtons.get(selectedIndex).fire(); e.consume(); }
-            default    -> {}
+    /** Delegates key events to the navigator. */
+    private void onKeyPressed(KeyEvent event) {
+        if (navigator.navigate(event)) {
+            event.consume();
         }
     }
 
