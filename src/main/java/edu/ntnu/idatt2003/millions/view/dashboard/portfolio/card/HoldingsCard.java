@@ -9,6 +9,7 @@ import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
@@ -192,7 +193,7 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
         totalLabel.getStyleClass().addAll("holdings-cell", "bold");
         totalGrid.add(totalLabel, TOTAL_COL_COMPANY, 1);
 
-        Label valueNok = new Label(TableCells.NUMBER_FORMAT.format(
+        Label valueNok = new Label(MoneyFormatter.format(
                 portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter()))
                 + " " + CurrencyFormatter.symbol("NOK"));
         valueNok.getStyleClass().addAll("holdings-cell", "bold");
@@ -225,9 +226,9 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
         table.addRow(row,
                 buildActionButtons(share),
                 TableCells.data(stock.getSymbol() + ", " + stock.getCompany()),
-                TableCells.data(TableCells.NUMBER_FORMAT.format(share.getQuantity())),
+                TableCells.data(MoneyFormatter.format(share.getQuantity())),
                 coloredPercentCell(stock.getWeeklyChangePercent()),
-                TableCells.data(TableCells.NUMBER_FORMAT.format(
+                TableCells.data(MoneyFormatter.format(
                         portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))
                         + " " + CurrencyFormatter.symbol("NOK")),
                 coloredPercentCell(share.getReturnPercent()),

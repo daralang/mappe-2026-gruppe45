@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 
 import java.math.BigDecimal;
 import java.util.Currency;
@@ -43,13 +44,13 @@ public class BuyReceipt extends TransactionReceipt {
     @Override
     protected void renderSummary() {
         summaryBox.addRow(LanguageManager.get("receipt.summary.gross"),
-                NUMBER_FORMAT.format(preview.gross()) + " " + currencyCode());
+                MoneyFormatter.format(preview.gross()) + " " + currencyCode());
         summaryBox.addRow(LanguageManager.get("receipt.summary.commissionBuy"),
-                NUMBER_FORMAT.format(preview.commission()) + " " + currencyCode());
+                MoneyFormatter.format(preview.commission()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("receipt.summary.totalCost"),
-                NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
+                MoneyFormatter.format(preview.total()) + " " + currencyCode());
         if (!transaction.getShare().getStock().getCurrency().equals(NOK)) {
-            summaryBox.addConversion("= " + NUMBER_FORMAT.format(preview.totalInNok()) + " NOK");
+            summaryBox.addConversion("= " + MoneyFormatter.format(preview.totalInNok()) + " NOK");
         }
     }
 }

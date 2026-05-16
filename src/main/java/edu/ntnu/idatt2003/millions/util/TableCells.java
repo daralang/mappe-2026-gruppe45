@@ -7,10 +7,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
-
 /**
  * Stateless helper that builds the table primitives shared by every
  * dashboard table card.
@@ -43,18 +39,6 @@ import java.util.Locale;
  * class.</p>
  */
 public final class TableCells {
-
-    /**
-     * Number format shared by every table in the dashboard.
-     * Norwegian locale gives comma decimal separator and space thousands
-     * separator (e.g. {@code 1 234,56}).
-     */
-    public static final DecimalFormat NUMBER_FORMAT;
-
-    static {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("nb-NO"));
-        NUMBER_FORMAT = new DecimalFormat("#,##0.00", symbols);
-    }
 
     private TableCells() {
         // Utility class — should not be instantiated.

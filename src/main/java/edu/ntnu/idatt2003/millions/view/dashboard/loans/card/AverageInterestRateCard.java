@@ -2,7 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.loans.card;
 
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.WidgetCard;
@@ -52,6 +52,6 @@ public class AverageInterestRateCard extends WidgetCard {
                 .divide(totalPrincipal, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(2, RoundingMode.HALF_UP);
-        valueLabel.setText(TableCells.NUMBER_FORMAT.format(avgWeeklyRate) + " %");
+        valueLabel.setText(MoneyFormatter.format(avgWeeklyRate) + " %");
     }
 }

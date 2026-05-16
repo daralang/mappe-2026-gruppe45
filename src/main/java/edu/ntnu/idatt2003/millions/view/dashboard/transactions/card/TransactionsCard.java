@@ -9,6 +9,7 @@ import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
@@ -218,10 +219,10 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
                         LanguageManager.get("transactions.weekValue"), transaction.getWeek())),
                 TableCells.data(stock.getSymbol() + ", " + stock.getCompany()),
                 typeBadge(transaction),
-                TableCells.data(TableCells.NUMBER_FORMAT.format(stats.quantity())),
-                TableCells.data(TableCells.NUMBER_FORMAT.format(stats.pricePerShare())
+                TableCells.data(MoneyFormatter.format(stats.quantity())),
+                TableCells.data(MoneyFormatter.format(stats.pricePerShare())
                         + " " + CurrencyFormatter.symbol(stats.nativeCurrencyCode())),
-                TableCells.data(TableCells.NUMBER_FORMAT.format(stats.commissionNok())
+                TableCells.data(MoneyFormatter.format(stats.commissionNok())
                         + " " + CurrencyFormatter.symbol("NOK")),
                 taxCell(stats),
                 amountCell(stats.amountNok())
@@ -266,7 +267,7 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
         if (stats.taxNok().signum() == 0) {
             return TableCells.data("–");
         }
-        return TableCells.data(TableCells.NUMBER_FORMAT.format(stats.taxNok())
+        return TableCells.data(MoneyFormatter.format(stats.taxNok())
                 + " " + CurrencyFormatter.symbol("NOK"));
     }
 }
