@@ -83,8 +83,22 @@ public final class ArrowKeyNavigator {
             return false;
         }
         return switch (event.getCode()) {
-            case LEFT, UP   when isDecrement(event.getCode()) -> { moveTo(selectedIndex - 1, size); yield true; }
-            case RIGHT, DOWN when isIncrement(event.getCode()) -> { moveTo(selectedIndex + 1, size); yield true; }
+            case LEFT -> {
+                if (orientation == Orientation.HORIZONTAL) { moveTo(selectedIndex - 1, size); yield true; }
+                yield false;
+            }
+            case RIGHT -> {
+                if (orientation == Orientation.HORIZONTAL) { moveTo(selectedIndex + 1, size); yield true; }
+                yield false;
+            }
+            case UP -> {
+                if (orientation == Orientation.VERTICAL) { moveTo(selectedIndex - 1, size); yield true; }
+                yield false;
+            }
+            case DOWN -> {
+                if (orientation == Orientation.VERTICAL) { moveTo(selectedIndex + 1, size); yield true; }
+                yield false;
+            }
             case ENTER -> { onConfirm.accept(selectedIndex); yield true; }
             default -> false;
         };
@@ -119,17 +133,4 @@ public final class ArrowKeyNavigator {
         onSelect.accept(selectedIndex);
     }
 
-    private boolean isDecrement(javafx.scene.input.KeyCode code) {
-        return switch (orientation) {
-            case HORIZONTAL -> code == javafx.scene.input.KeyCode.LEFT;
-            case VERTICAL   -> code == javafx.scene.input.KeyCode.UP;
-        };
-    }
-
-    private boolean isIncrement(javafx.scene.input.KeyCode code) {
-        return switch (orientation) {
-            case HORIZONTAL -> code == javafx.scene.input.KeyCode.RIGHT;
-            case VERTICAL   -> code == javafx.scene.input.KeyCode.DOWN;
-        };
-    }
 }
