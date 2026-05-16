@@ -47,7 +47,7 @@ class JsonLeaderboardFileHandlerTest {
     }
 
     @Test
-    void readAllReturnsEmptyListWhenFileIsEmptyJsonArray() {
+    void parseReturnsEmptyListForEmptyJsonArray() {
         // Arrange
         // Act
         List<LeaderboardEntry> entries = handler.parse(new StringReader("[]"));
@@ -56,7 +56,7 @@ class JsonLeaderboardFileHandlerTest {
     }
 
     @Test
-    void readAllThrowsForCorruptFile() {
+    void parseThrowsForCorruptJson() {
         // Arrange
         // Act & Assert
         assertThrows(IllegalStateException.class,
