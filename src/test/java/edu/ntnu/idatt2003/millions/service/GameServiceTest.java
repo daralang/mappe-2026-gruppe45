@@ -744,6 +744,41 @@ class GameServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("getCurrentSaveFile()")
+    class GetCurrentSaveFile {
+
+        @Test
+        @DisplayName("Is empty for a brand-new game")
+        void getCurrentSavePath_isEmptyForNewGame() {
+            GameService fresh = new GameService(lbService);
+            assertTrue(fresh.getCurrentSaveFile().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Is set after loadGame()")
+        void getCurrentSavePath_isSetAfterLoadGame() throws GameSaveCorruptException {
+            Path file = tempDir.resolve("save.json");
+            gameService.loadGame(file.toFile());
+            assertEquals(file.toFile(), gameService.getCurrentSaveFile().orElseThrow());
+        }
+
+        @Test
+        @DisplayName("Is set after saveGame()")
+        void getCurrentSavePath_isSetAfterFirstSave() {
+            File file = tempDir.resolve("new-save.json").toFile();
+            gameService.saveGame(file);
+            assertEquals(file, gameService.getCurrentSaveFile().orElseThrow());
+        }
+
+        @Test
+        @DisplayName("Is reset when a new game is created")
+        void getCurrentSavePath_isResetOnNewGameCreated() {
+            gameService.createNewGame("Ola", new BigDecimal("5000"));
+            assertTrue(gameService.getCurrentSaveFile().isEmpty());
+        }
+    }
+
     private static class CountingObserver implements GameObserver {
         private int updateCount;
 

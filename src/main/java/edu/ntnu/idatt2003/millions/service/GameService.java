@@ -140,7 +140,29 @@ public class GameService {
         }
         gameFileHandler.saveGame(player, exchange, file);
         this.currentSaveFile = file;
-        leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(), Outcome.ACTIVE);
+        try {
+            leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(), Outcome.ACTIVE);
+        } catch (RuntimeException e) {
+            System.err.println("Could not update leaderboard after save: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Returns the file used for the most recent save or load in this session,
+     * or empty if no save has been made and no game has been loaded yet.
+     *
+     * @return an Optional containing the current save file, or empty if none
+     */
+    public Optional<File> getCurrentSaveFile() {
+        return Optional.ofNullable(currentSaveFile);
+    }
+
+    /**
+     * Clears the stored save path so the next save will prompt for a location.
+     * Called when a write to the stored path fails.
+     */
+    public void clearCurrentSaveFile() {
+        this.currentSaveFile = null;
     }
 
     /**
@@ -218,6 +240,7 @@ public class GameService {
         this.player = newPlayer;
         this.exchange = new Exchange(DEFAULT_EXCHANGE_NAME, stocks, new FixedRateCurrencyConverter());
         this.gameOver = false;
+        this.currentSaveFile = null;
         notifyObservers();
     }
 
