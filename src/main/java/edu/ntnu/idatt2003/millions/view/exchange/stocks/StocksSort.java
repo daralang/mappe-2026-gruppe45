@@ -2,12 +2,9 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.util.CurrencyManager;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
-import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.Currency;
 import java.util.List;
@@ -65,11 +62,7 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
                         "tooltip.stocks.watchlist", 7, HPos.CENTER),
                 TableColumnDef.sortable("col.ticker", SortColumn.TICKER, 9, HPos.LEFT),
                 TableColumnDef.of("col.company", 25, HPos.LEFT),
-                new TableColumnDef<>(
-                        () -> MessageFormat.format(
-                                LanguageManager.get("col.priceNative"),
-                                CurrencyManager.get().getCurrencyCode()),
-                        SortColumn.PRICE_USD, null, 10, HPos.RIGHT),
+                TableColumnDef.sortable("col.priceNative", SortColumn.PRICE_USD, 10, HPos.RIGHT),
                 TableColumnDef.sortable("col.priceNok", SortColumn.PRICE_NOK, 10, HPos.RIGHT),
                 TableColumnDef.sortable("col.changeNok", SortColumn.CHANGE_KR,
                         "tooltip.shared.changeNok", 10, HPos.RIGHT),
