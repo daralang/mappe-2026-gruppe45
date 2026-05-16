@@ -31,6 +31,8 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Service-layer manager for the game lifecycle: creates new games, loads and
@@ -47,6 +49,8 @@ import java.util.*;
  *
  */
 public class GameService {
+
+    private static final Logger LOGGER = Logger.getLogger(GameService.class.getName());
 
     private static final String DEFAULT_EXCHANGE_NAME = "MainExchange";
     private static final String DEFAULT_STOCK_RESOURCE = "/data/sp500.csv";
@@ -117,8 +121,10 @@ public class GameService {
             if (currentSaveFile != null) {
                 try {
                     gameFileHandler.saveGame(player, exchange, gameOver, currentSaveFile);
-                } catch (Exception e) {
-                    System.err.println("Could not write save file on bankruptcy: " + e.getMessage());
+                } catch (UncheckedIOException e) {
+                    LOGGER.log(Level.WARNING, "Could not write save file on bankruptcy", e);
+                } catch (RuntimeException e) {
+                    LOGGER.log(Level.SEVERE, "Unexpected error writing save file on bankruptcy", e);
                 }
             }
         }
@@ -144,7 +150,7 @@ public class GameService {
             leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(),
                     gameOver ? Outcome.BANKRUPTCY : Outcome.ACTIVE);
         } catch (RuntimeException e) {
-            System.err.println("Could not update leaderboard after save: " + e.getMessage());
+            LOGGER.log(Level.WARNING, "Could not update leaderboard after save", e);
         }
     }
 
@@ -501,8 +507,10 @@ public class GameService {
         if (currentSaveFile != null) {
             try {
                 gameFileHandler.saveGame(player, exchange, gameOver, currentSaveFile);
-            } catch (Exception e) {
-                System.err.println("Could not write save file on retire: " + e.getMessage());
+            } catch (UncheckedIOException e) {
+                LOGGER.log(Level.WARNING, "Could not write save file on retire", e);
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.SEVERE, "Unexpected error writing save file on retire", e);
             }
         }
         notifyObservers();
