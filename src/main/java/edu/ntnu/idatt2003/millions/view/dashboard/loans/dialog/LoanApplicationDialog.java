@@ -18,11 +18,10 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
+
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -46,13 +45,6 @@ import java.util.function.Function;
  * The dialog never touches {@code GameService} directly.</p>
  */
 public class LoanApplicationDialog extends Modal {
-
-    private static final DecimalFormat NUMBER_FORMAT;
-
-    static {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("nb-NO"));
-        NUMBER_FORMAT = new DecimalFormat("#,##0.00", symbols);
-    }
 
     private final LoanOffer offer;
     private final Function<BigDecimal, Optional<String>> validateCallback;
@@ -126,12 +118,12 @@ public class LoanApplicationDialog extends Modal {
         SummaryBox info = new SummaryBox();
         info.setSectionTitle(LanguageManager.get("loans.offer." + offer.id() + ".name"));
         info.addRow(LanguageManager.get("loans.offer.rate"),
-                NUMBER_FORMAT.format(
+                MoneyFormatter.format(
                         offer.weeklyInterestRate().multiply(BigDecimal.valueOf(100))) + "%");
         info.addRow(LanguageManager.get("loans.offer.term"),
                 MessageFormat.format(LanguageManager.get("loans.offer.weeks"), offer.termWeeks()));
         info.addRow(LanguageManager.get("loans.offer.maxAmount"),
-                NUMBER_FORMAT.format(offer.maxPrincipal()) + " NOK");
+                MoneyFormatter.format(offer.maxPrincipal()) + " NOK");
         return info;
     }
 
@@ -140,8 +132,8 @@ public class LoanApplicationDialog extends Modal {
         StyledText labelRight = StyledText.detailLabel(
                 MessageFormat.format(
                         LanguageManager.get("loans.dialog.amount.range"),
-                        NUMBER_FORMAT.format(BigDecimal.ZERO),
-                        NUMBER_FORMAT.format(offer.maxPrincipal())));
+                        MoneyFormatter.format(BigDecimal.ZERO),
+                        MoneyFormatter.format(offer.maxPrincipal())));
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox labelRow = new HBox(labelLeft, spacer, labelRight);
@@ -265,21 +257,21 @@ public class LoanApplicationDialog extends Modal {
     private void renderSummary(LoanPreview preview) {
         summaryBox.addRow(
                 LanguageManager.get("loans.dialog.summary.disbursed"),
-                NUMBER_FORMAT.format(preview.principal()) + " NOK");
+                MoneyFormatter.format(preview.principal()) + " NOK");
         summaryBox.addRow(
                 LanguageManager.get("loans.dialog.summary.weeklyInterest"),
-                NUMBER_FORMAT.format(preview.weeklyInterestAmount()) + " NOK");
+                MoneyFormatter.format(preview.weeklyInterestAmount()) + " NOK");
         summaryBox.addRow(
                 MessageFormat.format(
                         LanguageManager.get("loans.dialog.summary.totalInterest"), offer.termWeeks()),
-                NUMBER_FORMAT.format(preview.totalInterest()) + " NOK");
+                MoneyFormatter.format(preview.totalInterest()) + " NOK");
         summaryBox.addTotal(
                 LanguageManager.get("loans.dialog.summary.totalRepayment"),
-                NUMBER_FORMAT.format(preview.totalRepayment()) + " NOK");
+                MoneyFormatter.format(preview.totalRepayment()) + " NOK");
     }
 
     private void renderEmptySummary() {
-        String zero = NUMBER_FORMAT.format(BigDecimal.ZERO) + " NOK";
+        String zero = MoneyFormatter.format(BigDecimal.ZERO) + " NOK";
         summaryBox.addRow(LanguageManager.get("loans.dialog.summary.disbursed"), zero);
         summaryBox.addRow(LanguageManager.get("loans.dialog.summary.weeklyInterest"), zero);
         summaryBox.addRow(

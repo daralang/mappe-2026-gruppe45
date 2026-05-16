@@ -4,6 +4,7 @@ import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -32,7 +33,7 @@ public class BuyDialog extends TransactionDialog {
     @Override
     protected String getStockHint() {
         return MessageFormat.format(LanguageManager.get("dialog.stock.priceHint"),
-                NUMBER_FORMAT.format(stock.getSalesPrice()),
+                MoneyFormatter.format(stock.getSalesPrice()),
                 stock.getCurrency().getCurrencyCode());
     }
 
@@ -74,17 +75,17 @@ public class BuyDialog extends TransactionDialog {
         }
 
         summaryBox.addRow(LanguageManager.get("dialog.summary.gross"),
-                NUMBER_FORMAT.format(preview.gross()) + " " + currencyCode());
+                MoneyFormatter.format(preview.gross()) + " " + currencyCode());
         summaryBox.addRow(LanguageManager.get("dialog.summary.commissionBuy"),
-                NUMBER_FORMAT.format(preview.commission()) + " " + currencyCode());
+                MoneyFormatter.format(preview.commission()) + " " + currencyCode());
         summaryBox.addTotal(LanguageManager.get("dialog.summary.totalCost"),
-                NUMBER_FORMAT.format(preview.total()) + " " + currencyCode());
+                MoneyFormatter.format(preview.total()) + " " + currencyCode());
         if (!stock.getCurrency().equals(NOK)) {
-            summaryBox.addConversion("= " + NUMBER_FORMAT.format(preview.totalInNok()) + " NOK");
+            summaryBox.addConversion("= " + MoneyFormatter.format(preview.totalInNok()) + " NOK");
         }
 
         balanceAfterValue.setText(
-                NUMBER_FORMAT.format(preview.balanceAfter()) + " NOK");
+                MoneyFormatter.format(preview.balanceAfter()) + " NOK");
 
         if (preview.balanceAfter().signum() < 0) {
             balanceAfterValue.getStyleClass().removeAll("positive", "negative");
@@ -98,16 +99,16 @@ public class BuyDialog extends TransactionDialog {
     }
 
     private void renderEmptySummary() {
-        String zero = NUMBER_FORMAT.format(BigDecimal.ZERO) + " " + currencyCode();
+        String zero = MoneyFormatter.format(BigDecimal.ZERO) + " " + currencyCode();
         summaryBox.addRow(LanguageManager.get("dialog.summary.gross"), zero);
         summaryBox.addRow(LanguageManager.get("dialog.summary.commissionBuy"), zero);
         summaryBox.addTotal(LanguageManager.get("dialog.summary.totalCost"), zero);
         if (!stock.getCurrency().equals(NOK)) {
-            summaryBox.addConversion("= " + NUMBER_FORMAT.format(BigDecimal.ZERO) + " NOK");
+            summaryBox.addConversion("= " + MoneyFormatter.format(BigDecimal.ZERO) + " NOK");
         }
         balanceAfterValue.getStyleClass().removeAll("positive", "negative");
         balanceAfterValue.setText(
-                NUMBER_FORMAT.format(controller.getCurrentBalance()) + " NOK");
+                MoneyFormatter.format(controller.getCurrentBalance()) + " NOK");
     }
 
     /**

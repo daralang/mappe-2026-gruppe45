@@ -24,9 +24,6 @@ public class ChangeFormatter {
     private static final DecimalFormat PERCENT_FORMAT =
             new DecimalFormat("+#,##0.0;-#,##0.0", SYMBOLS);
 
-    private static final DecimalFormat AMOUNT_FORMAT =
-            new DecimalFormat("#,##0.00", SYMBOLS);
-
     private ChangeFormatter() {
         // Utility class – should not be instantiated
     }
@@ -78,7 +75,7 @@ public class ChangeFormatter {
      * @throws NullPointerException if value is null
      */
     public static Label styledAmount(BigDecimal value, String... cssClasses) {
-        String formatted = (value.signum() >= 0 ? "+" : "") + AMOUNT_FORMAT.format(value);
+        String formatted = (value.signum() >= 0 ? "+" : "") + MoneyFormatter.format(value);
         Label label = new Label(formatted);
         label.getStyleClass().addAll(List.of(cssClasses));
         ColourChange.applyChangeStyle(label, value);
@@ -95,6 +92,6 @@ public class ChangeFormatter {
      * @throws NullPointerException if value is null
      */
     public static String formatPlain(BigDecimal value) {
-        return AMOUNT_FORMAT.format(value);
+        return MoneyFormatter.format(value);
     }
 }
