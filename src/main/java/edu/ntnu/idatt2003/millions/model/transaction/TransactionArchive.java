@@ -68,6 +68,26 @@ public class TransactionArchive {
     }
 
     /**
+     * Returns all transactions in the given inclusive week range as a fresh mutable list,
+     * in encounter order (within each week: insertion order; across weeks: low-to-high).
+     * The caller is responsible for any additional sorting.
+     *
+     * @param fromWeek the first week to include (inclusive); must be at least 1
+     * @param toWeek   the last week to include (inclusive); if less than fromWeek the
+     *                 returned list is empty
+     * @return a mutable list of transactions in the range; never null
+     * @throws IllegalArgumentException if fromWeek is less than 1
+     */
+    public List<Transaction> getTransactionsInRange(int fromWeek, int toWeek) {
+        if (fromWeek < 1) throw new IllegalArgumentException("fromWeek must be at least 1");
+        List<Transaction> list = new ArrayList<>();
+        for (int week = fromWeek; week <= toWeek; week++) {
+            list.addAll(getTransactions(week));
+        }
+        return list;
+    }
+
+    /**
      * Returns all purchase transactions that took place in the specified week.
      *
      * @param week the week number to filter by

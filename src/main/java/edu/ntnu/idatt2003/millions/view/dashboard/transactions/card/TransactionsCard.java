@@ -112,9 +112,9 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
 
     /**
      * Returns transactions scoped to the active week range and type filter,
-     * sorted chronologically. Returns an empty list when the player is null.
+     * sorted newest-first. Returns an empty list when the player is null.
      *
-     * @return mutable list of pre-filtered transactions, oldest first
+     * @return mutable list of pre-filtered transactions, newest first
      */
     @Override
     protected List<Transaction> fetchAll() {
@@ -126,7 +126,9 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
         int toWeek = weekRangeFilter.getToWeek();
         Class<? extends Transaction> selectedType = typeFilter.getSelectedValue();
 
-        return new ArrayList<>(collectRange(archive, fromWeek, toWeek).stream()
+        List<Transaction> range = archive.getTransactionsInRange(fromWeek, toWeek);
+        range.sort(Comparator.comparingInt(Transaction::getWeek).reversed());
+        return new ArrayList<>(range.stream()
                 .filter(t -> selectedType == null || selectedType.isInstance(t))
                 .toList());
     }
@@ -183,24 +185,6 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     public void onGameUpdated() {
         weekRangeFilter.setMaxWeek(Math.max(gameService.getExchange().getWeek(), 1));
         refresh();
-    }
-
-    /**
-     * Gathers every transaction in the archive within the given week range
-     * (inclusive on both ends), sorted chronologically oldest first.
-     *
-     * @param archive  the archive to read transactions from
-     * @param fromWeek the first week to include (inclusive)
-     * @param toWeek   the last week to include (inclusive)
-     * @return a reverse-chronologically sorted mutable list of transactions in the range
-     */
-    private List<Transaction> collectRange(TransactionArchive archive, int fromWeek, int toWeek) {
-        List<Transaction> list = new ArrayList<>();
-        for (int week = fromWeek; week <= toWeek; week++) {
-            list.addAll(archive.getTransactions(week));
-        }
-        list.sort(Comparator.comparingInt(Transaction::getWeek).reversed());
-        return list;
     }
 
     /**
