@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.model;
+package edu.ntnu.idatt2003.millions.model.currency;
 
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import org.junit.jupiter.api.BeforeEach;
