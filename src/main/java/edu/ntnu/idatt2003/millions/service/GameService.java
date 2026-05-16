@@ -116,7 +116,7 @@ public class GameService {
                     player, exchange, exchange.getCurrencyConverter(), Outcome.BANKRUPTCY);
             if (currentSaveFile != null) {
                 try {
-                    gameFileHandler.saveGame(player, exchange, currentSaveFile);
+                    gameFileHandler.saveGame(player, exchange, gameOver, currentSaveFile);
                 } catch (Exception e) {
                     System.err.println("Could not write save file on bankruptcy: " + e.getMessage());
                 }
@@ -138,10 +138,11 @@ public class GameService {
         if (player == null || exchange == null) {
             throw new IllegalStateException("No active game to save");
         }
-        gameFileHandler.saveGame(player, exchange, file);
+        gameFileHandler.saveGame(player, exchange, gameOver, file);
         this.currentSaveFile = file;
         try {
-            leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(), Outcome.ACTIVE);
+            leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(),
+                    gameOver ? Outcome.BANKRUPTCY : Outcome.ACTIVE);
         } catch (RuntimeException e) {
             System.err.println("Could not update leaderboard after save: " + e.getMessage());
         }
@@ -284,7 +285,7 @@ public class GameService {
         this.player = state.player();
         this.exchange = state.exchange();
         this.exchange.reinitialize(new FixedRateCurrencyConverter());
-        this.gameOver = false;
+        this.gameOver = state.gameOver();
         this.currentSaveFile = file;
         notifyObservers();
     }
@@ -492,13 +493,14 @@ public class GameService {
      */
     public void sellAllAndExit() {
         for (Share share : new ArrayList<>(player.getPortfolio().getShares())) {
-            sell(share);
+            exchange.sell(share, player);
         }
         leaderboardService.recordOrUpdate(
-                player, exchange, exchange.getCurrencyConverter(), Outcome.RETIRED);
+                player, exchange, exchange.getCurrencyConverter(),
+                gameOver ? Outcome.BANKRUPTCY : Outcome.RETIRED);
         if (currentSaveFile != null) {
             try {
-                gameFileHandler.saveGame(player, exchange, currentSaveFile);
+                gameFileHandler.saveGame(player, exchange, gameOver, currentSaveFile);
             } catch (Exception e) {
                 System.err.println("Could not write save file on retire: " + e.getMessage());
             }
@@ -512,7 +514,8 @@ public class GameService {
      */
     public void recordLeaderboardEntry() {
         if (player != null && exchange != null) {
-            leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(), Outcome.ACTIVE);
+            leaderboardService.recordOrUpdate(player, exchange, exchange.getCurrencyConverter(),
+                    gameOver ? Outcome.BANKRUPTCY : Outcome.ACTIVE);
         }
     }
 

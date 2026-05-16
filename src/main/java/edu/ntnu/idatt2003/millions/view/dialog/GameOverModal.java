@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.function.BooleanSupplier;
 
 /**
  * Modal shown when the player cannot cover their obligations even through
@@ -31,17 +32,26 @@ public class GameOverModal extends Modal {
     private final BigDecimal totalLiquidationValue;
     private final Stage ownerStage;
     private final Runnable onNewGame;
+    private final BooleanSupplier saveAction;
+    private final Runnable sellAllAction;
+    private final Runnable noSaveAction;
 
     public GameOverModal(int currentWeek,
                          BigDecimal totalObligations,
                          BigDecimal totalLiquidationValue,
                          Stage ownerStage,
-                         Runnable onNewGame) {
+                         Runnable onNewGame,
+                         BooleanSupplier saveAction,
+                         Runnable sellAllAction,
+                         Runnable noSaveAction) {
         this.currentWeek = currentWeek;
         this.totalObligations = totalObligations;
         this.totalLiquidationValue = totalLiquidationValue;
         this.ownerStage = ownerStage;
         this.onNewGame = onNewGame;
+        this.saveAction = saveAction;
+        this.sellAllAction = sellAllAction;
+        this.noSaveAction = noSaveAction;
     }
 
     /** ESC is blocked — the player must use one of the two buttons. */
@@ -112,7 +122,18 @@ public class GameOverModal extends Modal {
         newGameBtn.getStyleClass().addAll("modal-button", "modal-button-primary");
         newGameBtn.setOnAction(e -> {
             stage.close();
-            onNewGame.run();
+            new EndGameDialog(
+                    "nav.newGame",
+                    "gameOver.dialogHeader",
+                    "gameOver.dialogContent",
+                    "newGame.saveAndStartNew",
+                    "newGame.sellAllAndStartNew",
+                    "newGame.startNewWithoutSaving",
+                    saveAction,
+                    sellAllAction,
+                    noSaveAction,
+                    onNewGame
+            ).show();
         });
 
         HBox buttons = ModalActions.row(reviewBtn, newGameBtn);
