@@ -183,16 +183,20 @@ public class MainController {
     }
 
     /**
-     * Fires the currently focused {@link Button} in the scene, if any.
-     * Registered as a universal shortcut on {@link KeyCode#ENTER} so that
-     * Enter always activates the focused button regardless of whether a
-     * modal {@link KeyboardContext} is active.
+     * Fires the currently focused {@link Button} in the scene, if any,
+     * and returns {@code true} so the event is consumed. Returns {@code false}
+     * if the focused node is not a {@link Button}, allowing the event to pass
+     * through to text inputs and other controls that handle Enter themselves.
+     *
+     * @return {@code true} if a button was fired, {@code false} otherwise
      */
-    private void fireCurrentButton() {
+    private boolean fireCurrentButton() {
         Node focused = stage.getScene().getFocusOwner();
         if (focused instanceof Button button) {
             button.fire();
+            return true;
         }
+        return false;
     }
 
     /**

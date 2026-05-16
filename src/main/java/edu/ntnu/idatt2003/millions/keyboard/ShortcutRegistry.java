@@ -8,6 +8,7 @@ import javafx.scene.input.KeyEvent;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 
 /**
  * Registry that maps {@link KeyCombination}s to actions.
@@ -24,15 +25,31 @@ public final class ShortcutRegistry {
         KeyCode.DIGIT1, KeyCode.DIGIT2, KeyCode.DIGIT3, KeyCode.DIGIT4
     };
 
-    private final Map<KeyCombination, Runnable> shortcuts = new LinkedHashMap<>();
+    private final Map<KeyCombination, BooleanSupplier> shortcuts = new LinkedHashMap<>();
 
     /**
      * Registers an action for the given combination, replacing any previous mapping.
+     * The event is always consumed when the combination matches.
      *
      * @param combination the key combination
      * @param action      the action to run
      */
     public void register(KeyCombination combination, Runnable action) {
+        Objects.requireNonNull(combination, "combination must not be null");
+        Objects.requireNonNull(action, "action must not be null");
+        shortcuts.put(combination, () -> { action.run(); return true; });
+    }
+
+    /**
+     * Registers a conditional action for the given combination, replacing any previous mapping.
+     * The event is consumed only if {@code action} returns {@code true}, allowing the action
+     * to decline handling (e.g. when the focused node is a text input rather than a button).
+     *
+     * @param combination the key combination
+     * @param action      the action; return {@code true} if the event was handled,
+     *                    {@code false} to pass it through
+     */
+    public void register(KeyCombination combination, BooleanSupplier action) {
         Objects.requireNonNull(combination, "combination must not be null");
         Objects.requireNonNull(action, "action must not be null");
         shortcuts.put(combination, action);
@@ -56,10 +73,9 @@ public final class ShortcutRegistry {
      * @return {@code true} if a combination matched and its action was executed
      */
     public boolean dispatch(KeyEvent event) {
-        for (Map.Entry<KeyCombination, Runnable> entry : shortcuts.entrySet()) {
+        for (Map.Entry<KeyCombination, BooleanSupplier> entry : shortcuts.entrySet()) {
             if (entry.getKey().match(event)) {
-                entry.getValue().run();
-                return true;
+                return entry.getValue().getAsBoolean();
             }
         }
         return false;
