@@ -165,9 +165,7 @@ public class MainController {
     }
 
     /**
-     * Detaches the keyboard service from the current scene and navigates to
-     * the start screen. Detaching first ensures the event filter is removed
-     * before {@link StartController#show()} replaces the scene on the stage.
+     * Detaches the keyboard service and navigates to the start screen.
      */
     private void showStartView() {
         keyboardService.detach();
@@ -204,7 +202,7 @@ public class MainController {
      * which routes focus to whichever search field belongs to the currently visible view.</p>
      */
     private void registerShortcuts() {
-        keyboardService.attach(stage.getScene());
+        keyboardService.bindToNode(view.getRoot());
         keyboardService.universalShortcuts().register(
             new KeyCodeCombination(KeyCode.ENTER), this::fireCurrentButton
         );

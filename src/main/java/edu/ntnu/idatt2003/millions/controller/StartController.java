@@ -384,11 +384,10 @@ public class StartController {
      *
      * <p>{@code Shift+1} and {@code Shift+2} jump directly to the New Game
      * and Load Game tabs respectively, mirroring the {@code Shift+1–4}
-     * shortcuts registered in
-     * {@link edu.ntnu.idatt2003.millions.controller.MainController}.</p>
+     * shortcuts registered in {@link MainController}.</p>
      */
     private void registerShortcuts() {
-        keyboardService.attach(view.getScene());
+        keyboardService.bindToNode(view.getScene().getRoot());
         var reg = keyboardService.globalShortcuts();
         reg.registerTabShortcuts(view::showNewGameTab, view::showLoadGameTab);
     }

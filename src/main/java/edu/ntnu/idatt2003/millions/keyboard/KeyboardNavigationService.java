@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.keyboard;
 
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
 
@@ -38,6 +39,25 @@ public final class KeyboardNavigationService {
 
     private Scene attachedScene;
     private EventHandler<KeyEvent> eventFilter;
+
+    /**
+     * Binds this service to the given node's scene lifecycle.
+     *
+     * @param node the root node whose scene changes drive attach/detach
+     */
+    public void bindToNode(Node node) {
+        Objects.requireNonNull(node, "node must not be null");
+        node.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                attach(newScene);
+            } else {
+                detach();
+            }
+        });
+        if (node.getScene() != null) {
+            attach(node.getScene());
+        }
+    }
 
     /**
      * Attaches this service to the given scene. Must be called once before
@@ -107,10 +127,6 @@ public final class KeyboardNavigationService {
      * Returns the universal {@link ShortcutRegistry} for shortcuts that must
      * fire regardless of whether a modal {@link KeyboardContext} is active.
      *
-     * <p>Register here only shortcuts that should never be suppressed by an
-     * overlay (e.g. Enter → fire focused button). All other shortcuts belong
-     * in {@link #globalShortcuts()}.</p>
-     *
      * @return the universal shortcut registry
      */
     public ShortcutRegistry universalShortcuts() {
@@ -120,9 +136,6 @@ public final class KeyboardNavigationService {
     /**
      * Returns the global {@link ShortcutRegistry} for registering and
      * unregistering application-wide keyboard shortcuts.
-     *
-     * <p>Shortcuts registered here are suppressed while a modal
-     * {@link KeyboardContext} is on the stack.</p>
      *
      * @return the global shortcut registry
      */
