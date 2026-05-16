@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
@@ -149,13 +150,13 @@ public class TransactionsSummaryCard extends Card {
     /**
      * Signed NOK amount. Positives are rendered with an explicit
      * {@code +} so sale inflows read as "+1 234,56 NOK"; negatives
-     * keep the minus produced by {@link TableCells#NUMBER_FORMAT};
+     * keep the minus produced by {@link edu.ntnu.idatt2003.millions.util.MoneyFormatter};
      * zero is unsigned. No color modifiers — the summary keeps a
      * neutral palette and only weight distinguishes the total row.
      */
     private Label rowValue(BigDecimal amount, boolean bold) {
         String sign = amount.signum() > 0 ? "+" : "";
-        String text = sign + TableCells.NUMBER_FORMAT.format(amount) + " NOK";
+        String text = sign + MoneyFormatter.format(amount) + " NOK";
         Label label = TableCells.data(text);
         if (bold) {
             label.getStyleClass().add("bold");

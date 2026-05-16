@@ -4,7 +4,7 @@ import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.Modal;
 import edu.ntnu.idatt2003.millions.view.component.ModalActions;
 import edu.ntnu.idatt2003.millions.view.component.SummaryBox;
@@ -89,9 +89,9 @@ public class LoanDetailsModal extends Modal {
         box.addRow(LanguageManager.get("loans.details.terms.principal"),
                 CurrencyFormatter.format(loan.principal()));
         box.addRow(LanguageManager.get("loans.details.terms.rate"),
-                TableCells.NUMBER_FORMAT.format(weeklyRate) + " %");
+                MoneyFormatter.format(weeklyRate) + " %");
         box.addRow(LanguageManager.get("loans.details.terms.annualRate"),
-                TableCells.NUMBER_FORMAT.format(annualRate) + " %");
+                MoneyFormatter.format(annualRate) + " %");
         box.addRow(LanguageManager.get("loans.details.terms.term"), termValue);
         box.addRow(LanguageManager.get("loans.details.terms.takenInWeek"),
                 String.valueOf(loan.takenAtWeek()));

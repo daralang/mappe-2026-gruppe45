@@ -16,10 +16,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
+
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 
 /**
  * Abstract base class for transaction dialogs (buy, sell, sell all).
@@ -28,13 +27,6 @@ import java.util.Locale;
  * rows, and confirmation logic.
  */
 public abstract class TransactionDialog extends Modal {
-
-    protected static final DecimalFormat NUMBER_FORMAT;
-
-    static {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("nb-NO"));
-        NUMBER_FORMAT = new DecimalFormat("#,##0.00", symbols);
-    }
 
     protected final TradeController controller;
     protected final Stock stock;
@@ -152,7 +144,7 @@ public abstract class TransactionDialog extends Modal {
     private VBox buildBalanceSection() {
         StyledText availableLabel = StyledText.detailLabel(LanguageManager.get("dialog.balance.available"));
         StyledText availableValue = StyledText.detailValue(
-                NUMBER_FORMAT.format(controller.getCurrentBalance()) + " NOK");
+                MoneyFormatter.format(controller.getCurrentBalance()) + " NOK");
         Region spacer1 = new Region();
         HBox.setHgrow(spacer1, Priority.ALWAYS);
         HBox availableRow = new HBox(availableLabel, spacer1, availableValue);
