@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view;
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.view.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.view.component.Header;
 import edu.ntnu.idatt2003.millions.view.component.toast.ToastOverlay;
@@ -32,6 +33,11 @@ import javafx.stage.Stage;
  * so that sub-views survive tab switches and keyboard shortcuts
  * (Shift+1–4) can jump directly to a dashboard tab.</p>
  *
+ * <p>Tracks the active {@link SearchFocusProvider} and exposes
+ * {@link #focusActiveSearch()} so the {@code Cmd/Ctrl+F} shortcut registered
+ * in {@link edu.ntnu.idatt2003.millions.controller.MainController} always
+ * reaches the correct search field regardless of which view is visible.</p>
+ *
  * <p>Domain-related actions (save, exit, advance week) are delegated to
  * the controller via callbacks supplied at construction.</p>
  */
@@ -48,6 +54,7 @@ public class MainView {
 
     private DashboardView dashboardView;
     private ScrollPane dashboardScrollable;
+    private SearchFocusProvider activeSearchProvider;
 
     /**
      * Constructs a new MainView with a platform-appropriate title bar and
@@ -146,6 +153,7 @@ public class MainView {
                     gameService, tradeController, loanController, weekBar, this::showExchangeOnStocksTab);
             dashboardScrollable = wrapScrollable(dashboardView);
         }
+        activeSearchProvider = dashboardView;
         content.setCenter(dashboardScrollable);
     }
 
@@ -185,14 +193,30 @@ public class MainView {
      * Switches the content area to the exchange view.
      */
     public void showExchange() {
-        content.setCenter(wrapScrollable(new ExchangeView(gameService, weekBar, tradeController)));
+        ExchangeView exchangeView = new ExchangeView(gameService, weekBar, tradeController);
+        activeSearchProvider = exchangeView;
+        content.setCenter(wrapScrollable(exchangeView));
     }
 
     /**
      * Switches the content area to the leaderboard view.
      */
     public void showLeaderboard() {
-        content.setCenter(wrapScrollable(new LeaderboardView(gameService, toastService, weekBar)));
+        LeaderboardView leaderboardView = new LeaderboardView(gameService, toastService, weekBar);
+        activeSearchProvider = leaderboardView;
+        content.setCenter(wrapScrollable(leaderboardView));
+    }
+
+    /**
+     * Delegates {@code Cmd/Ctrl+F} to the currently visible view's search field.
+     * Called by {@link edu.ntnu.idatt2003.millions.controller.MainController}
+     * via the {@code KeyboardNavigationService} shortcut registry.
+     * If the active view has no search bar, this method is a no-op.
+     */
+    public void focusActiveSearch() {
+        if (activeSearchProvider != null) {
+            activeSearchProvider.focusSearch();
+        }
     }
 
     private void showExchangeOnStocksTab() {

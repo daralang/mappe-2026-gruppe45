@@ -58,6 +58,14 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard {
     /** Reusable metadata row showing search result counts. */
     protected final SearchMetadataRow metadataRow = new SearchMetadataRow();
 
+    /**
+     * The search bar built by {@link #buildSearchRow}.
+     * Assigned during construction; may be {@code null} in subclasses that
+     * override {@link #buildSearchRow} without calling this method.
+     * Exposed via {@link #focusSearch()}.
+     */
+    protected SearchBar searchBar;
+
     /** The active text-search term. Updated by the search bar callback. */
     protected String currentSearchTerm = "";
 
@@ -172,7 +180,7 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard {
      * @return the configured search row
      */
     protected HBox buildSearchRow(Button clearSortButton) {
-        SearchBar searchBar = new SearchBar(
+        searchBar = new SearchBar(
                 "search.placeholder",
                 "search.button",
                 searchCallback(),
@@ -195,6 +203,17 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard {
             currentSearchTerm = term == null ? "" : term;
             resetPageAndRefresh();
         };
+    }
+
+    /**
+     * Focuses the search field of this card, if one exists.
+     * Subclasses that override {@link #buildSearchRow} must also override
+     * this method to forward focus to their own {@link SearchBar} field.
+     */
+    public void focusSearch() {
+        if (searchBar != null) {
+            searchBar.focus();
+        }
     }
 
     /** Rebuilds the card when the game state changes. */

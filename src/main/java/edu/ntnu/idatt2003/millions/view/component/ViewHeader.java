@@ -127,8 +127,12 @@ public class ViewHeader extends VBox {
     }
 
     /**
-     * Handles LEFT/RIGHT arrow navigation and ENTER/SPACE activation
+     * Handles LEFT/RIGHT arrow navigation and SPACE activation
      * when focus is inside the tab bar.
+     *
+     * <p>ENTER is intentionally omitted: {@code KeyboardNavigationService} fires
+     * the focused button on ENTER at the scene level and consumes the event before
+     * it reaches this filter, making an ENTER case here unreachable.</p>
      */
     private void handleTabKeyNavigation(KeyEvent event) {
         Node focused = tabBar.getScene() != null ? tabBar.getScene().getFocusOwner() : null;
@@ -140,7 +144,7 @@ public class ViewHeader extends VBox {
         switch (event.getCode()) {
             case LEFT  -> { if (index > 0)    { activateTabAt(index - 1); event.consume(); } }
             case RIGHT -> { if (index < last) { activateTabAt(index + 1); event.consume(); } }
-            case ENTER, SPACE -> { ((Button) tabBar.getChildren().get(index)).fire(); event.consume(); }
+            case SPACE -> { ((Button) tabBar.getChildren().get(index)).fire(); event.consume(); }
             default -> {}
         }
     }

@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard;
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.view.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.LoansView;
@@ -22,7 +23,7 @@ import java.util.List;
  * The four tab methods are public so {@code MainView} can drive them from
  * keyboard shortcuts (Shift+1–4).</p>
  */
-public class DashboardView extends VBox {
+public class DashboardView extends VBox implements SearchFocusProvider {
 
     private final GameService gameService;
     private final TradeController tradeController;
@@ -34,6 +35,7 @@ public class DashboardView extends VBox {
     private TransactionsView transactionsView;
     private WatchlistView watchlistView;
     private LoansView loansView;
+    private SearchFocusProvider activeSubview;
 
     /**
      * Constructs a new DashboardView with a tab bar.
@@ -83,6 +85,7 @@ public class DashboardView extends VBox {
         if (portfolioView == null) {
             portfolioView = new PortfolioView(gameService, tradeController, onExploreStocks);
         }
+        activeSubview = portfolioView;
         contentArea.getChildren().setAll(portfolioView);
     }
 
@@ -94,6 +97,7 @@ public class DashboardView extends VBox {
         if (transactionsView == null) {
             transactionsView = new TransactionsView(gameService);
         }
+        activeSubview = transactionsView;
         contentArea.getChildren().setAll(transactionsView);
     }
 
@@ -105,6 +109,7 @@ public class DashboardView extends VBox {
         if (watchlistView == null) {
             watchlistView = new WatchlistView(gameService, tradeController, onExploreStocks);
         }
+        activeSubview = watchlistView;
         contentArea.getChildren().setAll(watchlistView);
     }
 
@@ -117,6 +122,18 @@ public class DashboardView extends VBox {
             loansView = new LoansView(gameService, loanController);
             loansView.getAvailableLoansCard().setOnApplyClicked(loanController::openLoanDialog);
         }
+        activeSubview = null;
         contentArea.getChildren().setAll(loansView);
+    }
+
+    /**
+     * Focuses the search field of the currently active dashboard sub-view.
+     * The loans sub-view has no search bar; in that case this method is a no-op.
+     */
+    @Override
+    public void focusSearch() {
+        if (activeSubview != null) {
+            activeSubview.focusSearch();
+        }
     }
 }

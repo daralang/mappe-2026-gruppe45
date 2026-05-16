@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
 
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.view.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.ExploreStocksButton;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -10,8 +11,13 @@ import javafx.scene.layout.VBox;
  * View wrapping the player's watchlist view displayed under the dashboard.
  * Shows the watchlist, list of stocks that user might want to keep track of,
  * with table of common stock info and action buttons, buy, note and remove.
+ *
+ * <p>Implements {@link SearchFocusProvider} to support {@code Cmd/Ctrl+F}
+ * by delegating to the {@link WatchlistCard} search field.</p>
  */
-public class WatchlistView extends VBox {
+public class WatchlistView extends VBox implements SearchFocusProvider {
+
+    private final WatchlistCard card;
 
     /**
      * Constructs a new WatchlistView.
@@ -25,12 +31,20 @@ public class WatchlistView extends VBox {
                          Runnable onExploreStocks) {
         setSpacing(16);
 
-        WatchlistCard card = new WatchlistCard(gameService, controller);
+        card = new WatchlistCard(gameService, controller);
         VBox.setVgrow(card, Priority.ALWAYS);
 
         ExploreStocksButton exploreButton = new ExploreStocksButton(onExploreStocks);
         exploreButton.setMaxWidth(Double.MAX_VALUE);
 
-        getChildren().addAll(card,exploreButton);
+        getChildren().addAll(card, exploreButton);
+    }
+
+    /**
+     * Focuses the watchlist search field.
+     */
+    @Override
+    public void focusSearch() {
+        card.focusSearch();
     }
 }

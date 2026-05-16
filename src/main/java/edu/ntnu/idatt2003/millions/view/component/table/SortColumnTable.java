@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.component.table;
 
+import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import javafx.scene.Node;
@@ -25,6 +26,12 @@ import java.util.function.Supplier;
  * <p>Cards retain responsibility for data fetching, filtering, sorting and
  * cell construction.</p>
  *
+ * <p>The row-navigation event filter is registered lazily on the first call to
+ * {@link #addSelectableRow} and removed again by {@link #clearRows()}, ensuring
+ * the filter does not outlive the rows it serves. Navigation is delegated to an
+ * internal {@link ArrowKeyNavigator}; focus is synchronised to the actually
+ * focused row before each key event so Tab-based entry works correctly.</p>
+ *
  * @param <Column> the sort-column enum type; use a wildcard or {@code Object}
  *                 when no column is sortable
  */
@@ -39,6 +46,14 @@ public class SortColumnTable<Column> {
     private final TableHeaderRenderer<Column> headerRenderer = new TableHeaderRenderer<>(sortState);
     private final List<SelectableRow> selectableRows = new ArrayList<>();
     private boolean rowFilterInstalled = false;
+    private final javafx.event.EventHandler<KeyEvent> rowNavigationHandler = this::handleRowNavigation;
+    private final ArrowKeyNavigator rowNavigator = new ArrowKeyNavigator(
+            ArrowKeyNavigator.Orientation.VERTICAL,
+            selectableRows::size,
+            idx -> selectableRows.get(idx).focusAnchor().requestFocus(),
+            idx -> selectableRows.get(idx).onEnter().run(),
+            false
+    );
 
     /** Metadata for a keyboard-navigable data row. */
     private record SelectableRow(int gridRow, Node focusAnchor, Runnable onEnter) {}
@@ -72,12 +87,17 @@ public class SortColumnTable<Column> {
 
     /**
      * Clears all nodes from the grid, including header and data rows.
-     * Also clears the selectable-row registry.
+     * Also clears the selectable-row registry and removes the row-navigation
+     * event filter so it does not linger when there are no navigable rows.
      * Call this at the start of every refresh before calling {@code refreshHeader}.
      */
     public void clearRows() {
         grid.getChildren().clear();
         selectableRows.clear();
+        if (rowFilterInstalled) {
+            grid.removeEventFilter(KeyEvent.KEY_PRESSED, rowNavigationHandler);
+            rowFilterInstalled = false;
+        }
     }
 
     /**
@@ -120,9 +140,10 @@ public class SortColumnTable<Column> {
      * Adds a data row and registers it for UP/DOWN keyboard navigation.
      *
      * <p>When this row has focus (or a descendant has focus) and the user
-     * presses UP or DOWN, focus moves to the adjacent row's {@code focusAnchor}.
-     * ENTER calls {@code onEnter}. Install at least one selectable row before
-     * the first refresh so the grid event filter is attached only once.</p>
+     * presses UP or DOWN, the internal {@link ArrowKeyNavigator} moves focus
+     * to the adjacent row's {@code focusAnchor}. ENTER calls {@code onEnter}.
+     * The grid event filter is attached lazily on the first call and removed
+     * by {@link #clearRows()}.</p>
      *
      * @param gridRow     the grid row to write to (row 0 is reserved for the header)
      * @param focusAnchor the node that receives focus when navigating to this row
@@ -133,7 +154,7 @@ public class SortColumnTable<Column> {
         addRow(gridRow, cells);
         selectableRows.add(new SelectableRow(gridRow, focusAnchor, onEnter));
         if (!rowFilterInstalled) {
-            grid.addEventFilter(KeyEvent.KEY_PRESSED, this::handleRowNavigation);
+            grid.addEventFilter(KeyEvent.KEY_PRESSED, rowNavigationHandler);
             rowFilterInstalled = true;
         }
     }
@@ -243,7 +264,12 @@ public class SortColumnTable<Column> {
 
     /**
      * Handles UP/DOWN/ENTER when focus is inside a selectable row.
-     * UP/DOWN moves focus to the adjacent row's anchor; ENTER fires the row action.
+     *
+     * <p>Delegates movement and confirmation to {@link ArrowKeyNavigator}.
+     * Before each key event the navigator's index is silently synchronised
+     * to the actually focused row via {@link ArrowKeyNavigator#syncIndex},
+     * so navigation is correct even when focus arrives via Tab rather than
+     * a previous arrow-key press.</p>
      */
     private void handleRowNavigation(KeyEvent event) {
         KeyCode code = event.getCode();
@@ -255,24 +281,9 @@ public class SortColumnTable<Column> {
         if (dataIdx < 0) {
             return;
         }
-        switch (code) {
-            case UP -> {
-                if (dataIdx > 0) {
-                    selectableRows.get(dataIdx - 1).focusAnchor().requestFocus();
-                    event.consume();
-                }
-            }
-            case DOWN -> {
-                if (dataIdx < selectableRows.size() - 1) {
-                    selectableRows.get(dataIdx + 1).focusAnchor().requestFocus();
-                    event.consume();
-                }
-            }
-            case ENTER -> {
-                selectableRows.get(dataIdx).onEnter().run();
-                event.consume();
-            }
-            default -> {}
+        rowNavigator.syncIndex(dataIdx);
+        if (rowNavigator.navigate(event)) {
+            event.consume();
         }
     }
 
