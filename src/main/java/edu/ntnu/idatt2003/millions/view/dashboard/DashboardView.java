@@ -18,9 +18,9 @@ import java.util.List;
  * The dashboard view of the application.
  *
  * <p>Contains a tab bar for navigating between portfolio, transactions,
- * watchlist and loans. Each sub-view PortfolioView, TransactionsView, LoanView
- * and WatchlistView is lazily initialised on first tab selection. Tab navigation is purely visual state
- * handled internally by this view.</p>
+ * watchlist and loans. Each sub-view is lazily initialised on first tab selection.
+ * The four tab methods are public so {@code MainView} can drive them from
+ * keyboard shortcuts (Shift+1–4).</p>
  */
 public class DashboardView extends VBox {
 
@@ -75,28 +75,44 @@ public class DashboardView extends VBox {
         showPortfolio();
     }
 
-    private void showPortfolio() {
+    /**
+     * Switches the content area to the portfolio sub-view.
+     * Lazily initialises {@link PortfolioView} on first call.
+     */
+    public void showPortfolio() {
         if (portfolioView == null) {
             portfolioView = new PortfolioView(gameService, tradeController, onExploreStocks);
         }
         contentArea.getChildren().setAll(portfolioView);
     }
 
-    private void showTransactions() {
+    /**
+     * Switches the content area to the transactions sub-view.
+     * Lazily initialises {@link TransactionsView} on first call.
+     */
+    public void showTransactions() {
         if (transactionsView == null) {
             transactionsView = new TransactionsView(gameService);
         }
         contentArea.getChildren().setAll(transactionsView);
     }
 
-    private void showWatchlist() {
+    /**
+     * Switches the content area to the watchlist sub-view.
+     * Lazily initialises {@link WatchlistView} on first call.
+     */
+    public void showWatchlist() {
         if (watchlistView == null) {
             watchlistView = new WatchlistView(gameService, tradeController, onExploreStocks);
         }
         contentArea.getChildren().setAll(watchlistView);
     }
 
-    private void showLoans() {
+    /**
+     * Switches the content area to the loans sub-view.
+     * Lazily initialises {@link LoansView} on first call.
+     */
+    public void showLoans() {
         if (loansView == null) {
             loansView = new LoansView(gameService, loanController);
             loansView.getAvailableLoansCard().setOnApplyClicked(loanController::openLoanDialog);
