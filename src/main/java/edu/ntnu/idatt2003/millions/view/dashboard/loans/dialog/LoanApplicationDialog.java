@@ -86,6 +86,11 @@ public class LoanApplicationDialog extends Modal {
     }
 
     @Override
+    protected javafx.scene.Node firstFocusTarget() {
+        return amountField;
+    }
+
+    @Override
     protected Region buildContent() {
         VBox content = new VBox();
         content.getChildren().addAll(

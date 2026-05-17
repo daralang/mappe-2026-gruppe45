@@ -33,6 +33,7 @@ public class WatchlistNoteDialog extends Modal {
     private final String existingNote;
     private Consumer<String> onSave;
     private boolean hasChanges = false;
+    private TextArea noteArea;
 
     /**
      * Constructs a new {@link WatchlistNoteDialog} for the given stock.
@@ -77,9 +78,14 @@ public class WatchlistNoteDialog extends Modal {
     }
 
     @Override
+    protected javafx.scene.Node firstFocusTarget() {
+        return noteArea;
+    }
+
+    @Override
     protected Region buildContent() {
         StockInfoCard infoCard = new StockInfoCard(stock, converter);
-        TextArea noteArea = new TextArea(existingNote);
+        noteArea = new TextArea(existingNote);
         noteArea.setPromptText(LanguageManager.get("watchlist.note.placeholder"));
         noteArea.setWrapText(true);
         noteArea.setMaxWidth(Double.MAX_VALUE);
