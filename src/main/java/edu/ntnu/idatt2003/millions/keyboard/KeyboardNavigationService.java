@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.keyboard;
 
+import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -37,23 +38,28 @@ public final class KeyboardNavigationService {
     private final ShortcutRegistry universalRegistry = new ShortcutRegistry();
     private final ShortcutRegistry globalRegistry = new ShortcutRegistry();
 
+    private Node boundNode;
+    private ChangeListener<Scene> sceneListener;
     private Scene attachedScene;
     private EventHandler<KeyEvent> eventFilter;
 
     /**
      * Binds this service to the given node's scene lifecycle.
+     * The listener is stored and removed when {@link #detach()} is called.
      *
      * @param node the root node whose scene changes drive attach/detach
      */
     public void bindToNode(Node node) {
         Objects.requireNonNull(node, "node must not be null");
-        node.sceneProperty().addListener((obs, oldScene, newScene) -> {
+        boundNode = node;
+        sceneListener = (obs, oldScene, newScene) -> {
             if (newScene != null) {
                 attach(newScene);
             } else {
                 detach();
             }
-        });
+        };
+        node.sceneProperty().addListener(sceneListener);
         if (node.getScene() != null) {
             attach(node.getScene());
         }
@@ -76,9 +82,15 @@ public final class KeyboardNavigationService {
 
     /**
      * Detaches this service from its current scene and clears all state.
+     * Also removes the {@code sceneProperty} listener added by {@link #bindToNode}.
      * Safe to call even when not attached.
      */
     public void detach() {
+        if (boundNode != null && sceneListener != null) {
+            boundNode.sceneProperty().removeListener(sceneListener);
+            boundNode = null;
+            sceneListener = null;
+        }
         if (attachedScene != null && eventFilter != null) {
             attachedScene.removeEventFilter(KeyEvent.KEY_PRESSED, eventFilter);
         }
