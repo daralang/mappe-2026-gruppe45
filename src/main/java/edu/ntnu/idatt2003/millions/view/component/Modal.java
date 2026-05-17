@@ -75,6 +75,12 @@ public abstract class Modal {
         onBeforeShow();
         stage.sizeToScene();
         showStage();
+        Platform.runLater(() -> {
+            javafx.scene.Node target = firstFocusTarget();
+            if (target != null) {
+                target.requestFocus();
+            }
+        });
     }
 
     /**
@@ -204,6 +210,17 @@ public abstract class Modal {
             stage.setMinWidth(0);
             stage.sizeToScene();
         });
+    }
+
+    /**
+     * Returns the node that should receive focus when the modal opens.
+     * Default returns {@code null} (no auto-focus). Override to return
+     * the first input field.
+     *
+     * @return the node to focus, or {@code null}
+     */
+    protected javafx.scene.Node firstFocusTarget() {
+        return null;
     }
 
     /**

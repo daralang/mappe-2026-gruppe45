@@ -170,38 +170,6 @@ public class MainView {
     }
 
     /**
-     * Navigates to the dashboard and activates the Portfolio tab (Shift+1).
-     */
-    public void showDashboardPortfolio() {
-        showDashboard();
-        dashboardView.showPortfolio();
-    }
-
-    /**
-     * Navigates to the dashboard and activates the Transactions tab (Shift+2).
-     */
-    public void showDashboardTransactions() {
-        showDashboard();
-        dashboardView.showTransactions();
-    }
-
-    /**
-     * Navigates to the dashboard and activates the Watchlist tab (Shift+3).
-     */
-    public void showDashboardWatchlist() {
-        showDashboard();
-        dashboardView.showWatchlist();
-    }
-
-    /**
-     * Navigates to the dashboard and activates the Loans tab (Shift+4).
-     */
-    public void showDashboardLoans() {
-        showDashboard();
-        dashboardView.showLoans();
-    }
-
-    /**
      * Switches the content area to the exchange view.
      */
     public void showExchange() {

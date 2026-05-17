@@ -60,6 +60,11 @@ public abstract class TransactionDialog extends Modal {
     }
 
     @Override
+    protected javafx.scene.Node firstFocusTarget() {
+        return quantityInput;
+    }
+
+    @Override
     protected Region buildContent() {
         VBox content = new VBox();
         content.getChildren().addAll(
