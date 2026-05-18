@@ -3,7 +3,6 @@ package edu.ntnu.idatt2003.millions.view.dashboard.loans.card;
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.util.TableCells;
@@ -144,10 +143,8 @@ public class ActiveLoansCard extends Card {
                 TableCells.data(loanLabel),
                 TableCells.data(MoneyFormatter.format(weeklyRate) + " %"),
                 TableCells.data(weeksLeftText),
-                TableCells.data(MoneyFormatter.format(loan.weeklyInterest())
-                        + " " + CurrencyFormatter.symbol("NOK")),
-                TableCells.data(MoneyFormatter.format(loan.principal())
-                        + " " + CurrencyFormatter.symbol("NOK")),
+                TableCells.data(MoneyFormatter.format(loan.weeklyInterest())),
+                TableCells.data(MoneyFormatter.format(loan.principal())),
                 buildActionCell(loan, typeIndex)
         );
     }
@@ -172,12 +169,10 @@ public class ActiveLoansCard extends Card {
                 .map(Loan::weeklyInterest)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         totalGrid.add(TableCells.boldData(
-                MoneyFormatter.format(totalWeeklyCost)
-                        + " " + CurrencyFormatter.symbol("NOK")), TOTAL_COL_WEEKLY_COST, 1);
+                MoneyFormatter.format(totalWeeklyCost)), TOTAL_COL_WEEKLY_COST, 1);
 
         totalGrid.add(TableCells.boldData(
-                MoneyFormatter.format(gameService.getPlayer().getTotalDebt())
-                        + " " + CurrencyFormatter.symbol("NOK")), TOTAL_COL_REMAINING, 1);
+                MoneyFormatter.format(gameService.getPlayer().getTotalDebt())), TOTAL_COL_REMAINING, 1);
     }
 
     /**
