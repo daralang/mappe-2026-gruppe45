@@ -68,6 +68,10 @@ public class TransactionPreviewService {
     public TransactionPreview previewSale(
             Share share, BigDecimal quantity, Player player, CurrencyConverter converter) {
 
+        if (quantity.compareTo(share.getQuantity()) > 0) {
+            throw new IllegalArgumentException(
+                    "Cannot preview selling " + quantity + " shares — position only holds " + share.getQuantity());
+        }
         Share partial = quantity.compareTo(share.getQuantity()) == 0
                 ? share
                 : new Share(share.getStock(), quantity, share.getPurchasePrice());
