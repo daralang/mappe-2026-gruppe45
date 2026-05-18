@@ -61,7 +61,7 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
                         "tooltip.stocks.watchlist", 10, HPos.CENTER),
                 TableColumnDef.sortable("col.ticker", SortColumn.TICKER, 11, HPos.LEFT),
                 TableColumnDef.of("col.company", 22, HPos.LEFT),
-                TableColumnDef.sortable("col.currency", SortColumn.CURRENCY, 7, HPos.LEFT),
+                TableColumnDef.sortable("col.currency", SortColumn.CURRENCY, 8, HPos.LEFT),
                 TableColumnDef.sortable("col.priceNative", SortColumn.PRICE_MARKED, 6, HPos.RIGHT),
                 TableColumnDef.sortable("col.priceNok", SortColumn.PRICE_NOK, 9, HPos.RIGHT),
                 TableColumnDef.sortable("col.changeNok", SortColumn.CHANGE_KR,
@@ -71,7 +71,7 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
                 TableColumnDef.sortable("col.highLow", SortColumn.HIGH_LOW,
                         "tooltip.shared.highLow", 10, HPos.RIGHT),
                 TableColumnDef.of("col.trend", "tooltip.shared.trend", 10, HPos.CENTER),
-                TableColumnDef.of("col.trade", 6, HPos.LEFT)
+                TableColumnDef.of("col.trade", 5, HPos.LEFT)
         );
     }
 
