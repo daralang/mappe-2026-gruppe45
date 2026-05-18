@@ -79,12 +79,11 @@ public class Portfolio {
     }
 
     /**
-     * Gets all shares of a specific stock by symbol. The method will return
-     * an empty list if the symbol is null.
+     * Gets all shares of a specific stock by symbol.
+     * Returns an empty list if {@code symbol} is null or no shares match.
      *
-     * @param symbol the stock symbol to filter by
-     * @return a list of shares matching the symbol
-     * @throws NullPointerException if the symbol is null
+     * @param symbol the stock symbol to filter by; null returns an empty list
+     * @return a list of shares whose stock symbol equals {@code symbol}, never null
      */
     public List<Share> getShares(String symbol) {
         if (symbol == null) return List.of();
