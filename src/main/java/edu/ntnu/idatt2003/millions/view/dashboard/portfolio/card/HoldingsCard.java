@@ -7,7 +7,6 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.PortfolioService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
-import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.util.TableCells;
@@ -194,8 +193,7 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
         totalGrid.add(totalLabel, TOTAL_COL_COMPANY, 1);
 
         Label valueNok = new Label(MoneyFormatter.format(
-                portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter()))
-                + " " + CurrencyFormatter.symbol("NOK"));
+                portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
         valueNok.getStyleClass().addAll("holdings-cell", "bold");
         totalGrid.add(valueNok, TOTAL_COL_VALUE_NOK, 1);
 
@@ -229,8 +227,7 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
                 TableCells.data(MoneyFormatter.format(share.getQuantity())),
                 coloredPercentCell(stock.getWeeklyChangePercent()),
                 TableCells.data(MoneyFormatter.format(
-                        portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))
-                        + " " + CurrencyFormatter.symbol("NOK")),
+                        portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))),
                 coloredPercentCell(share.getReturnPercent()),
                 coloredAmountCell(
                         portfolioService.getShareReturnInNok(share, gameService.getCurrencyConverter())),
@@ -312,8 +309,6 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
      * @return a styled label
      */
     private Label coloredAmountCell(BigDecimal value) {
-        Label label = ChangeFormatter.styledAmount(value, "holdings-cell");
-        label.setText(label.getText() + " " + CurrencyFormatter.symbol("NOK"));
-        return label;
+        return ChangeFormatter.styledAmount(value, "holdings-cell");
     }
 }
