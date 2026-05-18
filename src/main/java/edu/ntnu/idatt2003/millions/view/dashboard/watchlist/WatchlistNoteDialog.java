@@ -88,7 +88,7 @@ public class WatchlistNoteDialog extends Modal {
         noteArea.getStyleClass().addAll("modal-input", "content-scroll");
 
         Button cancel = new Button(LanguageManager.get("dialog.button.cancel"));
-        cancel.getStyleClass().add("modal-button-outlined");
+        cancel.getStyleClass().addAll("modal-button", "modal-button-outlined");
         cancel.setOnAction(e -> close());
 
         Button save = new Button(LanguageManager.get("watchlist.note.save"));
