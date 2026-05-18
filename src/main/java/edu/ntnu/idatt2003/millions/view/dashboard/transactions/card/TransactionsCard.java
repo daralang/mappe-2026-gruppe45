@@ -198,11 +198,11 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
                 statsService.getStats(transaction, gameService.getCurrencyConverter());
 
         table.addRow(row,
-                TableCells.data(MessageFormat.format(
-                        LanguageManager.get("transactions.weekValue"), transaction.getWeek())),
+                TableCells.data(String.valueOf(transaction.getWeek())),
                 TableCells.data(stock.getSymbol() + ", " + stock.getCompany()),
                 typeBadge(transaction),
                 TableCells.data(MoneyFormatter.format(stats.quantity())),
+                TableCells.data(stock.getCurrency().getCurrencyCode()),
                 TableCells.data(MoneyFormatter.format(stats.pricePerShare())),
                 TableCells.data(MoneyFormatter.format(stats.commissionNok())),
                 taxCell(stats),
