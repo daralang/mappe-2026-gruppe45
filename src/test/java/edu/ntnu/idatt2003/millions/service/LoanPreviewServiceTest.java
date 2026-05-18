@@ -82,19 +82,6 @@ class LoanPreviewServiceTest {
         }
 
         @Test
-        @DisplayName("Should reflect the exact principal in the preview")
-        void reflectsPrincipalInPreview() {
-            // Arrange
-            LoanOffer o = offer("0.015", 4);
-
-            // Act
-            LoanPreview preview = service.preview(o, new BigDecimal("500"));
-
-            // Assert
-            assertBigDecimalEquals(new BigDecimal("500"), preview.principal());
-        }
-
-        @Test
         @DisplayName("Should compute correct values for a different rate and term")
         void computesCorrectValuesForRateZeroPointZeroOneFive() {
             // Arrange - rate=1.5%, term=4, principal=500

@@ -168,7 +168,9 @@ class PlayerStatsServiceTest {
         @Test
         @DisplayName("Returns money balance when portfolio is empty")
         void returnsMoneyBalanceWithEmptyPortfolio() {
+            // Arrange
             Player p = playerWith("1000");
+            // Act & Assert
             assertBigDecimalEquals(new BigDecimal("1000"), service.getNetWorth(p, converter));
         }
     }
@@ -180,7 +182,9 @@ class PlayerStatsServiceTest {
         @Test
         @DisplayName("Returns zero for a player whose balance is unchanged")
         void returnsZeroForUnchangedBalance() {
+            // Arrange
             Player p = playerWith("1000");
+            // Act & Assert
             assertBigDecimalEquals(BigDecimal.ZERO, service.getNetWorthChangeSinceStart(p, converter));
         }
 
@@ -210,7 +214,9 @@ class PlayerStatsServiceTest {
         @Test
         @DisplayName("Returns zero percent for a player whose balance is unchanged")
         void returnsZeroPercentForUnchangedBalance() {
+            // Arrange
             Player p = playerWith("1000");
+            // Act & Assert
             assertBigDecimalEquals(BigDecimal.ZERO,
                     service.getNetWorthChangePercentSinceStart(p, converter));
         }
@@ -233,7 +239,9 @@ class PlayerStatsServiceTest {
         @Test
         @DisplayName("Returns null when no week has been advanced yet")
         void returnsNullBeforeAnyWeekAdvance() {
+            // Arrange
             Player p = playerWith("1000");
+            // Act & Assert
             assertNull(service.getWeeklyNetWorthChange(p, converter));
         }
 
@@ -256,7 +264,9 @@ class PlayerStatsServiceTest {
         @Test
         @DisplayName("Returns null when no week has been advanced yet")
         void returnsNullBeforeAnyWeekAdvance() {
+            // Arrange
             Player p = playerWith("1000");
+            // Act & Assert
             assertNull(service.getWeeklyNetWorthChangePercent(p, converter));
         }
 
@@ -279,7 +289,9 @@ class PlayerStatsServiceTest {
         @Test
         @DisplayName("Returns NOVICE for a fresh player with no growth")
         void returnsNoviceForFreshPlayer() {
+            // Arrange
             Player p = playerWith("1000");
+            // Act & Assert
             assertEquals(PlayerStatusLevel.NOVICE, service.getStatus(p, converter));
         }
 
@@ -290,6 +302,7 @@ class PlayerStatsServiceTest {
             Player p = playerWith("1000");
             addWeeks(p, 20);
             p.addMoney(new BigDecimal("1000"));
+            // Act & Assert
             assertEquals(PlayerStatusLevel.SPECULATOR, service.getStatus(p, converter));
         }
     }
