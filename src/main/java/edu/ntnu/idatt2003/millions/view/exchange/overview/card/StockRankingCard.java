@@ -2,7 +2,6 @@ package edu.ntnu.idatt2003.millions.view.exchange.overview.card;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
-import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
@@ -25,10 +24,11 @@ import javafx.scene.layout.VBox;
  */
 public class StockRankingCard extends VBox {
 
-    private static final double COL_TICKER  = 18;
-    private static final double COL_COMPANY = 42;
-    private static final double COL_PRICE   = 22;
-    private static final double COL_CHANGE  = 18;
+    private static final double COL_TICKER   = 18;
+    private static final double COL_COMPANY  = 35;
+    private static final double COL_CURRENCY = 13;
+    private static final double COL_PRICE    = 10;
+    private static final double COL_CHANGE   = 10;
 
     private final String titleKey;
     private final StyledText titleLabel;
@@ -97,14 +97,13 @@ public class StockRankingCard extends VBox {
      * @param stock    the stock to display
      */
     private void addDataRow(int rowIndex, Stock stock) {
-        String formattedPrice = ChangeFormatter.formatPlain(stock.getSalesPrice())
-                + " " + CurrencyFormatter.symbol(stock.getCurrency());
         Label changeLabel = ChangeFormatter.styledPercent(
                 stock.getWeeklyChangePercent(), "holdings-cell");
         table.addRow(rowIndex,
                 TableCells.data(stock.getSymbol()),
                 TableCells.data(stock.getCompany()),
-                TableCells.data(formattedPrice),
+                TableCells.data(stock.getCurrency().getCurrencyCode()),
+                TableCells.data(ChangeFormatter.formatPlain(stock.getSalesPrice())),
                 changeLabel);
     }
 
@@ -117,10 +116,11 @@ public class StockRankingCard extends VBox {
      */
     private List<TableColumnDef<Void>> columnDefs() {
         return List.of(
-                TableColumnDef.of("col.ticker",  COL_TICKER,  HPos.LEFT),
-                TableColumnDef.of("col.stock",   COL_COMPANY, HPos.LEFT),
-                TableColumnDef.of("col.priceNative", COL_PRICE, HPos.RIGHT),
-                TableColumnDef.of("col.change",  COL_CHANGE,  HPos.RIGHT)
+                TableColumnDef.of("col.ticker",      COL_TICKER,   HPos.LEFT),
+                TableColumnDef.of("col.stock",       COL_COMPANY,  HPos.LEFT),
+                TableColumnDef.of("col.currency",    COL_CURRENCY, HPos.LEFT),
+                TableColumnDef.of("col.priceNative", COL_PRICE,    HPos.RIGHT),
+                TableColumnDef.of("col.change",      COL_CHANGE,   HPos.RIGHT)
         );
     }
 }
