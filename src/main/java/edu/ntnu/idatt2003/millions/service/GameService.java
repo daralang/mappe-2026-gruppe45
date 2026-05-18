@@ -542,7 +542,7 @@ public class GameService {
      */
     public void addToWatchlist(String symbol) {
         Objects.requireNonNull(symbol, "Symbol cannot be null");
-        if (player == null || exchange.getStock(symbol) == null) return;
+        if (player == null || !exchange.hasStock(symbol)) return;
         player.addToWatchlist(new WatchlistEntry(symbol, exchange.getWeek(), ""));
         notifyObservers();
     }
