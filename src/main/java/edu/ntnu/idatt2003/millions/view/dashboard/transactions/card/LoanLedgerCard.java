@@ -228,8 +228,7 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
      */
     private void addDataRow(int row, LoanLedgerEntry entry, String loanLabel) {
         table.addRow(row,
-                TableCells.data(MessageFormat.format(
-                        LanguageManager.get("transactions.weekValue"), entry.week())),
+                TableCells.data(String.valueOf(entry.week())),
                 TableCells.data(loanLabel),
                 typeBadge(entry.type()),
                 ChangeFormatter.styledAmount(entry.amount(), "holdings-cell")
