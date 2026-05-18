@@ -53,14 +53,14 @@ public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
      */
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
-                TableColumnDef.spacer(18, HPos.LEFT),
+                TableColumnDef.spacer(14, HPos.LEFT),
                 TableColumnDef.sortable(
                         "col.company", SortColumn.COMPANY, 22, HPos.LEFT),
                 TableColumnDef.sortable(
                         "col.quantity", SortColumn.QUANTITY, 10, HPos.RIGHT),
                 TableColumnDef.sortable(
                         "col.weeklyChange", SortColumn.WEEKLY_CHANGE,
-                        "tooltip.shared.weeklyChange", 12, HPos.RIGHT),
+                        "tooltip.shared.weeklyChange", 13, HPos.RIGHT),
                 TableColumnDef.sortable(
                         "col.valueNok", SortColumn.VALUE_NOK,
                         "tooltip.holdings.valueNok", 12, HPos.RIGHT),
@@ -69,7 +69,7 @@ public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
                         "tooltip.shared.returnPct", 10, HPos.RIGHT),
                 TableColumnDef.sortable(
                         "col.returnNok", SortColumn.RETURN_NOK,
-                        "tooltip.shared.returnNok", 11, HPos.RIGHT),
+                        "tooltip.shared.returnNok", 12, HPos.RIGHT),
                 TableColumnDef.spacer(5, HPos.CENTER)
         );
     }
