@@ -34,7 +34,7 @@ public class TransactionsSort extends SortProvider<Transaction, TransactionsSort
      * Columns that support ascending/descending sort in the transactions table.
      */
     public enum SortColumn {
-        WEEK, COMPANY, TYPE, QUANTITY, PRICE, COMMISSION, TAX, AMOUNT
+        WEEK, COMPANY, TYPE, QUANTITY, CURRENCY, PRICE, COMMISSION, TAX, AMOUNT
     }
 
     private final TransactionStatsService statsService;
@@ -62,16 +62,17 @@ public class TransactionsSort extends SortProvider<Transaction, TransactionsSort
      */
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
-                TableColumnDef.sortable("col.week", SortColumn.WEEK, 8, HPos.LEFT),
-                TableColumnDef.sortable("col.company", SortColumn.COMPANY, 26, HPos.LEFT),
+                TableColumnDef.sortable("col.week", SortColumn.WEEK, 6, HPos.LEFT),
+                TableColumnDef.sortable("col.company", SortColumn.COMPANY, 24, HPos.LEFT),
                 TableColumnDef.sortable("col.type", SortColumn.TYPE,
-                        "tooltip.transactions.type", 8, HPos.LEFT),
-                TableColumnDef.sortable("col.quantity", SortColumn.QUANTITY, 7, HPos.RIGHT),
-                TableColumnDef.sortable("col.price", SortColumn.PRICE, 12, HPos.RIGHT),
+                        "tooltip.transactions.type", 7, HPos.LEFT),
+                TableColumnDef.sortable("col.quantity", SortColumn.QUANTITY, 8, HPos.RIGHT),
+                TableColumnDef.sortable("col.currency", SortColumn.CURRENCY, 9, HPos.LEFT),
+                TableColumnDef.sortable("col.price", SortColumn.PRICE, 6, HPos.RIGHT),
                 TableColumnDef.sortable("col.commission", SortColumn.COMMISSION,
-                        "tooltip.transactions.commission", 12, HPos.RIGHT),
+                        "tooltip.transactions.commission", 15, HPos.RIGHT),
                 TableColumnDef.sortable("col.tax", SortColumn.TAX,
-                        "tooltip.transactions.tax", 13, HPos.RIGHT),
+                        "tooltip.transactions.tax", 11, HPos.RIGHT),
                 TableColumnDef.sortable("col.amount", SortColumn.AMOUNT,
                         "tooltip.transactions.amount", 14, HPos.RIGHT)
         );
@@ -97,6 +98,9 @@ public class TransactionsSort extends SortProvider<Transaction, TransactionsSort
             case QUANTITY ->
                     Comparator.comparing((Transaction t) ->
                             statsService.getStats(t, converter).quantity());
+            case CURRENCY ->
+                    Comparator.comparing((Transaction t) ->
+                            t.getShare().getStock().getCurrency().getCurrencyCode());
             case PRICE ->
                     Comparator.comparing((Transaction t) ->
                             statsService.getStats(t, converter).pricePerShare());
