@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.service;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.player.Player;
+import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
@@ -17,7 +18,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for {@link PlayerStatsService#getProgressToNextStatus}.
+ * Unit tests for {@link PlayerStatsService}.
+ * Covers all seven public methods — net worth, change since start, percent change since start,
+ * weekly change, weekly percent change, status, and progress to next status.
+ * All tests follow the AAA pattern.
  */
 class PlayerStatsServiceTest {
 
@@ -28,6 +32,11 @@ class PlayerStatsServiceTest {
     void setUp() {
         service = new PlayerStatsService();
         converter = new FixedRateCurrencyConverter();
+    }
+
+    private static void assertBigDecimalEquals(BigDecimal expected, BigDecimal actual) {
+        assertEquals(0, expected.compareTo(actual),
+                "Expected " + expected + " but was " + actual);
     }
 
     private static Player playerWith(String startingMoney) {
@@ -149,6 +158,139 @@ class PlayerStatsServiceTest {
             double progress = service.getProgressToNextStatus(p, converter);
             // Assert — growth sub-score must be clamped to 0, not go negative
             assertEquals(0.0, progress);
+        }
+    }
+
+    @Nested
+    @DisplayName("getNetWorth()")
+    class GetNetWorth {
+
+        @Test
+        @DisplayName("Returns money balance when portfolio is empty")
+        void returnsMoneyBalanceWithEmptyPortfolio() {
+            Player p = playerWith("1000");
+            assertBigDecimalEquals(new BigDecimal("1000"), service.getNetWorth(p, converter));
+        }
+    }
+
+    @Nested
+    @DisplayName("getNetWorthChangeSinceStart()")
+    class GetNetWorthChangeSinceStart {
+
+        @Test
+        @DisplayName("Returns zero for a player whose balance is unchanged")
+        void returnsZeroForUnchangedBalance() {
+            Player p = playerWith("1000");
+            assertBigDecimalEquals(BigDecimal.ZERO, service.getNetWorthChangeSinceStart(p, converter));
+        }
+
+        @Test
+        @DisplayName("Returns positive value when player gained money")
+        void returnsPositiveValueWhenPlayerGainedMoney() {
+            // Arrange — start=1000, add 200 → change=200
+            Player p = playerWith("1000");
+            p.addMoney(new BigDecimal("200"));
+            assertBigDecimalEquals(new BigDecimal("200"), service.getNetWorthChangeSinceStart(p, converter));
+        }
+
+        @Test
+        @DisplayName("Returns negative value when player lost money")
+        void returnsNegativeValueWhenPlayerLostMoney() {
+            // Arrange — start=1000, withdraw 300 → change=−300
+            Player p = playerWith("1000");
+            p.withdrawMoney(new BigDecimal("300"));
+            assertBigDecimalEquals(new BigDecimal("-300"), service.getNetWorthChangeSinceStart(p, converter));
+        }
+    }
+
+    @Nested
+    @DisplayName("getNetWorthChangePercentSinceStart()")
+    class GetNetWorthChangePercentSinceStart {
+
+        @Test
+        @DisplayName("Returns zero percent for a player whose balance is unchanged")
+        void returnsZeroPercentForUnchangedBalance() {
+            Player p = playerWith("1000");
+            assertBigDecimalEquals(BigDecimal.ZERO,
+                    service.getNetWorthChangePercentSinceStart(p, converter));
+        }
+
+        @Test
+        @DisplayName("Returns 10.0% when player gained 100 on a 1000 start")
+        void returnsTenPercentOnTenPercentGain() {
+            // Arrange — start=1000, add 100 → 100/1000×100 = 10.0%
+            Player p = playerWith("1000");
+            p.addMoney(new BigDecimal("100"));
+            assertBigDecimalEquals(new BigDecimal("10.0"),
+                    service.getNetWorthChangePercentSinceStart(p, converter));
+        }
+    }
+
+    @Nested
+    @DisplayName("getWeeklyNetWorthChange()")
+    class GetWeeklyNetWorthChange {
+
+        @Test
+        @DisplayName("Returns null when no week has been advanced yet")
+        void returnsNullBeforeAnyWeekAdvance() {
+            Player p = playerWith("1000");
+            assertNull(service.getWeeklyNetWorthChange(p, converter));
+        }
+
+        @Test
+        @DisplayName("Returns difference between current and previous net worth after week advance")
+        void returnsDifferenceAfterWeekAdvance() {
+            // Arrange — snapshot previous=1000, add 100 → change=100
+            Player p = playerWith("1000");
+            p.setPreviousNetWorth(p.getNetWorth(converter));
+            p.addMoney(new BigDecimal("100"));
+            assertBigDecimalEquals(new BigDecimal("100"),
+                    service.getWeeklyNetWorthChange(p, converter));
+        }
+    }
+
+    @Nested
+    @DisplayName("getWeeklyNetWorthChangePercent()")
+    class GetWeeklyNetWorthChangePercent {
+
+        @Test
+        @DisplayName("Returns null when no week has been advanced yet")
+        void returnsNullBeforeAnyWeekAdvance() {
+            Player p = playerWith("1000");
+            assertNull(service.getWeeklyNetWorthChangePercent(p, converter));
+        }
+
+        @Test
+        @DisplayName("Returns 10.0% when player gained 100 on a 1000 previous net worth")
+        void returnsPercentageChangeAfterWeekAdvance() {
+            // Arrange — previous=1000, add 100 → 100/1000×100 = 10.0%
+            Player p = playerWith("1000");
+            p.setPreviousNetWorth(p.getNetWorth(converter));
+            p.addMoney(new BigDecimal("100"));
+            assertBigDecimalEquals(new BigDecimal("10.0"),
+                    service.getWeeklyNetWorthChangePercent(p, converter));
+        }
+    }
+
+    @Nested
+    @DisplayName("getStatus()")
+    class GetStatus {
+
+        @Test
+        @DisplayName("Returns NOVICE for a fresh player with no growth")
+        void returnsNoviceForFreshPlayer() {
+            Player p = playerWith("1000");
+            assertEquals(PlayerStatusLevel.NOVICE, service.getStatus(p, converter));
+        }
+
+        @Test
+        @DisplayName("Returns SPECULATOR for a player with 20 weeks and 100% growth")
+        void returnsSpeculatorForTopTierPlayer() {
+            // Arrange — 20 weeks + 100% growth (1000 on 1000 start) → SPECULATOR
+            Player p = playerWith("1000");
+            addWeeks(p, 20);
+            p.addMoney(new BigDecimal("1000"));
+            assertEquals(PlayerStatusLevel.SPECULATOR, service.getStatus(p, converter));
         }
     }
 }

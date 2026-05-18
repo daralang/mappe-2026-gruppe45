@@ -698,6 +698,14 @@ class GameServiceTest {
             gameService.loadGame(file.toFile());
             assertFalse(gameService.isGameOver());
         }
+
+        @Test
+        @DisplayName("executeForcedSale() throws IllegalStateException when game is over")
+        void executeForcedSale_throwsWhenGameOver() {
+            gameService.declareGameOver();
+            assertThrows(IllegalStateException.class, () ->
+                    gameService.executeForcedSale(List.of(), 1));
+        }
     }
 
     @Nested
@@ -790,6 +798,156 @@ class GameServiceTest {
         void getCurrentSavePath_isResetOnNewGameCreated() {
             gameService.createNewGame("Ola", new BigDecimal("5000"));
             assertTrue(gameService.getCurrentSaveFile().isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("takeLoan()")
+    class TakeLoan {
+
+        @Test
+        @DisplayName("Should throw NullPointerException when offer is null")
+        void throwsWhenOfferIsNull() {
+            assertThrows(NullPointerException.class, () ->
+                    gameService.takeLoan(null, new BigDecimal("100")));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when amount is null")
+        void throwsWhenAmountIsNull() {
+            LoanOffer offer = new LoanOffer("t", new BigDecimal("0.01"), 10,
+                    new BigDecimal("9000.00"), LoanRiskLevel.LOW);
+            assertThrows(NullPointerException.class, () ->
+                    gameService.takeLoan(offer, null));
+        }
+    }
+
+    @Nested
+    @DisplayName("repayLoan()")
+    class RepayLoan {
+
+        @Test
+        @DisplayName("Should throw NullPointerException when loan is null")
+        void throwsWhenLoanIsNull() {
+            assertThrows(NullPointerException.class, () ->
+                    gameService.repayLoan(null));
+        }
+    }
+
+    @Nested
+    @DisplayName("addToWatchlist()")
+    class AddToWatchlist {
+
+        @Test
+        @DisplayName("Should add a known stock to the player's watchlist")
+        void addsKnownStockToWatchlist() {
+            gameService.addToWatchlist("EQNR");
+            assertTrue(gameService.getPlayer().isOnWatchlist("EQNR"));
+        }
+
+        @Test
+        @DisplayName("Should be a no-op when the symbol does not exist on the exchange")
+        void isNoOpForUnknownSymbol() {
+            gameService.addToWatchlist("UNKNOWN");
+            assertFalse(gameService.getPlayer().isOnWatchlist("UNKNOWN"));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when symbol is null")
+        void throwsWhenSymbolIsNull() {
+            assertThrows(NullPointerException.class, () ->
+                    gameService.addToWatchlist(null));
+        }
+    }
+
+    @Nested
+    @DisplayName("removeFromWatchlist()")
+    class RemoveFromWatchlist {
+
+        @Test
+        @DisplayName("Should remove a watchlisted stock from the player's watchlist")
+        void removesWatchlistedStock() {
+            gameService.addToWatchlist("EQNR");
+            assertTrue(gameService.getPlayer().isOnWatchlist("EQNR"));
+            gameService.removeFromWatchlist("EQNR");
+            assertFalse(gameService.getPlayer().isOnWatchlist("EQNR"));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when symbol is null")
+        void throwsWhenSymbolIsNull() {
+            assertThrows(NullPointerException.class, () ->
+                    gameService.removeFromWatchlist(null));
+        }
+    }
+
+    @Nested
+    @DisplayName("updateWatchlistNote()")
+    class UpdateWatchlistNote {
+
+        @Test
+        @DisplayName("Should update the note for a watchlisted stock")
+        void updatesNoteForWatchlistedStock() {
+            gameService.addToWatchlist("EQNR");
+            gameService.updateWatchlistNote("EQNR", "my note");
+            String note = gameService.getPlayer().getWatchlist().stream()
+                    .filter(e -> e.symbol().equals("EQNR"))
+                    .findFirst()
+                    .orElseThrow()
+                    .note();
+            assertEquals("my note", note);
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when symbol is null")
+        void throwsWhenSymbolIsNull() {
+            assertThrows(NullPointerException.class, () ->
+                    gameService.updateWatchlistNote(null, "note"));
+        }
+    }
+
+    @Nested
+    @DisplayName("clearAllNotifications()")
+    class ClearAllNotifications {
+
+        @Test
+        @DisplayName("Should clear all notifications and notify observers")
+        void clearsNotificationsAndNotifiesObservers() throws ExcessiveDebtException {
+            // Arrange — take a loan expiring in 3 weeks, advance week to push a notification
+            LoanOffer offer = new LoanOffer("std", new BigDecimal("0.001"), 3,
+                    new BigDecimal("50000"), LoanRiskLevel.LOW);
+            gameService.takeLoan(offer, new BigDecimal("1000"));
+            gameService.advanceWeek();
+            assertFalse(gameService.getPlayer().getNotifications().isEmpty(),
+                    "precondition: notifications must be non-empty after week advance with maturing loan");
+            CountingObserver observer = new CountingObserver();
+            gameService.addObserver(observer);
+            // Act
+            gameService.clearAllNotifications();
+            // Assert
+            assertTrue(gameService.getPlayer().getNotifications().isEmpty());
+            assertEquals(1, observer.updateCount);
+        }
+    }
+
+    @Nested
+    @DisplayName("recordLeaderboardEntry()")
+    class RecordLeaderboardEntry {
+
+        @Test
+        @DisplayName("Should record an ACTIVE entry for the current player")
+        void recordsActiveEntryForCurrentPlayer() {
+            gameService.recordLeaderboardEntry();
+            assertEquals(1, lbService.getAllEntries().size());
+            assertEquals(Outcome.ACTIVE, lbService.getAllEntries().get(0).outcome());
+        }
+
+        @Test
+        @DisplayName("Should be a no-op when no game is active")
+        void isNoOpWhenNoGameIsActive() {
+            GameService fresh = new GameService(lbService);
+            fresh.recordLeaderboardEntry();
+            assertTrue(lbService.getAllEntries().isEmpty());
         }
     }
 
