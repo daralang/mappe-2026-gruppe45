@@ -702,7 +702,9 @@ class GameServiceTest {
         @Test
         @DisplayName("executeForcedSale() throws IllegalStateException when game is over")
         void executeForcedSale_throwsWhenGameOver() {
+            // Arrange
             gameService.declareGameOver();
+            // Act & Assert
             assertThrows(IllegalStateException.class, () ->
                     gameService.executeForcedSale(List.of(), 1));
         }
@@ -808,6 +810,7 @@ class GameServiceTest {
         @Test
         @DisplayName("Should throw NullPointerException when offer is null")
         void throwsWhenOfferIsNull() {
+            // Act & Assert
             assertThrows(NullPointerException.class, () ->
                     gameService.takeLoan(null, new BigDecimal("100")));
         }
@@ -815,8 +818,10 @@ class GameServiceTest {
         @Test
         @DisplayName("Should throw NullPointerException when amount is null")
         void throwsWhenAmountIsNull() {
+            // Arrange
             LoanOffer offer = new LoanOffer("t", new BigDecimal("0.01"), 10,
                     new BigDecimal("9000.00"), LoanRiskLevel.LOW);
+            // Act & Assert
             assertThrows(NullPointerException.class, () ->
                     gameService.takeLoan(offer, null));
         }
@@ -829,6 +834,7 @@ class GameServiceTest {
         @Test
         @DisplayName("Should throw NullPointerException when loan is null")
         void throwsWhenLoanIsNull() {
+            // Act & Assert
             assertThrows(NullPointerException.class, () ->
                     gameService.repayLoan(null));
         }
@@ -841,6 +847,7 @@ class GameServiceTest {
         @Test
         @DisplayName("Should add a known stock to the player's watchlist")
         void addsKnownStockToWatchlist() {
+            // Act & Assert
             gameService.addToWatchlist("EQNR");
             assertTrue(gameService.getPlayer().isOnWatchlist("EQNR"));
         }
@@ -848,6 +855,7 @@ class GameServiceTest {
         @Test
         @DisplayName("Should be a no-op when the symbol does not exist on the exchange")
         void isNoOpForUnknownSymbol() {
+            // Act & Assert
             gameService.addToWatchlist("UNKNOWN");
             assertFalse(gameService.getPlayer().isOnWatchlist("UNKNOWN"));
         }
@@ -855,6 +863,7 @@ class GameServiceTest {
         @Test
         @DisplayName("Should throw NullPointerException when symbol is null")
         void throwsWhenSymbolIsNull() {
+            // Act & Assert
             assertThrows(NullPointerException.class, () ->
                     gameService.addToWatchlist(null));
         }
@@ -867,15 +876,19 @@ class GameServiceTest {
         @Test
         @DisplayName("Should remove a watchlisted stock from the player's watchlist")
         void removesWatchlistedStock() {
+            // Arrange
             gameService.addToWatchlist("EQNR");
             assertTrue(gameService.getPlayer().isOnWatchlist("EQNR"));
+            // Act
             gameService.removeFromWatchlist("EQNR");
+            // Assert
             assertFalse(gameService.getPlayer().isOnWatchlist("EQNR"));
         }
 
         @Test
         @DisplayName("Should throw NullPointerException when symbol is null")
         void throwsWhenSymbolIsNull() {
+            // Act & Assert
             assertThrows(NullPointerException.class, () ->
                     gameService.removeFromWatchlist(null));
         }
@@ -888,8 +901,11 @@ class GameServiceTest {
         @Test
         @DisplayName("Should update the note for a watchlisted stock")
         void updatesNoteForWatchlistedStock() {
+            // Arrange
             gameService.addToWatchlist("EQNR");
+            // Act
             gameService.updateWatchlistNote("EQNR", "my note");
+            // Assert
             String note = gameService.getPlayer().getWatchlist().stream()
                     .filter(e -> e.symbol().equals("EQNR"))
                     .findFirst()
@@ -901,6 +917,7 @@ class GameServiceTest {
         @Test
         @DisplayName("Should throw NullPointerException when symbol is null")
         void throwsWhenSymbolIsNull() {
+            // Act & Assert
             assertThrows(NullPointerException.class, () ->
                     gameService.updateWatchlistNote(null, "note"));
         }
@@ -937,6 +954,7 @@ class GameServiceTest {
         @Test
         @DisplayName("Should record an ACTIVE entry for the current player")
         void recordsActiveEntryForCurrentPlayer() {
+            // Act & Assert
             gameService.recordLeaderboardEntry();
             assertEquals(1, lbService.getAllEntries().size());
             assertEquals(Outcome.ACTIVE, lbService.getAllEntries().get(0).outcome());
@@ -945,8 +963,11 @@ class GameServiceTest {
         @Test
         @DisplayName("Should be a no-op when no game is active")
         void isNoOpWhenNoGameIsActive() {
+            // Arrange
             GameService fresh = new GameService(lbService);
+            // Act
             fresh.recordLeaderboardEntry();
+            // Assert
             assertTrue(lbService.getAllEntries().isEmpty());
         }
     }
