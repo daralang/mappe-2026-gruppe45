@@ -104,8 +104,8 @@ class WatchlistRowRenderer extends RowRenderer {
         GridPane.setValignment(highLowLabel, VPos.TOP);
         GridPane.setValignment(sparkline, VPos.TOP);
         GridPane.setValignment(actions, VPos.TOP);
-        GridPane.setValignment(noteButton, VPos.TOP);
-        GridPane.setValignment(removeButton, VPos.TOP);
+        GridPane.setValignment(noteButton, VPos.CENTER);
+        GridPane.setValignment(removeButton, VPos.CENTER);
 
         Node[] cells = {tickerLabel, companyLabel, currencyLabel, priceAltLabel, priceNokLabel,
                 changeNokLabel, changePctLabel, highLowLabel, sparkline,
