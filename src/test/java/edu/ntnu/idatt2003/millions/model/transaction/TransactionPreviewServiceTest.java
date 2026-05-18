@@ -363,6 +363,18 @@ class TransactionPreviewServiceTest {
         }
 
         @Test
+        @DisplayName("Should throw IllegalArgumentException when quantity exceeds the owned position")
+        void throwsWhenQuantityExceedsOwnedPosition() {
+            // Arrange — share holds qty=10; attempting to preview selling 11 is impossible
+            Stock stock = nokStock("100");
+            Share sh = share(stock, "10", "100");
+
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class,
+                    () -> service.previewSale(sh, new BigDecimal("11"), player, converter));
+        }
+
+        @Test
         @DisplayName("Should throw NullPointerException when share is null")
         void throwsWhenShareIsNull() {
             // Act & Assert
