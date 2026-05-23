@@ -11,7 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,21 +34,6 @@ class KeyboardNavigationServiceTest {
     @BeforeEach
     void setUp() {
         service = new KeyboardNavigationService();
-    }
-
-    /**
-     * Invokes the private onKeyPressed method directly so dispatch
-     * logic can be tested without attaching to a live {@link javafx.scene.Scene}.
-     */
-    private static void dispatch(KeyboardNavigationService service, KeyEvent event) {
-        try {
-            Method method = KeyboardNavigationService.class
-                    .getDeclaredMethod("onKeyPressed", KeyEvent.class);
-            method.setAccessible(true);
-            method.invoke(service, event);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private static KeyEvent shiftKey(KeyCode code) {
@@ -134,7 +118,7 @@ class KeyboardNavigationServiceTest {
             service.universalShortcuts().register(shiftCombo(KeyCode.A), () -> fired.set(true));
 
             service.detach();
-            dispatch(service, shiftKey(KeyCode.A));
+            service.fireKeyEvent(shiftKey(KeyCode.A));
 
             assertFalse(fired.get());
         }
@@ -146,7 +130,7 @@ class KeyboardNavigationServiceTest {
             service.globalShortcuts().register(shiftCombo(KeyCode.A), () -> fired.set(true));
 
             service.detach();
-            dispatch(service, shiftKey(KeyCode.A));
+            service.fireKeyEvent(shiftKey(KeyCode.A));
 
             assertFalse(fired.get());
         }
@@ -346,7 +330,7 @@ class KeyboardNavigationServiceTest {
     }
 
     @Nested
-    @DisplayName("dispatch order — onKeyPressed()")
+    @DisplayName("dispatch order fireKeyEvent()")
     class DispatchOrder {
 
         @Test
@@ -355,7 +339,7 @@ class KeyboardNavigationServiceTest {
             AtomicBoolean fired = new AtomicBoolean(false);
             service.universalShortcuts().register(shiftCombo(KeyCode.A), () -> fired.set(true));
 
-            dispatch(service, shiftKey(KeyCode.A));
+            service.fireKeyEvent(shiftKey(KeyCode.A));
 
             assertTrue(fired.get());
         }
@@ -367,7 +351,7 @@ class KeyboardNavigationServiceTest {
             service.universalShortcuts().register(shiftCombo(KeyCode.A), () -> fired.set(true));
             service.pushContext(new RecordingContext(true));
 
-            dispatch(service, shiftKey(KeyCode.A));
+            service.fireKeyEvent(shiftKey(KeyCode.A));
 
             assertTrue(fired.get());
         }
@@ -382,7 +366,7 @@ class KeyboardNavigationServiceTest {
                 return true;
             });
 
-            dispatch(service, shiftKey(KeyCode.A));
+            service.fireKeyEvent(shiftKey(KeyCode.A));
 
             assertFalse(contextCalled.get());
         }
@@ -393,7 +377,7 @@ class KeyboardNavigationServiceTest {
             AtomicBoolean fired = new AtomicBoolean(false);
             service.globalShortcuts().register(shiftCombo(KeyCode.B), () -> fired.set(true));
 
-            dispatch(service, shiftKey(KeyCode.B));
+            service.fireKeyEvent(shiftKey(KeyCode.B));
 
             assertTrue(fired.get());
         }
@@ -405,7 +389,7 @@ class KeyboardNavigationServiceTest {
             service.globalShortcuts().register(shiftCombo(KeyCode.B), () -> globalFired.set(true));
             service.pushContext(new RecordingContext(true));
 
-            dispatch(service, shiftKey(KeyCode.B));
+            service.fireKeyEvent(shiftKey(KeyCode.B));
 
             assertFalse(globalFired.get());
         }
@@ -417,7 +401,7 @@ class KeyboardNavigationServiceTest {
             service.globalShortcuts().register(shiftCombo(KeyCode.B), () -> globalFired.set(true));
             service.pushContext(new RecordingContext(false));
 
-            dispatch(service, shiftKey(KeyCode.B));
+            service.fireKeyEvent(shiftKey(KeyCode.B));
 
             assertTrue(globalFired.get());
         }
@@ -430,7 +414,7 @@ class KeyboardNavigationServiceTest {
             service.universalShortcuts().register(shiftCombo(KeyCode.A), () -> universalFired.set(true));
             service.globalShortcuts().register(shiftCombo(KeyCode.B), () -> globalFired.set(true));
 
-            dispatch(service, shiftKey(KeyCode.C));
+            service.fireKeyEvent(shiftKey(KeyCode.C));
 
             assertFalse(universalFired.get());
             assertFalse(globalFired.get());
@@ -444,7 +428,7 @@ class KeyboardNavigationServiceTest {
             service.pushContext(event -> { bottomCalled.set(true); return true; });
             service.pushContext(event -> { topCalled.set(true); return true; });
 
-            dispatch(service, shiftKey(KeyCode.A));
+            service.fireKeyEvent(shiftKey(KeyCode.A));
 
             assertTrue(topCalled.get());
             assertFalse(bottomCalled.get());
@@ -460,7 +444,7 @@ class KeyboardNavigationServiceTest {
             service.pushContext(top);
 
             service.popContext(top);
-            dispatch(service, shiftKey(KeyCode.A));
+            service.fireKeyEvent(shiftKey(KeyCode.A));
 
             assertTrue(bottomCalled.get());
         }
@@ -473,8 +457,8 @@ class KeyboardNavigationServiceTest {
             service.universalShortcuts().register(shiftCombo(KeyCode.A), () -> universalFired.set(true));
             service.globalShortcuts().register(shiftCombo(KeyCode.B), () -> globalFired.set(true));
 
-            dispatch(service, shiftKey(KeyCode.A));
-            dispatch(service, shiftKey(KeyCode.B));
+            service.fireKeyEvent(shiftKey(KeyCode.A));
+            service.fireKeyEvent(shiftKey(KeyCode.B));
 
             assertTrue(universalFired.get());
             assertTrue(globalFired.get());
@@ -488,7 +472,7 @@ class KeyboardNavigationServiceTest {
             service.universalShortcuts().register(shiftCombo(KeyCode.A), () -> universalFired.set(true));
             service.globalShortcuts().register(shiftCombo(KeyCode.A), () -> globalFired.set(true));
 
-            dispatch(service, shiftKey(KeyCode.A));
+            service.fireKeyEvent(shiftKey(KeyCode.A));
 
             assertTrue(universalFired.get());
             assertFalse(globalFired.get());
