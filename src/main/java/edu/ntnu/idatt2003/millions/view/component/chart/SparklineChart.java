@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.component;
+package edu.ntnu.idatt2003.millions.view.component.chart;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;

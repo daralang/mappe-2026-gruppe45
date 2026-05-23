@@ -7,23 +7,20 @@ import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.InfoTooltip;
+import edu.ntnu.idatt2003.millions.view.component.chart.TimeSeriesChart;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.WidgetCard;
-import javafx.collections.ListChangeListener;
 import javafx.geometry.Pos;
-import javafx.scene.chart.AreaChart;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
 import javafx.scene.layout.HBox;
-import javafx.util.StringConverter;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Widget card displaying the player's net worth over time as an area chart.
  * Also shows total change in value and percentage since the start of the game.
+ *
+ * <p>Graph rendering is delegated to {@link StockPriceChart}, which owns all
+ * chart configuration and data management.
  */
 public class NetWorthCard extends WidgetCard {
 
@@ -31,58 +28,21 @@ public class NetWorthCard extends WidgetCard {
     private final PlayerStatsService statsService = new PlayerStatsService();
     private final StyledText netWorthLabel = StyledText.widgetValue();
     private final StyledText changeLabel = StyledText.widgetChange();
-    private final NumberAxis xAxis;
-    private final XYChart.Series<Number, Number> series;
+    private final TimeSeriesChart chart;
 
+    /**
+     * Constructs a {@code NetWorthCard} pre-loaded with the player's existing net-worth history.
+     *
+     * @param gameService the game service used to read player state and currency conversion;
+     *                    must not be {@code null}
+     */
     public NetWorthCard(GameService gameService) {
         super(gameService, "dashboard.netWorth");
         this.gameService = gameService;
 
-        int historySize = gameService.getPlayer().getNetWorthHistory().size();
-
-        xAxis = new NumberAxis();
-        xAxis.setLabel(LanguageManager.get("app.week").toUpperCase());
-        xAxis.setAutoRanging(false);
-        xAxis.setForceZeroInRange(false);
-        xAxis.setLowerBound(1);
-        xAxis.setUpperBound(Math.max(2, historySize));
-        xAxis.setTickUnit(1);
-        xAxis.setTickLabelFormatter(new StringConverter<>() {
-            @Override
-            public String toString(Number n) {
-                double v = n.doubleValue();
-                return v == Math.floor(v) ? String.valueOf((int) v) : "";
-            }
-            @Override
-            public Number fromString(String s) { return null; }
-        });
-
-        NumberAxis yAxis = new NumberAxis();
-        yAxis.setAutoRanging(true);
-        yAxis.setForceZeroInRange(false);
-        yAxis.setTickLabelFormatter(new StringConverter<>() {
-            @Override
-            public String toString(Number n) {
-                return String.format(Locale.of("no"), "%,.0f", n.doubleValue());
-            }
-            @Override
-            public Number fromString(String s) { return null; }
-        });
-
-        series = new XYChart.Series<>();
-        series.getData().addListener((ListChangeListener<XYChart.Data<Number, Number>>) change -> {
-            while (change.next()) {
-                change.getAddedSubList().forEach(d -> {
-                    if (d.getNode() != null) d.getNode().setVisible(false);
-                });
-            }
-        });
-
-        AreaChart<Number, Number> chart = new AreaChart<>(xAxis, yAxis);
-        chart.getData().add(series);
-        chart.setLegendVisible(false);
-        chart.setAnimated(false);
-        chart.getStyleClass().add("area-chart");
+        chart = new TimeSeriesChart(
+                gameService.getPlayer().getNetWorthHistory(),
+                LanguageManager.get("app.week").toUpperCase());
 
         InfoTooltip infoTooltip = new InfoTooltip("tooltip.dashboard.netWorth");
         HBox titleRow = new HBox(5, titleLabel, infoTooltip);
@@ -90,25 +50,7 @@ public class NetWorthCard extends WidgetCard {
         infoTooltip.attachToParent(titleRow);
         getChildren().addAll(titleRow, netWorthLabel, changeLabel, chart);
 
-        loadHistory();
-        updateXAxis();
         refreshDisplay();
-    }
-
-    private void loadHistory() {
-        List<BigDecimal> history = gameService.getPlayer().getNetWorthHistory();
-        for (int i = 0; i < history.size(); i++) {
-            series.getData().add(new XYChart.Data<>(i + 1, history.get(i).doubleValue()));
-        }
-    }
-
-    private void updateXAxis() {
-        int weeks = series.getData().size();
-        xAxis.setAutoRanging(false);
-        xAxis.setLowerBound(1);
-        xAxis.setUpperBound(Math.max(2, weeks) + 0.5);
-        xAxis.setTickUnit(1);
-        xAxis.requestAxisLayout();
     }
 
     /**
@@ -133,16 +75,15 @@ public class NetWorthCard extends WidgetCard {
 
     /**
      * Called when the game state has changed.
-     * Adds a new data point to the chart, extends the x-axis and refreshes the display.
+     * Appends a new data point to the chart via {@link StockPriceChart#addPoint(BigDecimal)}
+     * and refreshes the displayed labels.
      * Overrides {@link WidgetCard#onGameUpdated()} because this card has additional
      * update logic (chart point) beyond just refreshing text.
      */
     @Override
     public void onGameUpdated() {
-        int nextPoint = series.getData().size() + 1;
-        double netWorth = statsService.getNetWorth(gameService.getPlayer(), gameService.getCurrencyConverter()).doubleValue();
-        series.getData().add(new XYChart.Data<>(nextPoint, netWorth));
-        updateXAxis();
+        BigDecimal netWorth = statsService.getNetWorth(gameService.getPlayer(), gameService.getCurrencyConverter());
+        chart.addPoint(netWorth);
         refreshDisplay();
     }
 }
