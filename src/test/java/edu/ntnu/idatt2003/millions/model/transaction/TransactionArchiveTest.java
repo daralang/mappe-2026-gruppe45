@@ -401,6 +401,159 @@ class TransactionArchiveTest {
         }
     }
 
+    @Nested
+    @DisplayName("getTransactionsInRange()")
+    class GetTransactionsInRange {
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when fromWeek is zero")
+        void throwsWhenFromWeekIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getTransactionsInRange(0, 5));
+        }
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when fromWeek is negative")
+        void throwsWhenFromWeekIsNegative() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.getTransactionsInRange(-1, 5));
+        }
+
+        @Test
+        @DisplayName("Should return only transactions within the requested week range")
+        void returnsOnlyTransactionsInRange() {
+            // Arrange — transactions at weeks 1, 2, 3; request [2, 3]
+            // week 1 is below fromWeek=2 and must be excluded → 2 results
+            Purchase week1 = new Purchase(share, 1);
+            Purchase week2 = new Purchase(share, 2);
+            Purchase week3 = new Purchase(share, 3);
+            archive.add(week1);
+            archive.add(week2);
+            archive.add(week3);
+            // Act
+            List<Transaction> result = archive.getTransactionsInRange(2, 3);
+            // Assert
+            assertEquals(2, result.size());
+            assertTrue(result.contains(week2));
+            assertTrue(result.contains(week3));
+            assertFalse(result.contains(week1));
+        }
+
+        @Test
+        @DisplayName("Should return transactions in cross-week order, earlier weeks first")
+        void returnsTransactionsInCrossWeekOrder() {
+            // Arrange — add week 3 before week 1 (insertion order reversed) to prove
+            // result order follows week number, not insertion order
+            Purchase week3 = new Purchase(share, 3);
+            Purchase week1 = new Purchase(share, 1);
+            archive.add(week3);
+            archive.add(week1);
+            // Act
+            List<Transaction> result = archive.getTransactionsInRange(1, 3);
+            // Assert — week 1 transaction must appear before week 3 transaction
+            assertTrue(result.indexOf(week1) < result.indexOf(week3));
+        }
+
+        @Test
+        @DisplayName("Should return empty list when toWeek is less than fromWeek")
+        void returnsEmptyListWhenRangeIsInverted() {
+            // Arrange — archive has a transaction but inverted range [5, 3] matches none
+            archive.add(new Purchase(share, 4));
+            // Act & Assert
+            assertTrue(archive.getTransactionsInRange(5, 3).isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should return a fresh mutable copy independent of archive state")
+        void returnedListIsFreshMutableCopy() {
+            // Arrange — one transaction in week 1
+            archive.add(new Purchase(share, 1));
+            // Act — retrieve and immediately clear the returned list
+            List<Transaction> result = archive.getTransactionsInRange(1, 1);
+            result.clear();
+            // Assert — archive must be unaffected; a second call still returns 1 transaction
+            assertEquals(1, archive.getTransactionsInRange(1, 1).size());
+        }
+    }
+
+    @Nested
+    @DisplayName("countPurchasesInRange()")
+    class CountPurchasesInRange {
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when fromWeek is invalid")
+        void throwsWhenFromWeekIsInvalid() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.countPurchasesInRange(0, 5));
+        }
+
+        @Test
+        @DisplayName("Should count only purchases, not sales, in the requested range")
+        void countsOnlyPurchasesInRange() {
+            // Arrange — 2 purchases (weeks 2, 3) + 1 sale (week 2) in range [2, 3]
+            // only purchases count → expected result: 2
+            Share saleShare = makeShare("NKE", new BigDecimal("100.00"), new BigDecimal("50.00"));
+            archive.add(new Purchase(share, 2));
+            archive.add(new Purchase(share, 3));
+            archive.add(new Sale(saleShare, 2));
+            // Act
+            int result = archive.countPurchasesInRange(2, 3);
+            // Assert
+            assertEquals(2, result);
+        }
+
+        @Test
+        @DisplayName("Should return zero when toWeek is less than fromWeek")
+        void returnsZeroWhenRangeIsInverted() {
+            // Arrange — archive has purchases but inverted range [4, 2] matches none
+            archive.add(new Purchase(share, 3));
+            // Act & Assert
+            assertEquals(0, archive.countPurchasesInRange(4, 2));
+        }
+    }
+
+    @Nested
+    @DisplayName("countSalesInRange()")
+    class CountSalesInRange {
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when fromWeek is invalid")
+        void throwsWhenFromWeekIsInvalid() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    archive.countSalesInRange(0, 5));
+        }
+
+        @Test
+        @DisplayName("Should count only sales, not purchases, in the requested range")
+        void countsOnlySalesInRange() {
+            // Arrange — 1 purchase (week 2) + 2 sales (weeks 2, 3) in range [2, 3]
+            // only sales count → expected result: 2
+            Share saleShare1 = makeShare("NKE", new BigDecimal("100.00"), new BigDecimal("50.00"));
+            Share saleShare2 = makeShare("AAPL", new BigDecimal("150.00"), new BigDecimal("80.00"));
+            archive.add(new Purchase(share, 2));
+            archive.add(new Sale(saleShare1, 2));
+            archive.add(new Sale(saleShare2, 3));
+            // Act
+            int result = archive.countSalesInRange(2, 3);
+            // Assert
+            assertEquals(2, result);
+        }
+
+        @Test
+        @DisplayName("Should return zero when toWeek is less than fromWeek")
+        void returnsZeroWhenRangeIsInverted() {
+            // Arrange — archive has sales but inverted range [4, 2] matches none
+            Share saleShare = makeShare("NKE", new BigDecimal("100.00"), new BigDecimal("50.00"));
+            archive.add(new Sale(saleShare, 3));
+            // Act & Assert
+            assertEquals(0, archive.countSalesInRange(4, 2));
+        }
+    }
+
     private static Share makeShare(String symbol, BigDecimal salesPrice, BigDecimal purchasePrice) {
         return new Share(
                 new Stock(symbol, "Test Co",
