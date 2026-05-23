@@ -171,9 +171,8 @@ public class MainView {
      */
     public void showDashboard() {
         if (dashboardScrollable == null) {
-            WeekBar dashboardWeekBar = new WeekBar(gameService, onAdvanceWeek);
             dashboardView = new DashboardView(
-                    gameService, tradeController, loanController, dashboardWeekBar, this::showExchangeOnStocksTab);
+                    gameService, tradeController, loanController, createWeekBar(), this::showExchangeOnStocksTab);
             dashboardScrollable = wrapScrollable(dashboardView);
         }
         searchFocusRegistry.setActive(dashboardView);
@@ -200,8 +199,7 @@ public class MainView {
      */
     public void showLeaderboard() {
         if (leaderboardScrollable == null) {
-            WeekBar leaderboardWeekBar = new WeekBar(gameService, onAdvanceWeek);
-            leaderboardView = new LeaderboardView(gameService, toastService, leaderboardWeekBar);
+            leaderboardView = new LeaderboardView(gameService, toastService, createWeekBar());
             leaderboardScrollable = wrapScrollable(leaderboardView);
         }
         searchFocusRegistry.setActive(leaderboardView);
@@ -227,10 +225,20 @@ public class MainView {
      */
     private void ensureExchangeView() {
         if (exchangeScrollable == null) {
-            WeekBar exchangeWeekBar = new WeekBar(gameService, onAdvanceWeek);
-            exchangeView = new ExchangeView(gameService, exchangeWeekBar, tradeController);
+            exchangeView = new ExchangeView(gameService, createWeekBar(), tradeController);
             exchangeScrollable = wrapScrollable(exchangeView);
         }
+    }
+
+    /**
+     * Creates a new {@link WeekBar} bound to the current game service and advance-week callback.
+     * Each top-level view owns its own instance to avoid JavaFX node-stealing,
+     * since a node can only belong to one parent at a time.
+     *
+     * @return a new {@link WeekBar} instance
+     */
+    private WeekBar createWeekBar() {
+        return new WeekBar(gameService, onAdvanceWeek);
     }
 
     /**
