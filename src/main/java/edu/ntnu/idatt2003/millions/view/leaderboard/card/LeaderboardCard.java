@@ -40,6 +40,7 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
     private final LeaderboardSort sort = new LeaderboardSort();
     private final ToastService toastService;
     private Button pushScoreBtn;
+    private SearchBar ownSearchBar;
 
     /**
      * Constructs a new LeaderboardCard.
@@ -79,11 +80,21 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
 
     @Override
     protected HBox buildSearchRow(Button clearSortButton) {
-        SearchBar searchBar = new SearchBar(
+        ownSearchBar = new SearchBar(
                 "leaderboard.search.placeholder", "search.button", searchCallback(), metadataRow);
-        HBox row = new HBox(36, searchBar, pushScoreBtn, clearSortButton);
+        HBox row = new HBox(36, ownSearchBar, pushScoreBtn, clearSortButton);
         row.setAlignment(Pos.TOP_LEFT);
         return row;
+    }
+
+    /**
+     * Focuses the leaderboard search field.
+     */
+    @Override
+    public void focusSearch() {
+        if (ownSearchBar != null) {
+            ownSearchBar.focus();
+        }
     }
 
     @Override

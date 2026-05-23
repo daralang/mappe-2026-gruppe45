@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.leaderboard;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.leaderboard.card.LeaderboardCard;
@@ -20,7 +21,9 @@ import javafx.scene.layout.VBox;
  * via {@link edu.ntnu.idatt2003.millions.observer.GameObserver} callbacks wired
  * inside the card.</p>
  */
-public class LeaderboardView extends VBox {
+public class LeaderboardView extends VBox implements SearchFocusProvider {
+
+    private final LeaderboardCard card;
 
     /**
      * Constructs a new LeaderboardView.
@@ -40,10 +43,18 @@ public class LeaderboardView extends VBox {
         HBox.setHgrow(weekBar, Priority.ALWAYS);
         titleRow.setAlignment(Pos.CENTER_LEFT);
 
-        LeaderboardCard card = new LeaderboardCard(gameService, toastService);
+        card = new LeaderboardCard(gameService, toastService);
         VBox.setVgrow(card, Priority.ALWAYS);
         VBox.setMargin(card, new Insets(10, 0, 0, 0));
 
         getChildren().addAll(titleRow, card);
+    }
+
+    /**
+     * Focuses the leaderboard search field.
+     */
+    @Override
+    public void focusSearch() {
+        card.focusSearch();
     }
 }

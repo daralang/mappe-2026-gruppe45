@@ -3,11 +3,12 @@ package edu.ntnu.idatt2003.millions.view.component;
 import edu.ntnu.idatt2003.millions.util.CurrencyManager;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.util.StringConverter;
 
 import java.util.Currency;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * A reusable currency selector component.
@@ -17,6 +18,10 @@ import java.util.Objects;
  * automatically so the chosen currency applies across the entire application.
  *
  * <p>Follows the same component pattern as {@link LanguagePicker}.
+ *
+ * <p>In addition to the built-in Space and Down-Arrow shortcuts provided by
+ * JavaFX's {@code ComboBoxBaseBehavior}, this component also opens the popup
+ * when the user presses Enter, matching the OS-native dropdown convention.
  *
  * <p>Example usage:
  * <pre>
@@ -30,6 +35,10 @@ public class CurrencySelector extends ComboBox<Currency> {
      * Creates a currency selector populated with all currencies
      * defined in {@link edu.ntnu.idatt2003.millions.util.SupportedCurrency}.
      * Defaults to the currency currently active in {@link CurrencyManager}.
+     *
+     * <p>Registers an {@link KeyEvent#KEY_PRESSED} handler so that pressing
+     * Enter while the selector is focused opens the popup, matching the
+     * OS-native dropdown convention (Space is already handled by JavaFX).
      */
     public CurrencySelector() {
         List<Currency> currencies = CurrencyManager.getSupportedCurrencies();
@@ -40,6 +49,12 @@ public class CurrencySelector extends ComboBox<Currency> {
         setOnAction(e -> {
             if (getValue() != null) {
                 CurrencyManager.setCurrency(getValue());
+            }
+        });
+        addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.ENTER && !isShowing()) {
+                show();
+                event.consume();
             }
         });
     }

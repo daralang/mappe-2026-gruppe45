@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
 import edu.ntnu.idatt2003.millions.view.component.card.PortfolioValueCard;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.card.StocksInvestedCard;
@@ -15,9 +16,14 @@ import javafx.scene.layout.VBox;
  * View for the exchange stocks tab.
  *
  * <p>Assembles four portfolio summary cards and a sortable, searchable,
- * paginated {@link StocksCard}.
+ * paginated {@link StocksCard}.</p>
+ *
+ * <p>Implements {@link SearchFocusProvider} to support {@code Cmd/Ctrl+F}
+ * by delegating to the {@link StocksCard} search field.</p>
  */
-public class StocksView extends VBox {
+public class StocksView extends VBox implements SearchFocusProvider {
+
+    private final StocksCard stocksCard;
 
     /**
      * Constructs a new StocksView.
@@ -29,9 +35,17 @@ public class StocksView extends VBox {
         setSpacing(16);
 
         HBox summaryCards = createSummaryCards(gameService);
-        StocksCard stocksCard = new StocksCard(gameService, controller);
+        stocksCard = new StocksCard(gameService, controller);
 
         getChildren().addAll(summaryCards, stocksCard);
+    }
+
+    /**
+     * Focuses the stocks search field.
+     */
+    @Override
+    public void focusSearch() {
+        stocksCard.focusSearch();
     }
 
     private HBox createSummaryCards(GameService gameService) {

@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.PortfolioService;
+import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.card.AvailableFundsCard;
 import edu.ntnu.idatt2003.millions.view.component.card.PortfolioValueCard;
 import edu.ntnu.idatt2003.millions.view.component.ExploreStocksButton;
@@ -15,8 +16,13 @@ import javafx.scene.layout.VBox;
  * The portfolio tab view displayed under the dashboard.
  * Shows net worth with chart, weekly performance, available funds,
  * portfolio value, player status, and the player's holdings.
+ *
+ * <p>Implements {@link SearchFocusProvider} to support the {@code Cmd/Ctrl+F}
+ * shortcut by delegating to the {@link HoldingsCard} search field.</p>
  */
-public class PortfolioView extends VBox {
+public class PortfolioView extends VBox implements SearchFocusProvider {
+
+    private final HoldingsCard holdingsCard;
 
     /**
      * Constructs a new PortfolioView.
@@ -31,12 +37,20 @@ public class PortfolioView extends VBox {
         setSpacing(16);
 
         HBox topRow = buildTopRow(gameService);
-        HoldingsCard holdingsCard = new HoldingsCard(gameService, controller, new PortfolioService());
+        holdingsCard = new HoldingsCard(gameService, controller, new PortfolioService());
         ExploreStocksButton exploreButton = new ExploreStocksButton(onExploreStocks);
         exploreButton.setMaxWidth(Double.MAX_VALUE);
         RealizedReturnsCard realizedReturnsCard = new RealizedReturnsCard(gameService);
 
         getChildren().addAll(topRow, holdingsCard, exploreButton, realizedReturnsCard);
+    }
+
+    /**
+     * Focuses the holdings search field.
+     */
+    @Override
+    public void focusSearch() {
+        holdingsCard.focusSearch();
     }
 
     private HBox buildTopRow(GameService gameService) {

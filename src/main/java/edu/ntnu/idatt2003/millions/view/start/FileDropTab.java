@@ -7,6 +7,8 @@ import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
@@ -98,6 +100,12 @@ public abstract class FileDropTab extends VBox {
             clearFeedback();
             if (onAction != null) {
                 onAction.run();
+            }
+        });
+        actionButton.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                actionButton.fire();
+                event.consume();
             }
         });
     }

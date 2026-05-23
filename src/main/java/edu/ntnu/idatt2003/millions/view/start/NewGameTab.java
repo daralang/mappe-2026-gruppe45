@@ -58,7 +58,7 @@ public class NewGameTab extends FileDropTab {
         capitalField = new TextField();
         capitalField.setTooltip(capitalTooltip);
         currencySelector = new CurrencySelector();
-        currencySelector.setDisable(false);
+        currencySelector.setDisable(true);
 
         Stream.of(nameField, capitalField).forEach(f -> f.getStyleClass().add("start-field"));
 
@@ -139,6 +139,15 @@ public class NewGameTab extends FileDropTab {
         nameField.setPromptText(LanguageManager.get("start.new.namePlaceholder"));
         capitalField.setPromptText(LanguageManager.get("start.new.capitalPlaceholder"));
         capitalTooltip.setText(LanguageManager.get("start.new.capitalTooltip"));
+    }
+
+    /**
+     * Requests keyboard focus on the first input field (player name).
+     * Called by {@link edu.ntnu.idatt2003.millions.view.StartView#focusFirstInput()}
+     * so the start screen is immediately keyboard-operable without a mouse click.
+     */
+    public void focusFirstInput() {
+        nameField.requestFocus();
     }
 
     /**
