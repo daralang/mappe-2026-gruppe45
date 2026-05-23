@@ -7,7 +7,6 @@ import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;
 import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
-import edu.ntnu.idatt2003.millions.view.component.Header;
 import edu.ntnu.idatt2003.millions.view.component.toast.ToastOverlay;
 import edu.ntnu.idatt2003.millions.view.component.StatusFooter;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
@@ -31,9 +30,17 @@ import javafx.stage.Stage;
  * between different views depending on user navigation.
  *
  * <p>Navigation between Dashboard, Exchange and Leaderboard is handled
- * internally as purely visual state. The {@link DashboardView} is cached
- * so that sub-views survive tab switches and keyboard shortcuts
- * (Shift+1–4) can jump directly to a dashboard tab.</p>
+ * internally as purely visual state. All three top-level views are cached
+ * after their first creation so that sub-view state (active tab, scroll
+ * position) survives navigation, and keyboard shortcuts (Shift+1–4) can
+ * jump directly to a dashboard tab.</p>
+ *
+ * <p>Each view owns its own {@link WeekBar} instance. Because a JavaFX node
+ * can only have one parent at a time, sharing a single instance across views
+ * would cause it to disappear from whichever view last lost focus. Giving
+ * each view its own instance avoids this node-stealing issue without
+ * requiring any cleanup logic, since all three views live for the entire
+ * application lifetime.</p>
  *
  * <p>Notifies the injected {@link SearchFocusRegistry} whenever the active
  * view changes, so the {@code Cmd/Ctrl+F} shortcut registered in
@@ -49,15 +56,19 @@ public class MainView {
     private final TradeController tradeController;
     private final LoanController loanController;
     private final ToastService toastService;
+    private final Runnable onAdvanceWeek;
     private final SearchFocusRegistry searchFocusRegistry;
     private final TabNavigationRegistry tabNavigationRegistry;
     private final StackPane outerRoot;
     private final BorderPane content;
-    private final WeekBar weekBar;
     private final StatusFooter footer;
 
     private DashboardView dashboardView;
     private ScrollPane dashboardScrollable;
+    private ExchangeView exchangeView;
+    private ScrollPane exchangeScrollable;
+    private LeaderboardView leaderboardView;
+    private ScrollPane leaderboardScrollable;
 
     /**
      * Constructs a new MainView with a platform-appropriate title bar and
@@ -85,9 +96,9 @@ public class MainView {
         this.tradeController = tradeController;
         this.loanController = loanController;
         this.toastService = toastService;
+        this.onAdvanceWeek = onAdvanceWeek;
         this.searchFocusRegistry = searchFocusRegistry;
         this.tabNavigationRegistry = tabNavigationRegistry;
-        this.weekBar = new WeekBar(gameService, onAdvanceWeek);
         titleBar.setOnDashboard(this::showDashboard);
         titleBar.setOnExchange(this::showExchange);
         titleBar.setOnLeaderboard(this::showLeaderboard);
@@ -156,12 +167,13 @@ public class MainView {
     /**
      * Switches the content area to the dashboard view.
      * The {@link DashboardView} is created once and reused on subsequent calls
-     * so sub-view state (lazy init, scroll position) survives navigation.
+     * so sub-view state (active tab, scroll position) survives navigation.
      */
     public void showDashboard() {
         if (dashboardScrollable == null) {
+            WeekBar dashboardWeekBar = new WeekBar(gameService, onAdvanceWeek);
             dashboardView = new DashboardView(
-                    gameService, tradeController, loanController, weekBar, this::showExchangeOnStocksTab);
+                    gameService, tradeController, loanController, dashboardWeekBar, this::showExchangeOnStocksTab);
             dashboardScrollable = wrapScrollable(dashboardView);
         }
         searchFocusRegistry.setActive(dashboardView);
@@ -171,28 +183,54 @@ public class MainView {
 
     /**
      * Switches the content area to the exchange view.
+     * The {@link ExchangeView} is created once and reused on subsequent calls
+     * so sub-view state (active tab, scroll position) survives navigation.
      */
     public void showExchange() {
-        ExchangeView exchangeView = new ExchangeView(gameService, weekBar, tradeController);
+        ensureExchangeView();
         searchFocusRegistry.setActive(exchangeView);
         tabNavigationRegistry.setActive(exchangeView::showTab);
-        content.setCenter(wrapScrollable(exchangeView));
+        content.setCenter(exchangeScrollable);
     }
 
     /**
      * Switches the content area to the leaderboard view.
+     * The {@link LeaderboardView} is created once and reused on subsequent calls
+     * so sub-view state (scroll position) survives navigation.
      */
     public void showLeaderboard() {
-        LeaderboardView leaderboardView = new LeaderboardView(gameService, toastService, weekBar);
+        if (leaderboardScrollable == null) {
+            WeekBar leaderboardWeekBar = new WeekBar(gameService, onAdvanceWeek);
+            leaderboardView = new LeaderboardView(gameService, toastService, leaderboardWeekBar);
+            leaderboardScrollable = wrapScrollable(leaderboardView);
+        }
         searchFocusRegistry.setActive(leaderboardView);
         tabNavigationRegistry.setActive(null);
-        content.setCenter(wrapScrollable(leaderboardView));
+        content.setCenter(leaderboardScrollable);
     }
 
+    /**
+     * Switches the content area to the exchange view with the stocks tab pre-selected.
+     * Reuses the cached {@link ExchangeView} if it already exists.
+     */
     private void showExchangeOnStocksTab() {
-        ExchangeView exchangeView = new ExchangeView(gameService, weekBar, tradeController);
+        ensureExchangeView();
         exchangeView.selectStocksTab();
-        content.setCenter(wrapScrollable(exchangeView));
+        searchFocusRegistry.setActive(exchangeView);
+        tabNavigationRegistry.setActive(exchangeView::showTab);
+        content.setCenter(exchangeScrollable);
+    }
+
+    /**
+     * Lazily initialises the {@link ExchangeView} and its {@link WeekBar} on first use.
+     * Subsequent calls are no-ops.
+     */
+    private void ensureExchangeView() {
+        if (exchangeScrollable == null) {
+            WeekBar exchangeWeekBar = new WeekBar(gameService, onAdvanceWeek);
+            exchangeView = new ExchangeView(gameService, exchangeWeekBar, tradeController);
+            exchangeScrollable = wrapScrollable(exchangeView);
+        }
     }
 
     /**
