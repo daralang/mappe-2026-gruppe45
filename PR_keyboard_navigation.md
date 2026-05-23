@@ -1,106 +1,154 @@
-# feat: full keyboard navigation
+# feat: add full keyboard navigation
 
-## Overview
+## Summary
 
-This PR introduces a complete keyboard navigation system across the entire application.
-Before this PR, no views, dialogs, or screens had keyboard support. After this PR, the
-game can be played almost entirely from the keyboard.
+Before this PR, the application could only be used with a mouse. This PR adds
+keyboard support throughout the entire app — navigation between screens, opening
+and confirming dialogs, searching, and navigating lists and tables can now all be
+done from the keyboard alone.
 
----
-
-## New package: `keyboard/`
-
-All infrastructure is collected in a dedicated package that is independent of JavaFX
-scenes and views.
-
-| Class | Responsibility |
-|---|---|
-| `KeyboardNavigationService` | Central dispatcher. Installs a single `EventFilter` on the scene and routes events in priority order: universal → active context → global |
-| `ShortcutRegistry` | `LinkedHashMap`-based mapping from `KeyCombination` to action. Supports conditional actions (`BooleanSupplier`) that can let the event pass through |
-| `KeyboardContext` | Interface for modal isolation. Modals push themselves onto the context stack and pop on close, suppressing global shortcuts while the modal is open |
-| `ArrowKeyNavigator` | Generic arrow-key navigation for lists and tables. Supports `VERTICAL` and `HORIZONTAL` orientation, clamping, and wraparound |
-| `FocusRestorer` | Snapshot/restore of JavaFX focus across UI rebuilds. `wrap(scene, rebuild, fallback)` takes a snapshot, runs the rebuild, then restores focus |
-| `SearchFocusRegistry` | Delegates `Cmd/Ctrl+F` to the search field belonging to the currently visible view |
-| `TabNavigationRegistry` | Delegates `Shift+1–4` to the tab navigator of the currently active view |
-| `SearchFocusProvider` | Interface implemented by views that contain a search field |
+The implementation is built around a new `keyboard/` package that acts as the
+single source of truth for all keyboard behaviour. Everything routes through one
+central dispatcher, which means shortcuts are consistent, don't conflict with each
+other, and are automatically suppressed when a modal dialog is open.
 
 ---
 
-## Registered shortcuts
+## Architecture
 
-### Universal — active even when a modal is open
+All keyboard logic lives in the new `keyboard/` package and is independent of any
+specific screen or component. The key pieces are:
 
-| Shortcut | Action |
+- **`KeyboardNavigationService`** — the central dispatcher. One instance per screen
+  (start screen and main game each have their own). Receives every key press from the
+  scene and decides what to do with it. The owner controller is responsible for calling
+  `detach()` before navigating away from its screen; `bindToNode` also handles this
+  automatically when the scene graph is torn down.
+
+- **`ShortcutRegistry`** — a map from key combination to action. Supports conditional
+  actions that can choose to pass an event through (used for the Enter key, which fires
+  buttons but leaves text fields and dropdowns alone).
+
+- **`KeyboardContext`** — an interface for modal isolation. When a dialog opens, it
+  pushes itself onto a stack inside `KeyboardNavigationService`. While it is on the
+  stack, all global shortcuts are suppressed. When the dialog closes, it pops itself
+  and global shortcuts resume. This prevents shortcuts like `Cmd+Enter` (advance week)
+  from firing accidentally while a buy dialog is open.
+
+- **`ArrowKeyNavigator`** — reusable up/down or left/right navigation for any list or
+  table. Supports both clamping (stops at first/last item) and wraparound.
+
+- **`FocusRestorer`** — saves which element had focus before a UI rebuild, then
+  restores it afterwards. Used when dialogs open and close so focus returns to the
+  right place.
+
+- **`SearchFocusRegistry`** and **`TabNavigationRegistry`** — thin delegation layers
+  that forward `Cmd+F` and `Shift+1–4` to whichever view is currently visible, without
+  the shortcut registration needing to know anything about the view hierarchy.
+
+### Dispatch priority
+
+Every key press goes through three layers in order:
+
+1. **Universal shortcuts** — always fire, even inside a modal (e.g. Enter fires the
+   focused button)
+2. **Active context** — the top modal on the stack gets first refusal
+3. **Global shortcuts** — fire only when no modal is blocking them
+
+---
+
+## Shortcuts
+
+### Global — available from anywhere in the main game
+
+| Keys | Action |
 |---|---|
-| `Enter` | Fires the focused button (passes through in text fields and ComboBox) |
+| `Cmd/Ctrl + 1` | Go to Dashboard |
+| `Cmd/Ctrl + 2` | Go to Exchange |
+| `Cmd/Ctrl + 3` | Go to Leaderboard |
+| `Cmd/Ctrl + S` | Save game |
+| `Cmd/Ctrl + Enter` | Advance week |
+| `Cmd/Ctrl + F` | Focus search field in the active view |
+| `Shift + 1–4` | Switch between tabs in the active view |
 
-### Global — suppressed when a modal context is active
+### Universal — always active, even inside dialogs
 
-| Shortcut | Action |
+| Keys | Action |
 |---|---|
-| `Cmd/Ctrl+1` | Navigate to Dashboard |
-| `Cmd/Ctrl+2` | Navigate to Exchange |
-| `Cmd/Ctrl+3` | Navigate to Leaderboard |
-| `Cmd/Ctrl+S` | Save game |
-| `Cmd/Ctrl+Enter` | Advance week |
-| `Cmd/Ctrl+F` | Focus search field in the active view |
-| `Shift+1–4` | Navigate between tabs in the active view |
+| `Enter` | Fires the focused button (passes through in text fields and dropdowns) |
 
-### Per-context — only active in the relevant view or dialog
+### Navigation within views
 
-| Shortcut | Context | Action |
+| Keys | Where | Action |
 |---|---|---|
-| `←` / `→` | `ViewHeader` | Switch between Dashboard tabs |
-| `↑` / `↓` | `HoldingsCard` | Navigate rows in the holdings table |
-| `↑` / `↓` | `AvailableLoansCard` | Navigate available loans |
-| `Shift+1–2` | Start screen | Switch between New Game / Load Game tabs |
+| `← / →` | Dashboard tab bar | Switch between tabs |
+| `↑ / ↓` | Holdings table | Move between rows |
+| `↑ / ↓` | Available loans list | Move between loans |
 
 ### Start screen
 
-| Action | Behaviour |
+| Keys | Action |
 |---|---|
-| `Tab` | Navigates between name, capital, file zone, and start button |
-| `Enter` in name field | Jumps to capital field |
-| `Enter` in capital field | Fires the start button |
-| `Enter` / `Space` on currency selector | Opens the dropdown |
-| `Enter` / `Space` on file drop zone | Opens the file chooser |
+| `Tab` | Move between name, capital, file zone, and start button |
+| `Enter` in name field | Jump to capital field |
+| `Enter` in capital field | Fire the start button |
+| `Enter` or `Space` on currency selector | Open the dropdown |
+| `Shift + 1–2` | Switch between New Game and Load Game tabs |
 
 ### Dialogs
 
-| Dialog | Behaviour |
+All dialogs push a `KeyboardContext` when opened, which suppresses global shortcuts
+for the duration. When the dialog closes, the context is popped and shortcuts resume.
+
+| Keys | Action |
 |---|---|
-| Buy / Sell | `Enter` confirms, `Escape` closes, arrow keys in fields work normally |
-| Loan application | `Enter` in amount field confirms |
-| All modals | Push a `KeyboardContext` onto the stack — global shortcuts are suppressed while the modal is open |
-| All dialogs | Auto-focus on the first input field when opened |
+| `Enter` | Confirm |
+| `Escape` | Close / cancel |
+| Auto-focus | First input field receives focus when any dialog opens |
 
 ---
 
-## Bug fixes and refactoring
+## Bug fixes included in this PR
 
-- **Memory leak** — `bindToNode` now removes the `sceneProperty` listener in `detach()` so nothing holds a reference to the scene after navigation
-- **Event filter leak** — the `EventHandler` reference is stored and removed explicitly rather than using a lambda directly on `removeEventFilter`
-- **Tab order** — the clear button in `SearchBar` is excluded from tab traversal when hidden
-- **Tab indicator** — now synchronised correctly on keyboard navigation (previously only updated on mouse click)
-- **`detach()` on screen transition** — `KeyboardNavigationService` is reset before navigating to the start screen to prevent double registration
-- **`SearchFocusProvider` layer inversion** — `keyboard.SearchFocusRegistry` previously imported from the `view` package. `SearchFocusProvider` has been moved to `keyboard/`, and the old `view` variant is kept as a `@Deprecated` wrapper for backward compatibility
-- **`CurrencySelector` initial state** — the selector was enabled at startup, allowing currency selection before any file was loaded; changed to `setDisable(true)` by default, enabled only after `onFileSelected()` is called
+- **Memory leak** — the scene listener added by `bindToNode` is now correctly removed
+  in `detach()`, so nothing holds a reference to the old scene after navigation.
+- **Event filter leak** — the key event handler reference is stored and removed
+  explicitly, instead of using an anonymous lambda that could not be unregistered.
+- **Tab order** — the clear button in the search bar is excluded from tab traversal
+  when it is not visible.
+- **Tab indicator sync** — the active tab indicator now updates correctly when
+  switching tabs via keyboard (previously it only updated on mouse clicks).
+- **`CurrencySelector` initial state** — the currency dropdown was enabled at startup,
+  letting users select a currency before any stock file had been loaded. It now starts
+  disabled and only becomes interactive after a file is selected.
 
 ---
 
-## Test coverage — `keyboard/` package
+## Tests
 
-| Test class | Tests | Covers |
+The entire `keyboard/` package is covered by four test classes. Tests are grouped by
+method and cover positive cases, negative cases, and edge cases.
+
+| Test class | Tests | What it covers |
 |---|---|---|
-| `ShortcutRegistryTest` | 15 | Dispatch order, conditional actions, `registerTabShortcuts`, `clear()` |
-| `ArrowKeyNavigatorTest` | 46 | Vertical/horizontal orientation, clamping, wraparound, empty list, single-item list, `syncIndex`, `select` |
-| `FocusRestorerTest` | 14 | `snapshot`/`restore`/`wrap` lifecycle, stale-node detection, fallback invocation, FX-thread synchronisation via `CountDownLatch` |
-| `KeyboardNavigationServiceTest` | 38 | Dispatch order, push/pop lifecycle callbacks, `detach` clearing all state, registry identity, reflection-based access to private `onKeyPressed` |
+| `ShortcutRegistryTest` | 15 | Dispatch order, conditional actions, tab shortcut helpers, clearing |
+| `ArrowKeyNavigatorTest` | 46 | Both orientations, clamping, wraparound, empty list, single-item list, index sync |
+| `FocusRestorerTest` | 14 | Snapshot and restore lifecycle, stale node detection, fallback, FX thread sync |
+| `KeyboardNavigationServiceTest` | 38 | Dispatch priority, push/pop lifecycle, `detach` clearing all state, registry identity |
 
-All tests follow the AAA pattern and cover positive cases, negative cases, and edge cases.
+`KeyboardNavigationServiceTest` uses a package-private `fireKeyEvent` method instead
+of reflection to invoke the dispatch logic. This keeps the tests decoupled from
+implementation details — renaming or restructuring internal methods will not break the
+tests as long as the observable behaviour stays the same.
 
 ---
 
-## Files changed
+## Notes on scope
 
-47 commits, 70+ files changed — see the commit history for the full list.
+- `MainController` and `StartController` each create their own `KeyboardNavigationService`
+  instance attached to their own scene. The two instances are never active at the same
+  time — when the start screen is showing, the main controller's service is detached,
+  and vice versa. Shortcut sets from the two screens therefore cannot conflict.
+- The `keyboard/` package has no dependency on the `view/` package. Views implement
+  `SearchFocusProvider` (defined in `keyboard/`) and register themselves with
+  `SearchFocusRegistry` and `TabNavigationRegistry`, not the other way around.
