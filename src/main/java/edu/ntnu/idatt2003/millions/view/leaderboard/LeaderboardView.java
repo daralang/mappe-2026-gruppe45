@@ -30,7 +30,8 @@ public class LeaderboardView extends VBox implements SearchFocusProvider {
      *
      * @param gameService  the game service used by the card for observer registration
      * @param toastService the toast service used to display notifications
-     * @param weekBar      the shared week bar component
+     * @param weekBar      the week bar owned exclusively by this view; each top-level view
+     *                     receives its own instance since a JavaFX node can only belong to one parent at a time
      */
     public LeaderboardView(GameService gameService, ToastService toastService, WeekBar weekBar) {
         getStyleClass().add("content-area");

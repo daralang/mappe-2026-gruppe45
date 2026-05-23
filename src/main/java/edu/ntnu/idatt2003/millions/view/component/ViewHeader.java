@@ -34,7 +34,8 @@ public class ViewHeader extends VBox {
      *
      * @param titleKey  the i18n key for the view title
      * @param labelKeys the i18n keys for the tab labels in order
-     * @param weekBar   the shared week bar component
+     * @param weekBar   the week bar owned exclusively by the enclosing view; each top-level view
+     *                  receives its own instance since a JavaFX node can only belong to one parent at a time
      */
     public ViewHeader(String titleKey, List<String> labelKeys, WeekBar weekBar) {
         this.titleKey = titleKey;
