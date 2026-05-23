@@ -367,15 +367,17 @@ public class StartController {
     /**
      * Displays the start screen on the primary stage, binds UI events,
      * and registers global keyboard shortcuts on the start scene.
+     *
+     * <p>Swaps the app-lifetime scene root to this view's root node. Window
+     * visibility and maximised state are managed by
+     * {@link edu.ntnu.idatt2003.millions.App} on startup and remain in effect
+     * for the lifetime of the application.</p>
      */
     public void show() {
         bindEvents();
         stage.setTitle("Millions");
-        stage.setScene(view.getScene());
+        stage.getScene().setRoot(view.getRoot());
         registerShortcuts();
-        stage.show();
-        stage.setMaximized(true);
-        Platform.runLater(stage::centerOnScreen);
         Platform.runLater(view::focusFirstInput);
     }
 
@@ -387,7 +389,7 @@ public class StartController {
      * shortcuts registered in {@link MainController}.</p>
      */
     private void registerShortcuts() {
-        keyboardService.bindToNode(view.getScene().getRoot());
+        keyboardService.bindToNode(view.getRoot());
         var reg = keyboardService.globalShortcuts();
         reg.registerTabShortcuts(view::showNewGameTab, view::showLoadGameTab);
     }

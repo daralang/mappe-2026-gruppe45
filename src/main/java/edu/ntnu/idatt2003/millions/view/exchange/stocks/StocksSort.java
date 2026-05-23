@@ -2,12 +2,9 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.util.CurrencyManager;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
-import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.Currency;
 import java.util.List;
@@ -31,7 +28,7 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
      * Columns that support ascending/descending sort in the stocks table.
      */
     public enum SortColumn {
-        WATCHLIST, TICKER, PRICE_USD, PRICE_NOK, CHANGE_KR, CHANGE_PCT, HIGH_LOW
+        WATCHLIST, TICKER, PRICE_MARKED, CURRENCY, PRICE_NOK, CHANGE_KR, CHANGE_PCT, HIGH_LOW
     }
 
     private final CurrencyConverter converter;
@@ -54,31 +51,27 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
      * Returns the ordered column definitions for the stocks table.
      *
      * <p>Called by {@link SortColumnTable} on every header refresh so that labels are
-     * re-resolved from {@link LanguageManager} and the native-currency column header
-     * reflects the currently selected currency from {@link CurrencyManager}.</p>
+     * re-resolved from the active language automatically.</p>
      *
      * @return a fresh list of {@link TableColumnDef} in display order
      */
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
                 TableColumnDef.sortable("col.watchlist", SortColumn.WATCHLIST,
-                        "tooltip.stocks.watchlist", 7, HPos.CENTER),
-                TableColumnDef.sortable("col.ticker", SortColumn.TICKER, 9, HPos.LEFT),
-                TableColumnDef.of("col.company", 25, HPos.LEFT),
-                new TableColumnDef<>(
-                        () -> MessageFormat.format(
-                                LanguageManager.get("col.priceNative"),
-                                CurrencyManager.get().getCurrencyCode()),
-                        SortColumn.PRICE_USD, null, 10, HPos.RIGHT),
-                TableColumnDef.sortable("col.priceNok", SortColumn.PRICE_NOK, 10, HPos.RIGHT),
+                        "tooltip.stocks.watchlist", 10, HPos.CENTER),
+                TableColumnDef.sortable("col.ticker", SortColumn.TICKER, 11, HPos.LEFT),
+                TableColumnDef.of("col.company", 22, HPos.LEFT),
+                TableColumnDef.sortable("col.currency", SortColumn.CURRENCY, 8, HPos.LEFT),
+                TableColumnDef.sortable("col.priceNative", SortColumn.PRICE_MARKED, 6, HPos.RIGHT),
+                TableColumnDef.sortable("col.priceNok", SortColumn.PRICE_NOK, 9, HPos.RIGHT),
                 TableColumnDef.sortable("col.changeNok", SortColumn.CHANGE_KR,
-                        "tooltip.shared.changeNok", 10, HPos.RIGHT),
+                        "tooltip.shared.changeNok", 9, HPos.RIGHT),
                 TableColumnDef.sortable("col.changePct", SortColumn.CHANGE_PCT,
-                        "tooltip.shared.weeklyChange", 10, HPos.RIGHT),
+                        "tooltip.shared.weeklyChange", 9, HPos.RIGHT),
                 TableColumnDef.sortable("col.highLow", SortColumn.HIGH_LOW,
                         "tooltip.shared.highLow", 10, HPos.RIGHT),
                 TableColumnDef.of("col.trend", "tooltip.shared.trend", 10, HPos.CENTER),
-                TableColumnDef.of("col.trade", 6, HPos.LEFT)
+                TableColumnDef.of("col.trade", 5, HPos.LEFT)
         );
     }
 
@@ -93,7 +86,8 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
         return switch (column) {
             case WATCHLIST -> Comparator.comparing(s -> !isWatched.test(s.getSymbol()));
             case TICKER -> Comparator.comparing(Stock::getSymbol);
-            case PRICE_USD -> Comparator.comparing(Stock::getSalesPrice);
+            case PRICE_MARKED -> Comparator.comparing(Stock::getSalesPrice);
+            case CURRENCY -> Comparator.comparing(s -> s.getCurrency().getCurrencyCode());
             case PRICE_NOK -> Comparator.comparing(s -> priceInNok(s, converter, NOK));
             case CHANGE_KR -> Comparator.comparing(s -> changeInNok(s, converter, NOK));
             case CHANGE_PCT -> Comparator.comparing(Stock::getWeeklyChangePercent);

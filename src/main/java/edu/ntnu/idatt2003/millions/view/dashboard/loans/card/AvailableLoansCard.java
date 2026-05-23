@@ -8,7 +8,7 @@ import edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Pos;
@@ -150,7 +150,7 @@ public class AvailableLoansCard extends Card {
         VBox keyValues = new VBox(6);
         keyValues.getChildren().addAll(
                 buildKeyValueRow("loans.offer.rate",
-                        TableCells.NUMBER_FORMAT.format(
+                        MoneyFormatter.format(
                                 offer.weeklyInterestRate().multiply(BigDecimal.valueOf(100))) + "%"),
                 buildKeyValueRow("loans.offer.term",
                         MessageFormat.format(LanguageManager.get("loans.offer.weeks"), offer.termWeeks())),

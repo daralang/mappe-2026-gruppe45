@@ -108,8 +108,9 @@ public class TransactionsActivityCard extends Card {
         weekRangeLabel.setText(MessageFormat.format(
                 LanguageManager.get("transactions.summary.weekRange"), fromWeek, toWeek));
 
-        int purchaseCount = countTransactions(fromWeek, toWeek, true);
-        int saleCount = countTransactions(fromWeek, toWeek, false);
+        TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
+        int purchaseCount = archive.countPurchasesInRange(fromWeek, toWeek);
+        int saleCount = archive.countSalesInRange(fromWeek, toWeek);
         int total = purchaseCount + saleCount;
 
         grid.getChildren().clear();
@@ -127,22 +128,6 @@ public class TransactionsActivityCard extends Card {
 
         grid.add(rowLabel(LanguageManager.get("transactions.summary.total"), true), 0, 3);
         grid.add(rowValue(total, true), 1, 3);
-    }
-
-    /**
-     * Counts purchases or sales in the archive over the inclusive range.
-     *
-     * @param countBuys {@code true} for purchases, {@code false} for sales
-     */
-    private int countTransactions(int fromWeek, int toWeek, boolean countBuys) {
-        TransactionArchive archive = gameService.getPlayer().getTransactionArchive();
-        int total = 0;
-        for (int week = fromWeek; week <= toWeek; week++) {
-            total += countBuys
-                    ? archive.getPurchases(week).size()
-                    : archive.getSales(week).size();
-        }
-        return total;
     }
 
     /** Left-column label; bold variant is used for the total row. */

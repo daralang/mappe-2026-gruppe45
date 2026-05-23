@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -326,7 +328,7 @@ class LeaderboardServiceTest {
 
         @Override
         public void writeAll(List<LeaderboardEntry> entries, File file) {
-            if (failOnWrite) throw new RuntimeException("simulated write failure");
+            if (failOnWrite) throw new UncheckedIOException(new IOException("simulated write failure"));
             this.entries = new ArrayList<>(entries);
         }
     }

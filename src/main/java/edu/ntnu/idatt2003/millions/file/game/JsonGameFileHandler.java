@@ -57,7 +57,7 @@ public class JsonGameFileHandler implements GameFileHandler {
      * @throws UncheckedIOException if the file cannot be written to
      */
     @Override
-    public void saveGame(Player player, Exchange exchange, File file) {
+    public void saveGame(Player player, Exchange exchange, boolean gameOver, File file) {
         Objects.requireNonNull(player, "Player cannot be null");
         Objects.requireNonNull(exchange, "Exchange cannot be null");
         Objects.requireNonNull(file, "File cannot be null");
@@ -65,6 +65,7 @@ public class JsonGameFileHandler implements GameFileHandler {
         JsonObject gameState = new JsonObject();
         gameState.add("player", gson.toJsonTree(player));
         gameState.add("exchange", gson.toJsonTree(exchange));
+        gameState.addProperty("gameOver", gameOver);
 
         try (FileWriter writer = new FileWriter(file)) {
             gson.toJson(gameState, writer);
@@ -93,42 +94,45 @@ public class JsonGameFileHandler implements GameFileHandler {
     @Override
     public GameState loadGame(File file) throws GameSaveCorruptException {
         Objects.requireNonNull(file, "File cannot be null");
-
         try (FileReader reader = new FileReader(file)) {
-            JsonObject gameState;
-            try {
-                gameState = gson.fromJson(reader, JsonObject.class);
-            } catch (JsonParseException e) {
-                throw new GameSaveCorruptException(
-                        "Save file contains invalid JSON: " + file.getName(), e);
-            }
-
-            if (gameState == null
-                    || !gameState.has("player")
-                    || !gameState.has("exchange")) {
-                throw new GameSaveCorruptException(
-                        "Save file is missing required fields 'player' or 'exchange': " + file.getName());
-            }
-
-            Exchange exchange;
-            Player player;
-            try {
-                exchange = gson.fromJson(gameState.get("exchange"), Exchange.class);
-                player = gson.fromJson(gameState.get("player"), Player.class);
-            } catch (JsonParseException e) {
-                throw new GameSaveCorruptException(
-                        "Save file has an unreadable structure: " + file.getName(), e);
-            }
-
-            relinkShares(player, exchange);
-            mergeSharesBySymbol(player);
-            relinkArchive(player, exchange);
-
-            return new GameState(player, exchange);
-
+            return parse(reader, file.getName());
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to load game from file: " + file.getName(), e);
         }
+    }
+
+    GameState parse(Reader reader, String label) throws GameSaveCorruptException {
+        JsonObject gameState;
+        try {
+            gameState = gson.fromJson(reader, JsonObject.class);
+        } catch (JsonParseException e) {
+            throw new GameSaveCorruptException(
+                    "Save file contains invalid JSON: " + label, e);
+        }
+
+        if (gameState == null
+                || !gameState.has("player")
+                || !gameState.has("exchange")) {
+            throw new GameSaveCorruptException(
+                    "Save file is missing required fields 'player' or 'exchange': " + label);
+        }
+
+        Exchange exchange;
+        Player player;
+        try {
+            exchange = gson.fromJson(gameState.get("exchange"), Exchange.class);
+            player = gson.fromJson(gameState.get("player"), Player.class);
+        } catch (JsonParseException e) {
+            throw new GameSaveCorruptException(
+                    "Save file has an unreadable structure: " + label, e);
+        }
+
+        relinkShares(player, exchange);
+        mergeSharesBySymbol(player);
+        relinkArchive(player, exchange);
+
+        boolean gameOver = gameState.has("gameOver") && gameState.get("gameOver").getAsBoolean();
+        return new GameState(player, exchange, gameOver);
     }
 
     /**

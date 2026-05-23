@@ -1,7 +1,6 @@
 package edu.ntnu.idatt2003.millions.view;
 
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.util.StylesheetLoader;
 import edu.ntnu.idatt2003.millions.view.component.AppTabPane;
 import edu.ntnu.idatt2003.millions.view.component.LanguagePicker;
 import edu.ntnu.idatt2003.millions.view.start.LoadGameTab;
@@ -12,7 +11,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
+import javafx.scene.Parent;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -35,12 +34,10 @@ import java.util.function.Consumer;
  */
 public class StartView implements StartScreenInputs {
 
-    private static final double SCENE_WIDTH = 900;
-    private static final double SCENE_HEIGHT = 700;
     private static final double ROOT_SPACING = 24;
     private static final double START_CARD_WIDTH = 540;
 
-    private final Scene scene;
+    private final BorderPane root;
     private final StyledText title;
     private final AppTabPane tabPane;
     private final Tab newGameTab;
@@ -114,7 +111,7 @@ public class StartView implements StartScreenInputs {
                 START_CARD_WIDTH,
                 ROOT_SPACING);
 
-        BorderPane root = new BorderPane();
+        root = new BorderPane();
         root.getStyleClass().add("start-root");
 
         if (titleBarControls != null) {
@@ -123,13 +120,6 @@ public class StartView implements StartScreenInputs {
             root.setTop(topBar);
         }
         root.setCenter(center);
-
-        scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
-        StylesheetLoader.load(scene,
-                StylesheetLoader.Stylesheet.TOKENS,
-                StylesheetLoader.Stylesheet.TITLE,
-                StylesheetLoader.Stylesheet.DROP_ZONE,
-                StylesheetLoader.Stylesheet.OTHER);
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
@@ -146,12 +136,12 @@ public class StartView implements StartScreenInputs {
     }
 
     /**
-     * Returns the JavaFX scene for this view.
+     * Returns the root node of this view for placement in the app-lifetime scene.
      *
-     * @return the scene
+     * @return the root node
      */
-    public Scene getScene() {
-        return scene;
+    public Parent getRoot() {
+        return root;
     }
 
 

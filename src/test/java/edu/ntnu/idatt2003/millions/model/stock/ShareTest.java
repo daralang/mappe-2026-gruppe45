@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.model;
+package edu.ntnu.idatt2003.millions.model.stock;
 
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -13,6 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for the {@link Share} class.
@@ -34,6 +35,11 @@ class ShareTest {
         stock = new Stock("NKE", "Nike, Inc",
                 new ArrayList<>(List.of(new BigDecimal("120.00"))));
         share = new Share(stock, new BigDecimal("10"), new BigDecimal("90.00"));
+    }
+
+    private static void assertBigDecimalEquals(BigDecimal expected, BigDecimal actual) {
+        assertEquals(0, expected.compareTo(actual),
+                "Expected " + expected + " but was " + actual);
     }
 
     @Nested
@@ -133,6 +139,63 @@ class ShareTest {
             BigDecimal price = share.getPurchasePrice();
             // Assert
             assertEquals(new BigDecimal("90.00"), price);
+        }
+    }
+
+    @Nested
+    @DisplayName("getReturnPercent()")
+    class GetReturnPercent {
+
+        @Test
+        @DisplayName("Should return positive percent when current price exceeds purchase price")
+        void returnsPositivePercentForGain() {
+            // Arrange — stock price=120, qty=10, purchasePrice=90
+            // cost=900, currentValue=1200, returnNative=300
+            // returnPercent = 300×100/900 = 33.333... → HALF_UP 2dp = 33.33
+            // Act
+            BigDecimal result = share.getReturnPercent();
+            // Assert
+            assertBigDecimalEquals(new BigDecimal("33.33"), result);
+        }
+
+        @Test
+        @DisplayName("Should return negative percent when current price is below purchase price")
+        void returnsNegativePercentForLoss() {
+            // Arrange — stock price=80, qty=10, purchasePrice=100
+            // cost=1000, currentValue=800, returnNative=−200
+            // returnPercent = −200×100/1000 = −20.00
+            Stock losingStock = new Stock("AAPL", "Apple Inc.",
+                    new ArrayList<>(List.of(new BigDecimal("80.00"))));
+            Share losingShare = new Share(losingStock, new BigDecimal("10"), new BigDecimal("100.00"));
+            // Act
+            BigDecimal result = losingShare.getReturnPercent();
+            // Assert
+            assertBigDecimalEquals(new BigDecimal("-20.00"), result);
+        }
+
+        @Test
+        @DisplayName("Should return zero when cost basis is zero")
+        void returnsZeroWhenCostBasisIsZero() {
+            // Arrange — purchasePrice=0, qty=10: cost=0 → zero-cost guard activates
+            Share zeroCostShare = new Share(stock, new BigDecimal("10"), BigDecimal.ZERO);
+            // Act & Assert
+            assertBigDecimalEquals(BigDecimal.ZERO, zeroCostShare.getReturnPercent());
+        }
+    }
+
+    @Nested
+    @DisplayName("mergedWith()")
+    class MergedWith {
+
+        @Test
+        @DisplayName("Should throw exception when merging shares of different stocks")
+        void throwsExceptionWhenSymbolsDiffer() {
+            // Arrange
+            Stock otherStock = new Stock("AAPL", "Apple Inc.",
+                    new ArrayList<>(List.of(new BigDecimal("200.00"))));
+            Share otherShare = new Share(otherStock, new BigDecimal("5"), new BigDecimal("180.00"));
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () -> share.mergedWith(otherShare));
         }
     }
 }

@@ -1,9 +1,7 @@
 package edu.ntnu.idatt2003.millions.util;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.util.Currency;
-import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -14,15 +12,6 @@ import java.util.Objects;
  * Language-based display currency is tracked separately.</p>
  */
 public class CurrencyFormatter {
-
-    private static final Currency NOK_CURRENCY = Currency.getInstance("NOK");
-    private static final NumberFormat FORMAT;
-
-    static {
-        FORMAT = NumberFormat.getNumberInstance(Locale.of("no"));
-        FORMAT.setMinimumFractionDigits(2);
-        FORMAT.setMaximumFractionDigits(2);
-    }
 
     private CurrencyFormatter() {
         // Utility class - should not be instantiated
@@ -37,7 +26,7 @@ public class CurrencyFormatter {
      */
     public static String format(BigDecimal amount) {
         Objects.requireNonNull(amount, "Amount cannot be null");
-        return FORMAT.format(amount) + " NOK";
+        return MoneyFormatter.format(amount) + " NOK";
     }
 
     /**

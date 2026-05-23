@@ -1,14 +1,10 @@
 package edu.ntnu.idatt2003.millions.service;
 
-import edu.ntnu.idatt2003.millions.model.calculator.PurchaseCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
-import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
-import edu.ntnu.idatt2003.millions.model.transaction.Sale;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Currency;
 import java.util.List;
 
@@ -25,28 +21,17 @@ import java.util.List;
  * computation crosses {@link Transaction}, {@link Share}, the calculator
  * tied to its subclass, and the active {@link CurrencyConverter}.</p>
  *
- * <p>Two pieces of irregularity are encapsulated here so the view doesn't
- * have to know about them:</p>
- * <ul>
- *   <li><b>Frozen vs. recomputed values.</b> {@link Sale} freezes its
- *       financial figures at construction so they survive serialisation,
- *       while {@link Purchase} keeps its {@code calculator} as a transient
- *       field which is null after loading a saved game. A fresh
- *       {@link PurchaseCalculator} is built from the share to recover
- *       commission and total for purchases.</li>
- *   <li><b>Currency conversion.</b> Native-currency values are converted
- *       to NOK so the table can stay denominated in one currency. Both
- *       the native and the NOK value are returned so views can show NOK
- *       in the main cell and the native amount in a tooltip.</li>
- * </ul>
+ * <p>Native-currency values are converted to NOK so the table stays denominated
+ * in one currency. Both native and NOK figures are returned so views can show
+ * NOK in the cell and the native amount in a tooltip without recomputing.
+ * Subtype-specific financial values (commission, tax, signed total, price per
+ * share) are accessed through polymorphic methods on {@link Transaction}, keeping
+ * this service free of {@code instanceof} dispatch.</p>
  */
 public class TransactionStatsService {
 
     /** Currency every NOK-denominated value is converted to. */
     private static final Currency NOK = Currency.getInstance("NOK");
-
-    /** Scale used when dividing gross by quantity to recover per-share price. */
-    private static final int PRICE_SCALE = 4;
 
     /**
      * Computes the display values for a single transaction row.
@@ -59,10 +44,21 @@ public class TransactionStatsService {
         Share share = transaction.getShare();
         Currency nativeCurrency = share.getStock().getCurrency();
 
-        if (transaction instanceof Sale sale) {
-            return statsForSale(sale, share, nativeCurrency, converter);
-        }
-        return statsForPurchase(share, nativeCurrency, converter);
+        BigDecimal commissionNative = transaction.getCommissionNative();
+        BigDecimal taxNative = transaction.getTaxNative();
+        BigDecimal commissionNok = converter.convert(commissionNative, nativeCurrency, NOK);
+        BigDecimal taxNok = converter.convert(taxNative, nativeCurrency, NOK);
+        BigDecimal amountNok = converter.convert(transaction.getSignedTotalNative(), nativeCurrency, NOK);
+
+        return new TransactionStats(
+                share.getQuantity(),
+                transaction.getPricePerShare(),
+                commissionNok,
+                taxNok,
+                amountNok,
+                nativeCurrency.getCurrencyCode(),
+                commissionNative,
+                taxNative);
     }
 
     /**
@@ -90,79 +86,13 @@ public class TransactionStatsService {
         BigDecimal salesNok = BigDecimal.ZERO;
 
         for (Transaction transaction : transactions) {
-            TransactionStats stats = getStats(transaction, converter);
-            if (transaction instanceof Purchase) {
-                purchasesNok = purchasesNok.add(stats.amountNok());
-            } else {
-                salesNok = salesNok.add(stats.amountNok());
-            }
+            BigDecimal amount = getStats(transaction, converter).amountNok();
+            purchasesNok = purchasesNok.add(amount.min(BigDecimal.ZERO));
+            salesNok = salesNok.add(amount.max(BigDecimal.ZERO));
         }
 
         BigDecimal totalNok = purchasesNok.add(salesNok);
         return new TransactionSummary(purchasesNok, salesNok, totalNok);
-    }
-
-    /**
-     * Builds the stats record for a sale, reading the frozen gross,
-     * commission, tax and total directly off the sale.
-     *
-     * @param sale            the sale to read values from
-     * @param share           the underlying share, used for quantity
-     * @param nativeCurrency  the stock's native currency
-     * @param converter       the active currency converter
-     * @return populated stats record
-     */
-    private TransactionStats statsForSale(Sale sale, Share share,
-                                          Currency nativeCurrency,
-                                          CurrencyConverter converter) {
-        BigDecimal pricePerShare = sale.getGross()
-                .divide(share.getQuantity(), PRICE_SCALE, RoundingMode.HALF_UP);
-        BigDecimal commissionNok = converter.convert(sale.getCommission(), nativeCurrency, NOK);
-        BigDecimal taxNok = converter.convert(sale.getTax(), nativeCurrency, NOK);
-        BigDecimal amountNok = converter.convert(sale.getTotal(), nativeCurrency, NOK);
-
-        return new TransactionStats(
-                share.getQuantity(),
-                pricePerShare,
-                commissionNok,
-                taxNok,
-                amountNok,
-                nativeCurrency.getCurrencyCode(),
-                sale.getCommission(),
-                sale.getTax());
-    }
-
-    /**
-     * Builds the stats record for a purchase, reconstructing commission
-     * and total from a fresh {@link PurchaseCalculator} since the
-     * transaction's own calculator is transient and may be null after
-     * a saved game is loaded. Tax is always zero for purchases, and the
-     * NOK amount is negated to signal an outflow.
-     *
-     * @param share          the share that was purchased
-     * @param nativeCurrency the stock's native currency
-     * @param converter      the active currency converter
-     * @return populated stats record
-     */
-    private TransactionStats statsForPurchase(Share share,
-                                              Currency nativeCurrency,
-                                              CurrencyConverter converter) {
-        PurchaseCalculator calculator = new PurchaseCalculator(share);
-        BigDecimal commissionNative = calculator.calculateCommission();
-        BigDecimal totalNative = calculator.calculateTotal();
-
-        BigDecimal commissionNok = converter.convert(commissionNative, nativeCurrency, NOK);
-        BigDecimal amountNok = converter.convert(totalNative, nativeCurrency, NOK).negate();
-
-        return new TransactionStats(
-                share.getQuantity(),
-                share.getPurchasePrice(),
-                commissionNok,
-                BigDecimal.ZERO,
-                amountNok,
-                nativeCurrency.getCurrencyCode(),
-                commissionNative,
-                BigDecimal.ZERO);
     }
 
     /**

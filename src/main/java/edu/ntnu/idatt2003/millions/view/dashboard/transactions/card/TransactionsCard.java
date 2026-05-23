@@ -7,8 +7,8 @@ import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
-import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
@@ -122,9 +122,9 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
 
     /**
      * Returns transactions scoped to the active week range and type filter,
-     * sorted chronologically. Returns an empty list when the player is null.
+     * sorted newest-first. Returns an empty list when the player is null.
      *
-     * @return mutable list of pre-filtered transactions, oldest first
+     * @return mutable list of pre-filtered transactions, newest first
      */
     @Override
     protected List<Transaction> fetchAll() {
@@ -136,7 +136,9 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
         int toWeek = weekRangeFilter.getToWeek();
         Class<? extends Transaction> selectedType = typeFilter.getSelectedValue();
 
-        return new ArrayList<>(collectRange(archive, fromWeek, toWeek).stream()
+        List<Transaction> range = archive.getTransactionsInRange(fromWeek, toWeek);
+        range.sort(Comparator.comparingInt(Transaction::getWeek).reversed());
+        return new ArrayList<>(range.stream()
                 .filter(t -> selectedType == null || selectedType.isInstance(t))
                 .toList());
     }
@@ -196,24 +198,6 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     }
 
     /**
-     * Gathers every transaction in the archive within the given week range
-     * (inclusive on both ends), sorted chronologically oldest first.
-     *
-     * @param archive  the archive to read transactions from
-     * @param fromWeek the first week to include (inclusive)
-     * @param toWeek   the last week to include (inclusive)
-     * @return a reverse-chronologically sorted mutable list of transactions in the range
-     */
-    private List<Transaction> collectRange(TransactionArchive archive, int fromWeek, int toWeek) {
-        List<Transaction> list = new ArrayList<>();
-        for (int week = fromWeek; week <= toWeek; week++) {
-            list.addAll(archive.getTransactions(week));
-        }
-        list.sort(Comparator.comparingInt(Transaction::getWeek).reversed());
-        return list;
-    }
-
-    /**
      * Renders one transaction as a data row in the table.
      *
      * @param row         the table row index to write to
@@ -225,15 +209,13 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
                 statsService.getStats(transaction, gameService.getCurrencyConverter());
 
         table.addRow(row,
-                TableCells.data(MessageFormat.format(
-                        LanguageManager.get("transactions.weekValue"), transaction.getWeek())),
+                TableCells.data(String.valueOf(transaction.getWeek())),
                 TableCells.data(stock.getSymbol() + ", " + stock.getCompany()),
                 typeBadge(transaction),
-                TableCells.data(TableCells.NUMBER_FORMAT.format(stats.quantity())),
-                TableCells.data(TableCells.NUMBER_FORMAT.format(stats.pricePerShare())
-                        + " " + CurrencyFormatter.symbol(stats.nativeCurrencyCode())),
-                TableCells.data(TableCells.NUMBER_FORMAT.format(stats.commissionNok())
-                        + " " + CurrencyFormatter.symbol("NOK")),
+                TableCells.data(MoneyFormatter.format(stats.quantity())),
+                TableCells.data(stock.getCurrency().getCurrencyCode()),
+                TableCells.data(MoneyFormatter.format(stats.pricePerShare())),
+                TableCells.data(MoneyFormatter.format(stats.commissionNok())),
                 taxCell(stats),
                 amountCell(stats.amountNok())
         );
@@ -254,21 +236,12 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
         return badge;
     }
 
-    /**
-     * Creates a coloured signed amount label for the Beløp column,
-     * with the NOK currency symbol appended.
-     *
-     * @param amountNok the NOK amount to format
-     * @return a styled label with currency symbol
-     */
     private Label amountCell(java.math.BigDecimal amountNok) {
-        Label label = ChangeFormatter.styledAmount(amountNok, "holdings-cell");
-        label.setText(label.getText() + " " + CurrencyFormatter.symbol("NOK"));
-        return label;
+        return ChangeFormatter.styledAmount(amountNok, "holdings-cell");
     }
 
     /**
-     * Renders the tax cell. Purchases show an en-dash instead of "0,00 NOK".
+     * Renders the tax cell. Purchases show an en-dash instead of "0,00".
      *
      * @param stats the row stats supplying the NOK tax amount
      * @return a styled cell label
@@ -277,7 +250,6 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
         if (stats.taxNok().signum() == 0) {
             return TableCells.data("–");
         }
-        return TableCells.data(TableCells.NUMBER_FORMAT.format(stats.taxNok())
-                + " " + CurrencyFormatter.symbol("NOK"));
+        return TableCells.data(MoneyFormatter.format(stats.taxNok()));
     }
 }

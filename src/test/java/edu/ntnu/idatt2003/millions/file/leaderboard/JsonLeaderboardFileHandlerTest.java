@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.StringReader;
 import java.math.BigDecimal;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
@@ -37,7 +37,7 @@ class JsonLeaderboardFileHandlerTest {
     // ---- readAll ----
 
     @Test
-    void readAllReturnsEmptyListWhenFileDoesNotExist() {
+    void readAllReturnsEmptyListWhenFileDoesNotExist() throws LeaderboardCorruptException {
         assertFalse(leaderboardFile.exists());
 
         List<LeaderboardEntry> entries = handler.readAll(leaderboardFile);
@@ -47,19 +47,20 @@ class JsonLeaderboardFileHandlerTest {
     }
 
     @Test
-    void readAllReturnsEmptyListWhenFileIsEmptyJsonArray() throws Exception {
-        Files.writeString(leaderboardFile.toPath(), "[]");
-
-        List<LeaderboardEntry> entries = handler.readAll(leaderboardFile);
-
+    void parseReturnsEmptyListForEmptyJsonArray() throws LeaderboardCorruptException {
+        // Arrange
+        // Act
+        List<LeaderboardEntry> entries = handler.parse(new StringReader("[]"));
+        // Assert
         assertTrue(entries.isEmpty());
     }
 
     @Test
-    void readAllThrowsForCorruptFile() throws Exception {
-        Files.writeString(leaderboardFile.toPath(), "{not valid json");
-
-        assertThrows(IllegalStateException.class, () -> handler.readAll(leaderboardFile));
+    void parseThrowsForCorruptJson() {
+        // Arrange
+        // Act & Assert
+        assertThrows(LeaderboardCorruptException.class,
+                () -> handler.parse(new StringReader("{not valid json")));
     }
 
     @Test
@@ -102,7 +103,7 @@ class JsonLeaderboardFileHandlerTest {
     }
 
     @Test
-    void writeAllOverwritesExistingContent() {
+    void writeAllOverwritesExistingContent() throws LeaderboardCorruptException {
         handler.writeAll(List.of(sample("s-1", "Alice", "10.0")), leaderboardFile);
         handler.writeAll(List.of(sample("s-2", "Bob", "20.0")), leaderboardFile);
 
@@ -124,7 +125,7 @@ class JsonLeaderboardFileHandlerTest {
     // ---- round-trip ----
 
     @Test
-    void roundTripPreservesAllFields() {
+    void roundTripPreservesAllFields() throws LeaderboardCorruptException {
         LeaderboardEntry original = sample("s-roundtrip", "Charlie", "42.5");
         handler.writeAll(List.of(original), leaderboardFile);
 
@@ -144,7 +145,7 @@ class JsonLeaderboardFileHandlerTest {
     }
 
     @Test
-    void roundTripPreservesMultipleEntries() {
+    void roundTripPreservesMultipleEntries() throws LeaderboardCorruptException {
         List<LeaderboardEntry> written = List.of(
                 sample("s-1", "Alice", "10.0"),
                 sample("s-2", "Bob", "20.0"),
@@ -161,7 +162,7 @@ class JsonLeaderboardFileHandlerTest {
     }
 
     @Test
-    void roundTripPreservesInstantPrecision() {
+    void roundTripPreservesInstantPrecision() throws LeaderboardCorruptException {
         Instant instant = Instant.parse("2026-05-14T10:30:45.123456789Z");
         LeaderboardEntry original = new LeaderboardEntry(
                 "s-time", "Alice", BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ZERO,

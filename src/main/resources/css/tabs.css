@@ -60,6 +60,8 @@
     -fx-background-color: -surface;
     -fx-background-radius: 12;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 16, 0, 0, 2);
+    -fx-tab-min-height: 60;
+    -fx-tab-max-height: 60;
 }
 
 .start-tab-pane > .tab-header-area > .tab-header-background {
@@ -70,6 +72,7 @@
 
 .start-tab-pane > .tab-header-area {
     -fx-background-color: transparent;
+    -fx-padding: 0;
     -fx-pref-height: 60;
     -fx-min-height: 60;
 }

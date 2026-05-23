@@ -6,7 +6,6 @@ import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
-import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
@@ -81,8 +80,7 @@ class StocksRowRenderer extends RowRenderer {
         }
         starButton.setOnAction(e -> onWatchlistToggle.accept(stock.getSymbol()));
 
-        Label tickerLabel = new Label(stock.getSymbol());
-        tickerLabel.getStyleClass().add("holdings-cell");
+        Label tickerLabel = TableCells.data(stock.getSymbol());
 
         HBox.setHgrow(tickerLabel, Priority.ALWAYS);
         tickerLabel.setMaxWidth(Double.MAX_VALUE);
@@ -99,12 +97,11 @@ class StocksRowRenderer extends RowRenderer {
 
         Label companyLabel = TableCells.data(stock.getCompany());
         Label priceLabel = TableCells.data(
-                ChangeFormatter.formatPlain(stock.getSalesPrice())
-                        + " " + CurrencyFormatter.symbol(stock.getCurrency()));
+                ChangeFormatter.formatPlain(stock.getSalesPrice()));
+        Label currencyLabel = TableCells.data(stock.getCurrency().getCurrencyCode());
         BigDecimal priceInNok = converter.convert(stock.getSalesPrice(), stock.getCurrency(), NOK);
         Label priceNokLabel = TableCells.data(
-                ChangeFormatter.formatPlain(priceInNok)
-                        + " " + CurrencyFormatter.symbol("NOK"));
+                ChangeFormatter.formatPlain(priceInNok));
         BigDecimal changeInNok = converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
         Label changeKrLabel = ChangeFormatter.styledAmount(changeInNok, "holdings-cell");
         Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "holdings-cell");
@@ -118,6 +115,7 @@ class StocksRowRenderer extends RowRenderer {
         GridPane.setValignment(tickerCell, VPos.TOP);
         GridPane.setValignment(companyLabel, VPos.TOP);
         GridPane.setValignment(priceLabel, VPos.TOP);
+        GridPane.setValignment(currencyLabel, VPos.TOP);
         GridPane.setValignment(priceNokLabel, VPos.TOP);
         GridPane.setValignment(changeKrLabel, VPos.TOP);
         GridPane.setValignment(changePctLabel, VPos.TOP);
@@ -125,8 +123,8 @@ class StocksRowRenderer extends RowRenderer {
         GridPane.setValignment(sparkline, VPos.TOP);
         GridPane.setValignment(tradeButtons, VPos.TOP);
 
-        table.addRow(rowIndex, starButton, tickerCell, companyLabel, priceLabel, priceNokLabel,
-                changeKrLabel, changePctLabel, highLowLabel, sparkline, tradeButtons);
+        table.addRow(rowIndex, starButton, tickerCell, companyLabel, currencyLabel, priceLabel,
+                priceNokLabel, changeKrLabel, changePctLabel, highLowLabel, sparkline, tradeButtons);
     }
 
     /**

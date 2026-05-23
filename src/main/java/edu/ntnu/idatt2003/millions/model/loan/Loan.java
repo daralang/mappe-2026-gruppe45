@@ -43,7 +43,12 @@ public record Loan(LoanOffer offer, BigDecimal principal, int takenAtWeek) {
         return principal.add(totalInterest());
     }
 
-    /** Number of weeks elapsed since the loan was taken. */
+    /**
+     * Number of weeks elapsed since the loan was taken.
+     *
+     * <p>Precondition: {@code currentWeek >= takenAtWeek}. Behaviour for earlier
+     * weeks is undefined (the result will be negative).
+     */
     public int weeksElapsed(int currentWeek) {
         return currentWeek - takenAtWeek;
     }
@@ -53,7 +58,12 @@ public record Loan(LoanOffer offer, BigDecimal principal, int takenAtWeek) {
         return Math.max(0, offer.termWeeks() - weeksElapsed(currentWeek));
     }
 
-    /** Interest already paid up to {@code currentWeek} (weeklyInterest × weeksElapsed). */
+    /**
+     * Interest already paid up to {@code currentWeek} (weeklyInterest × weeksElapsed).
+     *
+     * <p>Precondition: {@code currentWeek >= takenAtWeek}. Behaviour for earlier
+     * weeks is undefined (the result will be negative).
+     */
     public BigDecimal interestPaid(int currentWeek) {
         return weeklyInterest().multiply(BigDecimal.valueOf(weeksElapsed(currentWeek)));
     }
@@ -63,7 +73,16 @@ public record Loan(LoanOffer offer, BigDecimal principal, int takenAtWeek) {
         return weeklyInterest().multiply(BigDecimal.valueOf(weeksRemaining(currentWeek)));
     }
 
-    /** True when {@code currentWeek} is the week this loan's principal becomes due. */
+    /**
+     * Returns true when this loan's principal is due — that is, when
+     * {@code currentWeek >= takenAtWeek + termWeeks}.
+     *
+     * <p>Note that this returns true for the due week and any week thereafter;
+     * preventing duplicate settlement is the caller's responsibility. In
+     * practice, settled loans are removed from the active-loans list
+     * immediately, so this method is only ever evaluated for loans that have
+     * not yet been settled.
+     */
     public boolean isDueThisWeek(int currentWeek) {
         return weeksRemaining(currentWeek) == 0;
     }

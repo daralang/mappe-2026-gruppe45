@@ -4,6 +4,7 @@ import edu.ntnu.idatt2003.millions.model.calculator.TransactionCalculator;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -103,6 +104,37 @@ public abstract class Transaction {
     protected void markAsCommitted() {
         this.committed = true;
     }
+
+    /**
+     * Returns the commission paid on this transaction in the stock's native currency.
+     *
+     * @return commission amount in native currency
+     */
+    public abstract BigDecimal getCommissionNative();
+
+    /**
+     * Returns the tax paid on this transaction in the stock's native currency.
+     * Always zero for purchases.
+     *
+     * @return tax amount in native currency
+     */
+    public abstract BigDecimal getTaxNative();
+
+    /**
+     * Returns the signed net cash flow of this transaction in the stock's native currency.
+     * Negative for purchases (outflow), positive for sales (inflow).
+     *
+     * @return signed total in native currency
+     */
+    public abstract BigDecimal getSignedTotalNative();
+
+    /**
+     * Returns the per-share price at which this transaction was executed,
+     * in the stock's native currency.
+     *
+     * @return per-share price in native currency
+     */
+    public abstract BigDecimal getPricePerShare();
 
     /**
      * Commits this transaction for the given player.

@@ -68,6 +68,60 @@ public class TransactionArchive {
     }
 
     /**
+     * Returns all transactions in the given inclusive week range as a fresh mutable list,
+     * in encounter order (within each week: insertion order; across weeks: low-to-high).
+     * The caller is responsible for any additional sorting.
+     *
+     * @param fromWeek the first week to include (inclusive); must be at least 1
+     * @param toWeek   the last week to include (inclusive); if less than fromWeek the
+     *                 returned list is empty
+     * @return a mutable list of transactions in the range; never null
+     * @throws IllegalArgumentException if fromWeek is less than 1
+     */
+    public List<Transaction> getTransactionsInRange(int fromWeek, int toWeek) {
+        if (fromWeek < 1) throw new IllegalArgumentException("fromWeek must be at least 1");
+        List<Transaction> list = new ArrayList<>();
+        for (int week = fromWeek; week <= toWeek; week++) {
+            list.addAll(getTransactions(week));
+        }
+        return list;
+    }
+
+    /**
+     * Counts all purchase transactions in the given inclusive week range.
+     *
+     * @param fromWeek the first week to include (inclusive); must be at least 1
+     * @param toWeek   the last week to include (inclusive); if less than fromWeek returns 0
+     * @return the number of purchases in the range
+     * @throws IllegalArgumentException if fromWeek is less than 1
+     */
+    public int countPurchasesInRange(int fromWeek, int toWeek) {
+        if (fromWeek < 1) throw new IllegalArgumentException("fromWeek must be at least 1");
+        int total = 0;
+        for (int week = fromWeek; week <= toWeek; week++) {
+            total += getPurchases(week).size();
+        }
+        return total;
+    }
+
+    /**
+     * Counts all sale transactions in the given inclusive week range.
+     *
+     * @param fromWeek the first week to include (inclusive); must be at least 1
+     * @param toWeek   the last week to include (inclusive); if less than fromWeek returns 0
+     * @return the number of sales in the range
+     * @throws IllegalArgumentException if fromWeek is less than 1
+     */
+    public int countSalesInRange(int fromWeek, int toWeek) {
+        if (fromWeek < 1) throw new IllegalArgumentException("fromWeek must be at least 1");
+        int total = 0;
+        for (int week = fromWeek; week <= toWeek; week++) {
+            total += getSales(week).size();
+        }
+        return total;
+    }
+
+    /**
      * Returns all purchase transactions that took place in the specified week.
      *
      * @param week the week number to filter by
@@ -153,6 +207,18 @@ public class TransactionArchive {
     }
 
     /**
+     * Returns all sale transactions in the archive regardless of week.
+     *
+     * @return an unmodifiable list of all sales
+     */
+    public List<Sale> getAllSales() {
+        return transactions.stream()
+                .filter(Sale.class::isInstance)
+                .map(Sale.class::cast)
+                .toList();
+    }
+
+    /**
      * Returns the total number of completed sales in the archive.
      *
      * @return the number of sales
@@ -172,8 +238,7 @@ public class TransactionArchive {
             java.util.function.Predicate<BigDecimal> filter,
             java.util.function.UnaryOperator<BigDecimal> mapper) {
         Map<Currency, BigDecimal> result = new HashMap<>();
-        for (Transaction transaction : transactions) {
-            if (!(transaction instanceof Sale sale)) continue;
+        for (Sale sale : getAllSales()) {
             BigDecimal profit = sale.getProfit();
             if (!filter.test(profit)) continue;
             Currency currency = sale.getShare().getStock().getCurrency();
@@ -189,12 +254,10 @@ public class TransactionArchive {
      */
     private Map<Currency, BigDecimal> sumSalesAttribute(
             java.util.function.Function<Sale, BigDecimal> extractor) {
-        Map<Currency, BigDecimal> result = new HashMap<>();
-        for (Transaction transaction : transactions) {
-            if (!(transaction instanceof Sale sale)) continue;
-            Currency currency = sale.getShare().getStock().getCurrency();
-            result.merge(currency, extractor.apply(sale), BigDecimal::add);
-        }
-        return result;
+        return getAllSales().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        sale -> sale.getShare().getStock().getCurrency(),
+                        extractor,
+                        BigDecimal::add));
     }
 }
