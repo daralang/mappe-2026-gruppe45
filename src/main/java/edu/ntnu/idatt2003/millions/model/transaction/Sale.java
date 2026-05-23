@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -22,6 +23,8 @@ import java.util.Objects;
  * as a separate piece of data, add a {@code salesPriceAtCommit} field at that point.
  */
 public class Sale extends Transaction {
+
+    private static final int PRICE_SCALE = 4;
 
     private final BigDecimal gross;
     private final BigDecimal commission;
@@ -47,6 +50,26 @@ public class Sale extends Transaction {
         this.total        = calc.calculateTotal();
         this.profit       = calc.calculateProfit();
         this.profitPercent = calc.calculateProfitPercent();
+    }
+
+    @Override
+    public BigDecimal getCommissionNative() {
+        return commission;
+    }
+
+    @Override
+    public BigDecimal getTaxNative() {
+        return tax;
+    }
+
+    @Override
+    public BigDecimal getSignedTotalNative() {
+        return total;
+    }
+
+    @Override
+    public BigDecimal getPricePerShare() {
+        return gross.divide(getShare().getQuantity(), PRICE_SCALE, RoundingMode.HALF_UP);
     }
 
     /**

@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.view.dialog.GameOverModal;
 import javafx.stage.Stage;
 
 import java.math.BigDecimal;
+import java.util.function.BooleanSupplier;
 
 /**
  * Controller for the game-over flow. Collects the end-of-game context
@@ -18,11 +19,18 @@ public class GameOverController {
     private final GameService gameService;
     private final Stage ownerStage;
     private final Runnable onNewGame;
+    private final BooleanSupplier saveAction;
+    private final Runnable sellAllAction;
+    private final Runnable noSaveAction;
 
-    public GameOverController(GameService gameService, Stage ownerStage, Runnable onNewGame) {
+    public GameOverController(GameService gameService, Stage ownerStage, Runnable onNewGame,
+                              BooleanSupplier saveAction, Runnable sellAllAction, Runnable noSaveAction) {
         this.gameService = gameService;
         this.ownerStage = ownerStage;
         this.onNewGame = onNewGame;
+        this.saveAction = saveAction;
+        this.sellAllAction = sellAllAction;
+        this.noSaveAction = noSaveAction;
     }
 
     /**
@@ -38,6 +46,7 @@ public class GameOverController {
         BigDecimal totalObligations = player.getTotalObligationsThisWeek(failedWeek);
         BigDecimal totalLiquidationValue = player.getTotalLiquidationValue(converter);
 
-        new GameOverModal(failedWeek, totalObligations, totalLiquidationValue, ownerStage, onNewGame).show();
+        new GameOverModal(failedWeek, totalObligations, totalLiquidationValue, ownerStage,
+                onNewGame, saveAction, sellAllAction, noSaveAction).show();
     }
 }

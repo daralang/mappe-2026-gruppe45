@@ -327,7 +327,7 @@ class StartControllerTest {
                     new ArrayList<>(List.of(stock)),
                     new FixedRateCurrencyConverter());
             Player player = new Player("Dara", new BigDecimal("10000.00"));
-            new JsonGameFileHandler().saveGame(player, exchange, saveFile.toFile());
+            new JsonGameFileHandler().saveGame(player, exchange, false, saveFile.toFile());
             // Act
             controller.validateAndSetSaveFile(saveFile.toFile());
             // Assert

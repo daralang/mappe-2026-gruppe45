@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
@@ -33,7 +34,7 @@ public class SellAllDialog extends AbstractSellDialog {
 
         Label quantity = new Label(MessageFormat.format(
                 LanguageManager.get("dialog.quantity.allShares"),
-                NUMBER_FORMAT.format(share.getQuantity())));
+                MoneyFormatter.format(share.getQuantity())));
         quantity.getStyleClass().add("modal-section-value");
 
         return new VBox(4, label, quantity);

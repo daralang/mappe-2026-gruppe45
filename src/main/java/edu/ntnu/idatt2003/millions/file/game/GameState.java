@@ -11,6 +11,7 @@ import edu.ntnu.idatt2003.millions.model.player.Player;
  *
  * @param player   the player state loaded from file
  * @param exchange the exchange state loaded from file
+ * @param gameOver whether the game had ended (bankruptcy) when it was saved
  */
-public record GameState(Player player, Exchange exchange) {
+public record GameState(Player player, Exchange exchange, boolean gameOver) {
 }

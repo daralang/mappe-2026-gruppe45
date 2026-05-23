@@ -14,12 +14,11 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -36,13 +35,6 @@ import java.util.function.Consumer;
  * The dialog never touches {@code GameService} directly.</p>
  */
 public class RepayLoanDialog extends Modal {
-
-    private static final DecimalFormat NUMBER_FORMAT;
-
-    static {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("nb-NO"));
-        NUMBER_FORMAT = new DecimalFormat("#,##0.00", symbols);
-    }
 
     private final Loan loan;
     private final int loanIndex;
@@ -139,7 +131,7 @@ public class RepayLoanDialog extends Modal {
                 weeksLeftText);
         VBox col3 = buildInfoColumn(
                 LanguageManager.get("loans.repay.info.weeklyInterest"),
-                NUMBER_FORMAT.format(weeklyRate) + "%");
+                MoneyFormatter.format(weeklyRate) + "%");
 
         HBox strip = new HBox(col1, col2, col3);
         strip.getStyleClass().add("modal-summary");
@@ -158,16 +150,16 @@ public class RepayLoanDialog extends Modal {
         SummaryBox summary = new SummaryBox();
         summary.addRow(
                 LanguageManager.get("loans.repay.summary.remaining"),
-                NUMBER_FORMAT.format(loan.principal()) + " NOK");
+                MoneyFormatter.format(loan.principal()) + " NOK");
         summary.addRow(
                 LanguageManager.get("loans.repay.summary.interestPaid"),
-                NUMBER_FORMAT.format(loan.interestPaid(currentWeek)) + " NOK");
+                MoneyFormatter.format(loan.interestPaid(currentWeek)) + " NOK");
         summary.addRow(
                 LanguageManager.get("loans.repay.summary.interestSaved"),
-                NUMBER_FORMAT.format(loan.interestSaved(currentWeek)) + " NOK", "positive");
+                MoneyFormatter.format(loan.interestSaved(currentWeek)) + " NOK", "positive");
         summary.addTotal(
                 LanguageManager.get("loans.repay.summary.toPay"),
-                NUMBER_FORMAT.format(loan.principal()) + " NOK");
+                MoneyFormatter.format(loan.principal()) + " NOK");
         return summary;
     }
 
@@ -175,10 +167,10 @@ public class RepayLoanDialog extends Modal {
         SummaryBox balance = new SummaryBox();
         balance.addRow(
                 LanguageManager.get("loans.repay.balance.available"),
-                NUMBER_FORMAT.format(availableCash) + " NOK");
+                MoneyFormatter.format(availableCash) + " NOK");
         balance.addTotal(
                 LanguageManager.get("loans.repay.balance.after"),
-                NUMBER_FORMAT.format(availableCash.subtract(loan.principal())) + " NOK");
+                MoneyFormatter.format(availableCash.subtract(loan.principal())) + " NOK");
         return balance;
     }
 

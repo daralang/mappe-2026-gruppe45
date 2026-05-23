@@ -14,22 +14,14 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
+
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 
 /**
  * Receipt shown after a successful loan repayment.
  */
 public class LoanRepaymentReceipt extends Modal {
-
-    private static final DecimalFormat NUMBER_FORMAT;
-
-    static {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("nb-NO"));
-        NUMBER_FORMAT = new DecimalFormat("#,##0.00", symbols);
-    }
 
     private final Loan loan;
     private final int loanIndex;
@@ -106,24 +98,24 @@ public class LoanRepaymentReceipt extends Modal {
         SummaryBox summary = new SummaryBox();
         summary.addRow(
                 LanguageManager.get("receipt.loan.repay.summary.amountPaid"),
-                NUMBER_FORMAT.format(loan.principal()) + " NOK");
+                MoneyFormatter.format(loan.principal()) + " NOK");
         summary.addRow(
                 LanguageManager.get("receipt.loan.repay.summary.interestSaved"),
-                NUMBER_FORMAT.format(loan.interestSaved(currentWeek)) + " NOK",
+                MoneyFormatter.format(loan.interestSaved(currentWeek)) + " NOK",
                 "positive");
         return summary;
     }
 
     private VBox buildBalanceSection() {
         StyledText beforeLabel = StyledText.detailLabel(LanguageManager.get("receipt.balance.before"));
-        StyledText beforeValue = StyledText.detailValue(NUMBER_FORMAT.format(balanceBefore) + " NOK");
+        StyledText beforeValue = StyledText.detailValue(MoneyFormatter.format(balanceBefore) + " NOK");
         Region spacer1 = new Region();
         HBox.setHgrow(spacer1, Priority.ALWAYS);
         HBox beforeRow = new HBox(beforeLabel, spacer1, beforeValue);
         beforeRow.getStyleClass().add("modal-balance-row");
 
         StyledText afterLabel = StyledText.detailLabel(LanguageManager.get("receipt.balance.after"));
-        StyledText afterValue = StyledText.detailValue(NUMBER_FORMAT.format(balanceAfter) + " NOK");
+        StyledText afterValue = StyledText.detailValue(MoneyFormatter.format(balanceAfter) + " NOK");
         Region spacer2 = new Region();
         HBox.setHgrow(spacer2, Priority.ALWAYS);
         HBox afterRow = new HBox(afterLabel, spacer2, afterValue);

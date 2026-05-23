@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.leaderboard.JsonLeaderboardFileHandler;
+import edu.ntnu.idatt2003.millions.file.leaderboard.LeaderboardCorruptException;
 import edu.ntnu.idatt2003.millions.file.leaderboard.LeaderboardFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
@@ -9,11 +10,14 @@ import edu.ntnu.idatt2003.millions.model.leaderboard.Outcome;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 
 import java.io.File;
+import java.io.UncheckedIOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Service that owns the leaderboard's persistence and ranking rules.
@@ -37,6 +41,8 @@ import java.util.Objects;
  * configurable via the DI constructor so tests can use a temp file.
  */
 public class LeaderboardService {
+
+    private static final Logger LOGGER = Logger.getLogger(LeaderboardService.class.getName());
 
     /**
      * Default leaderboard file name. Relative to the working directory, which
@@ -76,10 +82,10 @@ public class LeaderboardService {
      * never locks — a later save can overwrite a {@link Outcome#BANKRUPTCY} entry
      * with {@link Outcome#ACTIVE} if the player reloads and continues playing.</p>
      *
-     * <p>Failures to read or write the leaderboard file are swallowed silently
-     * (logged to stderr) rather than propagated. The leaderboard is a
-     * non-essential auxiliary feature; a corrupt or unwriteable file should not
-     * crash an in-progress save or game-over flow.</p>
+     * <p>Failures to read or write the leaderboard file are logged at WARNING
+     * and swallowed rather than propagated. The leaderboard is a non-essential
+     * auxiliary feature; a corrupt or unwriteable file should not crash an
+     * in-progress save or game-over flow.</p>
      *
      * @param player    the active player
      * @param exchange  the active exchange (used for week number)
@@ -106,9 +112,8 @@ public class LeaderboardService {
                 entries.add(snapshot);
             }
             fileHandler.writeAll(entries, file);
-        } catch (RuntimeException e) {
-            // Leaderboard is auxiliary — never let it crash save or game-over.
-            System.err.println("Could not update leaderboard: " + e.getMessage());
+        } catch (LeaderboardCorruptException | IllegalStateException | UncheckedIOException e) {
+            LOGGER.log(Level.WARNING, "Could not update leaderboard", e);
         }
     }
 
@@ -140,8 +145,8 @@ public class LeaderboardService {
         List<LeaderboardEntry> entries;
         try {
             entries = readMutable();
-        } catch (RuntimeException e) {
-            System.err.println("Could not read leaderboard: " + e.getMessage());
+        } catch (LeaderboardCorruptException | IllegalStateException e) {
+            LOGGER.log(Level.WARNING, "Could not read leaderboard", e);
             return List.of();
         }
         entries.sort(Comparator
@@ -154,7 +159,7 @@ public class LeaderboardService {
      * Reads the leaderboard file into a fresh mutable list so callers can
      * upsert without affecting any internal cache.
      */
-    private List<LeaderboardEntry> readMutable() {
+    private List<LeaderboardEntry> readMutable() throws LeaderboardCorruptException {
         return new ArrayList<>(fileHandler.readAll(file));
     }
 

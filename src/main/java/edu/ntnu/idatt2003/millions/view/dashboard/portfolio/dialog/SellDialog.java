@@ -4,6 +4,7 @@ import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
@@ -39,7 +40,7 @@ public class SellDialog extends AbstractSellDialog {
 
         StyledText owned = StyledText.detailLabel(MessageFormat.format(
                 LanguageManager.get("dialog.quantity.owned"),
-                NUMBER_FORMAT.format(share.getQuantity())));
+                MoneyFormatter.format(share.getQuantity())));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -80,7 +81,7 @@ public class SellDialog extends AbstractSellDialog {
             setTransactionInfo(null, null, null, false);
             showError(MessageFormat.format(
                     LanguageManager.get("dialog.quantity.notEnoughShares"),
-                    NUMBER_FORMAT.format(share.getQuantity())));
+                    MoneyFormatter.format(share.getQuantity())));
             return;
         }
 
@@ -98,16 +99,16 @@ public class SellDialog extends AbstractSellDialog {
     }
 
     private void renderEmptySummary() {
-        String zero = NUMBER_FORMAT.format(BigDecimal.ZERO) + " " + currencyCode();
+        String zero = MoneyFormatter.format(BigDecimal.ZERO) + " " + currencyCode();
         summaryBox.addRow(LanguageManager.get("dialog.summary.gross"), zero);
         summaryBox.addRow(LanguageManager.get("dialog.summary.commissionSell"), zero);
         summaryBox.addRow(LanguageManager.get("dialog.summary.tax"), zero);
         summaryBox.addTotal(LanguageManager.get("dialog.summary.totalReceived"), zero);
         if (!stock.getCurrency().equals(NOK)) {
-            summaryBox.addConversion("= " + NUMBER_FORMAT.format(BigDecimal.ZERO) + " NOK");
+            summaryBox.addConversion("= " + MoneyFormatter.format(BigDecimal.ZERO) + " NOK");
         }
         balanceAfterValue.getStyleClass().removeAll("positive", "negative");
         balanceAfterValue.setText(
-                NUMBER_FORMAT.format(controller.getCurrentBalance()) + " NOK");
+                MoneyFormatter.format(controller.getCurrentBalance()) + " NOK");
     }
 }

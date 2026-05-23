@@ -2,19 +2,13 @@ package edu.ntnu.idatt2003.millions.view.exchange.overview.card;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
-import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
-import edu.ntnu.idatt2003.millions.util.CurrencyManager;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
-import java.text.MessageFormat;
-import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.WeakChangeListener;
 import javafx.geometry.HPos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
@@ -26,35 +20,27 @@ import javafx.scene.layout.VBox;
  *
  * <p>Rendered as a {@link SortColumnTable} with four non-sortable columns so that
  * cell height and padding are consistent with all other dashboard tables.
- * The price column header is formatted lazily with the active currency code
- * from {@link CurrencyManager} and refreshes automatically on language and
- * currency changes.</p>
+ * The price column header refreshes automatically on language changes.</p>
  */
 public class StockRankingCard extends VBox {
 
-    private static final double COL_TICKER  = 18;
-    private static final double COL_COMPANY = 42;
-    private static final double COL_PRICE   = 22;
-    private static final double COL_CHANGE  = 18;
+    private static final double COL_TICKER   = 18;
+    private static final double COL_COMPANY  = 35;
+    private static final double COL_CURRENCY = 13;
+    private static final double COL_PRICE    = 10;
+    private static final double COL_CHANGE   = 10;
 
     private final String titleKey;
     private final StyledText titleLabel;
     private final SortColumnTable<Void> table;
 
-    /** The most recently displayed stock list; used to re-render on language/currency change. */
+    /** The most recently displayed stock list; used to re-render on language change. */
     private List<Stock> lastStocks = List.of();
-
-    /**
-     * Strong reference to the currency change listener.
-     * Required so the {@link WeakChangeListener} registered on
-     * {@link CurrencyManager#currencyProperty()} is not immediately garbage-collected.
-     */
-    private final ChangeListener<Currency> currencyListener = (obs, old, val) -> refreshLabels();
 
     /**
      * Constructs a StockRankingCard with a title and an initial list of stocks.
      * Registers observers so that title and column headers refresh automatically
-     * on language and currency changes.
+     * on language changes.
      *
      * @param titleKey the i18n key for the table title
      * @param stocks   the initial list of stocks to display
@@ -71,7 +57,6 @@ public class StockRankingCard extends VBox {
         getChildren().addAll(titleLabel, table.asNode());
 
         LanguageManager.addObserver(this::refreshLabels);
-        CurrencyManager.currencyProperty().addListener(new WeakChangeListener<>(currencyListener));
         update(stocks);
     }
 
@@ -112,14 +97,13 @@ public class StockRankingCard extends VBox {
      * @param stock    the stock to display
      */
     private void addDataRow(int rowIndex, Stock stock) {
-        String formattedPrice = ChangeFormatter.formatPlain(stock.getSalesPrice())
-                + " " + CurrencyFormatter.symbol(stock.getCurrency());
         Label changeLabel = ChangeFormatter.styledPercent(
                 stock.getWeeklyChangePercent(), "holdings-cell");
         table.addRow(rowIndex,
                 TableCells.data(stock.getSymbol()),
                 TableCells.data(stock.getCompany()),
-                TableCells.data(formattedPrice),
+                TableCells.data(stock.getCurrency().getCurrencyCode()),
+                TableCells.data(ChangeFormatter.formatPlain(stock.getSalesPrice())),
                 changeLabel);
     }
 
@@ -132,14 +116,11 @@ public class StockRankingCard extends VBox {
      */
     private List<TableColumnDef<Void>> columnDefs() {
         return List.of(
-                TableColumnDef.of("col.ticker",  COL_TICKER,  HPos.LEFT),
-                TableColumnDef.of("col.stock",   COL_COMPANY, HPos.LEFT),
-                new TableColumnDef<>(
-                        () -> MessageFormat.format(
-                                LanguageManager.get("col.priceNative"),
-                                CurrencyManager.get().getCurrencyCode()),
-                        null, null, COL_PRICE, HPos.RIGHT),
-                TableColumnDef.of("col.change",  COL_CHANGE,  HPos.RIGHT)
+                TableColumnDef.of("col.ticker",      COL_TICKER,   HPos.LEFT),
+                TableColumnDef.of("col.stock",       COL_COMPANY,  HPos.LEFT),
+                TableColumnDef.of("col.currency",    COL_CURRENCY, HPos.LEFT),
+                TableColumnDef.of("col.priceNative", COL_PRICE,    HPos.RIGHT),
+                TableColumnDef.of("col.change",      COL_CHANGE,   HPos.RIGHT)
         );
     }
 }
