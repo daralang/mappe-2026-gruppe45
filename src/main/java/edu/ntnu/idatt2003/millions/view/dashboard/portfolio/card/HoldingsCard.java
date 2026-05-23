@@ -188,13 +188,11 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
         GridPane.setColumnSpan(divider, sort.getColumnDefs().size());
         totalGrid.add(divider, 0, 0);
 
-        Label totalLabel = new Label(LanguageManager.get("dashboard.portfolio.total"));
-        totalLabel.getStyleClass().addAll("holdings-cell", "bold");
+        Label totalLabel = TableCells.boldData(LanguageManager.get("dashboard.portfolio.total"));
         totalGrid.add(totalLabel, TOTAL_COL_COMPANY, 1);
 
-        Label valueNok = new Label(MoneyFormatter.format(
+        Label valueNok = TableCells.boldData(MoneyFormatter.format(
                 portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
-        valueNok.getStyleClass().addAll("holdings-cell", "bold");
         totalGrid.add(valueNok, TOTAL_COL_VALUE_NOK, 1);
 
         totalGrid.add(coloredPercentCell(portfolioService.getTotalReturnPercent(
