@@ -164,6 +164,20 @@ public final class KeyboardNavigationService {
         return !contextStack.isEmpty();
     }
 
+    /**
+     * Runs the full dispatch pipeline for the given event as if it had been
+     * received from the scene's {@code EventFilter}.
+     *
+     * <p>Package-private so that unit tests in the same package can exercise
+     * dispatch behaviour without attaching to a live {@link javafx.scene.Scene}
+     * </p>
+     *
+     * @param event the key event to dispatch
+     */
+    void fireKeyEvent(KeyEvent event) {
+        onKeyPressed(event);
+    }
+
     private void onKeyPressed(KeyEvent event) {
         if (universalRegistry.dispatch(event)) {
             event.consume();
