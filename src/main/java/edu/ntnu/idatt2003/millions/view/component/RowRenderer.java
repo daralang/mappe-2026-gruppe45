@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;

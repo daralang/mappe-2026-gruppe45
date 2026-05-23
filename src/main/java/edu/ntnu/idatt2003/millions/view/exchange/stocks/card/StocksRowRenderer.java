@@ -9,7 +9,7 @@ import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
-import edu.ntnu.idatt2003.millions.view.component.SparklineChart;
+import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
