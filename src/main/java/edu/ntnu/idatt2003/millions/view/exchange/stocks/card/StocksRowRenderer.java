@@ -80,8 +80,7 @@ class StocksRowRenderer extends RowRenderer {
         }
         starButton.setOnAction(e -> onWatchlistToggle.accept(stock.getSymbol()));
 
-        Label tickerLabel = new Label(stock.getSymbol());
-        tickerLabel.getStyleClass().add("holdings-cell");
+        Label tickerLabel = TableCells.data(stock.getSymbol());
 
         HBox.setHgrow(tickerLabel, Priority.ALWAYS);
         tickerLabel.setMaxWidth(Double.MAX_VALUE);
