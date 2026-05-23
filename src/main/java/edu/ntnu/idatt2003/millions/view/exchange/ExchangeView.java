@@ -30,7 +30,8 @@ public class ExchangeView extends VBox implements SearchFocusProvider {
      * Constructs a new ExchangeView with the overview tab active.
      *
      * @param gameService the game manager containing player and exchange
-     * @param weekBar     the week bar shared with the rest of the application
+     * @param weekBar     the week bar owned exclusively by this view; each top-level view
+     *                    receives its own instance since a JavaFX node can only belong to one parent at a time
      * @param controller  the portfolio controller used to open buy/sell dialogs
      */
     public ExchangeView(GameService gameService, WeekBar weekBar, TradeController controller) {

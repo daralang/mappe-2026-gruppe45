@@ -45,7 +45,8 @@ public class DashboardView extends VBox implements SearchFocusProvider {
      * Constructs a new DashboardView with a tab bar.
      *
      * @param gameService the game manager containing player and exchange
-     * @param weekBar     the week bar shared with the rest of the application
+     * @param weekBar     the week bar owned exclusively by this view; each top-level view
+     *                    receives its own instance since a JavaFX node can only belong to one parent at a time
      */
     public DashboardView(GameService gameService,
                          TradeController tradeController,
