@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.component.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.SearchMetadataRow;
@@ -19,8 +20,9 @@ import java.util.function.Consumer;
 /**
  * Abstract base for paginated, sortable, searchable table cards.
  *
- * <p>Extends {@link PaginatedCard} with shared fields and implements
- * {@link #refresh()} as a sealed Template Method.
+ * <p>Extends {@link PaginatedCard} with shared fields, implements
+ * {@link #refresh()} as a sealed Template Method, and satisfies
+ * {@link SearchFocusProvider} via {@link #focusSearch()}.
  *
  * <p>{@link #table}, {@link #pagination} and {@link #sortProvider} are
  * non-final protected fields that subclasses must assign in their constructors
@@ -35,7 +37,7 @@ import java.util.function.Consumer;
  * @param <T>      the item type displayed in the table rows
  * @param <Column> the sort-column enum type
  */
-public abstract class SortableTableCard<T, Column> extends PaginatedCard {
+public abstract class SortableTableCard<T, Column> extends PaginatedCard implements SearchFocusProvider {
 
     /**
      * The sortable table. Must be assigned by the subclass constructor
@@ -57,6 +59,14 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard {
 
     /** Reusable metadata row showing search result counts. */
     protected final SearchMetadataRow metadataRow = new SearchMetadataRow();
+
+    /**
+     * The search bar built by {@link #buildSearchRow}.
+     * Assigned during construction; may be {@code null} in subclasses that
+     * override {@link #buildSearchRow} without calling this method.
+     * Exposed via {@link #focusSearch()}.
+     */
+    protected SearchBar searchBar;
 
     /** The active text-search term. Updated by the search bar callback. */
     protected String currentSearchTerm = "";
@@ -172,7 +182,7 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard {
      * @return the configured search row
      */
     protected HBox buildSearchRow(Button clearSortButton) {
-        SearchBar searchBar = new SearchBar(
+        searchBar = new SearchBar(
                 "search.placeholder",
                 "search.button",
                 searchCallback(),
@@ -195,6 +205,17 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard {
             currentSearchTerm = term == null ? "" : term;
             resetPageAndRefresh();
         };
+    }
+
+    /**
+     * Focuses the search field of this card, if one exists.
+     * Subclasses that override {@link #buildSearchRow} must also override
+     * this method to forward focus to their own {@link SearchBar} field.
+     */
+    public void focusSearch() {
+        if (searchBar != null) {
+            searchBar.focus();
+        }
     }
 
     /** Rebuilds the card when the game state changes. */

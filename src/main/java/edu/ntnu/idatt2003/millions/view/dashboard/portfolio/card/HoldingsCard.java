@@ -212,15 +212,21 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     }
 
     /**
-     * Renders one share as a data row in the table.
+     * Renders one share as a keyboard-navigable data row in the table.
+     * UP/DOWN moves between rows; ENTER opens the share details modal.
      *
      * @param row   the grid row index to write to
      * @param share the share to render
      */
     private void addDataRow(int row, Share share) {
         Stock stock = share.getStock();
-        table.addRow(row,
-                buildActionButtons(share),
+        Button buyButton = actionButton(
+                LanguageManager.get("dashboard.portfolio.buy"), "holdings-action-buy");
+        buyButton.setDisable(gameService.isGameOver());
+        buyButton.setOnAction(e -> controller.openBuyDialog(share.getStock()));
+
+        table.addSelectableRow(row, buyButton, () -> controller.openDetailsModal(share),
+                buildActionButtons(share, buyButton),
                 TableCells.data(stock.getSymbol() + ", " + stock.getCompany()),
                 TableCells.data(MoneyFormatter.format(share.getQuantity())),
                 coloredPercentCell(stock.getWeeklyChangePercent()),
@@ -234,28 +240,27 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     }
 
     /**
-     * Builds the buy, sell and sell-all action buttons for a share row.
+     * Builds the sell and sell-all action buttons alongside the provided buy button.
+     * The buy button is created in {@link #addDataRow} so it can serve as focus anchor.
      * All buttons are disabled when the game is over.
      *
-     * @param share the share the buttons act on
-     * @return an {@link HBox} containing the action buttons
+     * @param share     the share the buttons act on
+     * @param buyButton the already-configured buy button
+     * @return an HBox containing all action buttons
      */
-    private HBox buildActionButtons(Share share) {
+    private HBox buildActionButtons(Share share, Button buyButton) {
         boolean gameOver = gameService.isGameOver();
 
-        Button buy = actionButton(LanguageManager.get("dashboard.portfolio.buy"), "holdings-action-buy");
         Button sell = actionButton(LanguageManager.get("dashboard.portfolio.sell"), "holdings-action-sell");
         Button sellAll = actionButton(LanguageManager.get("dashboard.portfolio.sellAll"), "holdings-action-sell");
 
-        buy.setDisable(gameOver);
         sell.setDisable(gameOver);
         sellAll.setDisable(gameOver);
 
-        buy.setOnAction(e -> controller.openBuyDialog(share.getStock()));
         sell.setOnAction(e -> controller.openSellDialog(share));
         sellAll.setOnAction(e -> controller.openSellAllDialog(share));
 
-        HBox primaryActions = new HBox(8, buy, sell);
+        HBox primaryActions = new HBox(8, buyButton, sell);
         primaryActions.setAlignment(Pos.CENTER_LEFT);
 
         HBox box = new HBox(16, primaryActions, sellAll);

@@ -1,33 +1,33 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * Reusable search bar for views that need explicit search input.
- * Assembles a search icon, a text field, a search button, and a
- * clear button into a single row, with optional metadata below it.
- * Search is triggered by pressing Enter or
- * clicking the search button. The clear button is hidden until a non-empty
- * search has been submitted; clicking it resets the field and notifies the
- * caller.
+ * Reusable search bar with icon, text field, search button, and clear button.
  *
+ * <p>Search is triggered by Enter or clicking the button. ESC clears and blurs the field.
+ * The {@code Cmd/Ctrl+F} shortcut to focus this bar is registered externally via
+ * {@link SearchFocusProvider} and the application-wide
+ * {@code KeyboardNavigationService}, keeping shortcut registration out of the view layer.</p>
  */
 public class SearchBar extends VBox {
 
     private final TextField searchField = new TextField();
     private final Button searchButton = new Button();
     private final Button clearButton = new Button();
+
     private final String placeholderKey;
     private final String buttonKey;
 
@@ -74,22 +74,31 @@ public class SearchBar extends VBox {
         clearIcon.getStyleClass().add("search-clear-icon");
         clearButton.setGraphic(clearIcon);
         clearButton.getStyleClass().add("search-clear-button");
-        clearButton.setOpacity(0);
+        setClearVisible(false);
 
         Runnable triggerSearch = () -> {
             String term = searchField.getText();
             onSearch.accept(term);
-            clearButton.setOpacity(term.isBlank() ? 0 : 1);
+            setClearVisible(!term.isBlank());
         };
 
         searchField.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER) triggerSearch.run();
+            if (event.getCode() == KeyCode.ENTER) {
+                triggerSearch.run();
+            } else if (event.getCode() == KeyCode.ESCAPE) {
+                searchField.clear();
+                onSearch.accept("");
+                setClearVisible(false);
+                searchField.getParent().requestFocus();
+                event.consume();
+            }
         });
+
         searchButton.setOnAction(event -> triggerSearch.run());
         clearButton.setOnAction(event -> {
             searchField.clear();
             onSearch.accept("");
-            clearButton.setOpacity(0);
+            setClearVisible(false);
         });
 
         HBox.setHgrow(searchField, Priority.ALWAYS);
@@ -108,6 +117,29 @@ public class SearchBar extends VBox {
 
         updateTexts();
         LanguageManager.addObserver(this::updateTexts);
+    }
+
+    /**
+     * Requests keyboard focus on the search text field.
+     * Call this from a {@link edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider}
+     * implementation when {@code Cmd/Ctrl+F} is pressed.
+     */
+    public void focus() {
+        searchField.requestFocus();
+    }
+
+    /**
+     * Shows or hides the clear button and keeps its tab-order participation in sync.
+     *
+     * <p>Opacity alone does not remove a node from tab traversal, so setFocusTraversable(boolean)
+     * must be updated alongside the opacity to prevent the invisible button from receiving keyboard focus.</p>
+     *
+     * @param visible {@code true} to show the button and include it in tab order,
+     *                {@code false} to hide it and exclude it
+     */
+    private void setClearVisible(boolean visible) {
+        clearButton.setOpacity(visible ? 1 : 0);
+        clearButton.setFocusTraversable(visible);
     }
 
     /**

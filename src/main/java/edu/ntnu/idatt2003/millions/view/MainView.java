@@ -1,7 +1,10 @@
 package edu.ntnu.idatt2003.millions.view;
 
 import edu.ntnu.idatt2003.millions.controller.LoanController;
+import edu.ntnu.idatt2003.millions.controller.MainController;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
+import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;
+import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.view.component.Header;
@@ -27,9 +30,18 @@ import javafx.stage.Stage;
  * Contains a persistent {@link TitleBar} and a content area that switches
  * between different views depending on user navigation.
  *
- * <p>Navigation between Dashboard and Exchange is handled internally as
- * purely visual state. Domain-related actions (save, exit, advance week)
- * are delegated to the controller via callbacks supplied at construction.</p>
+ * <p>Navigation between Dashboard, Exchange and Leaderboard is handled
+ * internally as purely visual state. The {@link DashboardView} is cached
+ * so that sub-views survive tab switches and keyboard shortcuts
+ * (Shift+1–4) can jump directly to a dashboard tab.</p>
+ *
+ * <p>Notifies the injected {@link SearchFocusRegistry} whenever the active
+ * view changes, so the {@code Cmd/Ctrl+F} shortcut registered in
+ * {@link MainController} always
+ * reaches the correct search field without coupling the controller to this view.</p>
+ *
+ * <p>Domain-related actions (save, exit, advance week) are delegated to
+ * the controller via callbacks supplied at construction.</p>
  */
 public class MainView {
 
@@ -37,19 +49,28 @@ public class MainView {
     private final TradeController tradeController;
     private final LoanController loanController;
     private final ToastService toastService;
+    private final SearchFocusRegistry searchFocusRegistry;
+    private final TabNavigationRegistry tabNavigationRegistry;
     private final StackPane outerRoot;
     private final BorderPane content;
     private final WeekBar weekBar;
     private final StatusFooter footer;
 
+    private DashboardView dashboardView;
+    private ScrollPane dashboardScrollable;
+
     /**
      * Constructs a new MainView with a platform-appropriate title bar and
      * dashboard as the default content.
      *
-     * @param stage          the primary stage, used for window-state listeners
-     * @param gameService    the game manager containing player and exchange
-     * @param titleBar       the platform title bar; save/exit callbacks already wired by the controller
-     * @param onAdvanceWeek  callback invoked when the user clicks "Advance week"
+     * @param stage               the primary stage, used for window-state listeners
+     * @param gameService         the game manager containing player and exchange
+     * @param titleBar            the platform title bar; save/exit callbacks already wired by the controller
+     * @param onAdvanceWeek       callback invoked when the user clicks "Advance week"
+     * @param searchFocusRegistry   registry updated whenever the active view changes,
+     *                              allowing the controller to trigger search focus
+     *                              without depending on this view directly
+     * @param tabNavigationRegistry registry updated whenever the active view changes when tab changes
      */
     public MainView(Stage stage,
                     GameService gameService,
@@ -57,11 +78,15 @@ public class MainView {
                     LoanController loanController,
                     TitleBar titleBar,
                     Runnable onAdvanceWeek,
-                    ToastService toastService) {
+                    ToastService toastService,
+                    SearchFocusRegistry searchFocusRegistry,
+                    TabNavigationRegistry tabNavigationRegistry) {
         this.gameService = gameService;
         this.tradeController = tradeController;
         this.loanController = loanController;
         this.toastService = toastService;
+        this.searchFocusRegistry = searchFocusRegistry;
+        this.tabNavigationRegistry = tabNavigationRegistry;
         this.weekBar = new WeekBar(gameService, onAdvanceWeek);
         titleBar.setOnDashboard(this::showDashboard);
         titleBar.setOnExchange(this::showExchange);
@@ -130,21 +155,38 @@ public class MainView {
 
     /**
      * Switches the content area to the dashboard view.
+     * The {@link DashboardView} is created once and reused on subsequent calls
+     * so sub-view state (lazy init, scroll position) survives navigation.
      */
-    private void showDashboard() {
-        content.setCenter(wrapScrollable(
-                new DashboardView(gameService, tradeController, loanController, weekBar, this::showExchangeOnStocksTab)));
+    public void showDashboard() {
+        if (dashboardScrollable == null) {
+            dashboardView = new DashboardView(
+                    gameService, tradeController, loanController, weekBar, this::showExchangeOnStocksTab);
+            dashboardScrollable = wrapScrollable(dashboardView);
+        }
+        searchFocusRegistry.setActive(dashboardView);
+        tabNavigationRegistry.setActive(dashboardView::showTab);
+        content.setCenter(dashboardScrollable);
     }
 
     /**
      * Switches the content area to the exchange view.
      */
-    private void showExchange() {
-        content.setCenter(wrapScrollable(new ExchangeView(gameService, weekBar, tradeController)));
+    public void showExchange() {
+        ExchangeView exchangeView = new ExchangeView(gameService, weekBar, tradeController);
+        searchFocusRegistry.setActive(exchangeView);
+        tabNavigationRegistry.setActive(exchangeView::showTab);
+        content.setCenter(wrapScrollable(exchangeView));
     }
 
-    private void showLeaderboard() {
-        content.setCenter(wrapScrollable(new LeaderboardView(gameService, toastService, weekBar)));
+    /**
+     * Switches the content area to the leaderboard view.
+     */
+    public void showLeaderboard() {
+        LeaderboardView leaderboardView = new LeaderboardView(gameService, toastService, weekBar);
+        searchFocusRegistry.setActive(leaderboardView);
+        tabNavigationRegistry.setActive(null);
+        content.setCenter(wrapScrollable(leaderboardView));
     }
 
     private void showExchangeOnStocksTab() {

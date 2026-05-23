@@ -1,12 +1,16 @@
 package edu.ntnu.idatt2003.millions.view.component.table;
 
+import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -22,6 +26,12 @@ import java.util.function.Supplier;
  * <p>Cards retain responsibility for data fetching, filtering, sorting and
  * cell construction.</p>
  *
+ * <p>The row-navigation event filter is registered lazily on the first call to
+ * {@link #addSelectableRow} and removed again by {@link #clearRows()}, ensuring
+ * the filter does not outlive the rows it serves. Navigation is delegated to an
+ * internal {@link ArrowKeyNavigator}; focus is synchronised to the actually
+ * focused row before each key event so Tab-based entry works correctly.</p>
+ *
  * @param <Column> the sort-column enum type; use a wildcard or {@code Object}
  *                 when no column is sortable
  */
@@ -34,6 +44,19 @@ public class SortColumnTable<Column> {
     private final SortState<Column> sortState = new SortState<>();
     private final GridPane grid = new GridPane();
     private final TableHeaderRenderer<Column> headerRenderer = new TableHeaderRenderer<>(sortState);
+    private final List<SelectableRow> selectableRows = new ArrayList<>();
+    private boolean rowFilterInstalled = false;
+    private final javafx.event.EventHandler<KeyEvent> rowNavigationHandler = this::handleRowNavigation;
+    private final ArrowKeyNavigator rowNavigator = new ArrowKeyNavigator(
+            ArrowKeyNavigator.Orientation.VERTICAL,
+            selectableRows::size,
+            idx -> selectableRows.get(idx).focusAnchor().requestFocus(),
+            idx -> selectableRows.get(idx).onEnter().run(),
+            false
+    );
+
+    /** Metadata for a keyboard-navigable data row. */
+    private record SelectableRow(int gridRow, Node focusAnchor, Runnable onEnter) {}
 
     /**
      * Constructs a sortable table with default horizontal gap of 20px.
@@ -64,10 +87,17 @@ public class SortColumnTable<Column> {
 
     /**
      * Clears all nodes from the grid, including header and data rows.
-     * Call this at the start of every refresh before calling {@link #refreshHeader}.
+     * Also clears the selectable-row registry and removes the row-navigation
+     * event filter so it does not linger when there are no navigable rows.
+     * Call this at the start of every refresh before calling {@code refreshHeader}.
      */
     public void clearRows() {
         grid.getChildren().clear();
+        selectableRows.clear();
+        if (rowFilterInstalled) {
+            grid.removeEventFilter(KeyEvent.KEY_PRESSED, rowNavigationHandler);
+            rowFilterInstalled = false;
+        }
     }
 
     /**
@@ -103,6 +133,29 @@ public class SortColumnTable<Column> {
     public void addRow(int rowIndex, Node... cells) {
         for (int i = 0; i < cells.length; i++) {
             grid.add(cells[i], i, rowIndex);
+        }
+    }
+
+    /**
+     * Adds a data row and registers it for UP/DOWN keyboard navigation.
+     *
+     * <p>When this row has focus (or a descendant has focus) and the user
+     * presses UP or DOWN, the internal {@link ArrowKeyNavigator} moves focus
+     * to the adjacent row's {@code focusAnchor}. ENTER calls {@code onEnter}.
+     * The grid event filter is attached lazily on the first call and removed
+     * by {@link #clearRows()}.</p>
+     *
+     * @param gridRow     the grid row to write to (row 0 is reserved for the header)
+     * @param focusAnchor the node that receives focus when navigating to this row
+     * @param onEnter     action invoked when the user presses Enter on this row
+     * @param cells       the nodes to place, one per column
+     */
+    public void addSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter, Node... cells) {
+        addRow(gridRow, cells);
+        selectableRows.add(new SelectableRow(gridRow, focusAnchor, onEnter));
+        if (!rowFilterInstalled) {
+            grid.addEventFilter(KeyEvent.KEY_PRESSED, rowNavigationHandler);
+            rowFilterInstalled = true;
         }
     }
 
@@ -207,6 +260,56 @@ public class SortColumnTable<Column> {
      */
     public boolean isSortActive() {
         return sortState.hasActiveSort();
+    }
+
+    /**
+     * Handles UP/DOWN/ENTER when focus is inside a selectable row.
+     *
+     * <p>Delegates movement and confirmation to {@link ArrowKeyNavigator}.
+     * Before each key event the navigator's index is silently synchronised
+     * to the actually focused row via {@link ArrowKeyNavigator#syncIndex},
+     * so navigation is correct even when focus arrives via Tab rather than
+     * a previous arrow-key press.</p>
+     */
+    private void handleRowNavigation(KeyEvent event) {
+        KeyCode code = event.getCode();
+        if (code != KeyCode.UP && code != KeyCode.DOWN && code != KeyCode.ENTER) {
+            return;
+        }
+        Node focused = grid.getScene() != null ? grid.getScene().getFocusOwner() : null;
+        int dataIdx = findFocusedDataRowIndex(focused);
+        if (dataIdx < 0) {
+            return;
+        }
+        rowNavigator.syncIndex(dataIdx);
+        if (rowNavigator.navigate(event)) {
+            event.consume();
+        }
+    }
+
+    /**
+     * Walks up the scene-graph from {@code focused} to find the direct grid child,
+     * then maps its grid-row to a selectable-row index.
+     *
+     * @param focused the current focus owner; may be {@code null}
+     * @return the zero-based index in {@code selectableRows}, or {@code -1} if not found
+     */
+    private int findFocusedDataRowIndex(Node focused) {
+        Node node = focused;
+        while (node != null && node != grid) {
+            if (node.getParent() == grid) {
+                Integer row = GridPane.getRowIndex(node);
+                int gridRow = (row != null) ? row : 0;
+                for (int i = 0; i < selectableRows.size(); i++) {
+                    if (selectableRows.get(i).gridRow() == gridRow) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+            node = node.getParent();
+        }
+        return -1;
     }
 
     /**

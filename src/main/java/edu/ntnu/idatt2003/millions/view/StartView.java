@@ -210,6 +210,34 @@ public class StartView implements StartScreenInputs {
     }
 
     /**
+     * Requests keyboard focus on the first input field of the New Game tab.
+     * Delegates to {@link NewGameTab#focusFirstInput()} so the start screen
+     * is immediately keyboard-operable after the scene is shown.
+     * Must be called via {@code Platform.runLater} after the scene is displayed.
+     */
+    public void focusFirstInput() {
+        newGameTabContent.focusFirstInput();
+    }
+
+    /**
+     * Selects the New Game tab.
+     * Called by {@link edu.ntnu.idatt2003.millions.controller.StartController}
+     * in response to the {@code Shift+1} keyboard shortcut.
+     */
+    public void showNewGameTab() {
+        tabPane.getSelectionModel().select(newGameTab);
+    }
+
+    /**
+     * Selects the Load Game tab.
+     * Called by {@link edu.ntnu.idatt2003.millions.controller.StartController}
+     * in response to the {@code Shift+2} keyboard shortcut.
+     */
+    public void showLoadGameTab() {
+        tabPane.getSelectionModel().select(loadGameTab);
+    }
+
+    /**
      * Registers the callback invoked when the user clicks the start button.
      *
      * @param callback the action to run on start; {@code null} disables the handler
