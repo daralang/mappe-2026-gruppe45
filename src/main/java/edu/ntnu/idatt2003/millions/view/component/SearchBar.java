@@ -121,7 +121,7 @@ public class SearchBar extends VBox {
 
     /**
      * Requests keyboard focus on the search text field.
-     * Call this from a {@link edu.ntnu.idatt2003.millions.view.SearchFocusProvider}
+     * Call this from a {@link edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider}
      * implementation when {@code Cmd/Ctrl+F} is pressed.
      */
     public void focus() {
