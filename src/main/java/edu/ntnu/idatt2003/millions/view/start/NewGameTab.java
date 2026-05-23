@@ -58,7 +58,7 @@ public class NewGameTab extends FileDropTab {
         capitalField = new TextField();
         capitalField.setTooltip(capitalTooltip);
         currencySelector = new CurrencySelector();
-        currencySelector.setDisable(false);
+        currencySelector.setDisable(true);
 
         Stream.of(nameField, capitalField).forEach(f -> f.getStyleClass().add("start-field"));
 
