@@ -285,10 +285,12 @@ class KeyboardNavigationServiceTest {
             RecordingContext second = new RecordingContext(false);
             service.pushContext(first);
             service.pushContext(second);
+            int deactivationsBefore = first.deactivations;
 
             service.popContext(first);
 
-            assertEquals(0, first.deactivations);
+            assertEquals(deactivationsBefore, first.deactivations,
+                    "popContext should not deactivate a context that is not at the top");
             assertTrue(service.hasActiveContext());
         }
 
