@@ -81,9 +81,17 @@ public final class KeyboardNavigationService {
     }
 
     /**
-     * Detaches this service from its current scene and clears all state.
+     * Detaches this service from its current scene and clears all state,
+     * including both shortcut registries and the full context stack.
      * Also removes the {@code sceneProperty} listener added by {@link #bindToNode}.
      * Safe to call even when not attached.
+     *
+     * <p><strong>Ownership:</strong> the controller that owns this service is
+     * responsible for calling {@code detach()} before navigating away from the
+     * screen it manages.
+     * {@link #bindToNode} calls {@code detach()} automatically whenever the bound node loses its
+     * scene (e.g. when the scene graph is torn down), so manual calls are only
+     * needed when the controller itself drives the navigation.</p>
      */
     public void detach() {
         if (boundNode != null && sceneListener != null) {
