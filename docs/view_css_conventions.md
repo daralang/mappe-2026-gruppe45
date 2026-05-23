@@ -100,6 +100,48 @@ Typography classes define **zero padding**. Spacing between text elements is the
 
 ---
 
+## Table cells — `TableCells` and `holdings.css`
+
+`holdings.css` is the source of truth for what header and data cells look like. `TableCells` is the only way to create those cells in Java code - it ensures the correct CSS class is applied and prevents raw `new Label()` + `getStyleClass().add()` calls from scattering class names across the codebase.
+
+```java
+// Correct
+Label cell   = TableCells.data(stock.getSymbol());
+Label header = TableCells.header("Company");
+
+// Wrong
+Label cell = new Label(stock.getSymbol());
+cell.getStyleClass().add("holdings-cell");
+```
+
+### Cell factories
+
+| Factory method | CSS class(es) | Typical use |
+|---|---|---|
+| `TableCells.header(text)` | `holdings-header` | Non-interactive column header label |
+| `TableCells.sortHeader(text, active, ascending, onClick)` | `holdings-header` | Sortable column header button |
+| `TableCells.data(text)` | `holdings-cell` | Plain data cell |
+| `TableCells.boldData(text)` | `holdings-cell`, `bold` | Bold data cell for total rows |
+| `TableCells.empty(text)` | `holdings-empty` | Centered empty-state message |
+
+Specialised cells that carry more than a typography class belong elsewhere: use `ChangeFormatter.styledAmount` / `styledPercent` for sign-colored values, component CSS for badges, and manual `Button` construction for action links. Do not add styling shortcuts for one-off cases to `TableCells`.
+
+### Grid helpers
+
+Three methods write directly to a `GridPane` and remove boilerplate that every table card would otherwise duplicate:
+
+- `configureColumns(grid, widths, alignments)` — applies percentage widths and horizontal alignments from parallel arrays. Call once during construction; does not clear existing constraints.
+- `addHeaderRow(grid, headers)` — writes one `header(text)` cell per entry at row 0.
+- `renderEmptyState(grid, message, columnCount)` — adds the `empty(text)` label at row 1, centered and spanning all columns.
+
+### Adding a new cell factory
+
+1. Add the CSS class to `holdings.css`.
+2. Add a static factory method to `TableCells` that applies it.
+3. Use the factory method everywhere that cell type appears — do not mix direct `Label` construction for the same role.
+
+---
+
 ## Component-specific CSS
 
 Rules that only apply to one component belong in that component's CSS file (e.g. `holdings.css`, `modal.css`). Use a consistent prefix so the scope is immediately clear:
