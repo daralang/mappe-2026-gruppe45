@@ -270,15 +270,13 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
 
     /**
      * Builds the details navigation button for a share row.
+     * Delegates to {@link TableCells#chevronButton(Runnable)} for consistent styling.
      *
      * @param share the share to open details for
      * @return a styled chevron button
      */
     private Button buildDetailsButton(Share share) {
-        Button details = new Button("❯");
-        details.getStyleClass().add("holdings-details-chevron");
-        details.setOnAction(e -> controller.openDetailsModal(share));
-        return details;
+        return TableCells.chevronButton(() -> controller.openDetailsModal(share));
     }
 
     /**
