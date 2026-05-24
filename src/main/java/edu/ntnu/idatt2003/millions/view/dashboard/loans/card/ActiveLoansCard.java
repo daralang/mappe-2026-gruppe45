@@ -11,12 +11,10 @@ import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
-import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.LoansSort;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -177,12 +175,7 @@ public class ActiveLoansCard extends Card {
      * {@link LoansSort#getColumnDefs()} so total values align with table columns.
      */
     private void initTotalGridColumns() {
-        for (TableColumnDef<LoansSort.SortColumn> col : loansSort.getColumnDefs()) {
-            ColumnConstraints cc = new ColumnConstraints();
-            cc.setPercentWidth(col.percentWidth());
-            cc.setHalignment(col.alignment());
-            totalGrid.getColumnConstraints().add(cc);
-        }
+        SortColumnTable.applyColumnConstraints(totalGrid, loansSort.getColumnDefs());
     }
 
     /**

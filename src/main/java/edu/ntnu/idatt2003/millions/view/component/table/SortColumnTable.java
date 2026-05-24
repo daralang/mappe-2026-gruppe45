@@ -403,7 +403,23 @@ public class SortColumnTable<Column> {
      * @param cols the initial column definitions
      */
     private void configureColumns(List<TableColumnDef<Column>> cols) {
-        for (TableColumnDef<Column> col : cols) {
+        applyColumnConstraints(grid, cols);
+    }
+
+    /**
+     * Applies each column definition's percentage width and horizontal alignment
+     * as a {@link ColumnConstraints} on the given grid, in order.
+     *
+     * <p>Shared so that a card's separate total-row grid can be given exactly the
+     * same column geometry as the table, derived from the single column-definition
+     * source rather than duplicated per caller.</p>
+     *
+     * @param grid the grid to configure
+     * @param cols the ordered column definitions
+     * @param <C>  the column key type
+     */
+    public static <C> void applyColumnConstraints(GridPane grid, List<TableColumnDef<C>> cols) {
+        for (TableColumnDef<C> col : cols) {
             ColumnConstraints cc = new ColumnConstraints();
             cc.setPercentWidth(col.percentWidth());
             cc.setHalignment(col.alignment());

@@ -16,13 +16,11 @@ import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
-import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.HoldingsSort;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -190,12 +188,7 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
      * as the holdings table so total values align with their respective columns.
      */
     private void initTotalGridColumns() {
-        for (TableColumnDef<HoldingsSort.SortColumn> col : sort.getColumnDefs()) {
-            ColumnConstraints cc = new ColumnConstraints();
-            cc.setPercentWidth(col.percentWidth());
-            cc.setHalignment(col.alignment());
-            totalGrid.getColumnConstraints().add(cc);
-        }
+        SortColumnTable.applyColumnConstraints(totalGrid, sort.getColumnDefs());
     }
 
     /**
