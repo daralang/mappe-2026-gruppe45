@@ -9,6 +9,7 @@ import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.ChevronButton;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.LoansSort;
@@ -131,14 +132,15 @@ public class ActiveLoansCard extends Card {
         String weeksLeftText = MessageFormat.format(
                 LanguageManager.get("loans.active.weeksLeft"), weeksLeft, loan.offer().termWeeks());
 
-        table.addRow(row,
-                TableCells.data(loanLabel),
-                TableCells.data(MoneyFormatter.format(weeklyRate) + " %"),
-                TableCells.data(weeksLeftText),
-                TableCells.data(MoneyFormatter.format(loan.weeklyInterest())),
-                TableCells.data(MoneyFormatter.format(loan.principal())),
-                buildActionCell(loan, typeIndex)
-        );
+        table.addRow(row, RowCells.<LoansSort.SortColumn>builder()
+                .put(LoansSort.SortColumn.LOAN, TableCells.data(loanLabel))
+                .put(LoansSort.SortColumn.RATE, TableCells.data(MoneyFormatter.format(weeklyRate) + " %"))
+                .put(LoansSort.SortColumn.WEEKS_LEFT, TableCells.data(weeksLeftText))
+                .put(LoansSort.SortColumn.WEEKLY_COST,
+                        TableCells.data(MoneyFormatter.format(loan.weeklyInterest())))
+                .put(LoansSort.SortColumn.REMAINING,
+                        TableCells.data(MoneyFormatter.format(loan.principal())))
+                .put(LoansSort.SortColumn.ACTIONS, buildActionCell(loan, typeIndex)));
     }
 
     /**
