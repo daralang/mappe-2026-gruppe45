@@ -11,12 +11,10 @@ import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
 import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
 import java.math.BigDecimal;
@@ -94,19 +92,6 @@ class WatchlistRowRenderer extends RowRenderer {
         HBox actions = buildActionButtons(item);
         Button noteButton = buildNoteButton(item);
         Button removeButton = buildRemoveButton(stock.getSymbol());
-
-        GridPane.setValignment(tickerLabel, VPos.TOP);
-        GridPane.setValignment(companyLabel, VPos.TOP);
-        GridPane.setValignment(priceNokLabel, VPos.TOP);
-        GridPane.setValignment(currencyLabel, VPos.TOP);
-        GridPane.setValignment(priceAltLabel, VPos.TOP);
-        GridPane.setValignment(changeNokLabel, VPos.TOP);
-        GridPane.setValignment(changePctLabel, VPos.TOP);
-        GridPane.setValignment(highLowLabel, VPos.TOP);
-        GridPane.setValignment(sparkline, VPos.TOP);
-        GridPane.setValignment(actions, VPos.TOP);
-        GridPane.setValignment(noteButton, VPos.CENTER);
-        GridPane.setValignment(removeButton, VPos.CENTER);
 
         return RowCells.<WatchlistSort.SortColumn>builder()
                 .put(WatchlistSort.SortColumn.NOTE, noteButton)
