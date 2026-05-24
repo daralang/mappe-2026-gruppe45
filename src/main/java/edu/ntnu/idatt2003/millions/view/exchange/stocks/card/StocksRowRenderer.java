@@ -14,19 +14,15 @@ import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.layout.Priority;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import static edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort.SortColumn.*;
 
@@ -118,10 +114,6 @@ class StocksRowRenderer extends RowRenderer {
         HBox tradeButtons = buildBuyButton(stock);
         ChevronButton detailsButton = new ChevronButton(
                 () -> onDetailClick.accept(stock), "tooltip.stocks.chevron");
-
-        Stream.<Node>of(starButton, tickerCell, companyLabel, priceNokLabel, changeKrLabel,
-                changePctLabel, sparkline, tradeButtons, detailsButton)
-                .forEach(n -> GridPane.setValignment(n, VPos.TOP));
 
         return RowCells.<StocksSort.SortColumn>builder()
                 .put(WATCHLIST, starButton)
