@@ -1,6 +1,5 @@
 package edu.ntnu.idatt2003.millions.model.stock;
 
-import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -375,6 +374,124 @@ class StockTest {
             BigDecimal result = stock.getLatestPriceChange();
             //Assert
             assertEquals(0, BigDecimal.ZERO.compareTo(result));
+        }
+    }
+
+    @Nested
+    @DisplayName("getRecentLow()")
+    class GetRecentLow {
+
+        @Test
+        @DisplayName("Should return the lowest price within the recent window")
+        void returnsLowestPriceWithinWindow() {
+            // Arrange
+            Stock multiPriceStock = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("50.00"),
+                            new BigDecimal("200.00"),
+                            new BigDecimal("300.00"),
+                            new BigDecimal("250.00"))));
+            // Act: window of 2 is [300, 250], lowest is 250
+            BigDecimal result = multiPriceStock.getRecentLow(2);
+            // Assert
+            assertEquals(0, new BigDecimal("250.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should ignore prices older than the recent window")
+        void ignoresPricesOlderThanWindow() {
+            // Arrange: 50 is the overall low but lies outside the 2-week window
+            Stock multiPriceStock = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("50.00"),
+                            new BigDecimal("200.00"),
+                            new BigDecimal("300.00"),
+                            new BigDecimal("250.00"))));
+            // Act
+            BigDecimal result = multiPriceStock.getRecentLow(2);
+            // Assert
+            assertNotEquals(0, new BigDecimal("50.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should consider all prices when weeks exceeds history")
+        void considersAllPricesWhenWeeksExceedsHistory() {
+            // Arrange
+            Stock multiPriceStock = new Stock("AKL", "Alva Company",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("120.00"),
+                            new BigDecimal("150.00"),
+                            new BigDecimal("160.00"))));
+            // Act
+            BigDecimal result = multiPriceStock.getRecentLow(10);
+            // Assert
+            assertEquals(0, new BigDecimal("120.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when weeks is zero")
+        void throwsExceptionWhenWeeksIsZero() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () -> stock.getRecentLow(0));
+        }
+    }
+
+    @Nested
+    @DisplayName("getRecentHigh()")
+    class GetRecentHigh {
+
+        @Test
+        @DisplayName("Should return the highest price within the recent window")
+        void returnsHighestPriceWithinWindow() {
+            // Arrange
+            Stock multiPriceStock = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("500.00"),
+                            new BigDecimal("200.00"),
+                            new BigDecimal("300.00"),
+                            new BigDecimal("250.00"))));
+            // Act: window of 2 is [300, 250], highest is 300
+            BigDecimal result = multiPriceStock.getRecentHigh(2);
+            // Assert
+            assertEquals(0, new BigDecimal("300.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should ignore prices older than the recent window")
+        void ignoresPricesOlderThanWindow() {
+            // Arrange: 500 is the overall high but lies outside the 2-week window
+            Stock multiPriceStock = new Stock("DCL", "Dara, Inc",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("500.00"),
+                            new BigDecimal("200.00"),
+                            new BigDecimal("300.00"),
+                            new BigDecimal("250.00"))));
+            // Act
+            BigDecimal result = multiPriceStock.getRecentHigh(2);
+            // Assert
+            assertNotEquals(0, new BigDecimal("500.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should consider all prices when weeks exceeds history")
+        void considersAllPricesWhenWeeksExceedsHistory() {
+            // Arrange
+            Stock multiPriceStock = new Stock("AKL", "Alva Company",
+                    new ArrayList<>(List.of(
+                            new BigDecimal("120.00"),
+                            new BigDecimal("150.00"),
+                            new BigDecimal("160.00"))));
+            // Act
+            BigDecimal result = multiPriceStock.getRecentHigh(10);
+            // Assert
+            assertEquals(0, new BigDecimal("160.00").compareTo(result));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when weeks is negative")
+        void throwsExceptionWhenWeeksIsNegative() {
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () -> stock.getRecentHigh(-1));
         }
     }
 }

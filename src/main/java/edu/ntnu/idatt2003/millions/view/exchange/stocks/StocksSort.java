@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
@@ -21,14 +22,16 @@ import javafx.geometry.HPos;
  */
 public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
 
-    private static final int HIGH_LOW_WEEKS = 4;
     private static final Currency NOK = Currency.getInstance("NOK");
 
     /**
-     * Columns that support ascending/descending sort in the stocks table.
+     * All columns in the stocks table.
+     * Sortable columns are WATCHLIST, TICKER, PRICE_NOK,
+     * CHANGE_KR and CHANGE_PCT. The remaining columns
+     * COMPANY, TREND, TRADE, DETAILS are non-sortable and exist as structural keys for {@link RowCells}.
      */
     public enum SortColumn {
-        WATCHLIST, TICKER, PRICE_MARKED, CURRENCY, PRICE_NOK, CHANGE_KR, CHANGE_PCT, HIGH_LOW
+        WATCHLIST, TICKER, COMPANY, PRICE_NOK, CHANGE_KR, CHANGE_PCT, TREND, TRADE, DETAILS
     }
 
     private final CurrencyConverter converter;
@@ -58,40 +61,40 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
                 TableColumnDef.sortable("col.watchlist", SortColumn.WATCHLIST,
-                        "tooltip.stocks.watchlist", 10, HPos.CENTER),
-                TableColumnDef.sortable("col.ticker", SortColumn.TICKER, 11, HPos.LEFT),
-                TableColumnDef.of("col.company", 22, HPos.LEFT),
-                TableColumnDef.sortable("col.currency", SortColumn.CURRENCY, 8, HPos.LEFT),
-                TableColumnDef.sortable("col.priceNative", SortColumn.PRICE_MARKED, 6, HPos.RIGHT),
-                TableColumnDef.sortable("col.priceNok", SortColumn.PRICE_NOK, 9, HPos.RIGHT),
+                        "tooltip.stocks.watchlist", 6, HPos.CENTER),
+                TableColumnDef.sortable("col.ticker", SortColumn.TICKER, 10, HPos.LEFT),
+                TableColumnDef.nonSortable(SortColumn.COMPANY, "col.company", 26, HPos.LEFT),
+                TableColumnDef.sortable("col.priceNok", SortColumn.PRICE_NOK, 12, HPos.RIGHT),
                 TableColumnDef.sortable("col.changeNok", SortColumn.CHANGE_KR,
-                        "tooltip.shared.changeNok", 9, HPos.RIGHT),
+                        "tooltip.shared.changeNok", 12, HPos.RIGHT),
                 TableColumnDef.sortable("col.changePct", SortColumn.CHANGE_PCT,
-                        "tooltip.shared.weeklyChange", 9, HPos.RIGHT),
-                TableColumnDef.sortable("col.highLow", SortColumn.HIGH_LOW,
-                        "tooltip.shared.highLow", 10, HPos.RIGHT),
-                TableColumnDef.of("col.trend", "tooltip.shared.trend", 10, HPos.CENTER),
-                TableColumnDef.of("col.trade", 5, HPos.LEFT)
+                        "tooltip.shared.weeklyChange", 12, HPos.RIGHT),
+                TableColumnDef.nonSortable(SortColumn.TREND, "col.trend",
+                        "tooltip.shared.trend", 12, HPos.CENTER),
+                TableColumnDef.nonSortable(SortColumn.TRADE, "col.trade", 5, HPos.CENTER),
+                TableColumnDef.nonSortable(SortColumn.DETAILS, "col.details", 5, HPos.CENTER)
         );
     }
 
     /**
      * Builds a {@link Comparator} for the given sort column.
+     * {@link SortColumn#DETAILS} is non-sortable and should never reach this method;
+     * it is excluded from sortable column definitions in {@link #getColumnDefs()}.
      *
      * @param column the column to build a comparator for
      * @return a comparator for the given column
+     * @throws IllegalStateException if an unexpected sort column is encountered
      */
     @Override
     protected Comparator<Stock> buildComparator(SortColumn column) {
         return switch (column) {
             case WATCHLIST -> Comparator.comparing(s -> !isWatched.test(s.getSymbol()));
             case TICKER -> Comparator.comparing(Stock::getSymbol);
-            case PRICE_MARKED -> Comparator.comparing(Stock::getSalesPrice);
-            case CURRENCY -> Comparator.comparing(s -> s.getCurrency().getCurrencyCode());
             case PRICE_NOK -> Comparator.comparing(s -> priceInNok(s, converter, NOK));
             case CHANGE_KR -> Comparator.comparing(s -> changeInNok(s, converter, NOK));
             case CHANGE_PCT -> Comparator.comparing(Stock::getWeeklyChangePercent);
-            case HIGH_LOW -> Comparator.comparing(s -> highLowRange(s, converter, NOK, HIGH_LOW_WEEKS));
+            case COMPANY, TREND, TRADE, DETAILS ->
+                    throw new IllegalStateException(column + " is not sortable");
         };
     }
 

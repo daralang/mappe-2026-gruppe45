@@ -47,19 +47,19 @@ public final class TableCells {
     // ----- Cell factories ---------------------------------------------------
 
     /**
-     * Creates a header cell with the shared {@code holdings-header} CSS class.
+     * Creates a header cell with the shared {@code table-header} CSS class.
      *
      * @param text the header text
      * @return a styled header label
      */
     public static Label header(String text) {
         Label label = new Label(text);
-        label.getStyleClass().add("holdings-header");
+        label.getStyleClass().add("table-header");
         return label;
     }
 
     /**
-     * Creates a sortable header button with the shared {@code holdings-header} CSS class.
+     * Creates a sortable header button with the shared {@code table-header} CSS class.
      *
      * <p>Unlike {@link #header(String)}, which returns a non-interactive {@link Label},
      * this method returns a {@link Button} suitable for column headers that trigger
@@ -74,20 +74,20 @@ public final class TableCells {
     public static Button sortHeader(String text, boolean active, boolean ascending, Runnable onClick) {
         String indicator = active ? (ascending ? " ↓ " : "  ↑") : " ↓↑";
         Button button = new Button(text + indicator);
-        button.getStyleClass().add("holdings-header");
+        button.getStyleClass().add("table-header");
         button.setOnAction(e -> onClick.run());
         return button;
     }
 
     /**
-     * Creates a plain data cell with the shared {@code holdings-cell} CSS class.
+     * Creates a plain data cell with the shared {@code table-cell} CSS class.
      *
      * @param text the cell text
      * @return a styled data label
      */
     public static Label data(String text) {
         Label label = new Label(text);
-        label.getStyleClass().add("holdings-cell");
+        label.getStyleClass().add("table-cell");
         return label;
     }
 
@@ -100,7 +100,7 @@ public final class TableCells {
      */
     public static Label boldData(String text) {
         Label label = new Label(text);
-        label.getStyleClass().addAll("holdings-cell", "bold");
+        label.getStyleClass().addAll("table-cell", "bold");
         return label;
     }
 
@@ -114,7 +114,7 @@ public final class TableCells {
      */
     public static StyledText empty(String text) {
         StyledText label = StyledText.widgetLabel(text);
-        label.getStyleClass().add("holdings-empty");
+        label.getStyleClass().add("table-empty");
         return label;
     }
 

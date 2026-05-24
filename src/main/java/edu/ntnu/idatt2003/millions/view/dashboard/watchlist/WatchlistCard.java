@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -96,10 +97,8 @@ public class WatchlistCard extends SortableTableCard<WatchlistItem, WatchlistSor
     }
 
     @Override
-    protected void renderPage(List<WatchlistItem> page) {
-        for (int i = 0; i < page.size(); i++) {
-            rowRenderer.buildRow(page.get(i), i + 1, table);
-        }
+    protected RowCells<WatchlistSort.SortColumn> buildRowCells(WatchlistItem item, int rowIndex) {
+        return rowRenderer.buildRow(item);
     }
 
     @Override
