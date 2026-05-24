@@ -7,9 +7,11 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.geometry.HPos;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,7 @@ public class SortColumnTable<Column> {
     private final GridPane grid = new GridPane();
     private final TableHeaderRenderer<Column> headerRenderer = new TableHeaderRenderer<>(sortState);
     private final List<SelectableRow> selectableRows = new ArrayList<>();
+    private final RowHighlighter rowHighlighter = new RowHighlighter();
     private boolean rowFilterInstalled = false;
     private final javafx.event.EventHandler<KeyEvent> rowNavigationHandler = this::handleRowNavigation;
     private final ArrowKeyNavigator rowNavigator = new ArrowKeyNavigator(
@@ -77,6 +80,8 @@ public class SortColumnTable<Column> {
         grid.setHgap(gap);
         grid.setMinWidth(0);
         grid.setMaxWidth(Double.MAX_VALUE);
+        grid.addEventHandler(MouseEvent.MOUSE_MOVED, e -> rowHighlighter.onMouseMoved(e.getX(), e.getY()));
+        grid.addEventHandler(MouseEvent.MOUSE_EXITED, e -> rowHighlighter.clearHover());
         configureColumns(initial);
     }
 
@@ -89,6 +94,7 @@ public class SortColumnTable<Column> {
     public void clearRows() {
         grid.getChildren().clear();
         selectableRows.clear();
+        rowHighlighter.clear();
         if (rowFilterInstalled) {
             grid.removeEventFilter(KeyEvent.KEY_PRESSED, rowNavigationHandler);
             rowFilterInstalled = false;
@@ -155,6 +161,16 @@ public class SortColumnTable<Column> {
      */
     public void addRow(int rowIndex, RowCells<Column> cells) {
         List<TableColumnDef<Column>> cols = columnSupplier.get();
+
+        Region rowBackground = new Region();
+        rowBackground.getStyleClass().add("table-row-bg");
+        rowBackground.setMouseTransparent(true);
+        rowBackground.setMaxWidth(Double.MAX_VALUE);
+        rowBackground.setMaxHeight(Double.MAX_VALUE);
+        GridPane.setColumnSpan(rowBackground, columnCount);
+        grid.add(rowBackground, 0, rowIndex);
+        rowHighlighter.register(rowIndex, rowBackground);
+
         for (int i = 0; i < cols.size(); i++) {
             TableColumnDef<Column> col = cols.get(i);
             if (!col.hasColumnKey()) {
@@ -216,6 +232,7 @@ public class SortColumnTable<Column> {
      */
     private void registerSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter) {
         selectableRows.add(new SelectableRow(gridRow, focusAnchor, onEnter));
+        rowHighlighter.bindFocus(gridRow, focusAnchor);
         if (!rowFilterInstalled) {
             grid.addEventFilter(KeyEvent.KEY_PRESSED, rowNavigationHandler);
             rowFilterInstalled = true;
