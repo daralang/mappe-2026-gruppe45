@@ -14,14 +14,12 @@ import javafx.geometry.HPos;
  * Labels resolve lazily via {@link #resolveLabel()} so that language and currency
  * changes are picked up on every header refresh without recreating the list.</p>
  *
- * @param <Column>      the sort-column enum type; use {@code Void} or {@code Object}
- *                      when the column is not sortable
+ * @param <Column>      the sort-column enum type
  * @param labelSupplier supplier that resolves the display text for the column header;
  *                      called on every {@link #resolveLabel()} invocation
  * @param columnKey     the enum constant that uniquely identifies this column;
  *                      used as the key in {@link RowCells} and, for sortable columns,
- *                      passed to the sort comparator. {@code null} for keyless columns
- *                      (backwards-compatible {@link #of} and {@link #spacer} factories)
+ *                      passed to the sort comparator
  * @param isSortable    {@code true} if this column supports ascending/descending sort
  * @param tooltipKey    the i18n key for an {@link InfoTooltip} icon next to the header label,
  *                      or {@code null} if no tooltip
@@ -36,24 +34,6 @@ public record TableColumnDef<Column>(
         double percentWidth,
         HPos alignment
 ) {
-    /**
-     * Creates a static, non-sortable column without a column key or tooltip.
-     *
-     * <p>Use this for tables that have not yet migrated to {@link RowCells}-based
-     * row building. For new code, prefer {@link #nonSortable(Object, String, double, HPos)}.</p>
-     *
-     * @param <Column>     the sort-column type (inferred; not used for static columns)
-     * @param labelKey     the i18n key for the column header label
-     * @param percentWidth the column width as a percentage of total table width
-     * @param alignment    the horizontal alignment for cells in this column
-     * @return a new {@link TableColumnDef} with no column key and no tooltip
-     */
-    public static <Column> TableColumnDef<Column> of(
-            String labelKey, double percentWidth, HPos alignment) {
-        return new TableColumnDef<>(() -> LanguageManager.get(labelKey), null, false, null,
-                percentWidth, alignment);
-    }
-
     /**
      * Creates a non-sortable column with a column key and no tooltip.
      *
@@ -132,20 +112,6 @@ public record TableColumnDef<Column>(
             double percentWidth, HPos alignment) {
         return new TableColumnDef<>(() -> LanguageManager.get(labelKey), columnKey, true,
                 tooltipKey, percentWidth, alignment);
-    }
-
-    /**
-     * Creates a non-sortable spacer column with no label, no tooltip and no column key.
-     * Use this for action or padding columns that have no header text and are not
-     * referenced by {@link RowCells}.
-     *
-     * @param <Column>     the sort-column type (inferred; not used for spacer columns)
-     * @param percentWidth the column width as a percentage of total table width
-     * @param alignment    the horizontal alignment for cells in this column
-     * @return a new spacer {@link TableColumnDef}
-     */
-    public static <Column> TableColumnDef<Column> spacer(double percentWidth, HPos alignment) {
-        return new TableColumnDef<>(() -> "", null, false, null, percentWidth, alignment);
     }
 
     /**
