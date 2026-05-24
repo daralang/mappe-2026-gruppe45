@@ -1,0 +1,10 @@
+/* Data table rows (SortColumnTable) */
+
+.table-row-bg {
+    -fx-background-color: transparent;
+}
+
+.table-row-bg.is-hover,
+.table-row-bg.is-focus {
+    -fx-background-color: -surface-alt;
+}
