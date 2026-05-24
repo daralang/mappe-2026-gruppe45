@@ -7,6 +7,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.geometry.HPos;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 
@@ -124,15 +125,24 @@ public class SortColumnTable<Column> {
     }
 
     /**
-     * Adds a standard data row where each supplied node maps to the next
-     * column in order, starting from column 0.
+     * Adds a standard data row where each supplied node maps to the next column in order,
+     * starting from column 0. The horizontal alignment from each column's
+     * {@link ColumnConstraints} is applied explicitly to the cell node so that data rows
+     * align consistently with the header regardless of CSS defaults on the node type.
      *
      * @param rowIndex the grid row to write to (row 0 is reserved for the header)
      * @param cells    the nodes to place, one per column
      */
     public void addRow(int rowIndex, Node... cells) {
+        List<ColumnConstraints> constraints = grid.getColumnConstraints();
         for (int i = 0; i < cells.length; i++) {
             grid.add(cells[i], i, rowIndex);
+            if (i < constraints.size()) {
+                HPos alignment = constraints.get(i).getHalignment();
+                if (alignment != null) {
+                    GridPane.setHalignment(cells[i], alignment);
+                }
+            }
         }
     }
 

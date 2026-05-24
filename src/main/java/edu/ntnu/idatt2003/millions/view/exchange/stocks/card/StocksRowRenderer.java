@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.view.component.ChevronButton;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
 import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
@@ -28,42 +29,46 @@ import java.util.function.Consumer;
  * Responsible for rendering a single stock row into a {@link SortColumnTable}.
  *
  * <p>Each call to {@link #buildRow(Stock, int, SortColumnTable)} populates one row
- * with a watchlist star toggle, ticker, company, prices, weekly change, 4-week high/low,
- * a {@link SparklineChart} trend and trade actions.
+ * with a watchlist star toggle, ticker, company, NOK price, weekly change,
+ * a {@link SparklineChart} trend, a {@link ChevronButton} detail link, and trade actions.
  *
  * <p>This class is stateless and may be reused across refreshes.
  */
 class StocksRowRenderer extends RowRenderer {
 
     private static final int MAX_SPARKLINE_WEEKS = 8;
-    private static final int HIGH_LOW_WEEKS = 4;
     private static final Currency NOK = Currency.getInstance("NOK");
 
     private final GameService gameService;
     private final TradeController controller;
     private final Consumer<String> onWatchlistToggle;
+    private final Consumer<Stock> onDetailClick;
 
     /**
      * Constructs a new StocksRowRenderer.
      *
      * @param gameService       the game service used to read player portfolio and watchlist state
-     * @param controller        the controller used to open buy/sell dialogs
+     * @param controller        the controller used to open buy dialogs
      * @param onWatchlistToggle callback invoked with the stock symbol when the player
      *                          clicks the watchlist star button
+     * @param onDetailClick     callback invoked with the {@link Stock} when the player
+     *                          clicks the details chevron button
      */
     StocksRowRenderer(GameService gameService,
                       TradeController controller,
-                      Consumer<String> onWatchlistToggle) {
+                      Consumer<String> onWatchlistToggle,
+                      Consumer<Stock> onDetailClick) {
         this.gameService = gameService;
         this.controller = controller;
         this.onWatchlistToggle = onWatchlistToggle;
+        this.onDetailClick = onDetailClick;
     }
 
     /**
      * Renders the given stock as a row at {@code rowIndex} in the provided table.
-     * Adds the ticker cell (with optional owner badge), company name, current price,
-     * weekly change in NOK and percent, 4-week high/low, a sparkline trend,
-     * and trade buttons.
+     * Adds a watchlist star toggle, ticker (with optional owner badge), company name,
+     * NOK price, weekly change in NOK and percent, a {@link SparklineChart} trend,
+     * a {@link ChevronButton} that fires {@link #onDetailClick}, and trade buttons.
      *
      * @param stock    the stock to render
      * @param rowIndex the table row index (0 is reserved for the header)
@@ -81,7 +86,6 @@ class StocksRowRenderer extends RowRenderer {
         starButton.setOnAction(e -> onWatchlistToggle.accept(stock.getSymbol()));
 
         Label tickerLabel = TableCells.data(stock.getSymbol());
-
         HBox.setHgrow(tickerLabel, Priority.ALWAYS);
         tickerLabel.setMaxWidth(Double.MAX_VALUE);
 
@@ -96,35 +100,30 @@ class StocksRowRenderer extends RowRenderer {
         }
 
         Label companyLabel = TableCells.data(stock.getCompany());
-        Label priceLabel = TableCells.data(
-                ChangeFormatter.formatPlain(stock.getSalesPrice()));
-        Label currencyLabel = TableCells.data(stock.getCurrency().getCurrencyCode());
         BigDecimal priceInNok = converter.convert(stock.getSalesPrice(), stock.getCurrency(), NOK);
-        Label priceNokLabel = TableCells.data(
-                ChangeFormatter.formatPlain(priceInNok));
+        Label priceNokLabel = TableCells.data(ChangeFormatter.formatPlain(priceInNok));
         BigDecimal changeInNok = converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
         Label changeKrLabel = ChangeFormatter.styledAmount(changeInNok, "holdings-cell");
         Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "holdings-cell");
-        Label highLowLabel = TableCells.data(formatHighLow(stock, HIGH_LOW_WEEKS));
 
         SparklineChart sparkline = buildSparkline(stock, MAX_SPARKLINE_WEEKS);
-
+        ChevronButton detailsButton = new ChevronButton(
+                () -> onDetailClick.accept(stock), "tooltip.stocks.chevron");
         HBox tradeButtons = buildBuyButton(stock);
 
         GridPane.setValignment(starButton, VPos.TOP);
         GridPane.setValignment(tickerCell, VPos.TOP);
         GridPane.setValignment(companyLabel, VPos.TOP);
-        GridPane.setValignment(priceLabel, VPos.TOP);
-        GridPane.setValignment(currencyLabel, VPos.TOP);
         GridPane.setValignment(priceNokLabel, VPos.TOP);
         GridPane.setValignment(changeKrLabel, VPos.TOP);
         GridPane.setValignment(changePctLabel, VPos.TOP);
-        GridPane.setValignment(highLowLabel, VPos.TOP);
         GridPane.setValignment(sparkline, VPos.TOP);
         GridPane.setValignment(tradeButtons, VPos.TOP);
+        GridPane.setValignment(detailsButton, VPos.TOP);
 
-        table.addRow(rowIndex, starButton, tickerCell, companyLabel, currencyLabel, priceLabel,
-                priceNokLabel, changeKrLabel, changePctLabel, highLowLabel, sparkline, tradeButtons);
+
+        table.addRow(rowIndex, starButton, tickerCell, companyLabel,
+                priceNokLabel, changeKrLabel, changePctLabel, sparkline, tradeButtons, detailsButton);
     }
 
     /**
