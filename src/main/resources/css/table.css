@@ -6,5 +6,5 @@
 
 .table-row-bg.is-hover,
 .table-row-bg.is-focus {
-    -fx-background-color: -surface-alt;
+    -fx-background-color: -highlight-bg;
 }
