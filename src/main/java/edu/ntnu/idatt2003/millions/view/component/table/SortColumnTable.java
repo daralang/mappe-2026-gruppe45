@@ -10,7 +10,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.geometry.Bounds;
-import javafx.geometry.HPos;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
@@ -131,28 +130,6 @@ public class SortColumnTable<Column> {
     }
 
     /**
-     * Adds a standard data row where each supplied node maps to the next column in order,
-     * starting from column 0. The horizontal alignment from each column's
-     * {@link ColumnConstraints} is applied explicitly to the cell node so that data rows
-     * align consistently with the header regardless of CSS defaults on the node type.
-     *
-     * @param rowIndex the grid row to write to (row 0 is reserved for the header)
-     * @param cells    the nodes to place, one per column
-     */
-    public void addRow(int rowIndex, Node... cells) {
-        List<ColumnConstraints> constraints = grid.getColumnConstraints();
-        for (int i = 0; i < cells.length; i++) {
-            grid.add(cells[i], i, rowIndex);
-            if (i < constraints.size()) {
-                HPos alignment = constraints.get(i).getHalignment();
-                if (alignment != null) {
-                    GridPane.setHalignment(cells[i], alignment);
-                }
-            }
-        }
-    }
-
-    /**
      * Adds a standard data row using a {@link RowCells} column-keyed map.
      * Iterates the current column definitions in order.
      *
@@ -193,29 +170,13 @@ public class SortColumnTable<Column> {
     }
 
     /**
-     * Adds a data row and registers it for UP/DOWN keyboard navigation.
-     *
-     * <p>When this row has focus (or a descendant has focus) and the user
-     * presses UP or DOWN, the internal {@link ArrowKeyNavigator} moves focus
-     * to the adjacent row's {@code focusAnchor}. ENTER calls {@code onEnter}.
-     * The grid event filter is attached lazily on the first call and removed
-     * by {@link #clearRows()}.</p>
-     *
-     * @param gridRow     the grid row to write to (row 0 is reserved for the header)
-     * @param focusAnchor the node that receives focus when navigating to this row
-     * @param onEnter     action invoked when the user presses Enter on this row
-     * @param cells       the nodes to place, one per column
-     */
-    public void addSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter, Node... cells) {
-        addRow(gridRow, cells);
-        registerSelectableRow(gridRow, focusAnchor, onEnter);
-    }
-
-    /**
      * Adds a {@link RowCells}-based data row and registers it for UP/DOWN/ENTER navigation.
-     * Like {@link #addSelectableRow(int, Node, Runnable, Node...)} but builds the row from a
-     * column-keyed map via {@link #addRow(int, RowCells)}, so column order stays owned by the
-     * column definitions.
+     *
+     * <p>Builds the row from a column-keyed map via {@link #addRow(int, RowCells)}, so column
+     * order stays owned by the column definitions. When this row has focus (or a descendant
+     * has focus) and the user presses UP or DOWN, the internal {@link ArrowKeyNavigator} moves
+     * focus to the adjacent row's {@code focusAnchor}; ENTER calls {@code onEnter}. The grid
+     * event filter is attached lazily on the first call and removed by {@link #clearRows()}.</p>
      *
      * @param gridRow     the grid row to write to (row 0 is reserved for the header)
      * @param focusAnchor the node focused when navigating to this row
@@ -229,8 +190,8 @@ public class SortColumnTable<Column> {
 
     /**
      * Registers an already-inserted row for keyboard navigation, installing the
-     * row-navigation event filter on the first call. Shared by both
-     * {@code addSelectableRow} overloads; the filter is removed by {@link #clearRows()}.
+     * row-navigation event filter on the first call; the filter is removed by
+     * {@link #clearRows()}.
      *
      * @param gridRow     the grid row the cells were written to
      * @param focusAnchor the node focused when navigating to this row
@@ -243,30 +204,6 @@ public class SortColumnTable<Column> {
             grid.addEventFilter(KeyEvent.KEY_PRESSED, rowNavigationHandler);
             rowFilterInstalled = true;
         }
-    }
-
-    /**
-     * Adds a single cell at an explicit column and row position.
-     *
-     * <p>Use this when a cell needs constraints that {@link #addRow} cannot express.</p>
-     *
-     * @param cell   the node to add
-     * @param column the zero-based column index
-     * @param row    the zero-based row index
-     */
-    public void addCell(Node cell, int column, int row) {
-        grid.add(cell, column, row);
-    }
-
-    /**
-     * Adds a node that spans the full table width at the given row.
-     *
-     * @param node the node to add
-     * @param row  the zero-based row index
-     */
-    public void addFullWidthRow(Node node, int row) {
-        GridPane.setColumnSpan(node, columnCount);
-        grid.add(node, 0, row);
     }
 
     /**
