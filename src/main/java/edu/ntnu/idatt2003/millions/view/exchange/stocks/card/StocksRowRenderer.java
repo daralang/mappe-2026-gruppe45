@@ -111,7 +111,7 @@ class StocksRowRenderer extends RowRenderer {
         Label changeKrLabel = ChangeFormatter.styledAmount(changeInNok, "holdings-cell");
         Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "holdings-cell");
         SparklineChart sparkline = buildSparkline(stock, MAX_SPARKLINE_WEEKS);
-        HBox tradeButtons = buildBuyButton(stock);
+        Button tradeButton = buildBuyButton(stock);
         ChevronButton detailsButton = new ChevronButton(
                 () -> onDetailClick.accept(stock), "tooltip.stocks.chevron");
 
@@ -123,26 +123,24 @@ class StocksRowRenderer extends RowRenderer {
                 .put(CHANGE_KR, changeKrLabel)
                 .put(CHANGE_PCT, changePctLabel)
                 .put(TREND, sparkline)
-                .put(TRADE, tradeButtons)
+                .put(TRADE, tradeButton)
                 .put(DETAILS, detailsButton);
     }
 
     /**
-     * Builds the buy and optional sell buttons for the trade column.
+     * Builds the buy button for the trade column, delegating to {@link TradeController}.
      *
-     * <p>Always shows a buy button that delegates to {@link TradeController}.
+     * <p>Returned as a bare {@link Button} so the table's column alignment centres it
+     * directly; wrap it in a container only if more than one control is ever needed.</p>
      *
-     * @param stock the stock the buttons act on
-     * @return an {@link HBox} containing the action buttons
+     * @param stock the stock the button acts on
+     * @return the configured buy {@link Button}
      */
-    private HBox buildBuyButton(Stock stock) {
-        boolean gameOver = gameService.isGameOver();
-
+    private Button buildBuyButton(Stock stock) {
         Button buyButton = new Button(LanguageManager.get("exchange.stocks.buy"));
         buyButton.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
-        buyButton.setDisable(gameOver);
+        buyButton.setDisable(gameService.isGameOver());
         buyButton.setOnAction(e -> controller.openBuyDialog(stock));
-
-        return new HBox(4, buyButton);
+        return buyButton;
     }
 }
