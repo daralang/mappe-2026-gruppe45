@@ -145,7 +145,7 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
                 .put(LeaderboardSort.SortColumn.RANK, TableCells.data(String.valueOf(rank)))
                 .put(LeaderboardSort.SortColumn.PLAYER, TableCells.data(item.playerName()))
                 .put(LeaderboardSort.SortColumn.RETURN,
-                        ChangeFormatter.styledPercent(item.returnPercent(), "holdings-cell"))
+                        ChangeFormatter.styledPercent(item.returnPercent(), "table-cell"))
                 .put(LeaderboardSort.SortColumn.NET_WORTH,
                         TableCells.data(CurrencyFormatter.format(item.finalNetWorth())))
                 .put(LeaderboardSort.SortColumn.WEEKS,

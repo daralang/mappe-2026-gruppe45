@@ -82,8 +82,8 @@ class WatchlistRowRenderer extends RowRenderer {
         Label priceAltLabel = TableCells.data(ChangeFormatter.formatPlain(stock.getSalesPrice()));
 
         BigDecimal changeNok = converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
-        Label changeNokLabel = ChangeFormatter.styledAmount(changeNok, "holdings-cell");
-        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "holdings-cell");
+        Label changeNokLabel = ChangeFormatter.styledAmount(changeNok, "table-cell");
+        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "table-cell");
 
         Label highLowLabel = TableCells.data(formatHighLow(stock, HIGH_LOW_WEEKS));
 
@@ -111,7 +111,7 @@ class WatchlistRowRenderer extends RowRenderer {
     private HBox buildActionButtons(WatchlistItem item) {
         boolean gameOver = gameService.isGameOver();
         Button buyButton = new Button(LanguageManager.get("watchlist.buy"));
-        buyButton.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
+        buyButton.getStyleClass().addAll("table-action-link", "table-action-buy");
         buyButton.setDisable(gameOver);
         buyButton.setOnAction(e -> tradeController.openBuyDialog(item.stock()));
         HBox box = new HBox(buyButton);
@@ -132,7 +132,7 @@ class WatchlistRowRenderer extends RowRenderer {
 
         Button noteButton = new Button();
         noteButton.setGraphic(loadIcon(defaultPath, size));
-        noteButton.getStyleClass().addAll("holdings-action-link", "watchlist-note-btn");
+        noteButton.getStyleClass().addAll("table-action-link", "watchlist-note-btn");
         noteButton.setOnMouseEntered(e -> noteButton.setGraphic(loadIcon("/icons/edit-blue.png", size)));
         noteButton.setOnMouseExited(e -> noteButton.setGraphic(loadIcon(defaultPath, size)));
         noteButton.setOnAction(e -> onNote.accept(item));
@@ -157,7 +157,7 @@ class WatchlistRowRenderer extends RowRenderer {
 
     private Button buildRemoveButton(String symbol) {
         Button removeButton = new Button("×");
-        removeButton.getStyleClass().addAll("holdings-action-link", "watchlist-action-remove");
+        removeButton.getStyleClass().addAll("table-action-link", "watchlist-action-remove");
         removeButton.setOnAction(e -> onRemove.accept(symbol));
         return removeButton;
     }

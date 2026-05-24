@@ -6,5 +6,131 @@
 
 .table-row-bg.is-hover,
 .table-row-bg.is-focus {
-    -fx-background-color: -highlight-bg;
+    -fx-background-color: -info-bg;
+}
+
+/* Table cells, headers, actions, total-row divider (shared by all SortColumnTable cards) */
+.table-header {
+    -fx-font-size: 13;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-primary;
+    -fx-padding: 0 0 8 0;
+}
+
+.table-header-icon {
+    -fx-padding: -1 0 8 0;
+}
+
+Button.table-header {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+    -fx-text-fill: -text-primary;
+}
+
+Button.table-header:hover {
+    -fx-text-fill: -primary;
+}
+
+Button.table-header:disabled {
+    -fx-text-fill: -text-secondary;
+    -fx-opacity: 1.0;
+}
+
+Label.table-header:disabled {
+    -fx-text-fill: -text-secondary;
+    -fx-opacity: 1.0;
+}
+
+.table-cell {
+    -fx-font-size: 13;
+    -fx-text-fill: -text-primary;
+    -fx-padding: 10 0 10 0;
+}
+
+.table-action-link.table-action-star {
+    -fx-padding: 5 0 5 0;
+    -fx-text-fill: -text-secondary; /* ikke watchlisted */
+    -fx-font-size: 16;
+}
+
+.table-action-link.table-action-star.table-action-star--active {
+    -fx-text-fill: -status-investor-border; /* watchlisted */
+}
+
+.table-action-link.table-action-star:hover {
+    -fx-text-fill: -status-investor-border;
+}
+
+.table-action-link {
+    -fx-font-size: 13;
+    -fx-font-weight: bold;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 4 0 4 0;
+    -fx-cursor: hand;
+}
+
+.table-action-link:disabled {
+    -fx-text-fill: -text-muted;
+    -fx-cursor: default;
+    -fx-underline: false;
+}
+
+.table-action-buy {
+    -fx-text-fill: -primary;
+}
+.table-action-buy:hover {
+    -fx-text-fill: -primary-dark;
+}
+
+.table-action-sell {
+    -fx-text-fill: -danger;
+}
+.table-action-sell:hover {
+    -fx-text-fill: -danger-dark;
+}
+
+.table-empty {
+    -fx-padding: 16 0 16 0;
+}
+
+.table-total-divider {
+    -fx-min-height: 17;
+    -fx-pref-height: 17;
+    -fx-max-height: 17;
+    -fx-border-color: -border;
+    -fx-border-width: 1 0 0 0;
+    -fx-border-insets: 8 0 0 0;
+}
+
+.table-details-chevron {
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-secondary;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+    -fx-min-width: -infinity;
+    -fx-pref-width: -infinity;
+    -fx-min-height: -infinity;
+    -fx-pref-height: -infinity;
+}
+.table-details-chevron:hover {
+    -fx-text-fill: -text-primary;
+}
+.table-details-chevron:focused {
+    -fx-background-color: transparent;
+}
+
+/* Watchlist */
+.watchlist-action-remove {
+    -fx-font-size: 20;
+    -fx-text-fill: -danger;
 }

@@ -122,7 +122,7 @@ public class TransactionsActivityCard extends Card {
         grid.add(rowValue(saleCount, false), 1, 1);
 
         Region divider = new Region();
-        divider.getStyleClass().add("holdings-total-divider");
+        divider.getStyleClass().add("table-total-divider");
         GridPane.setColumnSpan(divider, 2);
         grid.add(divider, 0, 2);
 

@@ -138,7 +138,7 @@ class TableHeaderRenderer<Column> {
         }
 
         InfoTooltip icon = new InfoTooltip(col.tooltipKey());
-        icon.getStyleClass().add("holdings-header-icon");
+        icon.getStyleClass().add("table-header-icon");
         HBox wrapper = new HBox(6, base, icon);
         wrapper.setAlignment(Pos.CENTER_RIGHT);
         GridPane.setFillWidth(wrapper, false);

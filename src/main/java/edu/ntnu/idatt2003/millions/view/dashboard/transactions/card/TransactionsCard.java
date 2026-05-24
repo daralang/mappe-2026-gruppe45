@@ -231,7 +231,7 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     }
 
     private Label amountCell(java.math.BigDecimal amountNok) {
-        return ChangeFormatter.styledAmount(amountNok, "holdings-cell");
+        return ChangeFormatter.styledAmount(amountNok, "table-cell");
     }
 
     /**

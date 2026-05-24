@@ -208,9 +208,9 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     private HBox buildActionButtons(Share share) {
         boolean gameOver = gameService.isGameOver();
 
-        Button buy = actionButton(LanguageManager.get("dashboard.portfolio.buy"), "holdings-action-buy");
-        Button sell = actionButton(LanguageManager.get("dashboard.portfolio.sell"), "holdings-action-sell");
-        Button sellAll = actionButton(LanguageManager.get("dashboard.portfolio.sellAll"), "holdings-action-sell");
+        Button buy = actionButton(LanguageManager.get("dashboard.portfolio.buy"), "table-action-buy");
+        Button sell = actionButton(LanguageManager.get("dashboard.portfolio.sell"), "table-action-sell");
+        Button sellAll = actionButton(LanguageManager.get("dashboard.portfolio.sellAll"), "table-action-sell");
 
         buy.setDisable(gameOver);
         sell.setDisable(gameOver);
@@ -247,7 +247,7 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
      */
     private Button actionButton(String text, String colorClass) {
         Button b = new Button(text);
-        b.getStyleClass().addAll("holdings-action-link", colorClass);
+        b.getStyleClass().addAll("table-action-link", colorClass);
         return b;
     }
 
@@ -258,7 +258,7 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
      * @return a styled label
      */
     private Label coloredPercentCell(BigDecimal value) {
-        return ChangeFormatter.styledPercent(value, "holdings-cell");
+        return ChangeFormatter.styledPercent(value, "table-cell");
     }
 
     /**
@@ -269,6 +269,6 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
      * @return a styled label
      */
     private Label coloredAmountCell(BigDecimal value) {
-        return ChangeFormatter.styledAmount(value, "holdings-cell");
+        return ChangeFormatter.styledAmount(value, "table-cell");
     }
 }

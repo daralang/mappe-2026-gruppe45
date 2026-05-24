@@ -84,9 +84,9 @@ class StocksRowRenderer extends RowRenderer {
 
         boolean watched = gameService.getPlayer().isOnWatchlist(stock.getSymbol());
         Button starButton = new Button(watched ? "★" : "☆");
-        starButton.getStyleClass().addAll("holdings-action-link", "holdings-action-star");
+        starButton.getStyleClass().addAll("table-action-link", "table-action-star");
         if (watched) {
-            starButton.getStyleClass().add("holdings-action-star--active");
+            starButton.getStyleClass().add("table-action-star--active");
         }
         starButton.setOnAction(e -> onWatchlistToggle.accept(stock.getSymbol()));
 
@@ -108,8 +108,8 @@ class StocksRowRenderer extends RowRenderer {
         BigDecimal priceInNok = converter.convert(stock.getSalesPrice(), stock.getCurrency(), NOK);
         Label priceNokLabel = TableCells.data(ChangeFormatter.formatPlain(priceInNok));
         BigDecimal changeInNok = converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
-        Label changeKrLabel = ChangeFormatter.styledAmount(changeInNok, "holdings-cell");
-        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "holdings-cell");
+        Label changeKrLabel = ChangeFormatter.styledAmount(changeInNok, "table-cell");
+        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "table-cell");
         SparklineChart sparkline = buildSparkline(stock, MAX_SPARKLINE_WEEKS);
         Button tradeButton = buildBuyButton(stock);
         ChevronButton detailsButton = new ChevronButton(
@@ -138,7 +138,7 @@ class StocksRowRenderer extends RowRenderer {
      */
     private Button buildBuyButton(Stock stock) {
         Button buyButton = new Button(LanguageManager.get("exchange.stocks.buy"));
-        buyButton.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
+        buyButton.getStyleClass().addAll("table-action-link", "table-action-buy");
         buyButton.setDisable(gameService.isGameOver());
         buyButton.setOnAction(e -> controller.openBuyDialog(stock));
         return buyButton;
