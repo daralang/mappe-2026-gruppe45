@@ -6,6 +6,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.view.component.ChevronButton;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
@@ -212,9 +213,9 @@ public class ActiveLoansCard extends Card {
         repay.setDisable(gameService.isGameOver());
         repay.setOnAction(e -> controller.openRepayDialog(loan, typeIndex));
 
-        Button details = new Button("❯");
-        details.getStyleClass().add("holdings-details-chevron");
-        details.setOnAction(e -> controller.openLoanDetailsModal(loan, typeIndex));
+        ChevronButton details = new ChevronButton(
+                () -> controller.openLoanDetailsModal(loan, typeIndex),
+                "tooltip.loans.chevron");
 
         HBox box = new HBox(24, repay, details);
         box.setAlignment(Pos.CENTER_RIGHT);
