@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.loans;
 
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
@@ -18,10 +19,13 @@ import java.util.Objects;
 public class LoansSort extends SortProvider<Loan, LoansSort.SortColumn> {
 
     /**
-     * Columns that support ascending/descending sort in the active loans table.
+     * All columns in the active loans table.
+     * LOAN, RATE, WEEKS_LEFT, WEEKLY_COST and REMAINING are sortable; ACTIONS is
+     * non-sortable and exists only as a structural key for
+     * {@link RowCells}.
      */
     public enum SortColumn {
-        LOAN, RATE, WEEKS_LEFT, WEEKLY_COST, REMAINING
+        LOAN, RATE, WEEKS_LEFT, WEEKLY_COST, REMAINING, ACTIONS
     }
 
     private final GameService gameService;
@@ -57,7 +61,7 @@ public class LoansSort extends SortProvider<Loan, LoansSort.SortColumn> {
                         "tooltip.loans.weeklyCost", 18, HPos.RIGHT),
                 TableColumnDef.sortable("col.remaining", SortColumn.REMAINING,
                         "tooltip.loans.remaining", 18, HPos.RIGHT),
-                TableColumnDef.spacer(8, HPos.RIGHT)
+                TableColumnDef.spacer(SortColumn.ACTIONS, 8, HPos.RIGHT)
         );
     }
 
@@ -66,10 +70,12 @@ public class LoansSort extends SortProvider<Loan, LoansSort.SortColumn> {
      *
      * <p>The {@code WEEKS_LEFT} case captures the current game week at the moment
      * the comparator is requested, so the ordering reflects what the player sees
-     * in the rendered table.</p>
+     * in the rendered table. {@link SortColumn#ACTIONS} is a non-sortable structural
+     * column and should never reach this method.</p>
      *
      * @param column the column to build a comparator for
      * @return a comparator for the given column
+     * @throws IllegalStateException if a non-sortable column is encountered
      */
     @Override
     protected Comparator<Loan> buildComparator(SortColumn column) {
@@ -82,6 +88,7 @@ public class LoansSort extends SortProvider<Loan, LoansSort.SortColumn> {
             }
             case WEEKLY_COST -> Comparator.comparing(Loan::weeklyInterest);
             case REMAINING -> Comparator.comparing(Loan::principal);
+            case ACTIONS -> throw new IllegalStateException(column + " is not sortable");
         };
     }
 }
