@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort;
 import javafx.scene.control.Button;
@@ -46,13 +47,15 @@ public class StocksCard extends SortableTableCard<Stock, StocksSort.SortColumn> 
                 gameService.getCurrencyConverter(),
                 symbol -> gameService.getPlayer().isOnWatchlist(symbol));
         this.sortProvider = sort;
-        this.rowRenderer = new StocksRowRenderer(gameService, controller, symbol -> {
-            if (gameService.getPlayer().isOnWatchlist(symbol)) {
-                gameService.removeFromWatchlist(symbol);
-            } else {
-                gameService.addToWatchlist(symbol);
-            }
-        });
+        this.rowRenderer = new StocksRowRenderer(gameService, controller,
+                symbol -> {
+                    if (gameService.getPlayer().isOnWatchlist(symbol)) {
+                        gameService.removeFromWatchlist(symbol);
+                    } else {
+                        gameService.addToWatchlist(symbol);
+                    }
+                },
+                stock -> { /* detail dialog */ });
         this.table = new SortColumnTable<>(sort::getColumnDefs, 10);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         this.title = StyledText.sectionTitle(LanguageManager.get("exchange.stocks.market"));
@@ -81,10 +84,8 @@ public class StocksCard extends SortableTableCard<Stock, StocksSort.SortColumn> 
     }
 
     @Override
-    protected void renderPage(List<Stock> page) {
-        for (int i = 0; i < page.size(); i++) {
-            rowRenderer.buildRow(page.get(i), i + 1, table);
-        }
+    protected RowCells<StocksSort.SortColumn> buildRowCells(Stock item, int rowIndex) {
+        return rowRenderer.buildRow(item);
     }
 
     @Override

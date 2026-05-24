@@ -6,18 +6,17 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.view.component.ChevronButton;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
-import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
+import edu.ntnu.idatt2003.millions.view.component.table.TableTotalRow;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.LoansSort;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
@@ -34,21 +33,12 @@ import java.util.Map;
  */
 public class ActiveLoansCard extends Card {
 
-    /** Grid column index for the loan name cell in the total row. */
-    private static final int TOTAL_COL_LABEL = 0;
-
-    /** Grid column index for the weekly cost cell in the total row. */
-    private static final int TOTAL_COL_WEEKLY_COST = 3;
-
-    /** Grid column index for the remaining principal cell in the total row. */
-    private static final int TOTAL_COL_REMAINING = 4;
-
     private final GameService gameService;
     private final LoanController controller;
     private final LoansSort loansSort;
     private final SortColumnTable<LoansSort.SortColumn> table;
     private final StyledText title = StyledText.sectionTitle();
-    private final GridPane totalGrid = new GridPane();
+    private final TableTotalRow<LoansSort.SortColumn> totalRow;
 
     /**
      * Constructs a new ActiveLoansCard.
@@ -62,15 +52,12 @@ public class ActiveLoansCard extends Card {
         this.controller = controller;
         this.loansSort = new LoansSort(gameService);
         this.table = new SortColumnTable<>(loansSort::getColumnDefs);
+        this.totalRow = new TableTotalRow<>(table, loansSort::getColumnDefs);
 
-        totalGrid.setHgap(20);
-        initTotalGridColumns();
-        setTotalVisible(false);
-
-        VBox.setMargin(totalGrid, new Insets(-16, 0, 0, 0));
+        VBox.setMargin(totalRow.asNode(), new Insets(-16, 0, 0, 0));
 
         setSpacing(16);
-        getChildren().addAll(title, table.asNode(), totalGrid);
+        getChildren().addAll(title, table.asNode(), totalRow.asNode());
         refresh();
     }
 
@@ -99,7 +86,7 @@ public class ActiveLoansCard extends Card {
 
         if (loans.isEmpty()) {
             table.renderEmptyState(LanguageManager.get("loans.active.empty"));
-            setTotalVisible(false);
+            totalRow.setVisible(false);
             return;
         }
 
@@ -114,7 +101,7 @@ public class ActiveLoansCard extends Card {
             addDataRow(row++, loan, count);
         }
 
-        setTotalVisible(true);
+        totalRow.setVisible(true);
         refreshTotal(loans);
     }
 
@@ -139,63 +126,36 @@ public class ActiveLoansCard extends Card {
         String weeksLeftText = MessageFormat.format(
                 LanguageManager.get("loans.active.weeksLeft"), weeksLeft, loan.offer().termWeeks());
 
-        table.addRow(row,
-                TableCells.data(loanLabel),
-                TableCells.data(MoneyFormatter.format(weeklyRate) + " %"),
-                TableCells.data(weeksLeftText),
-                TableCells.data(MoneyFormatter.format(loan.weeklyInterest())),
-                TableCells.data(MoneyFormatter.format(loan.principal())),
-                buildActionCell(loan, typeIndex)
-        );
+        table.addRow(row, RowCells.<LoansSort.SortColumn>builder()
+                .put(LoansSort.SortColumn.LOAN, TableCells.data(loanLabel))
+                .put(LoansSort.SortColumn.RATE, TableCells.data(MoneyFormatter.format(weeklyRate) + " %"))
+                .put(LoansSort.SortColumn.WEEKS_LEFT, TableCells.data(weeksLeftText))
+                .put(LoansSort.SortColumn.WEEKLY_COST,
+                        TableCells.data(MoneyFormatter.format(loan.weeklyInterest())))
+                .put(LoansSort.SortColumn.REMAINING,
+                        TableCells.data(MoneyFormatter.format(loan.principal())))
+                .put(LoansSort.SortColumn.ACTIONS, buildActionCell(loan, typeIndex)));
     }
 
     /**
-     * Rebuilds the total row in {@link #totalGrid} with aggregated values
-     * from the full loans list.
+     * Rebuilds the total row with aggregated values from the full loans list,
+     * positioning each total cell under its column key.
      *
      * @param loans the active loan list used to compute totals
      */
     private void refreshTotal(List<Loan> loans) {
-        totalGrid.getChildren().clear();
-
-        Region divider = new Region();
-        divider.getStyleClass().add("holdings-total-divider");
-        GridPane.setColumnSpan(divider, loansSort.getColumnDefs().size());
-        totalGrid.add(divider, 0, 0);
-
-        totalGrid.add(TableCells.boldData(LanguageManager.get("loans.active.total")), TOTAL_COL_LABEL, 1);
+        totalRow.beginRebuild();
+        totalRow.put(LoansSort.SortColumn.LOAN,
+                TableCells.boldData(LanguageManager.get("loans.active.total")));
 
         BigDecimal totalWeeklyCost = loans.stream()
                 .map(Loan::weeklyInterest)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        totalGrid.add(TableCells.boldData(
-                MoneyFormatter.format(totalWeeklyCost)), TOTAL_COL_WEEKLY_COST, 1);
+        totalRow.put(LoansSort.SortColumn.WEEKLY_COST,
+                TableCells.boldData(MoneyFormatter.format(totalWeeklyCost)));
 
-        totalGrid.add(TableCells.boldData(
-                MoneyFormatter.format(gameService.getPlayer().getTotalDebt())), TOTAL_COL_REMAINING, 1);
-    }
-
-    /**
-     * Configures {@link #totalGrid} with percentage column constraints mirroring
-     * {@link LoansSort#getColumnDefs()} so total values align with table columns.
-     */
-    private void initTotalGridColumns() {
-        for (TableColumnDef<LoansSort.SortColumn> col : loansSort.getColumnDefs()) {
-            ColumnConstraints cc = new ColumnConstraints();
-            cc.setPercentWidth(col.percentWidth());
-            cc.setHalignment(col.alignment());
-            totalGrid.getColumnConstraints().add(cc);
-        }
-    }
-
-    /**
-     * Shows or hides the total divider and grid.
-     *
-     * @param visible {@code true} to show, {@code false} to hide and unmanage
-     */
-    private void setTotalVisible(boolean visible) {
-        totalGrid.setVisible(visible);
-        totalGrid.setManaged(visible);
+        totalRow.put(LoansSort.SortColumn.REMAINING,
+                TableCells.boldData(MoneyFormatter.format(gameService.getPlayer().getTotalDebt())));
     }
 
     /**
@@ -208,13 +168,13 @@ public class ActiveLoansCard extends Card {
      */
     private HBox buildActionCell(Loan loan, int typeIndex) {
         Button repay = new Button(LanguageManager.get("loans.active.button.repay"));
-        repay.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
+        repay.getStyleClass().addAll("table-action-link", "table-action-buy");
         repay.setDisable(gameService.isGameOver());
         repay.setOnAction(e -> controller.openRepayDialog(loan, typeIndex));
 
-        Button details = new Button("❯");
-        details.getStyleClass().add("holdings-details-chevron");
-        details.setOnAction(e -> controller.openLoanDetailsModal(loan, typeIndex));
+        ChevronButton details = new ChevronButton(
+                () -> controller.openLoanDetailsModal(loan, typeIndex),
+                "tooltip.loans.chevron");
 
         HBox box = new HBox(24, repay, details);
         box.setAlignment(Pos.CENTER_RIGHT);

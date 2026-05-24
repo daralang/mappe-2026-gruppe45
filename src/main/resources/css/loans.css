@@ -46,7 +46,7 @@
 
 /* Debt ratio progress bar */
 .debt-ratio-bar {
-    -fx-max-width: infinity;
+    -fx-max-width: -infinity;
     -fx-pref-height: 8;
 }
 

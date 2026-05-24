@@ -6,9 +6,11 @@ import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.SearchMetadataRow;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -20,19 +22,15 @@ import java.util.function.Consumer;
 /**
  * Abstract base for paginated, sortable, searchable table cards.
  *
- * <p>Extends {@link PaginatedCard} with shared fields, implements
- * {@link #refresh()} as a sealed Template Method, and satisfies
- * {@link SearchFocusProvider} via {@link #focusSearch()}.
+ * <p>Extends {@link PaginatedCard} and implements {@link #refresh()} as a sealed
+ * Template Method. Row rendering is a second Template Method so
+ * subclasses describe only what a row contains, not how it is inserted or navigated.</p>
  *
- * <p>{@link #table}, {@link #pagination} and {@link #sortProvider} are
- * non-final protected fields that subclasses must assign in their constructors
- * after the {@code super()} call, since all three depend on sort objects that
- * cannot be created before it.</p>
- *
- * <p>The i18n keys {@code statusKey} and {@code emptyStateKey} are supplied
- * at construction time. Subclasses may override {@link #emptyStateMessage}
- * when the default key-lookup is not sufficient (e.g. when the message
- * requires a {@link java.text.MessageFormat} argument).</p>
+ * <p>{@link #table}, {@link #pagination} and {@link #sortProvider} must be assigned
+ * by the subclass constructor after {@code super()}, since all three depend on a sort
+ * object that cannot exist earlier. The {@code statusKey} and {@code emptyStateKey}
+ * i18n keys are supplied at construction; override {@link #emptyStateMessage} when a
+ * plain key lookup is not enough.</p>
  *
  * @param <T>      the item type displayed in the table rows
  * @param <Column> the sort-column enum type
@@ -144,18 +142,59 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard impleme
     protected abstract List<T> applySearch(List<T> all, String term);
 
     /**
-     * Renders one page of items into the table.
+     * Renders one page of items as keyboard-navigable rows. For each item it builds
+     * the cells, anchors focus, made focus-traversable so read-only
+     * tables are keyboard-reachable, and binds ENTER to {@link #onRowEnter(Object)}.
      *
      * @param page the sub-list of items for the current page
      */
-    protected abstract void renderPage(List<T> page);
+    private void renderPage(List<T> page) {
+        for (int i = 0; i < page.size(); i++) {
+            T item = page.get(i);
+            int rowIndex = i + 1;
+            RowCells<Column> cells = buildRowCells(item, rowIndex);
+            Node anchor = focusAnchorFor(item, cells);
+            if (anchor != null) {
+                anchor.setFocusTraversable(true);
+            }
+            table.addSelectableRow(rowIndex, anchor, () -> onRowEnter(item), cells);
+        }
+    }
+
+    /**
+     * Builds the column-keyed cells for a single item's row.
+     *
+     * <p>Implemented by every subclass. The {@code rowIndex} is the one-based position
+     * of this row within the current page (row 0 is the header), supplied for cells whose
+     * content depends on position, such as a rank column.</p>
+     *
+     * @param item     the item to render as a row
+     * @param rowIndex the one-based grid row this item occupies
+     * @return the column-keyed cells produced via {@link RowCells#builder()}
+     */
+    protected abstract RowCells<Column> buildRowCells(T item, int rowIndex);
+
+    /**
+     * Returns the node that should receive focus when the user navigates to this
+     * item's row with the arrow keys.
+     *
+     * @param item  the item whose row is being built
+     * @param cells the cells built for this row by {@link #buildRowCells(Object, int)}
+     * @return the focus anchor node for this row
+     */
+    protected Node focusAnchorFor(T item, RowCells<Column> cells) {
+        return cells.firstNode();
+    }
+
+    /**
+     * Invoked when the user presses ENTER on this item's row.
+     *
+     * @param item the item whose row was confirmed
+     */
+    protected void onRowEnter(T item) {}
 
     /**
      * Returns the localised empty-state message when no items match the current filter.
-     *
-     * <p>The default implementation looks up {@code emptyStateKey} from
-     * {@link LanguageManager}. Override when the message requires a
-     * {@link java.text.MessageFormat} argument (e.g. quoting the search term).</p>
      *
      * @param term the active search term; may be blank
      * @return the localised empty-state message

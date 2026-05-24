@@ -90,21 +90,19 @@ public abstract class SortProvider<T, C> {
     }
 
     /**
-     * Returns the NOK range between the high and low price over the given number of weeks.
-     * Returns {@link BigDecimal#ZERO} if no price history is available.
+     * Returns the NOK range between the high and low price over the most recent
+     * {@code weeks} prices, read from {@link Stock#getRecentHigh(int)} and
+     * {@link Stock#getRecentLow(int)}.
      *
      * @param stock     the stock to read from
      * @param converter the converter used for currency conversion
      * @param nok       the NOK currency instance
      * @param weeks     the number of recent weeks to consider
-     * @return the high-low range in NOK, or zero if no data
+     * @return the high-low range in NOK
      */
     protected static BigDecimal highLowRange(Stock stock, CurrencyConverter converter,
                                              Currency nok, int weeks) {
-        List<BigDecimal> prices = stock.getRecentPrices(weeks);
-        if (prices.isEmpty()) return BigDecimal.ZERO;
-        BigDecimal low = prices.stream().min(BigDecimal::compareTo).orElseThrow();
-        BigDecimal high = prices.stream().max(BigDecimal::compareTo).orElseThrow();
-        return converter.convert(high.subtract(low), stock.getCurrency(), nok);
+        BigDecimal range = stock.getRecentHigh(weeks).subtract(stock.getRecentLow(weeks));
+        return converter.convert(range, stock.getCurrency(), nok);
     }
 }

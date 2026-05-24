@@ -135,7 +135,7 @@ public class TransactionsSummaryCard extends Card {
         grid.add(rowValue(summary.salesNok(), false), 1, 1);
 
         Region divider = new Region();
-        divider.getStyleClass().add("holdings-total-divider");
+        divider.getStyleClass().add("table-total-divider");
         GridPane.setColumnSpan(divider, 2);
         grid.add(divider, 0, 2);
 

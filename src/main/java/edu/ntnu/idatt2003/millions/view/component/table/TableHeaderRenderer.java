@@ -138,7 +138,7 @@ class TableHeaderRenderer<Column> {
         }
 
         InfoTooltip icon = new InfoTooltip(col.tooltipKey());
-        icon.getStyleClass().add("holdings-header-icon");
+        icon.getStyleClass().add("table-header-icon");
         HBox wrapper = new HBox(6, base, icon);
         wrapper.setAlignment(Pos.CENTER_RIGHT);
         GridPane.setFillWidth(wrapper, false);
@@ -170,7 +170,7 @@ class TableHeaderRenderer<Column> {
             button.setText(sortHeaderText(col));
             button.setDisable(!sortable);
             button.setOnAction(e -> {
-                sortState.toggle(col.sortColumn());
+                sortState.toggle(col.columnKey());
                 onChanged.run();
             });
         } else {
@@ -204,9 +204,9 @@ class TableHeaderRenderer<Column> {
      * @return a styled sort header button via {@link TableCells#sortHeader}
      */
     private Button buildSortableButton(TableColumnDef<Column> col, Runnable onChanged) {
-        Column sortColumn = col.sortColumn();
+        Column columnKey = col.columnKey();
         Runnable action = () -> {
-            sortState.toggle(sortColumn);
+            sortState.toggle(columnKey);
             onChanged.run();
         };
         return TableCells.sortHeader(sortHeaderText(col), false, true, action);
@@ -220,14 +220,14 @@ class TableHeaderRenderer<Column> {
      * @return label text with primary (↓/↑), secondary (²↓/²↑) or inactive (↓↑) indicator
      */
     private String sortHeaderText(TableColumnDef<Column> col) {
-        Column sortColumn = col.sortColumn();
-        if (sortState.isSecondaryActive(sortColumn)) {
+        Column columnKey = col.columnKey();
+        if (sortState.isSecondaryActive(columnKey)) {
             return "² " + col.resolveLabel() + (sortState.isSecondaryAscending() ? " ↓ " : "  ↑");
         }
-        if (sortState.isActive(sortColumn)) {
+        if (sortState.isActive(columnKey)) {
             return col.resolveLabel() + (sortState.isAscending() ? " ↓ " : "  ↑");
         }
-        return col.resolveLabel() + " ↓↑";
+        return col.resolveLabel() + " ↕";
     }
 
     /**
