@@ -1,7 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
 import edu.ntnu.idatt2003.millions.controller.TradeController;
-import edu.ntnu.idatt2003.millions.model.player.Portfolio;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
@@ -16,14 +15,13 @@ import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.component.table.TableTotalRow;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.HoldingsSort;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
@@ -37,10 +35,10 @@ import java.util.List;
  * and a persistent total row below the pagination.
  *
  * <p>Extends {@link SortableTableCard} for shared pagination, search, sort state,
- * and the common refresh Template Method. The total row lives in a separate
- * {@link GridPane} with the same column constraints as the table, so values align
- * regardless of which page is active. The {@link #afterFilter} hook is overridden
- * to update the total row's visibility and values after each filter pass.</p>
+ * and the common refresh Template Method. The total row is a {@link TableTotalRow}
+ * sharing the table's column constraints, so values align regardless of which page is
+ * active. The {@link #afterFilter} hook is overridden to update the total row's
+ * visibility and values after each filter pass.</p>
  */
 public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColumn> {
 
@@ -50,7 +48,7 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     private final PortfolioService portfolioService;
     private final TradeController controller;
     private final HoldingsSort sort;
-    private final GridPane totalGrid = new GridPane();
+    private final TableTotalRow<HoldingsSort.SortColumn> totalRow;
 
     /**
      * Constructs a new HoldingsCard.
@@ -73,17 +71,15 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
         Button clearSortButton = table.createClearSortButton(
                 () -> LanguageManager.get("exchange.stocks.sort.clear"), this::refresh);
 
-        totalGrid.setHgap(20);
-        initTotalGridColumns();
-        setTotalVisible(false);
+        this.totalRow = new TableTotalRow<>(table, sort::getColumnDefs);
 
         VBox.setMargin(pagination, new Insets(-16, 0, 0, 0));
-        VBox.setMargin(totalGrid, new Insets(-16, 0, 0, 0));
+        VBox.setMargin(totalRow.asNode(), new Insets(-16, 0, 0, 0));
 
         StyledText title = StyledText.sectionTitle(LanguageManager.get("dashboard.portfolio.title"));
         setSpacing(16);
 
-        getChildren().addAll(title, buildSearchRow(clearSortButton), table.asNode(), pagination, totalGrid);
+        getChildren().addAll(title, buildSearchRow(clearSortButton), table.asNode(), pagination, totalRow.asNode());
         refresh();
     }
 
@@ -177,56 +173,29 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     @Override
     protected void afterFilter(List<Share> all, List<Share> filtered) {
         boolean hasPortfolioShares = !all.isEmpty();
-        setTotalVisible(hasPortfolioShares);
+        totalRow.setVisible(hasPortfolioShares);
         if (hasPortfolioShares) {
-            refreshTotal(gameService.getPlayer().getPortfolio());
+            refreshTotal();
         }
     }
 
     /**
-     * Configures {@link #totalGrid} with the same percentage column constraints
-     * as the holdings table so total values align with their respective columns.
+     * Rebuilds the total row with the latest portfolio values, positioning each
+     * total cell under its column key.
      */
-    private void initTotalGridColumns() {
-        SortColumnTable.applyColumnConstraints(totalGrid, sort.getColumnDefs());
-    }
-
-    /**
-     * Rebuilds the total row in {@link #totalGrid} with the latest portfolio values.
-     *
-     * @param portfolio the portfolio supplying the total values
-     */
-    private void refreshTotal(Portfolio portfolio) {
-        totalGrid.getChildren().clear();
-
-        Region divider = new Region();
-        divider.getStyleClass().add("holdings-total-divider");
-        GridPane.setColumnSpan(divider, sort.getColumnDefs().size());
-        totalGrid.add(divider, 0, 0);
-
-        Label totalLabel = TableCells.boldData(LanguageManager.get("dashboard.portfolio.total"));
-        totalGrid.add(totalLabel, table.columnIndex(HoldingsSort.SortColumn.COMPANY), 1);
-
-        Label valueNok = TableCells.boldData(MoneyFormatter.format(
-                portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
-        totalGrid.add(valueNok, table.columnIndex(HoldingsSort.SortColumn.VALUE_NOK), 1);
-
-        totalGrid.add(coloredPercentCell(portfolioService.getTotalReturnPercent(
-                gameService.getPlayer(), gameService.getCurrencyConverter())),
-                table.columnIndex(HoldingsSort.SortColumn.RETURN_PCT), 1);
-        totalGrid.add(coloredAmountCell(portfolioService.getTotalReturnInNok(
-                gameService.getPlayer(), gameService.getCurrencyConverter())),
-                table.columnIndex(HoldingsSort.SortColumn.RETURN_NOK), 1);
-    }
-
-    /**
-     * Shows or hides the total divider and grid.
-     *
-     * @param visible {@code true} to show, {@code false} to hide and unmanage
-     */
-    private void setTotalVisible(boolean visible) {
-        totalGrid.setVisible(visible);
-        totalGrid.setManaged(visible);
+    private void refreshTotal() {
+        totalRow.beginRebuild();
+        totalRow.put(HoldingsSort.SortColumn.COMPANY,
+                TableCells.boldData(LanguageManager.get("dashboard.portfolio.total")));
+        totalRow.put(HoldingsSort.SortColumn.VALUE_NOK,
+                TableCells.boldData(MoneyFormatter.format(
+                        portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter()))));
+        totalRow.put(HoldingsSort.SortColumn.RETURN_PCT,
+                coloredPercentCell(portfolioService.getTotalReturnPercent(
+                        gameService.getPlayer(), gameService.getCurrencyConverter())));
+        totalRow.put(HoldingsSort.SortColumn.RETURN_NOK,
+                coloredAmountCell(portfolioService.getTotalReturnInNok(
+                        gameService.getPlayer(), gameService.getCurrencyConverter())));
     }
 
     /**

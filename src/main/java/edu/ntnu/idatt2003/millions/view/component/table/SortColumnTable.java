@@ -138,11 +138,6 @@ public class SortColumnTable<Column> {
      * (spacers) are skipped; every column that declares a key must have a matching
      * cell, otherwise this fails fast rather than rendering a silently empty column.</p>
      *
-     * <p>Each cell is aligned horizontally per its column definition and centred
-     * vertically; cells are not stretched to the row height ({@code fillHeight = false}),
-     * so a wrapper container holding a single control stays centred without the calling
-     * renderer setting its own alignment, and content lines up consistently across all tables.</p>
-     *
      * @param rowIndex the grid row to write to (row 0 is reserved for the header)
      * @param cells    the column-keyed cell map produced by {@link RowCells#builder()}
      * @throws IllegalStateException if a keyed column has no corresponding cell in {@code cells}
