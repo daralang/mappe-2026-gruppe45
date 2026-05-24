@@ -5,11 +5,9 @@ import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.geometry.Bounds;
 import javafx.geometry.VPos;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -45,6 +43,7 @@ public class SortColumnTable<Column> {
     private final TableHeaderRenderer<Column> headerRenderer = new TableHeaderRenderer<>(sortState);
     private final List<SelectableRow> selectableRows = new ArrayList<>();
     private final RowHighlighter rowHighlighter = new RowHighlighter();
+    private final RowScroller rowScroller = new RowScroller();
     private boolean rowFilterInstalled = false;
     private final javafx.event.EventHandler<KeyEvent> rowNavigationHandler = this::handleRowNavigation;
     private final ArrowKeyNavigator rowNavigator = new ArrowKeyNavigator(
@@ -53,7 +52,7 @@ public class SortColumnTable<Column> {
             idx -> {
                 Node anchor = selectableRows.get(idx).focusAnchor();
                 anchor.requestFocus();
-                ensureVisibleInScrollPane(anchor);
+                rowScroller.ensureVisible(anchor);
             },
             idx -> selectableRows.get(idx).onEnter().run(),
             false
@@ -140,8 +139,9 @@ public class SortColumnTable<Column> {
      * cell, otherwise this fails fast rather than rendering a silently empty column.</p>
      *
      * <p>Each cell is aligned horizontally per its column definition and centred
-     * vertically, so cell content lines up consistently across all tables without
-     * the calling renderer setting per-cell alignment.</p>
+     * vertically; cells are not stretched to the row height ({@code fillHeight = false}),
+     * so a wrapper container holding a single control stays centred without the calling
+     * renderer setting its own alignment, and content lines up consistently across all tables.</p>
      *
      * @param rowIndex the grid row to write to (row 0 is reserved for the header)
      * @param cells    the column-keyed cell map produced by {@link RowCells#builder()}
@@ -172,6 +172,7 @@ public class SortColumnTable<Column> {
             grid.add(node, i, rowIndex);
             GridPane.setHalignment(node, col.alignment());
             GridPane.setValignment(node, VPos.CENTER);
+            GridPane.setFillHeight(node, false);
         }
     }
 
@@ -321,7 +322,7 @@ public class SortColumnTable<Column> {
      * a previous arrow-key press.</p>
      *
      * <p>At the first row (UP) and last row (DOWN) the key is left unconsumed so
-     * the enclosing {@link ScrollPane} can scroll past the table rather than the
+     * the enclosing scroll pane can scroll past the table rather than the
      * navigation clamping at the edge.</p>
      */
     private void handleRowNavigation(KeyEvent event) {
@@ -334,7 +335,7 @@ public class SortColumnTable<Column> {
         if (dataIdx < 0) {
             return;
         }
-        // At the edges, let the key fall through so the enclosing ScrollPane can
+        // At the edges, let the key fall through so the enclosing scroll pane can
         // scroll past the table instead of the navigation clamping and consuming it.
         if (code == KeyCode.UP && dataIdx == 0) {
             return;
@@ -371,56 +372,6 @@ public class SortColumnTable<Column> {
             node = node.getParent();
         }
         return -1;
-    }
-
-    /**
-     * Scrolls the enclosing {@link ScrollPane}, if any, just far enough to bring the
-     * given node fully into the viewport. Called after keyboard navigation moves focus
-     * so the viewport follows the focused row instead of leaving it off-screen.
-     *
-     * <p>No-op when the node is not inside a {@link ScrollPane} or the content already
-     * fits the viewport.</p>
-     *
-     * @param node the focused node to reveal
-     */
-    private void ensureVisibleInScrollPane(Node node) {
-        ScrollPane scrollPane = findScrollPaneAncestor(node);
-        if (scrollPane == null || scrollPane.getContent() == null) {
-            return;
-        }
-        Node content = scrollPane.getContent();
-        double contentHeight = content.getBoundsInLocal().getHeight();
-        double viewportHeight = scrollPane.getViewportBounds().getHeight();
-        double scrollable = contentHeight - viewportHeight;
-        if (scrollable <= 0) {
-            return;
-        }
-        Bounds nodeInContent = content.sceneToLocal(node.localToScene(node.getBoundsInLocal()));
-        double currentTop = scrollPane.getVvalue() * scrollable;
-        double newTop = currentTop;
-        if (nodeInContent.getMinY() < currentTop) {
-            newTop = nodeInContent.getMinY();
-        } else if (nodeInContent.getMaxY() > currentTop + viewportHeight) {
-            newTop = nodeInContent.getMaxY() - viewportHeight;
-        }
-        scrollPane.setVvalue(Math.clamp(newTop / scrollable, 0, 1));
-    }
-
-    /**
-     * Walks up the scene graph from {@code node} to the nearest {@link ScrollPane}.
-     *
-     * @param node the node to start from
-     * @return the enclosing {@link ScrollPane}, or {@code null} if there is none
-     */
-    private static ScrollPane findScrollPaneAncestor(Node node) {
-        Node current = node.getParent();
-        while (current != null) {
-            if (current instanceof ScrollPane sp) {
-                return sp;
-            }
-            current = current.getParent();
-        }
-        return null;
     }
 
     /**
