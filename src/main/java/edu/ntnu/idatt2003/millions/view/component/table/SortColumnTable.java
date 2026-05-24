@@ -145,10 +145,13 @@ public class SortColumnTable<Column> {
      * Iterates the current column definitions in order.
      *
      * <p>With this overload, moving a column only requires reordering the entry in
-     * {@code getColumnDefs()}, the renderer does not need to change.</p>
+     * {@code getColumnDefs()}, the renderer does not need to change. Keyless columns
+     * (spacers) are skipped; every column that declares a key must have a matching
+     * cell, otherwise this fails fast rather than rendering a silently empty column.</p>
      *
      * @param rowIndex the grid row to write to (row 0 is reserved for the header)
      * @param cells    the column-keyed cell map produced by {@link RowCells#builder()}
+     * @throws IllegalStateException if a keyed column has no corresponding cell in {@code cells}
      */
     public void addRow(int rowIndex, RowCells<Column> cells) {
         List<TableColumnDef<Column>> cols = columnSupplier.get();
@@ -159,7 +162,8 @@ public class SortColumnTable<Column> {
             }
             Node node = cells.get(col.columnKey());
             if (node == null) {
-                continue;
+                throw new IllegalStateException(
+                        "No cell provided for keyed column: " + col.columnKey());
             }
             grid.add(node, i, rowIndex);
             GridPane.setHalignment(node, col.alignment());

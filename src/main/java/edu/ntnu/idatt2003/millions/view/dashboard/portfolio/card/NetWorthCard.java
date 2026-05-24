@@ -19,7 +19,7 @@ import java.math.BigDecimal;
  * Widget card displaying the player's net worth over time as an area chart.
  * Also shows total change in value and percentage since the start of the game.
  *
- * <p>Graph rendering is delegated to {@link StockPriceChart}, which owns all
+ * <p>Graph rendering is delegated to {@link TimeSeriesChart}, which owns all
  * chart configuration and data management.
  */
 public class NetWorthCard extends WidgetCard {
@@ -75,7 +75,7 @@ public class NetWorthCard extends WidgetCard {
 
     /**
      * Called when the game state has changed.
-     * Appends a new data point to the chart via {@link StockPriceChart#addPoint(BigDecimal)}
+     * Appends a new data point to the chart via {@link TimeSeriesChart}
      * and refreshes the displayed labels.
      * Overrides {@link WidgetCard#onGameUpdated()} because this card has additional
      * update logic (chart point) beyond just refreshing text.
