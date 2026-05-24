@@ -117,10 +117,6 @@ Label.table-header:disabled {
     -fx-padding: 0;
     -fx-cursor: hand;
     -fx-alignment: center;
-    -fx-min-width: -infinity;
-    -fx-pref-width: -infinity;
-    -fx-min-height: -infinity;
-    -fx-pref-height: -infinity;
 }
 .table-details-chevron:hover {
     -fx-text-fill: -text-primary;
