@@ -23,11 +23,8 @@ import java.util.function.Consumer;
  * Abstract base for paginated, sortable, searchable table cards.
  *
  * <p>Extends {@link PaginatedCard} and implements {@link #refresh()} as a sealed
- * Template Method. Row rendering is a second Template Method: the default
- * {@link #renderPage(List)} drives {@link #buildRowCells(Object, int)},
- * {@link #focusAnchorFor(Object, RowCells)} and {@link #onRowEnter(Object)}, so
- * subclasses describe only what a row contains, not how it is inserted or navigated.
- * Cards not yet migrated may still override {@link #renderPage(List)} directly.</p>
+ * Template Method. Row rendering is a second Template Method so
+ * subclasses describe only what a row contains, not how it is inserted or navigated.</p>
  *
  * <p>{@link #table}, {@link #pagination} and {@link #sortProvider} must be assigned
  * by the subclass constructor after {@code super()}, since all three depend on a sort
@@ -145,16 +142,13 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard impleme
     protected abstract List<T> applySearch(List<T> all, String term);
 
     /**
-     * Renders one page of items as keyboard-navigable rows (the default
-     * {@code buildRowCells} Template Method). For each item it builds the cells via
-     * {@link #buildRowCells(Object, int)}, anchors focus via
-     * {@link #focusAnchorFor(Object, RowCells)} - made focus-traversable so read-only
-     * tables are keyboard-reachable - and binds ENTER to {@link #onRowEnter(Object)}.
-     * Cards not yet migrated may override this method to insert rows positionally.
+     * Renders one page of items as keyboard-navigable rows. For each item it builds
+     * the cells, anchors focus, made focus-traversable so read-only
+     * tables are keyboard-reachable, and binds ENTER to {@link #onRowEnter(Object)}.
      *
      * @param page the sub-list of items for the current page
      */
-    protected void renderPage(List<T> page) {
+    private void renderPage(List<T> page) {
         for (int i = 0; i < page.size(); i++) {
             T item = page.get(i);
             int rowIndex = i + 1;
@@ -170,24 +164,15 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard impleme
     /**
      * Builds the column-keyed cells for a single item's row.
      *
-     * <p>Implemented by subclasses that use the default {@link #renderPage}
-     * template. The {@code rowIndex} is the one-based position of this row within
-     * the current page (row 0 is the header), supplied for cells whose content
-     * depends on position, such as a rank column.</p>
-     *
-     * <p>The default implementation throws, so a subclass must either override
-     * this method or override {@link #renderPage} to insert rows itself.</p>
+     * <p>Implemented by every subclass. The {@code rowIndex} is the one-based position
+     * of this row within the current page (row 0 is the header), supplied for cells whose
+     * content depends on position, such as a rank column.</p>
      *
      * @param item     the item to render as a row
      * @param rowIndex the one-based grid row this item occupies
      * @return the column-keyed cells produced via {@link RowCells#builder()}
-     * @throws UnsupportedOperationException if neither this method nor
-     *         {@link #renderPage} is overridden
      */
-    protected RowCells<Column> buildRowCells(T item, int rowIndex) {
-        throw new UnsupportedOperationException(
-                getClass().getSimpleName() + " must override buildRowCells(...) or renderPage(...)");
-    }
+    protected abstract RowCells<Column> buildRowCells(T item, int rowIndex);
 
     /**
      * Returns the node that should receive focus when the user navigates to this
