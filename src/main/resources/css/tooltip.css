@@ -1,6 +1,7 @@
 /* .tooltip — JavaFX popup bubble; .info-tooltip-icon — the ⓘ glyph in the UI */
 .tooltip {
     -fx-font-size: 13;
+    -fx-font-weight: normal;
 }
 
 .info-tooltip-icon {
