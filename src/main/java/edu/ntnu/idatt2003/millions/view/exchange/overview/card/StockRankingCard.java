@@ -113,7 +113,7 @@ public class StockRankingCard extends Card {
      */
     private void addDataRow(int rowIndex, Stock stock) {
         Label changeLabel = ChangeFormatter.styledPercent(
-                stock.getWeeklyChangePercent(), "holdings-cell");
+                stock.getWeeklyChangePercent(), "table-cell");
         table.addRow(rowIndex, RowCells.<Col>builder()
                 .put(Col.TICKER, TableCells.data(stock.getSymbol()))
                 .put(Col.COMPANY, TableCells.data(stock.getCompany()))

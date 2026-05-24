@@ -70,7 +70,7 @@ public final class TableTotalRow<Column> {
     public void beginRebuild() {
         grid.getChildren().clear();
         Region divider = new Region();
-        divider.getStyleClass().add("holdings-total-divider");
+        divider.getStyleClass().add("table-total-divider");
         GridPane.setColumnSpan(divider, columnDefs.get().size());
         grid.add(divider, 0, 0);
     }

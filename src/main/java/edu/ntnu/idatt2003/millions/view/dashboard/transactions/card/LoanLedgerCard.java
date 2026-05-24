@@ -189,7 +189,7 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
                 .put(LoanLedgerSort.SortColumn.LOAN, TableCells.data(loanLabel))
                 .put(LoanLedgerSort.SortColumn.TYPE, typeBadge(item.type()))
                 .put(LoanLedgerSort.SortColumn.AMOUNT,
-                        ChangeFormatter.styledAmount(item.amount(), "holdings-cell"));
+                        ChangeFormatter.styledAmount(item.amount(), "table-cell"));
     }
 
     /**
