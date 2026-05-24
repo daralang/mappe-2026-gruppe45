@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.service.PortfolioService;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
@@ -22,10 +23,13 @@ import java.util.Objects;
 public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
 
     /**
-     * Columns that support ascending/descending sort in the holdings table.
+     * All columns in the holdings table.
+     * COMPANY, QUANTITY, WEEKLY_CHANGE, VALUE_NOK, RETURN_PCT and RETURN_NOK
+     * are sortable; ACTIONS and DETAILS are non-sortable and exist only as
+     * structural keys for {@link RowCells}.
      */
     public enum SortColumn {
-        COMPANY, QUANTITY, WEEKLY_CHANGE, VALUE_NOK, RETURN_PCT, RETURN_NOK
+        ACTIONS, COMPANY, QUANTITY, WEEKLY_CHANGE, VALUE_NOK, RETURN_PCT, RETURN_NOK, DETAILS
     }
 
     private final PortfolioService portfolioService;
@@ -53,7 +57,7 @@ public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
      */
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
-                TableColumnDef.spacer(14, HPos.LEFT),
+                TableColumnDef.spacer(SortColumn.ACTIONS, 14, HPos.LEFT),
                 TableColumnDef.sortable(
                         "col.company", SortColumn.COMPANY, 22, HPos.LEFT),
                 TableColumnDef.sortable(
@@ -70,15 +74,19 @@ public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
                 TableColumnDef.sortable(
                         "col.returnNok", SortColumn.RETURN_NOK,
                         "tooltip.shared.returnNok", 12, HPos.RIGHT),
-                TableColumnDef.spacer(5, HPos.CENTER)
+                TableColumnDef.spacer(SortColumn.DETAILS, 5, HPos.CENTER)
         );
     }
 
     /**
      * Builds a {@link Comparator} for the given sort column.
+     * {@link SortColumn#ACTIONS} and {@link SortColumn#DETAILS} are non-sortable
+     * structural columns and are excluded from sortable column definitions in
+     * {@link #getColumnDefs()}, so they should never reach this method.
      *
      * @param column the column to build a comparator for
      * @return a comparator for the given column
+     * @throws IllegalStateException if a non-sortable column is encountered
      */
     @Override
     protected Comparator<Share> buildComparator(SortColumn column) {
@@ -95,6 +103,8 @@ public class HoldingsSort extends SortProvider<Share, HoldingsSort.SortColumn> {
                     Comparator.comparing(Share::getReturnPercent);
             case RETURN_NOK ->
                     Comparator.comparing(s -> portfolioService.getShareReturnInNok(s, converter));
+            case ACTIONS, DETAILS ->
+                    throw new IllegalStateException(column + " is not sortable");
         };
     }
 }

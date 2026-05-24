@@ -14,6 +14,7 @@ import edu.ntnu.idatt2003.millions.view.component.ChevronButton;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.HoldingsSort;
@@ -46,18 +47,6 @@ import java.util.List;
 public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColumn> {
 
     private static final int PAGE_SIZE = 9;
-
-    /** Grid column index for the company name cell in the total row. */
-    private static final int TOTAL_COL_COMPANY = 1;
-
-    /** Grid column index for the value (NOK) cell in the total row. */
-    private static final int TOTAL_COL_VALUE_NOK = 4;
-
-    /** Grid column index for the return-percent cell in the total row. */
-    private static final int TOTAL_COL_RETURN_PCT = 5;
-
-    /** Grid column index for the return (NOK) cell in the total row. */
-    private static final int TOTAL_COL_RETURN_NOK = 6;
 
     private final GameService gameService;
     private final PortfolioService portfolioService;
@@ -123,12 +112,45 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
                 .toList());
     }
 
+    /**
+     * Builds the column-keyed cells for one holdings row. The details chevron is
+     * inserted first so it serves as the keyboard-focus anchor ({@link RowCells#firstNode()});
+     * unlike the buy button it is never disabled when the game is over.
+     *
+     * @param item     the share to render
+     * @param rowIndex the one-based grid row this share occupies
+     * @return the column-keyed cells for this share
+     */
     @Override
-    protected void renderPage(List<Share> page) {
-        int row = 1;
-        for (Share share : page) {
-            addDataRow(row++, share);
-        }
+    protected RowCells<HoldingsSort.SortColumn> buildRowCells(Share item, int rowIndex) {
+        Stock stock = item.getStock();
+        return RowCells.<HoldingsSort.SortColumn>builder()
+                .put(HoldingsSort.SortColumn.DETAILS, buildDetailsButton(item))
+                .put(HoldingsSort.SortColumn.ACTIONS, buildActionButtons(item))
+                .put(HoldingsSort.SortColumn.COMPANY,
+                        TableCells.data(stock.getSymbol() + ", " + stock.getCompany()))
+                .put(HoldingsSort.SortColumn.QUANTITY,
+                        TableCells.data(MoneyFormatter.format(item.getQuantity())))
+                .put(HoldingsSort.SortColumn.WEEKLY_CHANGE,
+                        coloredPercentCell(stock.getWeeklyChangePercent()))
+                .put(HoldingsSort.SortColumn.VALUE_NOK,
+                        TableCells.data(MoneyFormatter.format(
+                                portfolioService.getShareValueInNok(item, gameService.getCurrencyConverter()))))
+                .put(HoldingsSort.SortColumn.RETURN_PCT,
+                        coloredPercentCell(item.getReturnPercent()))
+                .put(HoldingsSort.SortColumn.RETURN_NOK,
+                        coloredAmountCell(
+                                portfolioService.getShareReturnInNok(item, gameService.getCurrencyConverter())));
+    }
+
+    /**
+     * Opens the share details modal when the user presses Enter on a row.
+     *
+     * @param item the share whose row was confirmed
+     */
+    @Override
+    protected void onRowEnter(Share item) {
+        controller.openDetailsModal(item);
     }
 
     /**
@@ -190,16 +212,18 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
         totalGrid.add(divider, 0, 0);
 
         Label totalLabel = TableCells.boldData(LanguageManager.get("dashboard.portfolio.total"));
-        totalGrid.add(totalLabel, TOTAL_COL_COMPANY, 1);
+        totalGrid.add(totalLabel, table.columnIndex(HoldingsSort.SortColumn.COMPANY), 1);
 
         Label valueNok = TableCells.boldData(MoneyFormatter.format(
                 portfolioService.getValue(gameService.getPlayer(), gameService.getCurrencyConverter())));
-        totalGrid.add(valueNok, TOTAL_COL_VALUE_NOK, 1);
+        totalGrid.add(valueNok, table.columnIndex(HoldingsSort.SortColumn.VALUE_NOK), 1);
 
         totalGrid.add(coloredPercentCell(portfolioService.getTotalReturnPercent(
-                gameService.getPlayer(), gameService.getCurrencyConverter())), TOTAL_COL_RETURN_PCT, 1);
+                gameService.getPlayer(), gameService.getCurrencyConverter())),
+                table.columnIndex(HoldingsSort.SortColumn.RETURN_PCT), 1);
         totalGrid.add(coloredAmountCell(portfolioService.getTotalReturnInNok(
-                gameService.getPlayer(), gameService.getCurrencyConverter())), TOTAL_COL_RETURN_NOK, 1);
+                gameService.getPlayer(), gameService.getCurrencyConverter())),
+                table.columnIndex(HoldingsSort.SortColumn.RETURN_NOK), 1);
     }
 
     /**
@@ -213,55 +237,28 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     }
 
     /**
-     * Renders one share as a keyboard-navigable data row in the table.
-     * UP/DOWN moves between rows; ENTER opens the share details modal.
-     *
-     * @param row   the grid row index to write to
-     * @param share the share to render
-     */
-    private void addDataRow(int row, Share share) {
-        Stock stock = share.getStock();
-        Button buyButton = actionButton(
-                LanguageManager.get("dashboard.portfolio.buy"), "holdings-action-buy");
-        buyButton.setDisable(gameService.isGameOver());
-        buyButton.setOnAction(e -> controller.openBuyDialog(share.getStock()));
-
-        table.addSelectableRow(row, buyButton, () -> controller.openDetailsModal(share),
-                buildActionButtons(share, buyButton),
-                TableCells.data(stock.getSymbol() + ", " + stock.getCompany()),
-                TableCells.data(MoneyFormatter.format(share.getQuantity())),
-                coloredPercentCell(stock.getWeeklyChangePercent()),
-                TableCells.data(MoneyFormatter.format(
-                        portfolioService.getShareValueInNok(share, gameService.getCurrencyConverter()))),
-                coloredPercentCell(share.getReturnPercent()),
-                coloredAmountCell(
-                        portfolioService.getShareReturnInNok(share, gameService.getCurrencyConverter())),
-                buildDetailsButton(share)
-        );
-    }
-
-    /**
-     * Builds the sell and sell-all action buttons alongside the provided buy button.
-     * The buy button is created in {@link #addDataRow} so it can serve as focus anchor.
+     * Builds the buy, sell and sell-all action buttons for a holdings row.
      * All buttons are disabled when the game is over.
      *
-     * @param share     the share the buttons act on
-     * @param buyButton the already-configured buy button
+     * @param share the share the buttons act on
      * @return an HBox containing all action buttons
      */
-    private HBox buildActionButtons(Share share, Button buyButton) {
+    private HBox buildActionButtons(Share share) {
         boolean gameOver = gameService.isGameOver();
 
+        Button buy = actionButton(LanguageManager.get("dashboard.portfolio.buy"), "holdings-action-buy");
         Button sell = actionButton(LanguageManager.get("dashboard.portfolio.sell"), "holdings-action-sell");
         Button sellAll = actionButton(LanguageManager.get("dashboard.portfolio.sellAll"), "holdings-action-sell");
 
+        buy.setDisable(gameOver);
         sell.setDisable(gameOver);
         sellAll.setDisable(gameOver);
 
+        buy.setOnAction(e -> controller.openBuyDialog(share.getStock()));
         sell.setOnAction(e -> controller.openSellDialog(share));
         sellAll.setOnAction(e -> controller.openSellAllDialog(share));
 
-        HBox primaryActions = new HBox(8, buyButton, sell);
+        HBox primaryActions = new HBox(8, buy, sell);
         primaryActions.setAlignment(Pos.CENTER_LEFT);
 
         HBox box = new HBox(16, primaryActions, sellAll);

@@ -11,9 +11,11 @@ import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.ChevronButton;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
 import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
-import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
+import edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.Node;
 import javafx.scene.layout.Priority;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -24,13 +26,17 @@ import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+import static edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort.SortColumn.*;
 
 /**
- * Responsible for rendering a single stock row into a {@link SortColumnTable}.
+ * Responsible for building the column-keyed cells for a single stock row.
  *
- * <p>Each call to {@link #buildRow(Stock, int, SortColumnTable)} populates one row
- * with a watchlist star toggle, ticker, company, NOK price, weekly change,
+ * <p>Each call to {@link #buildRow(Stock)} produces a {@link RowCells} map with
+ * a watchlist star toggle, ticker, company, NOK price, weekly change,
  * a {@link SparklineChart} trend, a {@link ChevronButton} detail link, and trade actions.
+ * The owning card inserts the cells and registers the row for navigation.</p>
  *
  * <p>This class is stateless and may be reused across refreshes.
  */
@@ -65,16 +71,19 @@ class StocksRowRenderer extends RowRenderer {
     }
 
     /**
-     * Renders the given stock as a row at {@code rowIndex} in the provided table.
-     * Adds a watchlist star toggle, ticker (with optional owner badge), company name,
+     * Builds the column-keyed cells for the given stock.
+     * Produces a watchlist star toggle, ticker (with optional owner badge), company name,
      * NOK price, weekly change in NOK and percent, a {@link SparklineChart} trend,
      * a {@link ChevronButton} that fires {@link #onDetailClick}, and trade buttons.
      *
-     * @param stock    the stock to render
-     * @param rowIndex the table row index (0 is reserved for the header)
-     * @param table    the {@link SortColumnTable} to add the row nodes into
+     * <p>The watchlist star is inserted first so it serves as the row's default
+     * keyboard-focus anchor (see {@link RowCells#firstNode()}). Row insertion and
+     * navigation registration are handled by the owning card's base class.</p>
+     *
+     * @param stock the stock to render
+     * @return the column-keyed cells for this stock, keyed by {@link StocksSort.SortColumn}
      */
-    void buildRow(Stock stock, int rowIndex, SortColumnTable<?> table) {
+    RowCells<StocksSort.SortColumn> buildRow(Stock stock) {
         CurrencyConverter converter = gameService.getCurrencyConverter();
 
         boolean watched = gameService.getPlayer().isOnWatchlist(stock.getSymbol());
@@ -105,25 +114,25 @@ class StocksRowRenderer extends RowRenderer {
         BigDecimal changeInNok = converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
         Label changeKrLabel = ChangeFormatter.styledAmount(changeInNok, "holdings-cell");
         Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "holdings-cell");
-
         SparklineChart sparkline = buildSparkline(stock, MAX_SPARKLINE_WEEKS);
+        HBox tradeButtons = buildBuyButton(stock);
         ChevronButton detailsButton = new ChevronButton(
                 () -> onDetailClick.accept(stock), "tooltip.stocks.chevron");
-        HBox tradeButtons = buildBuyButton(stock);
 
-        GridPane.setValignment(starButton, VPos.TOP);
-        GridPane.setValignment(tickerCell, VPos.TOP);
-        GridPane.setValignment(companyLabel, VPos.TOP);
-        GridPane.setValignment(priceNokLabel, VPos.TOP);
-        GridPane.setValignment(changeKrLabel, VPos.TOP);
-        GridPane.setValignment(changePctLabel, VPos.TOP);
-        GridPane.setValignment(sparkline, VPos.TOP);
-        GridPane.setValignment(tradeButtons, VPos.TOP);
-        GridPane.setValignment(detailsButton, VPos.TOP);
+        Stream.<Node>of(starButton, tickerCell, companyLabel, priceNokLabel, changeKrLabel,
+                changePctLabel, sparkline, tradeButtons, detailsButton)
+                .forEach(n -> GridPane.setValignment(n, VPos.TOP));
 
-
-        table.addRow(rowIndex, starButton, tickerCell, companyLabel,
-                priceNokLabel, changeKrLabel, changePctLabel, sparkline, tradeButtons, detailsButton);
+        return RowCells.<StocksSort.SortColumn>builder()
+                .put(WATCHLIST, starButton)
+                .put(TICKER, tickerCell)
+                .put(COMPANY, companyLabel)
+                .put(PRICE_NOK, priceNokLabel)
+                .put(CHANGE_KR, changeKrLabel)
+                .put(CHANGE_PCT, changePctLabel)
+                .put(TREND, sparkline)
+                .put(TRADE, tradeButtons)
+                .put(DETAILS, detailsButton);
     }
 
     /**

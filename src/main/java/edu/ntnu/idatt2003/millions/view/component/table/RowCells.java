@@ -12,16 +12,7 @@ import java.util.Objects;
  * is independent of column position. Column positions are resolved by
  * {@link SortColumnTable} using the column definitions returned by the table's
  * column supplier, so reordering columns only requires changing
- * {@code getColumnDefs()} — not the renderer.</p>
- *
- * <p>Usage:</p>
- * <pre>{@code
- * table.addRow(rowIndex, RowCells.<MySort.SortColumn>builder()
- *     .put(MySort.SortColumn.NAME, nameLabel)
- *     .put(MySort.SortColumn.VALUE, valueLabel)
- *     .put(MySort.SortColumn.ACTION, actionButton)
- *     .build());
- * }</pre>
+ * {@code getColumnDefs()} - not the renderer.</p>
  *
  * @param <Column> the column enum type used by the owning table
  */
@@ -60,13 +51,23 @@ public final class RowCells<Column> {
     /**
      * Returns the node mapped to the given column key, or {@code null} if none was registered.
      *
-     * <p>Package-private: only {@link SortColumnTable} should call this when
-     * placing cells into the grid.</p>
-     *
      * @param column the column key to look up
      * @return the mapped node, or {@code null} if the column was not added to this builder
      */
     Node get(Column column) {
         return cells.get(column);
+    }
+
+    /**
+     * Returns the first node in insertion order, or {@code null} if no cells were added.
+     *
+     * <p>Used by {@link SortColumnTable}-based cards as the default keyboard-focus
+     * anchor for a row when no more specific anchor is supplied. Insertion order is
+     * preserved by the backing {@link LinkedHashMap}.</p>
+     *
+     * @return the first inserted node, or {@code null} when this builder is empty
+     */
+    public Node firstNode() {
+        return cells.values().stream().findFirst().orElse(null);
     }
 }

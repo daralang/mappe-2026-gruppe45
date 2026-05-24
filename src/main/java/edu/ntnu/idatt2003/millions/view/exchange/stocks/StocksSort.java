@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
@@ -24,11 +25,13 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
     private static final Currency NOK = Currency.getInstance("NOK");
 
     /**
-     * Columns that support ascending/descending sort in the stocks table.
-     * {@code DETAILS} is non-sortable and exists only as a structural placeholder.
+     * All columns in the stocks table.
+     * Sortable columns are WATCHLIST, TICKER, PRICE_NOK,
+     * CHANGE_KR and CHANGE_PCT. The remaining columns
+     * COMPANY, TREND, TRADE, DETAILS are non-sortable and exist as structural keys for {@link RowCells}.
      */
     public enum SortColumn {
-        WATCHLIST, TICKER, PRICE_NOK, CHANGE_KR, CHANGE_PCT, DETAILS
+        WATCHLIST, TICKER, COMPANY, PRICE_NOK, CHANGE_KR, CHANGE_PCT, TREND, TRADE, DETAILS
     }
 
     private final CurrencyConverter converter;
@@ -60,15 +63,16 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
                 TableColumnDef.sortable("col.watchlist", SortColumn.WATCHLIST,
                         "tooltip.stocks.watchlist", 6, HPos.CENTER),
                 TableColumnDef.sortable("col.ticker", SortColumn.TICKER, 10, HPos.LEFT),
-                TableColumnDef.of("col.company", 26, HPos.LEFT),
+                TableColumnDef.nonSortable(SortColumn.COMPANY, "col.company", 26, HPos.LEFT),
                 TableColumnDef.sortable("col.priceNok", SortColumn.PRICE_NOK, 12, HPos.RIGHT),
                 TableColumnDef.sortable("col.changeNok", SortColumn.CHANGE_KR,
                         "tooltip.shared.changeNok", 12, HPos.RIGHT),
                 TableColumnDef.sortable("col.changePct", SortColumn.CHANGE_PCT,
                         "tooltip.shared.weeklyChange", 12, HPos.RIGHT),
-                TableColumnDef.of("col.trend", "tooltip.shared.trend", 12, HPos.CENTER),
-                TableColumnDef.of("col.trade", 5, HPos.LEFT),
-                TableColumnDef.of("col.details", 5, HPos.CENTER)
+                TableColumnDef.nonSortable(SortColumn.TREND, "col.trend",
+                        "tooltip.shared.trend", 12, HPos.CENTER),
+                TableColumnDef.nonSortable(SortColumn.TRADE, "col.trade", 5, HPos.CENTER),
+                TableColumnDef.nonSortable(SortColumn.DETAILS, "col.details", 5, HPos.CENTER)
         );
     }
 
@@ -89,7 +93,8 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
             case PRICE_NOK -> Comparator.comparing(s -> priceInNok(s, converter, NOK));
             case CHANGE_KR -> Comparator.comparing(s -> changeInNok(s, converter, NOK));
             case CHANGE_PCT -> Comparator.comparing(Stock::getWeeklyChangePercent);
-            case DETAILS -> throw new IllegalStateException("DETAILS column is not sortable");
+            case COMPANY, TREND, TRADE, DETAILS ->
+                    throw new IllegalStateException(column + " is not sortable");
         };
     }
 

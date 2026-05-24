@@ -24,10 +24,15 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
     private static final Currency NOK = Currency.getInstance("NOK");
 
     /**
-     * Columns that support ascending/descending sort in the watchlist table.
+     * All columns in the watchlist table.
+     * TICKER, COMPANY, CURRENCY, PRICE_ALT, PRICE_NOK, CHANGE_NOK, CHANGE_PCT and
+     * HIGH_LOW are sortable; TREND, TRADE, NOTE and REMOVE are non-sortable and
+     * exist only as structural keys for
+     * {@link edu.ntnu.idatt2003.millions.view.component.table.RowCells}.
      */
     enum SortColumn {
-        TICKER, COMPANY, CURRENCY, PRICE_ALT, PRICE_NOK, CHANGE_NOK, CHANGE_PCT, HIGH_LOW
+        TICKER, COMPANY, CURRENCY, PRICE_ALT, PRICE_NOK, CHANGE_NOK, CHANGE_PCT, HIGH_LOW,
+        TREND, TRADE, NOTE, REMOVE
     }
 
     private final CurrencyConverter converter;
@@ -67,18 +72,24 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
                 TableColumnDef.sortable(
                         "col.highLow", SortColumn.HIGH_LOW,
                         "tooltip.shared.highLow", 10, HPos.RIGHT),
-                TableColumnDef.of("col.trend", "tooltip.shared.trend", 12, HPos.CENTER),
-                TableColumnDef.of("col.trade", 7, HPos.CENTER),
-                TableColumnDef.of("col.note", 7, HPos.CENTER),
-                TableColumnDef.spacer(3, HPos.CENTER)
+                TableColumnDef.nonSortable(SortColumn.TREND, "col.trend",
+                        "tooltip.shared.trend", 12, HPos.CENTER),
+                TableColumnDef.nonSortable(SortColumn.TRADE, "col.trade", 7, HPos.CENTER),
+                TableColumnDef.nonSortable(SortColumn.NOTE, "col.note", 7, HPos.CENTER),
+                TableColumnDef.spacer(SortColumn.REMOVE, 3, HPos.CENTER)
         );
     }
 
     /**
      * Builds a {@link Comparator} for the given sort column.
+     * {@link SortColumn#TREND}, {@link SortColumn#TRADE}, {@link SortColumn#NOTE}
+     * and {@link SortColumn#REMOVE} are non-sortable structural columns and are
+     * excluded from sortable column definitions in {@link #getColumnDefs()}, so
+     * they should never reach this method.
      *
      * @param column the column to build a comparator for
      * @return a comparator for the given column
+     * @throws IllegalStateException if a non-sortable column is encountered
      */
     @Override
     protected Comparator<WatchlistItem> buildComparator(SortColumn column) {
@@ -91,6 +102,8 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
             case CHANGE_NOK -> Comparator.comparing(i -> changeInNok(i.stock(), converter, NOK));
             case CHANGE_PCT -> Comparator.comparing(i -> i.stock().getWeeklyChangePercent());
             case HIGH_LOW -> Comparator.comparing(i -> highLowRange(i.stock(), converter, NOK, HIGH_LOW_WEEKS));
+            case TREND, TRADE, NOTE, REMOVE ->
+                    throw new IllegalStateException(column + " is not sortable");
         };
     }
 

@@ -14,6 +14,7 @@ import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.leaderboard.LeaderboardSort;
 import javafx.geometry.Pos;
@@ -128,32 +129,35 @@ public class LeaderboardCard extends SortableTableCard<LeaderboardEntry, Leaderb
                 .toList());
     }
 
+    /**
+     * Builds the column-keyed cells for one leaderboard row. The displayed rank is
+     * derived from the row's page position: {@code currentPage * pageSize + rowIndex},
+     * so it continues to count correctly across pages.
+     *
+     * @param item     the leaderboard entry to render
+     * @param rowIndex the one-based grid row this entry occupies on the current page
+     * @return the column-keyed cells for this entry
+     */
     @Override
-    protected void renderPage(List<LeaderboardEntry> page) {
-        int baseRank = currentPage * pageSize;
-        int row = 1;
-        for (LeaderboardEntry entry : page) {
-            addDataRow(row, baseRank + row, entry);
-            row++;
-        }
+    protected RowCells<LeaderboardSort.SortColumn> buildRowCells(LeaderboardEntry item, int rowIndex) {
+        int rank = currentPage * pageSize + rowIndex;
+        return RowCells.<LeaderboardSort.SortColumn>builder()
+                .put(LeaderboardSort.SortColumn.RANK, TableCells.data(String.valueOf(rank)))
+                .put(LeaderboardSort.SortColumn.PLAYER, TableCells.data(item.playerName()))
+                .put(LeaderboardSort.SortColumn.RETURN,
+                        ChangeFormatter.styledPercent(item.returnPercent(), "holdings-cell"))
+                .put(LeaderboardSort.SortColumn.NET_WORTH,
+                        TableCells.data(CurrencyFormatter.format(item.finalNetWorth())))
+                .put(LeaderboardSort.SortColumn.WEEKS,
+                        TableCells.data(String.valueOf(item.weeksPlayed())))
+                .put(LeaderboardSort.SortColumn.STATUS, statusBadge(item.status()))
+                .put(LeaderboardSort.SortColumn.OUTCOME, outcomeBadge(item.outcome()));
     }
 
     @Override
     protected void onLanguageChanged() {
         pushScoreBtn.setText(LanguageManager.get("leaderboard.pushScore"));
         super.onLanguageChanged();
-    }
-
-    private void addDataRow(int tableRow, int rank, LeaderboardEntry entry) {
-        table.addRow(tableRow,
-                TableCells.data(String.valueOf(rank)),
-                TableCells.data(entry.playerName()),
-                ChangeFormatter.styledPercent(entry.returnPercent(), "holdings-cell"),
-                TableCells.data(CurrencyFormatter.format(entry.finalNetWorth())),
-                TableCells.data(String.valueOf(entry.weeksPlayed())),
-                statusBadge(entry.status()),
-                outcomeBadge(entry.outcome())
-        );
     }
 
     private Label statusBadge(PlayerStatusLevel status) {
