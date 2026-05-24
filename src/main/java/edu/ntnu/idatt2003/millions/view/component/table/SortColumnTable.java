@@ -19,19 +19,13 @@ import java.util.function.Supplier;
 /**
  * Reusable sortable table component backed by a {@link GridPane}.
  *
- * <p>Manages column layout, row insertion, sort state, empty-state display and an
- * optional clear-sort button. Header-cell building and caching is delegated to
- * {@link TableHeaderRenderer} so this class stays focused on grid structure and
- * the public table API.</p>
+ * <p>Manages column layout, row insertion, sort state and the empty state; header
+ * cells are delegated to {@link TableHeaderRenderer}, and cards keep responsibility
+ * for data fetching, filtering, sorting and cell construction.</p>
  *
- * <p>Cards retain responsibility for data fetching, filtering, sorting and
- * cell construction.</p>
- *
- * <p>The row-navigation event filter is registered lazily on the first call to
- * {@link #addSelectableRow} and removed again by {@link #clearRows()}, ensuring
- * the filter does not outlive the rows it serves. Navigation is delegated to an
- * internal {@link ArrowKeyNavigator}; focus is synchronised to the actually
- * focused row before each key event so Tab-based entry works correctly.</p>
+ * <p>Keyboard navigation is delegated to an internal {@link ArrowKeyNavigator}; the
+ * event filter is installed lazily on the first {@link #addSelectableRow} call and
+ * removed by {@link #clearRows()}, so it never outlives the rows it serves.</p>
  *
  * @param <Column> the sort-column enum type; use a wildcard or {@code Object}
  *                 when no column is sortable
@@ -147,6 +141,32 @@ public class SortColumnTable<Column> {
     }
 
     /**
+     * Adds a standard data row using a {@link RowCells} column-keyed map.
+     * Iterates the current column definitions in order.
+     *
+     * <p>With this overload, moving a column only requires reordering the entry in
+     * {@code getColumnDefs()}, the renderer does not need to change.</p>
+     *
+     * @param rowIndex the grid row to write to (row 0 is reserved for the header)
+     * @param cells    the column-keyed cell map produced by {@link RowCells#builder()}
+     */
+    public void addRow(int rowIndex, RowCells<Column> cells) {
+        List<TableColumnDef<Column>> cols = columnSupplier.get();
+        for (int i = 0; i < cols.size(); i++) {
+            TableColumnDef<Column> col = cols.get(i);
+            if (!col.hasColumnKey()) {
+                continue;
+            }
+            Node node = cells.get(col.columnKey());
+            if (node == null) {
+                continue;
+            }
+            grid.add(node, i, rowIndex);
+            GridPane.setHalignment(node, col.alignment());
+        }
+    }
+
+    /**
      * Adds a data row and registers it for UP/DOWN keyboard navigation.
      *
      * <p>When this row has focus (or a descendant has focus) and the user
@@ -162,6 +182,35 @@ public class SortColumnTable<Column> {
      */
     public void addSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter, Node... cells) {
         addRow(gridRow, cells);
+        registerSelectableRow(gridRow, focusAnchor, onEnter);
+    }
+
+    /**
+     * Adds a {@link RowCells}-based data row and registers it for UP/DOWN/ENTER navigation.
+     * Like {@link #addSelectableRow(int, Node, Runnable, Node...)} but builds the row from a
+     * column-keyed map via {@link #addRow(int, RowCells)}, so column order stays owned by the
+     * column definitions.
+     *
+     * @param gridRow     the grid row to write to (row 0 is reserved for the header)
+     * @param focusAnchor the node focused when navigating to this row
+     * @param onEnter     action invoked on Enter
+     * @param cells       the column-keyed cells from {@link RowCells#builder()}
+     */
+    public void addSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter, RowCells<Column> cells) {
+        addRow(gridRow, cells);
+        registerSelectableRow(gridRow, focusAnchor, onEnter);
+    }
+
+    /**
+     * Registers an already-inserted row for keyboard navigation, installing the
+     * row-navigation event filter on the first call. Shared by both
+     * {@code addSelectableRow} overloads; the filter is removed by {@link #clearRows()}.
+     *
+     * @param gridRow     the grid row the cells were written to
+     * @param focusAnchor the node focused when navigating to this row
+     * @param onEnter     action invoked on Enter
+     */
+    private void registerSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter) {
         selectableRows.add(new SelectableRow(gridRow, focusAnchor, onEnter));
         if (!rowFilterInstalled) {
             grid.addEventFilter(KeyEvent.KEY_PRESSED, rowNavigationHandler);
@@ -270,6 +319,26 @@ public class SortColumnTable<Column> {
      */
     public boolean isSortActive() {
         return sortState.hasActiveSort();
+    }
+
+    /**
+     * Returns the grid column index of the column with the given key, by scanning
+     * the current column definitions. Lets callers position cells (e.g. a separate
+     * total row) by column key instead of a hard-coded index, so the layout has a
+     * single source of truth in the column definitions.
+     *
+     * @param key the column key to locate
+     * @return the zero-based grid column index
+     * @throws IllegalArgumentException if no column has the given key
+     */
+    public int columnIndex(Column key) {
+        List<TableColumnDef<Column>> cols = columnSupplier.get();
+        for (int i = 0; i < cols.size(); i++) {
+            if (key.equals(cols.get(i).columnKey())) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("No column with key: " + key);
     }
 
     /**

@@ -35,15 +35,6 @@ import java.util.Map;
  */
 public class ActiveLoansCard extends Card {
 
-    /** Grid column index for the loan name cell in the total row. */
-    private static final int TOTAL_COL_LABEL = 0;
-
-    /** Grid column index for the weekly cost cell in the total row. */
-    private static final int TOTAL_COL_WEEKLY_COST = 3;
-
-    /** Grid column index for the remaining principal cell in the total row. */
-    private static final int TOTAL_COL_REMAINING = 4;
-
     private final GameService gameService;
     private final LoanController controller;
     private final LoansSort loansSort;
@@ -164,16 +155,19 @@ public class ActiveLoansCard extends Card {
         GridPane.setColumnSpan(divider, loansSort.getColumnDefs().size());
         totalGrid.add(divider, 0, 0);
 
-        totalGrid.add(TableCells.boldData(LanguageManager.get("loans.active.total")), TOTAL_COL_LABEL, 1);
+        totalGrid.add(TableCells.boldData(LanguageManager.get("loans.active.total")),
+                table.columnIndex(LoansSort.SortColumn.LOAN), 1);
 
         BigDecimal totalWeeklyCost = loans.stream()
                 .map(Loan::weeklyInterest)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         totalGrid.add(TableCells.boldData(
-                MoneyFormatter.format(totalWeeklyCost)), TOTAL_COL_WEEKLY_COST, 1);
+                MoneyFormatter.format(totalWeeklyCost)),
+                table.columnIndex(LoansSort.SortColumn.WEEKLY_COST), 1);
 
         totalGrid.add(TableCells.boldData(
-                MoneyFormatter.format(gameService.getPlayer().getTotalDebt())), TOTAL_COL_REMAINING, 1);
+                MoneyFormatter.format(gameService.getPlayer().getTotalDebt())),
+                table.columnIndex(LoansSort.SortColumn.REMAINING), 1);
     }
 
     /**

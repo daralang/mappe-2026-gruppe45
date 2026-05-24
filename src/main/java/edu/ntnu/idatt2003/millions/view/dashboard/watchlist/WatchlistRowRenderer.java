@@ -9,10 +9,9 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
 import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
-import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -22,17 +21,16 @@ import javafx.scene.layout.HBox;
 
 import java.math.BigDecimal;
 import java.util.Currency;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * Responsible for rendering a single {@link WatchlistItem} row into a {@link SortColumnTable}.
+ * Responsible for building the column-keyed cells for a single {@link WatchlistItem} row.
  *
- * <p>Each call to {@link #buildRow} populates one row with ticker, company,
- * price in NOK, price in the stock's native currency, weekly change (NOK and %),
- * 4-week high/low, a sparkline trend, the week the entry was added,
- * a buy button, a note button, and a remove button.</p>
+ * <p>Each call to {@link #buildRow(WatchlistItem)} produces a {@link RowCells} map with
+ * ticker, company, price in NOK, price in the stock's native currency, weekly change
+ * (NOK and %), 4-week high/low, a sparkline trend, a buy button, a note button, and a
+ * remove button. The owning card inserts the cells and registers the row for navigation.</p>
  *
  * <p>This class is stateless and may be reused across refreshes.</p>
  */
@@ -64,13 +62,16 @@ class WatchlistRowRenderer extends RowRenderer {
     }
 
     /**
-     * Renders the given item as a row at {@code rowIndex} in the provided table.
+     * Builds the column-keyed cells for the given watchlist item.
      *
-     * @param item     the watchlist item to render
-     * @param rowIndex the table row index (0 is reserved for the header)
-     * @param table    the {@link SortColumnTable} to add the row nodes into
+     * <p>The note button is inserted first so it serves as the row's default
+     * keyboard-focus anchor (see {@link RowCells#firstNode()}); unlike the buy
+     * button it is never disabled when the game is over.</p>
+     *
+     * @param item the watchlist item to render
+     * @return the column-keyed cells for this item, keyed by {@link WatchlistSort.SortColumn}
      */
-    void buildRow(WatchlistItem item, int rowIndex, SortColumnTable<?> table) {
+    RowCells<WatchlistSort.SortColumn> buildRow(WatchlistItem item) {
         Stock stock = item.stock();
         CurrencyConverter converter = gameService.getCurrencyConverter();
 
@@ -107,10 +108,19 @@ class WatchlistRowRenderer extends RowRenderer {
         GridPane.setValignment(noteButton, VPos.CENTER);
         GridPane.setValignment(removeButton, VPos.CENTER);
 
-        Node[] cells = {tickerLabel, companyLabel, currencyLabel, priceAltLabel, priceNokLabel,
-                changeNokLabel, changePctLabel, highLowLabel, sparkline,
-                actions, noteButton, removeButton};
-        table.addRow(rowIndex, cells);
+        return RowCells.<WatchlistSort.SortColumn>builder()
+                .put(WatchlistSort.SortColumn.NOTE, noteButton)
+                .put(WatchlistSort.SortColumn.TICKER, tickerLabel)
+                .put(WatchlistSort.SortColumn.COMPANY, companyLabel)
+                .put(WatchlistSort.SortColumn.CURRENCY, currencyLabel)
+                .put(WatchlistSort.SortColumn.PRICE_ALT, priceAltLabel)
+                .put(WatchlistSort.SortColumn.PRICE_NOK, priceNokLabel)
+                .put(WatchlistSort.SortColumn.CHANGE_NOK, changeNokLabel)
+                .put(WatchlistSort.SortColumn.CHANGE_PCT, changePctLabel)
+                .put(WatchlistSort.SortColumn.HIGH_LOW, highLowLabel)
+                .put(WatchlistSort.SortColumn.TREND, sparkline)
+                .put(WatchlistSort.SortColumn.TRADE, actions)
+                .put(WatchlistSort.SortColumn.REMOVE, removeButton);
     }
 
     private HBox buildActionButtons(WatchlistItem item) {
