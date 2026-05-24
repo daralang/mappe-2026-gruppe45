@@ -10,6 +10,7 @@ import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.view.component.ChevronButton;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
@@ -270,13 +271,12 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
 
     /**
      * Builds the details navigation button for a share row.
-     * Delegates to {@link TableCells#chevronButton(Runnable)} for consistent styling.
      *
      * @param share the share to open details for
-     * @return a styled chevron button
+     * @return a styled {@link ChevronButton} that opens the share detail modal
      */
-    private Button buildDetailsButton(Share share) {
-        return TableCells.chevronButton(() -> controller.openDetailsModal(share));
+    private ChevronButton buildDetailsButton(Share share) {
+        return new ChevronButton(() -> controller.openDetailsModal(share), "tooltip.holdings.chevron");
     }
 
     /**

@@ -32,13 +32,11 @@ import javafx.scene.layout.GridPane;
  * {@code clear → header → empty-check → loop} skeleton, that's the right
  * moment to promote the skeleton into a {@code TableCard<T>} base class.</p>
  *
- * <p>Specialised cells — colored amount cells, badges, domain action buttons —
+ * <p>Specialised cells — colored amount cells, badges, action buttons —
  * are intentionally outside this class: they belong to
  * {@code ChangeFormatter}, {@code TransactionTypeBadge} and the owning
  * table respectively, since their styling is more than just a typography
- * class. The {@link #chevronButton} is an exception: it is a pure navigation
- * primitive with no domain knowledge, used identically across multiple table
- * cards.</p>
+ * class.</p>
  */
 public final class TableCells {
 
@@ -77,24 +75,6 @@ public final class TableCells {
         String indicator = active ? (ascending ? " ↓ " : "  ↑") : " ↓↑";
         Button button = new Button(text + indicator);
         button.getStyleClass().add("holdings-header");
-        button.setOnAction(e -> onClick.run());
-        return button;
-    }
-
-    /**
-     * Creates a chevron navigation button ({@code ❯}) used in table rows to open
-     * a detail view for that row's item.
-     *
-     * <p>Applies the shared {@code holdings-details-chevron} CSS class so the button
-     * looks identical regardless of which table card it appears in. The callback
-     * receives no arguments; callers capture the relevant item via closure.</p>
-     *
-     * @param onClick the action to invoke when the button is clicked; must not be {@code null}
-     * @return a styled chevron button
-     */
-    public static Button chevronButton(Runnable onClick) {
-        Button button = new Button("❯");
-        button.getStyleClass().add("holdings-details-chevron");
         button.setOnAction(e -> onClick.run());
         return button;
     }
