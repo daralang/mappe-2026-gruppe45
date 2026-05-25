@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.calculator;
 
 import java.math.BigDecimal;
@@ -13,29 +14,28 @@ public interface TransactionCalculator {
     /**
      * Calculates the gross value of the transaction.
      *
-     * @return the gross value as a {@link BigDecimal}
+     * @return the gross transaction value
      */
     BigDecimal calculateGross();
 
     /**
      * Calculates the commission fee for the transaction.
      *
-     * @return the commission amount as a {@link BigDecimal}
+     * @return the commission amount
      */
     BigDecimal calculateCommission();
 
     /**
      * Calculates the tax applied to the transaction.
      *
-     * @return the tax amount as a {@link BigDecimal}
+     * @return the tax amount
      */
     BigDecimal calculateTax();
 
     /**
-     * Calculates the total cost or profit of the transaction,
-     * typically the sum of gross, commission, and tax.
+     * Calculates the total amount the player pays or receives for the transaction.
      *
-     * @return the total amount as a {@link BigDecimal}
+     * @return the total transaction amount
      */
     BigDecimal calculateTotal();
 }

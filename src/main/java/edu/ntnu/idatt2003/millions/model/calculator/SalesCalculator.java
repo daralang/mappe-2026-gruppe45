@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.calculator;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -32,7 +33,7 @@ public class SalesCalculator implements TransactionCalculator {
     /**
      * Constructs a SalesCalculator for the given share.
      *
-     * @param share the share being sold, used to retrieve sales price, quantity, and purchase costs
+     * @param share the share being sold
      * @throws NullPointerException if the share is null
      */
     public SalesCalculator(Share share) {
@@ -44,9 +45,7 @@ public class SalesCalculator implements TransactionCalculator {
     }
 
     /**
-     * Calculates the realized profit (or loss) from this sale, after
-     * commission and tax. Profit is the total received minus the original
-     * purchase costs.
+     * Calculates the realized profit (or loss) from this sale, after commission and tax.
      *
      * @return the realized profit (positive) or loss (negative)
      */
@@ -73,7 +72,7 @@ public class SalesCalculator implements TransactionCalculator {
      * Calculates the gross value of the sale.
      * Gross value is defined as sales price multiplied by quantity.
      *
-     * @return the gross value as a {@link BigDecimal}
+     * @return the gross sale value
      */
     @Override
     public BigDecimal calculateGross() {
@@ -84,7 +83,7 @@ public class SalesCalculator implements TransactionCalculator {
      * Calculates the commission fee for the sale.
      * Commission is 1% of the gross value.
      *
-     * @return the commission amount as a {@link BigDecimal}
+     * @return the commission amount
      */
     @Override
     public BigDecimal calculateCommission() {
@@ -93,10 +92,9 @@ public class SalesCalculator implements TransactionCalculator {
 
     /**
      * Calculates the tax for the sale.
-     * Tax is 30% of the profit, where profit is gross value minus commission minus purchase costs.
-     * If the profit is zero or negative (i.e. a loss), zero tax is returned.
+     * Tax is 30% of the pre-tax profit. Returns zero if the position was sold at a loss.
      *
-     * @return the tax amount as a {@link BigDecimal}, or {@link BigDecimal#ZERO} if there is no profit
+     * @return the tax amount, or zero if there is no profit
      */
     @Override
     public BigDecimal calculateTax() {
@@ -109,9 +107,8 @@ public class SalesCalculator implements TransactionCalculator {
 
     /**
      * Calculates the total net payout of the sale.
-     * Total is defined as gross value minus commission minus tax.
      *
-     * @return the total net payout as a {@link BigDecimal}
+     * @return the net payout to the seller
      */
     @Override
     public BigDecimal calculateTotal() {
@@ -122,9 +119,10 @@ public class SalesCalculator implements TransactionCalculator {
      * Calculates the net payout of selling the entire position and converts
      * the result to NOK using the given currency converter.
      *
-     * @param share     the share being sold; must not be null
+     * @param share     the share being sold
      * @param converter the converter used to translate the native-currency net to NOK
      * @return the net sale value in NOK
+     * @throws NullPointerException if share or converter is null
      */
     public static BigDecimal calculateNetNok(Share share, CurrencyConverter converter) {
         Objects.requireNonNull(share, "Share cannot be null");

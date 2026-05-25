@@ -1,7 +1,5 @@
 package edu.ntnu.idatt2003.millions.model.stock;
 
-import edu.ntnu.idatt2003.millions.model.stock.Share;
-import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,7 +11,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for the {@link Share} class.
@@ -76,6 +73,16 @@ class ShareTest {
             // Act & Assert
             assertThrows(IllegalArgumentException.class, () ->
                     new Share(stock, quantity, purchasePrice));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when quantity is zero")
+        void throwsExceptionWhenQuantityIsZero() {
+            // Arrange
+            BigDecimal purchasePrice = new BigDecimal("90.00");
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class, () ->
+                    new Share(stock, BigDecimal.ZERO, purchasePrice));
         }
 
         @Test

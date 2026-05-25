@@ -294,11 +294,11 @@ class ExchangeTest {
         @DisplayName("Should deduct cost from player balance after buy")
         void deductsCostFromBalance() {
             // Arrange
-            BigDecimal balanceBefore = player.getMoney();
+            BigDecimal balanceBefore = player.getCash();
             // Act
             exchange.buy("DIS", new BigDecimal("5"), player);
             // Assert
-            assertTrue(player.getMoney().compareTo(balanceBefore) < 0);
+            assertTrue(player.getCash().compareTo(balanceBefore) < 0);
         }
 
         @Test
@@ -394,11 +394,11 @@ class ExchangeTest {
         @DisplayName("Should add payout to player balance after sell")
         void addsPayoutToBalance() {
             // Arrange
-            BigDecimal balanceBefore = player.getMoney();
+            BigDecimal balanceBefore = player.getCash();
             // Act
             exchange.sell(share, player);
             // Assert
-            assertTrue(player.getMoney().compareTo(balanceBefore) > 0);
+            assertTrue(player.getCash().compareTo(balanceBefore) > 0);
         }
 
         @Test

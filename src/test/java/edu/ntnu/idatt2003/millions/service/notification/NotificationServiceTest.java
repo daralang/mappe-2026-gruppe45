@@ -179,7 +179,7 @@ class NotificationServiceTest {
             Loan loan = new Loan(offer, new BigDecimal("10000"), 0);
             try { player.takeLoan(loan, converter); } catch (Exception ignored) {}
             // Drain almost all cash so obligation at week+1 exceeds cash
-            player.withdrawMoney(player.getMoney().subtract(new BigDecimal("5")));
+            player.withdrawMoney(player.getCash().subtract(new BigDecimal("5")));
 
             service.onWeekAdvanced(player, exchange, converter);
 
@@ -194,7 +194,7 @@ class NotificationServiceTest {
                     new BigDecimal("100000"), LoanRiskLevel.LOW);
             Loan loan = new Loan(offer, new BigDecimal("10000"), 0);
             try { player.takeLoan(loan, converter); } catch (Exception ignored) {}
-            player.withdrawMoney(player.getMoney().subtract(new BigDecimal("5")));
+            player.withdrawMoney(player.getCash().subtract(new BigDecimal("5")));
 
             service.onWeekAdvanced(player, exchange, converter);
             service.onWeekAdvanced(player, exchange, converter);

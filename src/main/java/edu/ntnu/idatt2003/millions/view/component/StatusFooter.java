@@ -129,7 +129,7 @@ public class StatusFooter extends HBox implements GameObserver {
 
         playerValue.setText(player.getName());
         equityValue.setText(CurrencyFormatter.format(statsService.getNetWorth(player, converter)));
-        availableValue.setText(CurrencyFormatter.format(player.getMoney()));
+        availableValue.setText(CurrencyFormatter.format(player.getCash()));
 
         PlayerStatusLevel status = statsService.getStatus(player, converter);
         double progress = statsService.getProgressToNextStatus(player, converter);

@@ -51,7 +51,7 @@ public class ForcedSaleController {
 
         ForcedSaleDialog[] ref = new ForcedSaleDialog[1];
         ref[0] = new ForcedSaleDialog(
-                shares, interestDue, maturityDue, player.getMoney(), netNokByShare, currentWeek,
+                shares, interestDue, maturityDue, player.getCash(), netNokByShare, currentWeek,
                 selectedShares -> handleConfirm(ref[0], selectedShares, currentWeek)
         );
         ref[0].show();

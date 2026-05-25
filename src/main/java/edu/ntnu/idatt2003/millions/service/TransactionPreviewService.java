@@ -46,7 +46,7 @@ public class TransactionPreviewService {
         BigDecimal tax = calc.calculateTax();
         BigDecimal total = calc.calculateTotal();
         BigDecimal totalInNok = converter.convert(total, stock.getCurrency(), NOK);
-        BigDecimal balanceAfter = player.getMoney().subtract(totalInNok);
+        BigDecimal balanceAfter = player.getCash().subtract(totalInNok);
 
         return new TransactionPreview(
                 gross, commission, tax, total, totalInNok, balanceAfter, null, null, null);
@@ -82,7 +82,7 @@ public class TransactionPreviewService {
         BigDecimal tax = calc.calculateTax();
         BigDecimal total = calc.calculateTotal();
         BigDecimal totalInNok = converter.convert(total, share.getStock().getCurrency(), NOK);
-        BigDecimal balanceAfter = player.getMoney().add(totalInNok);
+        BigDecimal balanceAfter = player.getCash().add(totalInNok);
 
         BigDecimal profit = calc.calculateProfit();
         BigDecimal profitPercent = calc.calculateProfitPercent();
