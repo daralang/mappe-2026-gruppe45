@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.currency;
 
 import java.math.BigDecimal;
@@ -7,8 +8,7 @@ import java.util.Currency;
  * Converts monetary amounts between currencies.
  *
  * <p>Implementations are expected to be stateless and thread-safe.
- * The {@link FixedRateCurrencyConverter} provides hardcoded rates;
- * other implementations may use live exchange rates in the future.
+ * {@link FixedRateCurrencyConverter} provides hardcoded exchange rates.
  */
 public interface CurrencyConverter {
 
