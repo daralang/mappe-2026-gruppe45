@@ -11,10 +11,7 @@ import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
 import edu.ntnu.idatt2003.millions.model.transaction.Sale;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
-
 import java.io.*;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -109,15 +106,13 @@ public class JsonGameFileHandler implements GameFileHandler {
         try {
             gameState = gson.fromJson(reader, JsonObject.class);
         } catch (JsonParseException e) {
-            throw new GameSaveCorruptException(
-                    MessageFormat.format(LanguageManager.get("error.save.load.invalidJson"), label), e);
+            throw new GameSaveCorruptException("error.save.load.invalidJson", new Object[]{label}, e);
         }
 
         if (gameState == null
                 || !gameState.has("player")
                 || !gameState.has("exchange")) {
-            throw new GameSaveCorruptException(
-                    MessageFormat.format(LanguageManager.get("error.save.load.missingFields"), label));
+            throw new GameSaveCorruptException("error.save.load.missingFields", new Object[]{label});
         }
 
         Exchange exchange;
@@ -126,8 +121,7 @@ public class JsonGameFileHandler implements GameFileHandler {
             exchange = gson.fromJson(gameState.get("exchange"), Exchange.class);
             player = gson.fromJson(gameState.get("player"), Player.class);
         } catch (JsonParseException e) {
-            throw new GameSaveCorruptException(
-                    MessageFormat.format(LanguageManager.get("error.save.load.unreadableStructure"), label), e);
+            throw new GameSaveCorruptException("error.save.load.unreadableStructure", new Object[]{label}, e);
         }
 
         relinkShares(player, exchange);
