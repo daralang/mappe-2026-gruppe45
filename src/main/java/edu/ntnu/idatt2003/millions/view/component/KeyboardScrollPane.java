@@ -48,8 +48,22 @@ public final class KeyboardScrollPane extends ScrollPane {
         if (code != KeyCode.UP && code != KeyCode.DOWN) {
             return;
         }
-        scrollBy(code == KeyCode.UP ? -SCROLL_STEP_PX : SCROLL_STEP_PX);
+        scrollByArrow(code);
         event.consume();
+    }
+
+    /**
+     * Scrolls the viewport one step up or down for the given arrow key.
+     *
+     * @param code the pressed key; only {@link KeyCode#UP} and {@link KeyCode#DOWN}
+     *             have an effect
+     */
+    public void scrollByArrow(KeyCode code) {
+        if (code == KeyCode.UP) {
+            scrollBy(-SCROLL_STEP_PX);
+        } else if (code == KeyCode.DOWN) {
+            scrollBy(SCROLL_STEP_PX);
+        }
     }
 
     /**
