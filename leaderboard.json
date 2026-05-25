@@ -64,5 +64,16 @@
     "status": "NOVICE",
     "outcome": "RETIRED",
     "lastUpdated": "2026-05-16T10:15:16.965925300Z"
+  },
+  {
+    "sessionId": "07f86902-1037-4521-8ad0-eee8ca8b6e13",
+    "playerName": "kristoffer",
+    "startingCapital": 10000,
+    "finalNetWorth": 8582.4712,
+    "returnPercent": -14.2,
+    "weeksPlayed": 21,
+    "status": "NOVICE",
+    "outcome": "ACTIVE",
+    "lastUpdated": "2026-05-25T10:53:21.302989700Z"
   }
 ]
