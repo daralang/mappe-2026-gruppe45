@@ -1,19 +1,17 @@
 package edu.ntnu.idatt2003.millions.view.component.table;
 
-import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 
 /**
- * Scrolls the enclosing {@link ScrollPane} so a navigated-to node is brought fully
+ * Scrolls the enclosing {@link ScrollPane} so a focused node is brought fully
  * into the viewport.
  *
- * <p>Used by {@link SortColumnTable} after keyboard navigation moves focus, so the
+ * <p>Used by {@link SortColumnTable} when a row gains focus (via Tab), so the
  * viewport follows the focused row instead of leaving it off-screen. This class owns
  * only the scroll calculation and never touches the table grid, keeping grid ownership
- * with the table - mirroring how {@link ArrowKeyNavigator} owns only navigation logic
- * and {@link RowHighlighter} owns only highlight state.</p>
+ * with the table, mirroring how {@link RowHighlighter} owns only highlight state.</p>
  */
 final class RowScroller {
 

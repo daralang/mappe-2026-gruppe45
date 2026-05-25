@@ -1,11 +1,10 @@
 package edu.ntnu.idatt2003.millions.view.component.table;
 
-import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.view.component.KeyboardScrollPane;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.geometry.VPos;
@@ -25,9 +24,11 @@ import java.util.function.Supplier;
  * cells are delegated to {@link TableHeaderRenderer}, and cards keep responsibility
  * for data fetching, filtering, sorting and cell construction.</p>
  *
- * <p>Keyboard navigation is delegated to an internal {@link ArrowKeyNavigator}; the
- * event filter is installed lazily on the first {@link #addSelectableRow} call and
- * removed by {@link #clearRows()}, so it never outlives the rows it serves.</p>
+ * <p>Data rows form a keyboard grid: each row's focus anchor is focus-traversable
+ * and shows a focus highlight. UP/DOWN move focus between rows (clamped at the
+ * ends) and scroll the focused row into view. The anchor opts out of page scrolling via
+ * {@link KeyboardScrollPane#VERTICAL_KEYS_HANDLED}, so the arrow keys navigate rows
+ * instead of scrolling the surrounding view.</p>
  *
  * @param <Column> the sort-column enum type; use a wildcard or {@code Object}
  *                 when no column is sortable
@@ -41,25 +42,9 @@ public class SortColumnTable<Column> {
     private final SortState<Column> sortState = new SortState<>();
     private final GridPane grid = new GridPane();
     private final TableHeaderRenderer<Column> headerRenderer = new TableHeaderRenderer<>(sortState);
-    private final List<SelectableRow> selectableRows = new ArrayList<>();
     private final RowHighlighter rowHighlighter = new RowHighlighter();
     private final RowScroller rowScroller = new RowScroller();
-    private boolean rowFilterInstalled = false;
-    private final javafx.event.EventHandler<KeyEvent> rowNavigationHandler = this::handleRowNavigation;
-    private final ArrowKeyNavigator rowNavigator = new ArrowKeyNavigator(
-            ArrowKeyNavigator.Orientation.VERTICAL,
-            selectableRows::size,
-            idx -> {
-                Node anchor = selectableRows.get(idx).focusAnchor();
-                anchor.requestFocus();
-                rowScroller.ensureVisible(anchor);
-            },
-            idx -> selectableRows.get(idx).onEnter().run(),
-            false
-    );
-
-    /** Metadata for a keyboard-navigable data row. */
-    private record SelectableRow(int gridRow, Node focusAnchor, Runnable onEnter) {}
+    private final List<Node> rowAnchors = new ArrayList<>();
 
     /**
      * Constructs a sortable table with default horizontal gap of 20px.
@@ -92,18 +77,13 @@ public class SortColumnTable<Column> {
 
     /**
      * Clears all nodes from the grid, including header and data rows.
-     * Also clears the selectable-row registry and removes the row-navigation
-     * event filter so it does not linger when there are no navigable rows.
+     * Also clears the row-anchor registry used for keyboard navigation.
      * Call this at the start of every refresh before calling {@code refreshHeader}.
      */
     public void clearRows() {
         grid.getChildren().clear();
-        selectableRows.clear();
         rowHighlighter.clear();
-        if (rowFilterInstalled) {
-            grid.removeEventFilter(KeyEvent.KEY_PRESSED, rowNavigationHandler);
-            rowFilterInstalled = false;
-        }
+        rowAnchors.clear();
     }
 
     /**
@@ -172,17 +152,11 @@ public class SortColumnTable<Column> {
     }
 
     /**
-     * Adds a {@link RowCells}-based data row and registers it for UP/DOWN/ENTER navigation.
-     *
-     * <p>Builds the row from a column-keyed map via {@link #addRow(int, RowCells)}, so column
-     * order stays owned by the column definitions. When this row has focus (or a descendant
-     * has focus) and the user presses UP or DOWN, the internal {@link ArrowKeyNavigator} moves
-     * focus to the adjacent row's {@code focusAnchor}; ENTER calls {@code onEnter}. The grid
-     * event filter is attached lazily on the first call and removed by {@link #clearRows()}.</p>
+     * Adds a {@link RowCells}-based data row and makes it keyboard-reachable.
      *
      * @param gridRow     the grid row to write to (row 0 is reserved for the header)
-     * @param focusAnchor the node focused when navigating to this row
-     * @param onEnter     action invoked on Enter
+     * @param focusAnchor the node focused when this row is reached
+     * @param onEnter     action invoked on Enter or Space
      * @param cells       the column-keyed cells from {@link RowCells#builder()}
      */
     public void addSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter, RowCells<Column> cells) {
@@ -191,21 +165,65 @@ public class SortColumnTable<Column> {
     }
 
     /**
-     * Registers an already-inserted row for keyboard navigation, installing the
-     * row-navigation event filter on the first call; the filter is removed by
-     * {@link #clearRows()}.
+     * Wires an already-inserted row into the keyboard grid: registers it as a
+     * navigable anchor, binds the focus highlight, scrolls it into view on focus,
+     * and installs the row key handler (UP/DOWN move rows, Enter/Space activate).
+     * The anchor is flagged with {@link KeyboardScrollPane#VERTICAL_KEYS_HANDLED}
+     * so the surrounding scroll pane yields UP/DOWN to row navigation.
      *
      * @param gridRow     the grid row the cells were written to
-     * @param focusAnchor the node focused when navigating to this row
-     * @param onEnter     action invoked on Enter
+     * @param focusAnchor the node focused when this row is reached
+     * @param onEnter     action invoked on Enter or Space
      */
     private void registerSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter) {
-        selectableRows.add(new SelectableRow(gridRow, focusAnchor, onEnter));
+        rowAnchors.add(focusAnchor);
+        focusAnchor.getProperties().put(KeyboardScrollPane.VERTICAL_KEYS_HANDLED, Boolean.TRUE);
         rowHighlighter.bindFocus(gridRow, focusAnchor);
-        if (!rowFilterInstalled) {
-            grid.addEventFilter(KeyEvent.KEY_PRESSED, rowNavigationHandler);
-            rowFilterInstalled = true;
+        focusAnchor.addEventHandler(KeyEvent.KEY_PRESSED, event -> handleRowKey(event, focusAnchor, onEnter));
+        focusAnchor.focusedProperty().addListener((obs, was, isFocused) -> {
+            if (isFocused) {
+                rowScroller.ensureVisible(focusAnchor);
+            }
+        });
+    }
+
+    /**
+     * Handles key presses on a focused row anchor: UP/DOWN move row focus,
+     * Enter/Space run {@code onEnter}. All four keys are consumed so they never
+     * fall through to focus traversal or page scrolling.
+     *
+     * @param event   the key event
+     * @param anchor  the row anchor that currently has focus
+     * @param onEnter the action to run on Enter or Space
+     */
+    private void handleRowKey(KeyEvent event, Node anchor, Runnable onEnter) {
+        switch (event.getCode()) {
+            case UP    -> { moveRowFocus(anchor, -1); event.consume(); }
+            case DOWN  -> { moveRowFocus(anchor, 1);  event.consume(); }
+            case ENTER, SPACE -> { onEnter.run(); event.consume(); }
+            default -> { }
         }
+    }
+
+    /**
+     * Moves keyboard focus to the row {@code delta} steps from the given anchor,
+     * clamped to the first and last row, and scrolls the new row into view.
+     *
+     * @param current the anchor that currently has focus
+     * @param delta   {@code -1} for the previous row, {@code 1} for the next
+     */
+    private void moveRowFocus(Node current, int delta) {
+        int index = rowAnchors.indexOf(current);
+        if (index < 0) {
+            return;
+        }
+        int target = Math.clamp(index + delta, 0, rowAnchors.size() - 1);
+        if (target == index) {
+            return;
+        }
+        Node next = rowAnchors.get(target);
+        next.requestFocus();
+        rowScroller.ensureVisible(next);
     }
 
     /**
@@ -271,14 +289,6 @@ public class SortColumnTable<Column> {
     }
 
     /**
-     * Clears the active sort column and direction, returning the table to
-     * its unsorted state.
-     */
-    public void clearSort() {
-        sortState.clear();
-    }
-
-    /**
      * Returns whether a sort column is currently active.
      *
      * @return {@code true} if a sort column is active, {@code false} otherwise
@@ -305,68 +315,6 @@ public class SortColumnTable<Column> {
             }
         }
         throw new IllegalArgumentException("No column with key: " + key);
-    }
-
-    /**
-     * Handles UP/DOWN/ENTER when focus is inside a selectable row.
-     *
-     * <p>Delegates movement and confirmation to {@link ArrowKeyNavigator}.
-     * Before each key event the navigator's index is silently synchronised
-     * to the actually focused row via {@link ArrowKeyNavigator#syncIndex},
-     * so navigation is correct even when focus arrives via Tab rather than
-     * a previous arrow-key press.</p>
-     *
-     * <p>At the first row (UP) and last row (DOWN) the key is left unconsumed so
-     * the enclosing scroll pane can scroll past the table rather than the
-     * navigation clamping at the edge.</p>
-     */
-    private void handleRowNavigation(KeyEvent event) {
-        KeyCode code = event.getCode();
-        if (code != KeyCode.UP && code != KeyCode.DOWN && code != KeyCode.ENTER) {
-            return;
-        }
-        Node focused = grid.getScene() != null ? grid.getScene().getFocusOwner() : null;
-        int dataIdx = findFocusedDataRowIndex(focused);
-        if (dataIdx < 0) {
-            return;
-        }
-        // At the edges, let the key fall through so the enclosing scroll pane can
-        // scroll past the table instead of the navigation clamping and consuming it.
-        if (code == KeyCode.UP && dataIdx == 0) {
-            return;
-        }
-        if (code == KeyCode.DOWN && dataIdx == selectableRows.size() - 1) {
-            return;
-        }
-        rowNavigator.syncIndex(dataIdx);
-        if (rowNavigator.navigate(event)) {
-            event.consume();
-        }
-    }
-
-    /**
-     * Walks up the scene-graph from {@code focused} to find the direct grid child,
-     * then maps its grid-row to a selectable-row index.
-     *
-     * @param focused the current focus owner; may be {@code null}
-     * @return the zero-based index in {@code selectableRows}, or {@code -1} if not found
-     */
-    private int findFocusedDataRowIndex(Node focused) {
-        Node node = focused;
-        while (node != null && node != grid) {
-            if (node.getParent() == grid) {
-                Integer row = GridPane.getRowIndex(node);
-                int gridRow = (row != null) ? row : 0;
-                for (int i = 0; i < selectableRows.size(); i++) {
-                    if (selectableRows.get(i).gridRow() == gridRow) {
-                        return i;
-                    }
-                }
-                return -1;
-            }
-            node = node.getParent();
-        }
-        return -1;
     }
 
     /**
