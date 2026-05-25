@@ -1,6 +1,8 @@
 package edu.ntnu.idatt2003.millions.view.component.table;
 
 import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
+import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
+import edu.ntnu.idatt2003.millions.keyboard.VerticalArrowHandler;
 import edu.ntnu.idatt2003.millions.keyboard.VerticalArrowPolicy;
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
@@ -182,11 +184,10 @@ public class SortColumnTable<Column> {
     /**
      * Wires an already-inserted row into the keyboard grid: registers it as a
      * {@link NavigableRow}, binds the focus highlight, marks the anchor with
-     * {@link VerticalArrowPolicy#ARROW_NAVIGABLE_ROW} so the page-scroll handler
-     * defers UP/DOWN to row navigation, scrolls it into view on focus, and delegates
-     * UP/DOWN/Enter/Space to the shared {@link ArrowKeyNavigator}.
-     * At the first row (UP) and last row (DOWN) the key is left unconsumed so it
-     * bubbles to the enclosing scroll pane, letting the page scroll past the table.
+     * {@link VerticalArrowPolicy#ARROW_NAVIGABLE_ROW}, registers its vertical-arrow
+     * strategy under {@link PageArrowDispatcher#ARROW_HANDLER_KEY} so the central
+     * dispatcher moves the selection (see {@link #handleRowArrow}), scrolls it into
+     * view on focus, and handles Enter/Space as the row's activation.
      *
      * @param gridRow     the grid row the cells were written to
      * @param focusAnchor the node focused when this row is reached
@@ -197,12 +198,12 @@ public class SortColumnTable<Column> {
         rows.add(new NavigableRow(focusAnchor, onEnter));
         rowHighlighter.bindFocus(gridRow, focusAnchor);
         focusAnchor.getProperties().put(VerticalArrowPolicy.ARROW_NAVIGABLE_ROW, Boolean.TRUE);
+        focusAnchor.getProperties().put(
+                PageArrowDispatcher.ARROW_HANDLER_KEY,
+                (VerticalArrowHandler) event -> handleRowArrow(event, index));
         focusAnchor.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-            if (isPastEdge(event.getCode(), index)) {
-                return;
-            }
-            rowNavigator.syncIndex(index);
-            if (rowNavigator.navigate(event)) {
+            if (event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.SPACE) {
+                onEnter.run();
                 event.consume();
             }
         });
@@ -211,6 +212,24 @@ public class SortColumnTable<Column> {
                 rowScroller.ensureVisible(focusAnchor);
             }
         });
+    }
+
+    /**
+     * Vertical-arrow strategy for one row, invoked by {@link PageArrowDispatcher} while
+     * the row's anchor holds focus. Moves the selection within the table via the shared
+     * {@link ArrowKeyNavigator}; declines the key at the first row (UP) and last row
+     * (DOWN) so the dispatcher scrolls the page past the table instead.
+     *
+     * @param event the UP or DOWN key event
+     * @param index the index of this row
+     * @return {@code true} if the selection moved; {@code false} at the table edge
+     */
+    private boolean handleRowArrow(KeyEvent event, int index) {
+        if (isPastEdge(event.getCode(), index)) {
+            return false;
+        }
+        rowNavigator.syncIndex(index);
+        return rowNavigator.navigate(event);
     }
 
     /**
@@ -230,14 +249,6 @@ public class SortColumnTable<Column> {
     /**
      * Moves keyboard focus to the first navigable row, if any, and scrolls it
      * into view. Used to let a search field hand focus to the results on DOWN.
-     *
-     * <p>Returns whether the handoff actually happened, so callers such as
-     * {@link edu.ntnu.idatt2003.millions.view.component.SearchBar} can decide
-     * whether to consume the DOWN key: when the table is empty there is no row to
-     * focus, and the key should be left unconsumed so it bubbles to the enclosing
-     * {@link edu.ntnu.idatt2003.millions.view.component.KeyboardScrollPane} and
-     * scrolls the page instead of being trapped in the search field.</p>
-     *
      * @return {@code true} if a row received focus; {@code false} if there are no rows
      */
     public boolean focusFirstRow() {
