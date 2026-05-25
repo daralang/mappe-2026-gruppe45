@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.stock;
 
 import java.math.BigDecimal;
@@ -11,6 +12,8 @@ import java.util.Objects;
  * A stock has a trading symbol, company name, and price history.
  * Stocks are traded through purchases and sales, with players acquiring shares in them.
  */
+// Not a record: addNewSalesPrice() mutates the internal price list — fundamental mutable state.
+@SuppressWarnings("ClassCanBeRecord")
 public class Stock {
     private final String symbol;
     private final String company;
@@ -69,39 +72,23 @@ public class Stock {
         this(symbol, company, prices, Currency.getInstance("USD"));
     }
 
-    /**
-     * Gets the stock's trading symbol.
-     *
-     * @return the trading symbol
-     */
     public String getSymbol() {
         return symbol;
     }
 
-    /**
-     * Gets the company name.
-     *
-     * @return the company name
-     */
     public String getCompany() {
         return company;
     }
 
     /**
-     * Gets the current sales price (most recent price in history).
+     * Returns the current sales price (most recent price in history).
      *
      * @return the latest price
      */
-
     public BigDecimal getSalesPrice() {
         return prices.getLast();
     }
 
-    /**
-     * Returns the currency the stock is traded in.
-     *
-     * @return the currency
-     */
     public Currency getCurrency() {
         return currency;
     }
@@ -122,17 +109,16 @@ public class Stock {
     }
 
     /**
-     * Returns a list of all registered prices for this Stock.
-     * The list includes every price that has ever been recorded from the initial price to the most recent.
+     * Returns a mutable defensive copy of all historical prices, from the initial price to the most recent.
      *
-     * @return an unmodifiable list of all historical prices.
+     * @return mutable copy of all recorded prices, oldest first
      */
     public List<BigDecimal> getHistoricalPrices() {
         return new ArrayList<>(prices);
     }
 
     /**
-     * Returns the highest price registered for this stock
+     * Returns the highest price registered for this stock.
      *
      * @return the highest recorded price
      */
@@ -143,9 +129,9 @@ public class Stock {
     }
 
     /**
-     * Returns the lowest price recorded for this stock
+     * Returns the lowest price recorded for this stock.
      *
-     * @return the lowest price recorded
+     * @return the lowest recorded price
      */
     public BigDecimal getLowestPrice() {
         return prices.stream()
@@ -155,8 +141,7 @@ public class Stock {
 
     /**
      * Returns the price change between the two most recent registered prices.
-     * If only one price has been registered will this method interpreted as no change and
-     * {@link BigDecimal#ZERO} is returned.
+     * Returns zero if only one price has been registered.
      *
      * @return the difference between the latest and second-to-latest price or zero
      * if only one price exists.
