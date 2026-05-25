@@ -1,23 +1,18 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
+import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
 import edu.ntnu.idatt2003.millions.keyboard.PageScroller;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 
 /**
- * A vertically scrollable {@link ScrollPane} that scrolls on UP/DOWN no matter
- * which descendant currently holds keyboard focus.
+ * A vertically scrollable {@link ScrollPane} controlled through the
+ * {@link PageScroller} contract.
  *
- * <p>JavaFX only scrolls a {@link ScrollPane} with the arrow keys when the pane
- * itself is the focus owner; when focus sits on a child, UP/DOWN otherwise trigger
- * directional focus traversal. This pane installs a bubble-phase
- * {@link KeyEvent#KEY_PRESSED} handler: the focused node gets the event first, so a
- * control that uses UP/DOWN itself (a navigable table row, a combo box, a text
- * area) can consume it before it reaches this pane. Any UP/DOWN that is left
- * unconsumed bubbles up here, scrolls the viewport, and is consumed so it never
- * falls through to focus traversal.</p>
+ * <p>{@link PageArrowDispatcher} owns vertical-arrow routing and
+ * invokes this component only when the active page should scroll.
+ * This component owns only viewport movement and styling.</p>
  */
 public final class KeyboardScrollPane extends ScrollPane implements PageScroller {
 
@@ -35,22 +30,6 @@ public final class KeyboardScrollPane extends ScrollPane implements PageScroller
         setHbarPolicy(ScrollBarPolicy.NEVER);
         setVbarPolicy(ScrollBarPolicy.ALWAYS);
         getStyleClass().add("content-scroll");
-        addEventHandler(KeyEvent.KEY_PRESSED, this::handleVerticalScroll);
-    }
-
-    /**
-     * Scrolls the viewport on any UP/DOWN that bubbled up unconsumed, and consumes
-     * the event so it does not fall through to focus traversal.
-     *
-     * @param event the key event
-     */
-    private void handleVerticalScroll(KeyEvent event) {
-        KeyCode code = event.getCode();
-        if (code != KeyCode.UP && code != KeyCode.DOWN) {
-            return;
-        }
-        scrollByArrow(code);
-        event.consume();
     }
 
     /**
