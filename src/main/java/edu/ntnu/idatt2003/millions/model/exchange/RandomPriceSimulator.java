@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.exchange;
 
 import java.math.BigDecimal;
@@ -6,12 +7,11 @@ import java.util.Random;
 
 /**
  * A {@link PriceSimulator} that updates stock prices using a random walk model.
- * Owns the random instance.
  *
  * <p>Each call applies a uniformly distributed random percentage change in the range
  * {@code [-MAX_WEEKLY_CHANGE, +MAX_WEEKLY_CHANGE]} to the current price.
- * The result is rounded to two decimal places and floored
- * at {@code MIN_PRICE} so that no stock price reaches zero.</p>
+ * The result is rounded to two decimal places and floored at 0.01
+ * so that no stock price reaches zero.</p>
  */
 public class RandomPriceSimulator implements PriceSimulator {
 
@@ -33,7 +33,7 @@ public class RandomPriceSimulator implements PriceSimulator {
     /**
      * Computes the next price by applying a random percentage change to the current price.
      * The change is uniformly distributed in {@code [-10%, +10%]}.
-     * The result is rounded to two decimal places and is never below {@link #MIN_PRICE}.
+     * The result is rounded to two decimal places and is never below 0.01.
      *
      * @param currentPrice the stock's current sales price
      * @return the new sales price after the random walk step
