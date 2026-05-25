@@ -114,12 +114,7 @@ public class Player {
         return sessionId;
     }
 
-    /**
-     * Gets the player's current balance.
-     *
-     * @return the current balance
-     */
-    public BigDecimal getMoney() {
+    public BigDecimal getCash() {
         return money;
     }
 

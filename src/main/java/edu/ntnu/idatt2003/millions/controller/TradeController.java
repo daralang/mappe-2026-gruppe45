@@ -50,7 +50,7 @@ public class TradeController {
      * @return the player's available funds
      */
     public BigDecimal getCurrentBalance() {
-        return gameService.getPlayer().getMoney();
+        return gameService.getPlayer().getCash();
     }
 
     /**
@@ -155,7 +155,7 @@ public class TradeController {
     // Mutating operations
 
     private void buy(Stock stock, BigDecimal quantity, BuyDialog dialog) {
-        BigDecimal balanceBefore = gameService.getPlayer().getMoney();
+        BigDecimal balanceBefore = gameService.getPlayer().getCash();
         TransactionPreview preview = previewService.previewPurchase(
                 stock, quantity, gameService.getPlayer(),
                 gameService.getCurrencyConverter());
@@ -167,7 +167,7 @@ public class TradeController {
         try {
             Transaction transaction = gameService.buy(stock.getSymbol(), quantity);
             dialog.close();
-            BigDecimal balanceAfter = gameService.getPlayer().getMoney();
+            BigDecimal balanceAfter = gameService.getPlayer().getCash();
             Platform.runLater(() ->
                     new BuyReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (IllegalArgumentException | IllegalStateException e) {
@@ -180,7 +180,7 @@ public class TradeController {
     }
 
     private void sell(Share share, BigDecimal quantity, AbstractSellDialog dialog) {
-        BigDecimal balanceBefore = gameService.getPlayer().getMoney();
+        BigDecimal balanceBefore = gameService.getPlayer().getCash();
         TransactionPreview preview = previewService.previewSale(
                 share, quantity, gameService.getPlayer(),
                 gameService.getCurrencyConverter());
@@ -192,7 +192,7 @@ public class TradeController {
         try {
             Transaction transaction = gameService.sell(share, quantity);
             dialog.close();
-            BigDecimal balanceAfter = gameService.getPlayer().getMoney();
+            BigDecimal balanceAfter = gameService.getPlayer().getCash();
             Platform.runLater(() ->
                     new SellReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (IllegalArgumentException | IllegalStateException e) {

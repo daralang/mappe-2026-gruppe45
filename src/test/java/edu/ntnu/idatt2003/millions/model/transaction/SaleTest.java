@@ -234,7 +234,7 @@ class SaleTest {
         @DisplayName("Should not change player balance when share is not in portfolio")
         void doesNotChangeBalanceWhenShareNotInPortfolio() {
             // Arrange
-            BigDecimal balanceBefore = player.getMoney();
+            BigDecimal balanceBefore = player.getCash();
             // Act
             try {
                 otherSale.commit(player);
@@ -242,7 +242,7 @@ class SaleTest {
                 // for test purposes
             }
             // Assert
-            assertEquals(0, balanceBefore.compareTo(player.getMoney()));
+            assertEquals(0, balanceBefore.compareTo(player.getCash()));
         }
 
         @Test

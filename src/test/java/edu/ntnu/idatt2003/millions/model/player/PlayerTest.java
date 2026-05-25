@@ -90,7 +90,7 @@ class PlayerTest {
         @DisplayName("Should set current balance equal to starting money")
         void setsMoneyEqualToStartingMoney() {
             // Act
-            BigDecimal money = player.getMoney();
+            BigDecimal money = player.getCash();
             // Assert
             assertEquals(new BigDecimal("1000.00"), money);
         }
@@ -170,7 +170,7 @@ class PlayerTest {
             // Act
             player.addMoney(amount);
             // Assert
-            assertEquals(new BigDecimal("1500.00"), player.getMoney());
+            assertEquals(new BigDecimal("1500.00"), player.getCash());
         }
 
         @Test
@@ -196,7 +196,7 @@ class PlayerTest {
             // Act
             player.withdrawMoney(amount);
             // Assert
-            assertEquals(new BigDecimal("500.00"), player.getMoney());
+            assertEquals(new BigDecimal("500.00"), player.getCash());
         }
 
         @Test
@@ -205,7 +205,7 @@ class PlayerTest {
             // Act
             player.withdrawMoney(new BigDecimal("1000.00"));
             // Assert
-            assertEquals(0, BigDecimal.ZERO.compareTo(player.getMoney()));
+            assertEquals(0, BigDecimal.ZERO.compareTo(player.getCash()));
         }
 
         @Test
@@ -237,7 +237,7 @@ class PlayerTest {
         @DisplayName("Should return balance only when portfolio is empty")
         void returnsMoneyWhenPortfolioIsEmpty() {
             // Act & Assert
-            assertEquals(0, player.getMoney().compareTo(player.getNetWorth(converter)));
+            assertEquals(0, player.getCash().compareTo(player.getNetWorth(converter)));
         }
 
         @Test
@@ -247,7 +247,7 @@ class PlayerTest {
             Share share = new Share(nokStock("DCL", "Dara, Inc", new BigDecimal("1000.00")),
                     new BigDecimal("10"), new BigDecimal("700.00"));
             player.getPortfolio().addShare(share);
-            BigDecimal expected = player.getMoney()
+            BigDecimal expected = player.getCash()
                     .add(player.getPortfolio().getNetWorth(converter));
             // Act & Assert
             assertEquals(0, expected.compareTo(player.getNetWorth(converter)));
@@ -258,7 +258,7 @@ class PlayerTest {
         void returnsCorrectNetWorthAfterMoneyIsWithdrawn() {
             // Arrange
             player.withdrawMoney(new BigDecimal("500.00"));
-            BigDecimal expected = player.getMoney()
+            BigDecimal expected = player.getCash()
                     .add(player.getPortfolio().getNetWorth(converter));
             // Act & Assert
             assertEquals(0, expected.compareTo(player.getNetWorth(converter)));
@@ -273,7 +273,7 @@ class PlayerTest {
             player.getPortfolio().addShare(share);
             player.getPortfolio().removeShare(share);
             // Act & Assert
-            assertEquals(0, player.getMoney().compareTo(player.getNetWorth(converter)));
+            assertEquals(0, player.getCash().compareTo(player.getNetWorth(converter)));
         }
 
         @Test
@@ -286,7 +286,7 @@ class PlayerTest {
             // Act
             BigDecimal result = player.getNetWorth(converter);
             // Assert
-            assertTrue(result.compareTo(player.getMoney()) >= 0);
+            assertTrue(result.compareTo(player.getCash()) >= 0);
         }
 
         @Test
@@ -298,7 +298,7 @@ class PlayerTest {
                             new ArrayList<>(List.of(new BigDecimal("100.00"))), USD),
                     new BigDecimal("5"), new BigDecimal("50.00"));
             player.getPortfolio().addShare(usdShare);
-            BigDecimal expected = player.getMoney()
+            BigDecimal expected = player.getCash()
                     .add(player.getPortfolio().getNetWorth(converter));
             // Act
             BigDecimal actual = player.getNetWorth(converter);
@@ -749,12 +749,12 @@ class PlayerTest {
         @DisplayName("takeLoan() increases player money by the principal")
         void takeLoanIncreasesMoney() throws ExcessiveDebtException {
             // Arrange
-            BigDecimal before = player.getMoney();
+            BigDecimal before = player.getCash();
             BigDecimal principal = new BigDecimal("300.00");
             // Act
             player.takeLoan(new Loan(offer, principal, 0), converter);
             // Assert
-            assertEquals(0, before.add(principal).compareTo(player.getMoney()));
+            assertEquals(0, before.add(principal).compareTo(player.getCash()));
         }
 
         @Test
@@ -788,13 +788,13 @@ class PlayerTest {
         @DisplayName("takeLoan() does not modify money or active loans when it throws")
         void takeLoanIsAtomic() {
             // Arrange
-            BigDecimal moneyBefore = player.getMoney();
+            BigDecimal moneyBefore = player.getCash();
             int loanCountBefore = player.getActiveLoans().size();
             // Act — request 600 > capacity 500 → throws
             assertThrows(ExcessiveDebtException.class, () ->
                     player.takeLoan(new Loan(offer, new BigDecimal("600.00"), 0), converter));
             // Assert — state unchanged
-            assertEquals(0, moneyBefore.compareTo(player.getMoney()));
+            assertEquals(0, moneyBefore.compareTo(player.getCash()));
             assertEquals(loanCountBefore, player.getActiveLoans().size());
         }
 
@@ -816,11 +816,11 @@ class PlayerTest {
             // Arrange
             Loan loan = new Loan(offer, new BigDecimal("200.00"), 0);
             player.takeLoan(loan, converter); // money: 1000 + 200 = 1200
-            BigDecimal moneyAfterTake = player.getMoney();
+            BigDecimal moneyAfterTake = player.getCash();
             // Act
             player.repayLoan(loan, 1); // money: 1200 - 200 = 1000
             // Assert
-            assertEquals(0, moneyAfterTake.subtract(new BigDecimal("200.00")).compareTo(player.getMoney()));
+            assertEquals(0, moneyAfterTake.subtract(new BigDecimal("200.00")).compareTo(player.getCash()));
         }
 
         @Test
@@ -1066,7 +1066,7 @@ class PlayerTest {
             // Act
             BigDecimal result = player.getTotalLiquidationValue(converter);
             // Assert
-            assertEquals(0, player.getMoney().compareTo(result));
+            assertEquals(0, player.getCash().compareTo(result));
         }
 
         @Test
@@ -1077,7 +1077,7 @@ class PlayerTest {
             Share share = new Share(stock, new BigDecimal("2"), new BigDecimal("100.00"));
             player.getPortfolio().addShare(share);
             BigDecimal expectedNet = SalesCalculator.calculateNetNok(share, converter);
-            BigDecimal expected = player.getMoney().add(expectedNet);
+            BigDecimal expected = player.getCash().add(expectedNet);
             // Act
             BigDecimal result = player.getTotalLiquidationValue(converter);
             // Assert
@@ -1093,7 +1093,7 @@ class PlayerTest {
             player.takeLoan(new Loan(highRisk, new BigDecimal("500.00"), 1), converter);
             // obligations at week 2 = interest 25 + principal 500 = 525
             // player has 1500 cash → can cover from cash; drain to 0 to force game-over scenario
-            player.withdrawMoney(player.getMoney()); // money = 0
+            player.withdrawMoney(player.getCash()); // money = 0
             // Liquidation value = 0 (no shares) < 525 obligations → false
             assertFalse(player.canCoverWithFullLiquidation(2, converter));
         }

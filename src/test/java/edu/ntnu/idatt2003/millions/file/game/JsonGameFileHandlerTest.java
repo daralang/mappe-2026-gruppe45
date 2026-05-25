@@ -180,7 +180,7 @@ class JsonGameFileHandlerTest {
             GameState state = handler.loadGame(file.toFile());
             // Assert
             assertEquals(0, new BigDecimal("10000.00")
-                    .compareTo(state.player().getMoney()));
+                    .compareTo(state.player().getCash()));
         }
 
         @Test
