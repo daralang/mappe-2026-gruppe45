@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.component.table;
 
 import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
+import edu.ntnu.idatt2003.millions.keyboard.VerticalArrowPolicy;
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import javafx.scene.Node;
@@ -180,8 +181,10 @@ public class SortColumnTable<Column> {
 
     /**
      * Wires an already-inserted row into the keyboard grid: registers it as a
-     * {@link NavigableRow}, binds the focus highlight, scrolls it into view on
-     * focus, and delegates UP/DOWN/Enter/Space to the shared {@link ArrowKeyNavigator}.
+     * {@link NavigableRow}, binds the focus highlight, marks the anchor with
+     * {@link VerticalArrowPolicy#ARROW_NAVIGABLE_ROW} so the page-scroll handler
+     * defers UP/DOWN to row navigation, scrolls it into view on focus, and delegates
+     * UP/DOWN/Enter/Space to the shared {@link ArrowKeyNavigator}.
      * At the first row (UP) and last row (DOWN) the key is left unconsumed so it
      * bubbles to the enclosing scroll pane, letting the page scroll past the table.
      *
@@ -193,6 +196,7 @@ public class SortColumnTable<Column> {
         int index = rows.size();
         rows.add(new NavigableRow(focusAnchor, onEnter));
         rowHighlighter.bindFocus(gridRow, focusAnchor);
+        focusAnchor.getProperties().put(VerticalArrowPolicy.ARROW_NAVIGABLE_ROW, Boolean.TRUE);
         focusAnchor.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if (isPastEdge(event.getCode(), index)) {
                 return;
