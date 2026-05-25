@@ -26,12 +26,6 @@ import java.util.function.Consumer;
  * Template Method. Row rendering is a second Template Method so
  * subclasses describe only what a row contains, not how it is inserted or navigated.</p>
  *
- * <p>{@link #table}, {@link #pagination} and {@link #sortProvider} must be assigned
- * by the subclass constructor after {@code super()}, since all three depend on a sort
- * object that cannot exist earlier. The {@code statusKey} and {@code emptyStateKey}
- * i18n keys are supplied at construction; override {@link #emptyStateMessage} when a
- * plain key lookup is not enough.</p>
- *
  * @param <T>      the item type displayed in the table rows
  * @param <Column> the sort-column enum type
  */
