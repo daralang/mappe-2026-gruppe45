@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.view.component.toast.ToastOverlay;
+import edu.ntnu.idatt2003.millions.view.component.KeyboardScrollPane;
 import edu.ntnu.idatt2003.millions.view.component.StatusFooter;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBar;
@@ -242,18 +243,13 @@ public class MainView {
     }
 
     /**
-     * Wraps a view node in a vertically scrollable {@link ScrollPane}.
-     * Horizontal scrolling is disabled; the content fills the pane's width.
+     * Wraps a view node in a {@link KeyboardScrollPane} so it is vertically
+     * scrollable and responds to arrow-key scrolling regardless of focus.
      *
      * @param content the view node to wrap
-     * @return a configured ScrollPane containing the content
+     * @return a configured scroll pane containing the content
      */
     private ScrollPane wrapScrollable(Node content) {
-        ScrollPane scrollPane = new ScrollPane(content);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-        scrollPane.getStyleClass().add("content-scroll");
-        return scrollPane;
+        return new KeyboardScrollPane(content);
     }
 }

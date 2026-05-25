@@ -1,6 +1,5 @@
 package edu.ntnu.idatt2003.millions.view.component.table;
 
-import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
 import java.util.HashMap;
@@ -14,8 +13,7 @@ import java.util.Map;
  * which row is highlighted and toggles the {@code is-hover} and {@code is-focus}
  * style classes. The owning table feeds it grid mouse events and registers each
  * row's background; this class never touches the grid, keeping grid ownership with
- * the table - mirroring how {@link ArrowKeyNavigator}
- * owns only navigation logic.</p>
+ * the table.</p>
  */
 final class RowHighlighter {
 
