@@ -3,7 +3,6 @@ package edu.ntnu.idatt2003.millions.view.component.table;
 import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
 import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
 import edu.ntnu.idatt2003.millions.keyboard.VerticalArrowHandler;
-import edu.ntnu.idatt2003.millions.keyboard.VerticalArrowPolicy;
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import javafx.scene.Node;
@@ -31,9 +30,9 @@ import java.util.function.Supplier;
  * <p>Data rows form a keyboard grid: each row's focus anchor is focus-traversable
  * and shows a focus highlight. UP/DOWN move focus between rows and scroll the
  * focused row into view, consuming the keys so they navigate rows rather than
- * scrolling the surrounding view. At the first row (UP) and last row (DOWN) the
- * key is left unconsumed so it bubbles to the enclosing scroll pane, letting the
- * page scroll past the table.</p>
+ * scrolling the surrounding view. At the first row (UP) and last row (DOWN),
+ * the row strategy declines the key so {@link PageArrowDispatcher} scrolls the
+ * active page past the table.</p>
  *
  * @param <Column> the sort-column enum type; use a wildcard or {@code Object}
  *                 when no column is sortable
@@ -183,11 +182,10 @@ public class SortColumnTable<Column> {
 
     /**
      * Wires an already-inserted row into the keyboard grid: registers it as a
-     * {@link NavigableRow}, binds the focus highlight, marks the anchor with
-     * {@link VerticalArrowPolicy#ARROW_NAVIGABLE_ROW}, registers its vertical-arrow
-     * strategy under {@link PageArrowDispatcher#ARROW_HANDLER_KEY} so the central
-     * dispatcher moves the selection (see {@link #handleRowArrow}), scrolls it into
-     * view on focus, and handles Enter/Space as the row's activation.
+     * {@link NavigableRow}, binds the focus highlight and registers its vertical-arrow
+     * strategy under {@link PageArrowDispatcher#ARROW_HANDLER_KEY}. The central
+     * dispatcher moves the selection through {@link #handleRowArrow(KeyEvent, int)};
+     * this table keeps Enter/Space as the row's activation.
      *
      * @param gridRow     the grid row the cells were written to
      * @param focusAnchor the node focused when this row is reached
@@ -197,7 +195,6 @@ public class SortColumnTable<Column> {
         int index = rows.size();
         rows.add(new NavigableRow(focusAnchor, onEnter));
         rowHighlighter.bindFocus(gridRow, focusAnchor);
-        focusAnchor.getProperties().put(VerticalArrowPolicy.ARROW_NAVIGABLE_ROW, Boolean.TRUE);
         focusAnchor.getProperties().put(
                 PageArrowDispatcher.ARROW_HANDLER_KEY,
                 (VerticalArrowHandler) event -> handleRowArrow(event, index));
@@ -234,8 +231,8 @@ public class SortColumnTable<Column> {
 
     /**
      * Returns {@code true} when the key would move past the table's edge: UP on the
-     * first row or DOWN on the last row. Such keys are left unconsumed so the
-     * enclosing scroll pane can scroll the page past the table.
+     * first row or DOWN on the last row. Such keys are declined by the row strategy
+     * so {@link PageArrowDispatcher} can scroll the active page past the table.
      *
      * @param code  the pressed key code
      * @param index the index of the focused row
@@ -249,6 +246,7 @@ public class SortColumnTable<Column> {
     /**
      * Moves keyboard focus to the first navigable row, if any, and scrolls it
      * into view. Used to let a search field hand focus to the results on DOWN.
+     *
      * @return {@code true} if a row received focus; {@code false} if there are no rows
      */
     public boolean focusFirstRow() {
