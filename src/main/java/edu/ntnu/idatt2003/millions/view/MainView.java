@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view;
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.MainController;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
+import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;
 import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.GameService;
@@ -19,7 +20,6 @@ import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
@@ -65,11 +65,14 @@ public class MainView {
     private final StatusFooter footer;
 
     private DashboardView dashboardView;
-    private ScrollPane dashboardScrollable;
+    private KeyboardScrollPane dashboardScrollable;
     private ExchangeView exchangeView;
-    private ScrollPane exchangeScrollable;
+    private KeyboardScrollPane exchangeScrollable;
     private LeaderboardView leaderboardView;
-    private ScrollPane leaderboardScrollable;
+    private KeyboardScrollPane leaderboardScrollable;
+
+    /** The scroll pane of the currently shown view, supplied to the page-arrow dispatcher. */
+    private KeyboardScrollPane activeScrollable;
 
     /**
      * Constructs a new MainView with a platform-appropriate title bar and
@@ -133,6 +136,7 @@ public class MainView {
         updateCorners.run();
 
         this.outerRoot = new StackPane(content);
+        new PageArrowDispatcher(() -> activeScrollable).install(outerRoot);
 
         ToastOverlay toastOverlay = new ToastOverlay(toastService);
         toastOverlay.translateYProperty().bind(
@@ -178,6 +182,7 @@ public class MainView {
         }
         searchFocusRegistry.setActive(dashboardView);
         tabNavigationRegistry.setActive(dashboardView::showTab);
+        activeScrollable = dashboardScrollable;
         content.setCenter(dashboardScrollable);
     }
 
@@ -190,6 +195,7 @@ public class MainView {
         ensureExchangeView();
         searchFocusRegistry.setActive(exchangeView);
         tabNavigationRegistry.setActive(exchangeView::showTab);
+        activeScrollable = exchangeScrollable;
         content.setCenter(exchangeScrollable);
     }
 
@@ -205,6 +211,7 @@ public class MainView {
         }
         searchFocusRegistry.setActive(leaderboardView);
         tabNavigationRegistry.setActive(null);
+        activeScrollable = leaderboardScrollable;
         content.setCenter(leaderboardScrollable);
     }
 
@@ -217,6 +224,7 @@ public class MainView {
         exchangeView.selectStocksTab();
         searchFocusRegistry.setActive(exchangeView);
         tabNavigationRegistry.setActive(exchangeView::showTab);
+        activeScrollable = exchangeScrollable;
         content.setCenter(exchangeScrollable);
     }
 
@@ -249,7 +257,7 @@ public class MainView {
      * @param content the view node to wrap
      * @return a configured scroll pane containing the content
      */
-    private ScrollPane wrapScrollable(Node content) {
+    private KeyboardScrollPane wrapScrollable(Node content) {
         return new KeyboardScrollPane(content);
     }
 }

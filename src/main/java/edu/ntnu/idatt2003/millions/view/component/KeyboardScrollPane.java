@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
+import edu.ntnu.idatt2003.millions.keyboard.PageScroller;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
@@ -18,7 +19,7 @@ import javafx.scene.input.KeyEvent;
  * unconsumed bubbles up here, scrolls the viewport, and is consumed so it never
  * falls through to focus traversal.</p>
  */
-public final class KeyboardScrollPane extends ScrollPane {
+public final class KeyboardScrollPane extends ScrollPane implements PageScroller {
 
     private static final double SCROLL_STEP_PX = 40;
 
@@ -58,6 +59,7 @@ public final class KeyboardScrollPane extends ScrollPane {
      * @param code the pressed key; only {@link KeyCode#UP} and {@link KeyCode#DOWN}
      *             have an effect
      */
+    @Override
     public void scrollByArrow(KeyCode code) {
         if (code == KeyCode.UP) {
             scrollBy(-SCROLL_STEP_PX);
