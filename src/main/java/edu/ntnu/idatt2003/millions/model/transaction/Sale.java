@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.transaction;
 
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
@@ -17,10 +18,6 @@ import java.util.Objects;
  * realized financial values in the transaction archive reflect the price at
  * sale time, not the current price.
  *
- * <p>Note: {@link #getShare()}{@code .getStock().getSalesPrice()} still returns
- * the current stock price, not the sale-time price. The frozen fields on Sale
- * cover all current uses. If a future feature requires the sale-time stock price
- * as a separate piece of data, add a {@code salesPriceAtCommit} field at that point.
  */
 public class Sale extends Transaction {
 
@@ -35,8 +32,6 @@ public class Sale extends Transaction {
 
     /**
      * Constructs a new Sale for the specified share and week.
-     * All financial values are captured immediately from the current stock price
-     * and remain fixed for the lifetime of this object.
      *
      * @param share the share being sold
      * @param week  the week in which the sale takes place
@@ -75,7 +70,7 @@ public class Sale extends Transaction {
     /**
      * Commits this sale for the given player.
      * Removes the share from the player's portfolio and records the transaction
-     * in the archive. Financial values are already frozen from construction.
+     * in the archive.
      *
      * @param player the player executing the sale
      * @throws NullPointerException  if the player is null
