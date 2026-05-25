@@ -1,11 +1,11 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.loan;
 
 import java.math.BigDecimal;
 
 /**
  * Immutable snapshot of the calculated cost for borrowing a specific principal
- * against a {@link LoanOffer}. Used by the view layer for live preview without
- * mutating any model state.
+ * against a {@link LoanOffer}.
  *
  * @param principal            the amount the player wishes to borrow
  * @param weeklyInterestAmount interest charged each week (principal × weeklyRate)
