@@ -6,7 +6,7 @@ import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
-import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreviewService;
+import edu.ntnu.idatt2003.millions.service.TransactionPreviewService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog.*;
 import edu.ntnu.idatt2003.millions.view.dialog.StockDetailModal;
