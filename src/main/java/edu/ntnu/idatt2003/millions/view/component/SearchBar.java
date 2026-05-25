@@ -3,9 +3,11 @@ package edu.ntnu.idatt2003.millions.view.component;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -22,6 +24,11 @@ import java.util.function.Consumer;
  * The {@code Cmd/Ctrl+F} shortcut to focus this bar is registered externally via
  * {@link SearchFocusProvider} and the application-wide
  * {@code KeyboardNavigationService}, keeping shortcut registration out of the view layer.</p>
+ *
+ * <p>UP/DOWN are handled in the capture phase so the field never traps vertical
+ * keyboard navigation: DOWN hands focus to the results when possible (see
+ * {@link #setOnArrowDown}), otherwise UP/DOWN are passed to the enclosing scroll
+ * pane to scroll the page.</p>
  */
 public class SearchBar extends VBox {
 
@@ -94,12 +101,10 @@ public class SearchBar extends VBox {
                 setClearVisible(false);
                 searchField.getParent().requestFocus();
                 event.consume();
-            } else if (event.getCode() == KeyCode.DOWN && onArrowDown != null) {
-                if (onArrowDown.getAsBoolean()) {
-                    event.consume();
-                }
             }
         });
+
+        searchField.addEventFilter(KeyEvent.KEY_PRESSED, this::handleVerticalArrow);
 
         searchButton.setOnAction(event -> triggerSearch.run());
         clearButton.setOnAction(event -> {
@@ -137,14 +142,38 @@ public class SearchBar extends VBox {
 
     /**
      * Sets the action run when the user presses DOWN in the search field, used to
-     * move focus out of the field and into the results below. Pass {@code null}
-     * to disable.
+     * move focus out of the field and into the results below (e.g. the first table
+     * row). The action returns whether it handled the key: {@code true} when focus
+     * was moved, {@code false} when it could not (e.g. an empty table). Pass
+     * {@code null} to disable. When the action does not handle DOWN, the key is
+     * handed to the enclosing scroll pane instead so the page can scroll.
      *
      * @param action the action to run on DOWN, returning whether it handled the key,
      *               or {@code null} to disable
      */
     public void setOnArrowDown(BooleanSupplier action) {
         this.onArrowDown = action;
+    }
+
+    /**
+     * Capture-phase handler that keeps UP/DOWN from being trapped in the text field.
+     *
+     * @param event the captured key event
+     */
+    private void handleVerticalArrow(KeyEvent event) {
+        KeyCode code = event.getCode();
+        if (code != KeyCode.UP && code != KeyCode.DOWN) {
+            return;
+        }
+        if (code == KeyCode.DOWN && onArrowDown != null && onArrowDown.getAsBoolean()) {
+            event.consume();
+            return;
+        }
+        Parent parent = getParent();
+        if (parent != null) {
+            parent.fireEvent(event.copyFor(parent, parent));
+        }
+        event.consume();
     }
 
     /**
