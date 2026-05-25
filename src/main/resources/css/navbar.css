@@ -32,11 +32,24 @@
     -fx-background-color: transparent;
     -fx-cursor: hand;
     -fx-padding: 16 0 0 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
+}
+
+.navbar-action:focused {
+    -fx-border-color: white;
 }
 
 .navbar-icon {
     -fx-background-color: transparent;
     -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+}
+
+.navbar-icon:focused {
+    -fx-border-color: white;
 }
 
 .navbar-bell-icon {
@@ -52,11 +65,18 @@
 
 .language-picker-btn {
     -fx-background-color: transparent;
-    -fx-border-width: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
     -fx-cursor: hand;
     -fx-padding: 3 5 3 5;
     -fx-background-radius: 4;
     -fx-opacity: 0.35;
+}
+
+.language-picker-btn:focused {
+    -fx-border-color: white;
+    -fx-opacity: 1.0;
 }
 
 .language-picker-btn:hover {
