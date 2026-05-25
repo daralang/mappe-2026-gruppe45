@@ -307,9 +307,8 @@ public class Exchange {
      */
     public void advance() {
         week++;
-        for (Stock stock : stockMap.values()) {
-            stock.addNewSalesPrice(simulator.nextPrice(stock.getSalesPrice()));
-        }
+        stockMap.values().forEach(
+                stock -> stock.addNewSalesPrice(simulator.nextPrice(stock.getSalesPrice())));
     }
 
     //--- Private validation helpers ---
