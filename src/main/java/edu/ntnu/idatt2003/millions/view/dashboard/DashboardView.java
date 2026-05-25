@@ -2,9 +2,10 @@ package edu.ntnu.idatt2003.millions.view.dashboard;
 
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
+import edu.ntnu.idatt2003.millions.keyboard.PageFocusProvider;
+import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.LoansView;
@@ -26,7 +27,7 @@ import java.util.List;
  * indicator in {@link ViewHeader} directly, ensuring the highlight is correct
  * whether the tab was activated by click or by keyboard shortcut.</p>
  */
-public class DashboardView extends VBox implements SearchFocusProvider {
+public class DashboardView extends VBox implements SearchFocusProvider, PageFocusProvider {
 
     private final GameService gameService;
     private final TradeController tradeController;
@@ -161,5 +162,13 @@ public class DashboardView extends VBox implements SearchFocusProvider {
         if (activeSubview != null) {
             activeSubview.focusSearch();
         }
+    }
+
+    /**
+     * Focuses the active dashboard tab as the keyboard entry point for this page.
+     */
+    @Override
+    public void focusPageEntry() {
+        viewHeader.focusActiveTab();
     }
 }
