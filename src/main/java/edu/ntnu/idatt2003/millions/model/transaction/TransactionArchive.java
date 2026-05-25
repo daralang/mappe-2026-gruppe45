@@ -80,11 +80,10 @@ public class TransactionArchive {
      */
     public List<Transaction> getTransactionsInRange(int fromWeek, int toWeek) {
         if (fromWeek < 1) throw new IllegalArgumentException("fromWeek must be at least 1");
-        List<Transaction> list = new ArrayList<>();
-        for (int week = fromWeek; week <= toWeek; week++) {
-            list.addAll(getTransactions(week));
-        }
-        return list;
+        return java.util.stream.IntStream.rangeClosed(fromWeek, toWeek)
+                .boxed()
+                .flatMap(w -> getTransactions(w).stream())
+                .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -97,11 +96,9 @@ public class TransactionArchive {
      */
     public int countPurchasesInRange(int fromWeek, int toWeek) {
         if (fromWeek < 1) throw new IllegalArgumentException("fromWeek must be at least 1");
-        int total = 0;
-        for (int week = fromWeek; week <= toWeek; week++) {
-            total += getPurchases(week).size();
-        }
-        return total;
+        return java.util.stream.IntStream.rangeClosed(fromWeek, toWeek)
+                .map(w -> getPurchases(w).size())
+                .sum();
     }
 
     /**
@@ -114,11 +111,9 @@ public class TransactionArchive {
      */
     public int countSalesInRange(int fromWeek, int toWeek) {
         if (fromWeek < 1) throw new IllegalArgumentException("fromWeek must be at least 1");
-        int total = 0;
-        for (int week = fromWeek; week <= toWeek; week++) {
-            total += getSales(week).size();
-        }
-        return total;
+        return java.util.stream.IntStream.rangeClosed(fromWeek, toWeek)
+                .map(w -> getSales(w).size())
+                .sum();
     }
 
     /**
