@@ -266,7 +266,7 @@ public class Exchange {
             player.getPortfolio().addShare(soldPortion);
         }
 
-        Sale sale = (Sale) TransactionFactory.createSale(soldPortion, week);
+        Sale sale = TransactionFactory.createSale(soldPortion, week);
         BigDecimal totalValueInNok = currencyConverter.convert(
                 sale.getTotal(), share.getStock().getCurrency(), NOK);
         player.addMoney(totalValueInNok);
