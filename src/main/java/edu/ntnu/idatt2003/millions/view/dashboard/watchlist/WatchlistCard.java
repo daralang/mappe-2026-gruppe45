@@ -2,12 +2,11 @@ package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
 
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.model.watchlist.WatchlistEntry;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
+import edu.ntnu.idatt2003.millions.view.component.card.DetailTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import javafx.geometry.Pos;
@@ -23,12 +22,10 @@ import java.util.stream.Collectors;
 /**
  * Card displaying the player's watchlist as a sortable, searchable, paginated table.
  *
- * <p>Extends {@link SortableTableCard} for shared pagination, search, sort state,
- * and the common refresh Template Method. Row rendering is delegated to
- * {@link WatchlistRowRenderer}. The header row contains the section title on the
- * left and an explore-stocks button on the right.</p>
+ * <p>Extends {@link DetailTableCard} for shared pagination, search, sort state,
+ * the common refresh Template Method, and row-activation. </p>
  */
-public class WatchlistCard extends SortableTableCard<WatchlistItem, WatchlistSort.SortColumn> {
+public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.SortColumn> {
 
     private static final int PAGE_SIZE = 8;
     private static final double COL_GAP = 8;
@@ -41,17 +38,17 @@ public class WatchlistCard extends SortableTableCard<WatchlistItem, WatchlistSor
      * Constructs a new WatchlistCard.
      *
      * @param gameService     the game service containing player and exchange state
-     * @param tradeController the controller used to open buy dialogs
+     * @param tradeController the controller used to open buy and detail dialogs
      */
     public WatchlistCard(GameService gameService,
                          TradeController tradeController) {
-        super(gameService, PAGE_SIZE, "watchlist.status", "watchlist.empty");
+        super(gameService, tradeController, PAGE_SIZE, "watchlist.status", "watchlist.empty");
         this.gameService = gameService;
 
         WatchlistSort sort = new WatchlistSort(gameService.getCurrencyConverter());
         this.sortProvider = sort;
         this.rowRenderer = new WatchlistRowRenderer(
-                gameService, tradeController,
+                gameService, controller,
                 gameService::removeFromWatchlist,
                 this::openNoteDialog);
         this.table = new SortColumnTable<>(sort::getColumnDefs, COL_GAP);
@@ -98,7 +95,8 @@ public class WatchlistCard extends SortableTableCard<WatchlistItem, WatchlistSor
 
     @Override
     protected RowCells<WatchlistSort.SortColumn> buildRowCells(WatchlistItem item, int rowIndex) {
-        return rowRenderer.buildRow(item);
+        return rowRenderer.buildRow(item)
+                .put(WatchlistSort.SortColumn.DETAILS, buildDetailChevron(item));
     }
 
     @Override
@@ -107,6 +105,17 @@ public class WatchlistCard extends SortableTableCard<WatchlistItem, WatchlistSor
             return MessageFormat.format(LanguageManager.get("watchlist.empty.search"), term);
         }
         return LanguageManager.get("watchlist.empty");
+    }
+
+    /**
+     * Opens the stock detail modal for the given watchlist item. Whenever the user
+     * activates a row via keyboard or mouse click on a data cell.
+     *
+     * @param item the watchlist item whose stock to show details for
+     */
+    @Override
+    protected void openDetail(WatchlistItem item) {
+        controller.openStockDetail(item.stock());
     }
 
     @Override

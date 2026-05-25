@@ -7,8 +7,10 @@ import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.geometry.VPos;
 import javafx.scene.layout.ColumnConstraints;
@@ -168,16 +170,33 @@ public class SortColumnTable<Column> {
     }
 
     /**
-     * Adds a {@link RowCells}-based data row and makes it keyboard-reachable.
+     * Adds a {@link RowCells}-based data row and makes it keyboard- and mouse-reachable.
+     *
+     * <p>After inserting the row and wiring the keyboard handlers, iterates all nodes
+     * in {@code cells} and attaches a {@code MOUSE_CLICKED} handler to every node that
+     * is not a {@link ButtonBase}. This lets the user open the detail view by clicking
+     * anywhere on a data cell, while interactive controls (buttons, checkboxes) keep their
+     * own click behaviour unchanged — {@link ButtonBase} already consumes
+     * {@code MOUSE_CLICKED} before it bubbles, so no double-firing occurs on those.</p>
      *
      * @param gridRow     the grid row to write to (row 0 is reserved for the header)
      * @param focusAnchor the node focused when this row is reached
-     * @param onEnter     action invoked on Enter or Space
+     * @param onEnter     action invoked on Enter, Space, or a primary click on a data cell
      * @param cells       the column-keyed cells from {@link RowCells#builder()}
      */
     public void addSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter, RowCells<Column> cells) {
         addRow(gridRow, cells);
         registerSelectableRow(gridRow, focusAnchor, onEnter);
+        for (Node node : cells.nodes()) {
+            if (!(node instanceof ButtonBase)) {
+                node.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+                    if (e.getButton() == MouseButton.PRIMARY) {
+                        onEnter.run();
+                        e.consume();
+                    }
+                });
+            }
+        }
     }
 
     /**
