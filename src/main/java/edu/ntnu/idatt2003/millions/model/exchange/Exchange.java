@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.exchange;
 
 import edu.ntnu.idatt2003.millions.factory.TransactionFactory;
@@ -21,7 +22,7 @@ import java.util.stream.Stream;
 /**
  * Represents a stock exchange where players can buy and sell shares.
  * The exchange keeps track of all listed stocks and the current week.
- * Prices are updated each week using the advance() method.
+ * Prices advance each week via {@link #advance()}.
  *
  * <p>Buy and sell transactions are denominated in each stock's native currency
  * but converted to NOK via a {@link CurrencyConverter} before the player's
@@ -47,7 +48,6 @@ public class Exchange {
 
     /**
      * Creates a new exchange with a {@link RandomPriceSimulator} as the default pricing model.
-     * Delegates to {@link #Exchange(String, List, CurrencyConverter, PriceSimulator)}.
      *
      * @param name              the name of the exchange
      * @param stocks            the stocks that can be traded on this exchange
@@ -62,8 +62,7 @@ public class Exchange {
 
     /**
      * Creates a new exchange with the given name, list of stocks, currency converter,
-     * and price simulator. The stocks are stored in a map using their symbol as the key.
-     * Week starts at 1.
+     * and price simulator. Week starts at 1.
      *
      * @param name              the name of the exchange
      * @param stocks            the stocks that can be traded on this exchange
@@ -99,38 +98,28 @@ public class Exchange {
         }
     }
 
-    /**
-     * Returns the name of the exchange.
-     *
-     * @return the exchange name
-     */
     public String getName() {
         return name;
     }
 
     /**
-     * Returns the currency converter used by this exchange to translate
-     * stock-currency amounts to NOK.
+     * Returns the currency converter used by this exchange to translate stock-currency amounts to NOK.
+     * Returns null if called before {@link #reinitialize(CurrencyConverter)} after deserialization.
      *
-     * @return the currency converter
+     * @return the currency converter, or null if not yet reinitialized
      */
     public CurrencyConverter getCurrencyConverter() {
         return currencyConverter;
     }
 
-    /**
-     * Returns the current trading week.
-     *
-     * @return the current week number
-     */
     public int getWeek() {
         return week;
     }
 
     /**
-     * Return all stocks listed on this exchange
+     * Returns all stocks listed on this exchange.
      *
-     * @return an unmodifiable list of all stocks.
+     * @return unmodifiable list of all listed stocks
      */
     public List<Stock> getStocks() {
         return List.copyOf(stockMap.values());
@@ -153,8 +142,7 @@ public class Exchange {
 
     /**
      * Checks if a stock with the given symbol is listed on the exchange.
-     * Returns false instead of throwing an exception if the symbol is null or blank,
-     * since this method is meant to be used as a safe check before calling getStock().
+     * Returns false for null or blank symbols instead of throwing.
      *
      * @param symbol the stock symbol to check
      * @return true if the stock is listed, false otherwise
@@ -167,13 +155,10 @@ public class Exchange {
 
     /**
      * Searches for stocks where the symbol or company name contains the search term.
-     * The search is not case-sensitive. If the search term is null or blank, the method
-     * will return an empty list.
+     * The search is case-insensitive. Returns an empty list for null or blank terms.
      *
      * @param searchTerm the word or phrase to search for
-     * @return a list of stocks that match the search term
-     * @throws NullPointerException if the search term is null
-     * @throws IllegalArgumentException if the search term is blank
+     * @return list of matching stocks; empty if the term is null, blank, or no stocks match
      */
     public List<Stock> findStocks(String searchTerm) {
         if (searchTerm == null || searchTerm.isBlank()) return List.of();
@@ -184,10 +169,9 @@ public class Exchange {
     }
 
     /**
-     * Buys a given quantity of a stock for a player.
-     * The total cost is computed in the stock's native currency, converted to NOK
-     * via the active {@link CurrencyConverter}, and passed to {@link TransactionFactory}.
-     * The purchase commits the balance withdrawal and is then returned.
+     * Buys a given quantity of a stock for a player at the current price.
+     * The total cost is deducted from the player's balance in NOK and the
+     * acquired share is added to the portfolio.
      *
      * @param symbol   the symbol of the stock to buy
      * @param quantity how many shares to buy
@@ -195,8 +179,8 @@ public class Exchange {
      * @return the completed purchase transaction
      * @throws NullPointerException     if symbol, quantity, or player is null
      * @throws IllegalArgumentException if the symbol is blank, not found,
-     *                                  or quantity is not greater than zero
-     * @throws IllegalArgumentException if the player does not have enough money
+     *                                  quantity is not greater than zero,
+     *                                  or the player does not have enough funds
      */
     public Transaction buy(String symbol, BigDecimal quantity, Player player) {
         validateSymbol(symbol);
@@ -218,9 +202,7 @@ public class Exchange {
     }
 
     /**
-     * Sells the full quantity of a share for a player. Convenience overload that
-     * delegates to {@link #sell(Share, BigDecimal, Player)} with the share's full
-     * quantity.
+     * Sells the full quantity of a share for a player.
      *
      * @param share  the share to sell
      * @param player the player selling the share
@@ -234,14 +216,11 @@ public class Exchange {
     }
 
     /**
-     * Sells a given quantity of a share for a player. The sold portion is settled
-     * as a {@link Sale}; if the requested quantity is less than the full position,
-     * the remainder stays in the player's portfolio with the original purchase
-     * price preserved so per-share return is unchanged on the remaining position.
+     * Sells a given quantity of a share for a player. For partial sales, the
+     * remainder stays in the portfolio with the original purchase price preserved,
+     * so the per-share return on the remaining position is unchanged.
      *
-     * <p>The net payout is computed in the stock's native currency, converted to
-     * NOK via the active {@link CurrencyConverter}, and added to the player's
-     * balance.</p>
+     * <p>The net payout is added to the player's balance in NOK.</p>
      *
      * @param share    the share to sell from
      * @param quantity the quantity to sell (must be greater than zero and no more
@@ -301,9 +280,7 @@ public class Exchange {
     }
 
     /**
-     * Moves the exchange forward by one week.
-     * The week counter is incremented, and each stock gets a new price
-     * computed by the injected {@link PriceSimulator}.
+     * Moves the exchange forward by one week, updating all stock prices.
      */
     public void advance() {
         week++;
@@ -311,15 +288,6 @@ public class Exchange {
                 stock -> stock.addNewSalesPrice(simulator.nextPrice(stock.getSalesPrice())));
     }
 
-    //--- Private validation helpers ---
-
-    /**
-     * Checks that the given symbol is not null or blank.
-     *
-     * @param symbol the symbol to validate
-     * @throws NullPointerException if the symbol is null
-     * @throws IllegalArgumentException if the symbol is blank
-     */
     private void validateSymbol(String symbol) {
         Objects.requireNonNull(symbol, "Symbol cannot be null");
         if (symbol.isBlank()) {
@@ -327,12 +295,6 @@ public class Exchange {
         }
     }
 
-    /**
-     * Checks that the given player is not null.
-     *
-     * @param player the player to validate
-     * @throws NullPointerException if the player is null
-     */
     private void validatePlayer(Player player) {
         Objects.requireNonNull(player, "Player cannot be null");
     }
@@ -387,21 +349,11 @@ public class Exchange {
         return losersStream().count();
     }
 
-    /**
-     * Returns a stream of stocks with a positive weekly percentage change.
-     *
-     * @return a stream of gaining stocks
-     */
     private Stream<Stock> gainersStream() {
         return stockMap.values().stream()
                 .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) > 0);
     }
 
-    /**
-     * Returns a stream of stocks with a negative weekly percentage change.
-     *
-     * @return a stream of losing stocks
-     */
     private Stream<Stock> losersStream() {
         return stockMap.values().stream()
                 .filter(stock -> stock.getWeeklyChangePercent().compareTo(BigDecimal.ZERO) < 0);
@@ -409,8 +361,7 @@ public class Exchange {
 
     /**
      * Reinitializes transient fields after deserialization.
-     * Must be called by {@link GameFileHandler} after loading a game from file,
-     * since Gson does not invoke constructors and transient fields are not restored.
+     * Must be called by {@link GameFileHandler} after loading a game from file.
      *
      * @param currencyConverter the converter to use for the loaded game session
      * @throws NullPointerException if currencyConverter is null
