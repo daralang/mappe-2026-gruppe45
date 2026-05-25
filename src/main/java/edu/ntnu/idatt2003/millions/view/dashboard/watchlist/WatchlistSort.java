@@ -25,14 +25,10 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
 
     /**
      * All columns in the watchlist table.
-     * TICKER, COMPANY, CURRENCY, PRICE_ALT, PRICE_NOK, CHANGE_NOK, CHANGE_PCT and
-     * HIGH_LOW are sortable; TREND, TRADE, NOTE and REMOVE are non-sortable and
-     * exist only as structural keys for
-     * {@link edu.ntnu.idatt2003.millions.view.component.table.RowCells}.
      */
     enum SortColumn {
         TICKER, COMPANY, CURRENCY, PRICE_ALT, PRICE_NOK, CHANGE_NOK, CHANGE_PCT, HIGH_LOW,
-        TREND, TRADE, NOTE, REMOVE
+        TREND, TRADE, NOTE, DETAILS, REMOVE
     }
 
     private final StockStatsService statsService = new StockStatsService();
@@ -77,16 +73,13 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
                         "tooltip.shared.trend", 12, HPos.CENTER),
                 TableColumnDef.nonSortable(SortColumn.TRADE, "col.trade", 7, HPos.CENTER),
                 TableColumnDef.nonSortable(SortColumn.NOTE, "col.note", 7, HPos.CENTER),
+                TableColumnDef.nonSortable(SortColumn.DETAILS, "col.details", 5, HPos.CENTER),
                 TableColumnDef.spacer(SortColumn.REMOVE, 3, HPos.CENTER)
         );
     }
 
     /**
      * Builds a {@link Comparator} for the given sort column.
-     * {@link SortColumn#TREND}, {@link SortColumn#TRADE}, {@link SortColumn#NOTE}
-     * and {@link SortColumn#REMOVE} are non-sortable structural columns and are
-     * excluded from sortable column definitions in {@link #getColumnDefs()}, so
-     * they should never reach this method.
      *
      * @param column the column to build a comparator for
      * @return a comparator for the given column
@@ -103,7 +96,7 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
             case CHANGE_NOK -> Comparator.comparing(i -> statsService.changeInNok(i.stock(), converter));
             case CHANGE_PCT -> Comparator.comparing(i -> i.stock().getWeeklyChangePercent());
             case HIGH_LOW -> Comparator.comparing(i -> statsService.highLowRangeInNok(i.stock(), converter, HIGH_LOW_WEEKS));
-            case TREND, TRADE, NOTE, REMOVE ->
+            case TREND, TRADE, NOTE, DETAILS, REMOVE ->
                     throw new IllegalStateException(column + " is not sortable");
         };
     }
