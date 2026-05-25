@@ -55,7 +55,7 @@ public class StocksCard extends SortableTableCard<Stock, StocksSort.SortColumn> 
                         gameService.addToWatchlist(symbol);
                     }
                 },
-                stock -> { /* detail dialog */ });
+                controller::openStockDetail);
         this.table = new SortColumnTable<>(sort::getColumnDefs, 10);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         this.title = StyledText.sectionTitle(LanguageManager.get("exchange.stocks.market"));
