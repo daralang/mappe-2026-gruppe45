@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.leaderboard;
 
 import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
@@ -15,9 +16,7 @@ import java.util.Objects;
  * many times the player saves.</p>
  *
  * <p>{@code returnPercent} is frozen at construction so sorting is consistent
- * even if exchange rates or domain logic change later. This mirrors how
- * {@link edu.ntnu.idatt2003.millions.model.transaction.Sale} freezes its
- * financial values.</p>
+ * even if exchange rates or domain logic change later.</p>
  *
  * @param sessionId       UUID tying the entry to one game session; never reused
  * @param playerName      the player's display name (need not be unique)
