@@ -283,6 +283,53 @@ class PlayerStatsServiceTest {
     }
 
     @Nested
+    @DisplayName("getNetWorthHistory()")
+    class GetNetWorthHistory {
+
+        @Test
+        @DisplayName("Fresh player history contains only the seed entry (starting money)")
+        void freshPlayerHasSeedEntry() {
+            // Arrange
+            Player p = playerWith("1000");
+            // Act
+            List<BigDecimal> history = service.getNetWorthHistory(p);
+            // Assert
+            assertEquals(1, history.size());
+            assertBigDecimalEquals(new BigDecimal("1000"), history.get(0));
+        }
+
+        @Test
+        @DisplayName("History reflects recorded entries in insertion order")
+        void historyReflectsRecordedEntriesInOrder() {
+            // Arrange — seed=1000, record after gaining 200 then 100 more
+            Player p = playerWith("1000");
+            p.addMoney(new BigDecimal("200"));
+            p.recordNetWorth(converter);
+            p.addMoney(new BigDecimal("100"));
+            p.recordNetWorth(converter);
+            // Act
+            List<BigDecimal> history = service.getNetWorthHistory(p);
+            // Assert — [1000, 1200, 1300]
+            assertEquals(3, history.size());
+            assertBigDecimalEquals(new BigDecimal("1000"), history.get(0));
+            assertBigDecimalEquals(new BigDecimal("1200"), history.get(1));
+            assertBigDecimalEquals(new BigDecimal("1300"), history.get(2));
+        }
+
+        @Test
+        @DisplayName("Returned list is a defensive copy — mutating it does not affect player history")
+        void returnedListIsDefensiveCopy() {
+            // Arrange
+            Player p = playerWith("1000");
+            List<BigDecimal> history = service.getNetWorthHistory(p);
+            // Act & Assert — list is unmodifiable
+            assertThrows(UnsupportedOperationException.class,
+                    () -> history.add(new BigDecimal("9999")));
+            assertEquals(1, service.getNetWorthHistory(p).size());
+        }
+    }
+
+    @Nested
     @DisplayName("getStatus()")
     class GetStatus {
 
