@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.component.toast;
 
+import edu.ntnu.idatt2003.millions.service.toast.Toast;
+import edu.ntnu.idatt2003.millions.service.toast.ToastType;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;

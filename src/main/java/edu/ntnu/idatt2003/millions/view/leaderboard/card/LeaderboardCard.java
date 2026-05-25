@@ -6,7 +6,7 @@ import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.LeaderboardService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
-import edu.ntnu.idatt2003.millions.view.component.toast.ToastType;
+import edu.ntnu.idatt2003.millions.service.toast.ToastType;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;

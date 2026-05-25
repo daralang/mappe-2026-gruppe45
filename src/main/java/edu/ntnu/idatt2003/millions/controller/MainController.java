@@ -12,7 +12,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.MainView;
-import edu.ntnu.idatt2003.millions.view.component.toast.ToastType;
+import edu.ntnu.idatt2003.millions.service.toast.ToastType;
 import edu.ntnu.idatt2003.millions.view.dialog.EndGameDialog;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBar;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBarFactory;
