@@ -4,6 +4,7 @@ import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.MainController;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
+import edu.ntnu.idatt2003.millions.keyboard.PageFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;
 import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.GameService;
@@ -16,6 +17,7 @@ import edu.ntnu.idatt2003.millions.view.titlebar.TitleBar;
 import edu.ntnu.idatt2003.millions.view.dashboard.DashboardView;
 import edu.ntnu.idatt2003.millions.view.exchange.ExchangeView;
 import edu.ntnu.idatt2003.millions.view.leaderboard.LeaderboardView;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -157,7 +159,7 @@ public class MainView {
             outerRoot.getChildren().add(overlay);
         }
 
-        showDashboard();
+        showDashboard(false);
     }
 
     /**
@@ -175,6 +177,15 @@ public class MainView {
      * so sub-view state (active tab, scroll position) survives navigation.
      */
     public void showDashboard() {
+        showDashboard(true);
+    }
+
+    /**
+     * Switches to the dashboard and optionally moves keyboard focus into it.
+     *
+     * @param focusPage whether to focus the page entry point after it is shown
+     */
+    private void showDashboard(boolean focusPage) {
         if (dashboardScrollable == null) {
             dashboardView = new DashboardView(
                     gameService, tradeController, loanController, createWeekBar(), this::showExchangeOnStocksTab);
@@ -184,6 +195,9 @@ public class MainView {
         tabNavigationRegistry.setActive(dashboardView::showTab);
         activeScrollable = dashboardScrollable;
         content.setCenter(dashboardScrollable);
+        if (focusPage) {
+            requestPageFocus(dashboardView);
+        }
     }
 
     /**
@@ -197,6 +211,7 @@ public class MainView {
         tabNavigationRegistry.setActive(exchangeView::showTab);
         activeScrollable = exchangeScrollable;
         content.setCenter(exchangeScrollable);
+        requestPageFocus(exchangeView);
     }
 
     /**
@@ -213,6 +228,7 @@ public class MainView {
         tabNavigationRegistry.setActive(null);
         activeScrollable = leaderboardScrollable;
         content.setCenter(leaderboardScrollable);
+        requestPageFocus(leaderboardView);
     }
 
     /**
@@ -226,6 +242,16 @@ public class MainView {
         tabNavigationRegistry.setActive(exchangeView::showTab);
         activeScrollable = exchangeScrollable;
         content.setCenter(exchangeScrollable);
+        requestPageFocus(exchangeView);
+    }
+
+    /**
+     * Requests focus after the selected page has been attached to the scene graph.
+     *
+     * @param page the newly displayed page and its focus entry policy
+     */
+    private void requestPageFocus(PageFocusProvider page) {
+        Platform.runLater(page::focusPageEntry);
     }
 
     /**
