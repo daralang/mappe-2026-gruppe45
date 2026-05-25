@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.watchlist;
 
 import java.util.Objects;
@@ -6,9 +7,8 @@ import java.util.Objects;
  * Represents a single entry in the player's watchlist.
  *
  * <p>Each entry is identified by a stock {@link #symbol}, records which
- * game week it was added and carries an optional
- * free-text. The record is immutable; use to produce an updated copy when the player edits
- * the note.</p>
+ * game week it was added, and carries an optional free-text note.
+ * Use {@link #withNote(String)} to produce an updated copy when the player edits the note.</p>
  *
  * <p>Instances are serialised transparently by Gson as part of the player
  * state in the game save file.</p>
@@ -16,8 +16,6 @@ import java.util.Objects;
 public record WatchlistEntry(String symbol, int addedAtWeek, String note) {
 
     /**
-     * Compact constructor that validates all fields.
-     *
      * @param symbol      the stock ticker symbol; must not be null or blank
      * @param addedAtWeek the game week in which this entry was added; must be &gt;= 1
      * @param note        an optional free-text note; {@code null} is normalised to {@code ""}
