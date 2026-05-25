@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.component.table;
 
+import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.KeyboardScrollPane;
@@ -44,7 +45,20 @@ public class SortColumnTable<Column> {
     private final TableHeaderRenderer<Column> headerRenderer = new TableHeaderRenderer<>(sortState);
     private final RowHighlighter rowHighlighter = new RowHighlighter();
     private final RowScroller rowScroller = new RowScroller();
-    private final List<Node> rowAnchors = new ArrayList<>();
+    private final List<NavigableRow> rows = new ArrayList<>();
+    private final ArrowKeyNavigator rowNavigator = new ArrowKeyNavigator(
+            ArrowKeyNavigator.Orientation.VERTICAL,
+            rows::size,
+            index -> {
+                Node anchor = rows.get(index).anchor();
+                anchor.requestFocus();
+                rowScroller.ensureVisible(anchor);
+            },
+            index -> rows.get(index).onEnter().run(),
+            false);
+
+    /** A keyboard-navigable data row: its focus anchor and its activation action. */
+    private record NavigableRow(Node anchor, Runnable onEnter) {}
 
     /**
      * Constructs a sortable table with default horizontal gap of 20px.
@@ -83,7 +97,7 @@ public class SortColumnTable<Column> {
     public void clearRows() {
         grid.getChildren().clear();
         rowHighlighter.clear();
-        rowAnchors.clear();
+        rows.clear();
     }
 
     /**
@@ -166,8 +180,8 @@ public class SortColumnTable<Column> {
 
     /**
      * Wires an already-inserted row into the keyboard grid: registers it as a
-     * navigable anchor, binds the focus highlight, scrolls it into view on focus,
-     * and installs the row key handler (UP/DOWN move rows, Enter/Space activate).
+     * {@link NavigableRow}, binds the focus highlight, scrolls it into view on
+     * focus, and delegates UP/DOWN/Enter/Space to the shared {@link ArrowKeyNavigator}.
      * The anchor is flagged with {@link KeyboardScrollPane#VERTICAL_KEYS_HANDLED}
      * so the surrounding scroll pane yields UP/DOWN to row navigation.
      *
@@ -176,54 +190,21 @@ public class SortColumnTable<Column> {
      * @param onEnter     action invoked on Enter or Space
      */
     private void registerSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter) {
-        rowAnchors.add(focusAnchor);
+        int index = rows.size();
+        rows.add(new NavigableRow(focusAnchor, onEnter));
         focusAnchor.getProperties().put(KeyboardScrollPane.VERTICAL_KEYS_HANDLED, Boolean.TRUE);
         rowHighlighter.bindFocus(gridRow, focusAnchor);
-        focusAnchor.addEventHandler(KeyEvent.KEY_PRESSED, event -> handleRowKey(event, focusAnchor, onEnter));
+        focusAnchor.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            rowNavigator.syncIndex(index);
+            if (rowNavigator.navigate(event)) {
+                event.consume();
+            }
+        });
         focusAnchor.focusedProperty().addListener((obs, was, isFocused) -> {
             if (isFocused) {
                 rowScroller.ensureVisible(focusAnchor);
             }
         });
-    }
-
-    /**
-     * Handles key presses on a focused row anchor: UP/DOWN move row focus,
-     * Enter/Space run {@code onEnter}. All four keys are consumed so they never
-     * fall through to focus traversal or page scrolling.
-     *
-     * @param event   the key event
-     * @param anchor  the row anchor that currently has focus
-     * @param onEnter the action to run on Enter or Space
-     */
-    private void handleRowKey(KeyEvent event, Node anchor, Runnable onEnter) {
-        switch (event.getCode()) {
-            case UP    -> { moveRowFocus(anchor, -1); event.consume(); }
-            case DOWN  -> { moveRowFocus(anchor, 1);  event.consume(); }
-            case ENTER, SPACE -> { onEnter.run(); event.consume(); }
-            default -> { }
-        }
-    }
-
-    /**
-     * Moves keyboard focus to the row {@code delta} steps from the given anchor,
-     * clamped to the first and last row, and scrolls the new row into view.
-     *
-     * @param current the anchor that currently has focus
-     * @param delta   {@code -1} for the previous row, {@code 1} for the next
-     */
-    private void moveRowFocus(Node current, int delta) {
-        int index = rowAnchors.indexOf(current);
-        if (index < 0) {
-            return;
-        }
-        int target = Math.clamp(index + delta, 0, rowAnchors.size() - 1);
-        if (target == index) {
-            return;
-        }
-        Node next = rowAnchors.get(target);
-        next.requestFocus();
-        rowScroller.ensureVisible(next);
     }
 
     /**
