@@ -16,19 +16,7 @@ import java.util.function.IntSupplier;
  *
  * <p>The caller is responsible for visual selection feedback; this class
  * only tracks and moves the index and fires the supplied callbacks.</p>
- *
- * <p>Usage example (horizontal, no wrap):</p>
- * <pre>{@code
- * ArrowKeyNavigator nav = new ArrowKeyNavigator(
- *         Orientation.HORIZONTAL,
- *         offers::size,
- *         this::select,
- *         index -> applyButtons.get(index).fire(),
- *         false
- * );
- * // in KeyboardContext.handleKeyPressed:
- * return nav.navigate(event);
- * }</pre>
+
  */
 public final class ArrowKeyNavigator {
 
@@ -71,8 +59,8 @@ public final class ArrowKeyNavigator {
     }
 
     /**
-     * Processes a key event. Call this from
-     * {@link KeyboardContext#handleKeyPressed(KeyEvent)}.
+     * Processes a key event. Call this from a {@code KEY_PRESSED} event handler
+     * registered on the node that owns the navigable items.
      *
      * @param event the key event to process
      * @return {@code true} if the event was consumed by this navigator

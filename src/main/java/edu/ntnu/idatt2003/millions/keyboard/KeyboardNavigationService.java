@@ -6,8 +6,6 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Objects;
 
 /**
@@ -19,22 +17,18 @@ import java.util.Objects;
  *
  * <p>Dispatch order on each key event:</p>
  * <ol>
- *   <li>The universal {@link ShortcutRegistry}, always evaluated, even when a
- *       modal context is active. Use for shortcuts that must fire regardless of
- *       overlay state (e.g. Enter > fire focused button).</li>
- *   <li>The top {@link KeyboardContext} on the stack (e.g. an open modal).</li>
- *   <li>If no context is active or the context did not handle the event,
- *       the global {@link ShortcutRegistry} is consulted.</li>
+ *   <li>The universal {@link ShortcutRegistry}, for shortcuts that must fire
+ *       regardless of context (e.g. Enter > fire focused button).</li>
+ *   <li>If the universal registry did not handle the event, the global
+ *       {@link ShortcutRegistry} is consulted.</li>
  * </ol>
  *
- * <p>Global shortcuts (Cmd+1, Cmd+S, …) are automatically suppressed whenever
- * a modal dialog is on top of the stack; universal shortcuts are not.</p>
- *
- * <p>Components push themselves when shown and pop themselves when closed:</p>
+ * <p>Modal dialogs are isolated naturally: each is its own
+ * {@link javafx.stage.Stage} with {@code APPLICATION_MODAL} modality, so global
+ * shortcuts on the main scene cannot fire while a dialog has focus.</p>
  */
 public final class KeyboardNavigationService {
 
-    private final Deque<KeyboardContext> contextStack = new ArrayDeque<>();
     private final ShortcutRegistry universalRegistry = new ShortcutRegistry();
     private final ShortcutRegistry globalRegistry = new ShortcutRegistry();
 
@@ -67,7 +61,7 @@ public final class KeyboardNavigationService {
 
     /**
      * Attaches this service to the given scene. Must be called once before
-     * any shortcuts or contexts are active. Calling again with a different
+     * any shortcuts are active. Calling again with a different
      * scene detaches from the previous one first.
      *
      * @param scene the app-lifetime scene to listen on
@@ -82,7 +76,7 @@ public final class KeyboardNavigationService {
 
     /**
      * Detaches this service from its current scene and clears all state,
-     * including both shortcut registries and the full context stack.
+     * including both shortcut registries.
      * Also removes the {@code sceneProperty} listener added by {@link #bindToNode}.
      * Safe to call even when not attached.
      *
@@ -104,48 +98,13 @@ public final class KeyboardNavigationService {
         }
         attachedScene = null;
         eventFilter = null;
-        contextStack.clear();
         universalRegistry.clear();
         globalRegistry.clear();
     }
 
     /**
-     * Pushes a context onto the stack, making it the active receiver of
-     * key events. Notifies the previous top context that it is deactivated,
-     * and notifies the new context that it is activated.
-     *
-     * @param context the context to push
-     */
-    public void pushContext(KeyboardContext context) {
-        Objects.requireNonNull(context, "context must not be null");
-        if (!contextStack.isEmpty()) {
-            contextStack.peek().onContextDeactivated();
-        }
-        contextStack.push(context);
-        context.onContextActivated();
-    }
-
-    /**
-     * Removes the given context from the top of the stack. If the context
-     * is not at the top, this is a no-op to guard against double-pop bugs.
-     * Notifies the context being removed and activates the one below it.
-     *
-     * @param context the context to remove
-     */
-    public void popContext(KeyboardContext context) {
-        Objects.requireNonNull(context, "context must not be null");
-        if (contextStack.isEmpty() || contextStack.peek() != context) {
-            return;
-        }
-        contextStack.pop().onContextDeactivated();
-        if (!contextStack.isEmpty()) {
-            contextStack.peek().onContextActivated();
-        }
-    }
-
-    /**
      * Returns the universal {@link ShortcutRegistry} for shortcuts that must
-     * fire regardless of whether a modal {@link KeyboardContext} is active.
+     * fire regardless of context (e.g. Enter to fire the focused button).
      *
      * @return the universal shortcut registry
      */
@@ -161,15 +120,6 @@ public final class KeyboardNavigationService {
      */
     public ShortcutRegistry globalShortcuts() {
         return globalRegistry;
-    }
-
-    /**
-     * Returns {@code true} if at least one context is currently on the stack.
-     *
-     * @return {@code true} when a modal context is active
-     */
-    public boolean hasActiveContext() {
-        return !contextStack.isEmpty();
     }
 
     /**
@@ -190,12 +140,6 @@ public final class KeyboardNavigationService {
         if (universalRegistry.dispatch(event)) {
             event.consume();
             return;
-        }
-        if (!contextStack.isEmpty()) {
-            if (contextStack.peek().handleKeyPressed(event)) {
-                event.consume();
-                return;
-            }
         }
         if (globalRegistry.dispatch(event)) {
             event.consume();
