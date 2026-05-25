@@ -7,28 +7,16 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
 /**
- * Reusable keyboard-navigation logic for linearly indexed UI elements.
+ * Reusable keyboard-navigation logic for a vertical list of linearly indexed items.
  *
- * <p>Handles arrow-key movement and Enter confirmation over a list of items
- * identified by integer indices. The navigator is orientation-aware:
- * {@link Orientation#HORIZONTAL} responds to LEFT/RIGHT, while
- * {@link Orientation#VERTICAL} responds to UP/DOWN.</p>
+ * <p>Handles UP/DOWN movement and Enter/Space confirmation over a list of items
+ * identified by integer indices.</p>
  *
  * <p>The caller is responsible for visual selection feedback; this class
  * only tracks and moves the index and fires the supplied callbacks.</p>
-
  */
 public final class ArrowKeyNavigator {
 
-    /** Determines which arrow keys move the selection. */
-    public enum Orientation {
-        /** LEFT decrements, RIGHT increments. */
-        HORIZONTAL,
-        /** UP decrements, DOWN increments. */
-        VERTICAL
-    }
-
-    private final Orientation orientation;
     private final IntSupplier sizeSupplier;
     private final IntConsumer onSelect;
     private final IntConsumer onConfirm;
@@ -39,19 +27,16 @@ public final class ArrowKeyNavigator {
     /**
      * Creates a navigator.
      *
-     * @param orientation  which arrow keys to respond to
      * @param sizeSupplier supplies the current number of items; queried on each event
      * @param onSelect     called with the new index whenever selection moves
-     * @param onConfirm    called with the current index when Enter is pressed
+     * @param onConfirm    called with the current index when Enter or Space is pressed
      * @param wrap         whether navigation wraps around at the ends
      */
     public ArrowKeyNavigator(
-            Orientation orientation,
             IntSupplier sizeSupplier,
             IntConsumer onSelect,
             IntConsumer onConfirm,
             boolean wrap) {
-        this.orientation = Objects.requireNonNull(orientation, "orientation must not be null");
         this.sizeSupplier = Objects.requireNonNull(sizeSupplier, "sizeSupplier must not be null");
         this.onSelect = Objects.requireNonNull(onSelect, "onSelect must not be null");
         this.onConfirm = Objects.requireNonNull(onConfirm, "onConfirm must not be null");
@@ -71,23 +56,9 @@ public final class ArrowKeyNavigator {
             return false;
         }
         return switch (event.getCode()) {
-            case LEFT -> {
-                if (orientation == Orientation.HORIZONTAL) { moveTo(selectedIndex - 1, size); yield true; }
-                yield false;
-            }
-            case RIGHT -> {
-                if (orientation == Orientation.HORIZONTAL) { moveTo(selectedIndex + 1, size); yield true; }
-                yield false;
-            }
-            case UP -> {
-                if (orientation == Orientation.VERTICAL) { moveTo(selectedIndex - 1, size); yield true; }
-                yield false;
-            }
-            case DOWN -> {
-                if (orientation == Orientation.VERTICAL) { moveTo(selectedIndex + 1, size); yield true; }
-                yield false;
-            }
-            case ENTER -> { onConfirm.accept(selectedIndex); yield true; }
+            case UP -> { moveTo(selectedIndex - 1, size); yield true; }
+            case DOWN -> { moveTo(selectedIndex + 1, size); yield true; }
+            case ENTER, SPACE -> { onConfirm.accept(selectedIndex); yield true; }
             default -> false;
         };
     }
