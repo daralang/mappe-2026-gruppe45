@@ -3,11 +3,13 @@ package edu.ntnu.idatt2003.millions.view;
 import edu.ntnu.idatt2003.millions.controller.LoanController;
 import edu.ntnu.idatt2003.millions.controller.MainController;
 import edu.ntnu.idatt2003.millions.controller.TradeController;
+import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;
 import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.view.component.toast.ToastOverlay;
+import edu.ntnu.idatt2003.millions.view.component.KeyboardScrollPane;
 import edu.ntnu.idatt2003.millions.view.component.StatusFooter;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.titlebar.TitleBar;
@@ -18,7 +20,6 @@ import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
@@ -64,11 +65,14 @@ public class MainView {
     private final StatusFooter footer;
 
     private DashboardView dashboardView;
-    private ScrollPane dashboardScrollable;
+    private KeyboardScrollPane dashboardScrollable;
     private ExchangeView exchangeView;
-    private ScrollPane exchangeScrollable;
+    private KeyboardScrollPane exchangeScrollable;
     private LeaderboardView leaderboardView;
-    private ScrollPane leaderboardScrollable;
+    private KeyboardScrollPane leaderboardScrollable;
+
+    /** The scroll pane of the currently shown view, supplied to the page-arrow dispatcher. */
+    private KeyboardScrollPane activeScrollable;
 
     /**
      * Constructs a new MainView with a platform-appropriate title bar and
@@ -132,6 +136,7 @@ public class MainView {
         updateCorners.run();
 
         this.outerRoot = new StackPane(content);
+        new PageArrowDispatcher(() -> activeScrollable).install(outerRoot);
 
         ToastOverlay toastOverlay = new ToastOverlay(toastService);
         toastOverlay.translateYProperty().bind(
@@ -177,6 +182,7 @@ public class MainView {
         }
         searchFocusRegistry.setActive(dashboardView);
         tabNavigationRegistry.setActive(dashboardView::showTab);
+        activeScrollable = dashboardScrollable;
         content.setCenter(dashboardScrollable);
     }
 
@@ -189,6 +195,7 @@ public class MainView {
         ensureExchangeView();
         searchFocusRegistry.setActive(exchangeView);
         tabNavigationRegistry.setActive(exchangeView::showTab);
+        activeScrollable = exchangeScrollable;
         content.setCenter(exchangeScrollable);
     }
 
@@ -204,6 +211,7 @@ public class MainView {
         }
         searchFocusRegistry.setActive(leaderboardView);
         tabNavigationRegistry.setActive(null);
+        activeScrollable = leaderboardScrollable;
         content.setCenter(leaderboardScrollable);
     }
 
@@ -216,6 +224,7 @@ public class MainView {
         exchangeView.selectStocksTab();
         searchFocusRegistry.setActive(exchangeView);
         tabNavigationRegistry.setActive(exchangeView::showTab);
+        activeScrollable = exchangeScrollable;
         content.setCenter(exchangeScrollable);
     }
 
@@ -242,18 +251,13 @@ public class MainView {
     }
 
     /**
-     * Wraps a view node in a vertically scrollable {@link ScrollPane}.
-     * Horizontal scrolling is disabled; the content fills the pane's width.
+     * Wraps a view node in a {@link KeyboardScrollPane} so it is vertically
+     * scrollable and responds to arrow-key scrolling regardless of focus.
      *
      * @param content the view node to wrap
-     * @return a configured ScrollPane containing the content
+     * @return a configured scroll pane containing the content
      */
-    private ScrollPane wrapScrollable(Node content) {
-        ScrollPane scrollPane = new ScrollPane(content);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-        scrollPane.getStyleClass().add("content-scroll");
-        return scrollPane;
+    private KeyboardScrollPane wrapScrollable(Node content) {
+        return new KeyboardScrollPane(content);
     }
 }

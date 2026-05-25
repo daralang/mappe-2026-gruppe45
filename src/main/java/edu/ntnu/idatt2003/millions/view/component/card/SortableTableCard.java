@@ -221,16 +221,29 @@ public abstract class SortableTableCard<T, Column> extends PaginatedCard impleme
      * @return the configured search row
      */
     protected HBox buildSearchRow(Button clearSortButton) {
-        searchBar = new SearchBar(
-                "search.placeholder",
-                "search.button",
-                searchCallback(),
-                metadataRow);
+        searchBar = createSearchBar("search.placeholder", "search.button", metadataRow);
         searchBar.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(searchBar, Priority.ALWAYS);
         HBox row = new HBox(8, searchBar, clearSortButton);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
+    }
+
+    /**
+     * Creates a {@link SearchBar} wired to this card's search callback and to the
+     * table, so pressing DOWN in the field moves focus into the first row. Use this
+     * instead of constructing {@link SearchBar} directly, including when overriding
+     * {@link #buildSearchRow}, so the search-to-results behaviour stays consistent.
+     *
+     * @param placeholderKey the i18n key for the field placeholder
+     * @param buttonKey      the i18n key for the search button text
+     * @param metadata       optional metadata node shown below the search row
+     * @return a configured search bar
+     */
+    protected final SearchBar createSearchBar(String placeholderKey, String buttonKey, Node metadata) {
+        SearchBar bar = new SearchBar(placeholderKey, buttonKey, searchCallback(), metadata);
+        bar.setOnArrowDown(table::focusFirstRow);
+        return bar;
     }
 
     /**

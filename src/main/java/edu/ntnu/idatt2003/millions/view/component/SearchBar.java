@@ -1,7 +1,9 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
+import edu.ntnu.idatt2003.millions.keyboard.VerticalArrowHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -12,6 +14,7 @@ import javafx.scene.layout.VBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 /**
@@ -21,6 +24,11 @@ import java.util.function.Consumer;
  * The {@code Cmd/Ctrl+F} shortcut to focus this bar is registered externally via
  * {@link SearchFocusProvider} and the application-wide
  * {@code KeyboardNavigationService}, keeping shortcut registration out of the view layer.</p>
+ *
+ * <p>The field registers a {@link edu.ntnu.idatt2003.millions.keyboard.VerticalArrowHandler}
+ * so the central {@code PageArrowDispatcher} never lets the field trap vertical
+ * navigation: DOWN hands focus to the results when possible (see
+ * {@link #setOnArrowDown}); otherwise the dispatcher scrolls the page.</p>
  */
 public class SearchBar extends VBox {
 
@@ -30,6 +38,8 @@ public class SearchBar extends VBox {
 
     private final String placeholderKey;
     private final String buttonKey;
+
+    private BooleanSupplier onArrowDown;
 
     /**
      * Creates a search bar with localized text.
@@ -94,6 +104,13 @@ public class SearchBar extends VBox {
             }
         });
 
+        searchField.getProperties().put(
+                PageArrowDispatcher.ARROW_HANDLER_KEY,
+                (VerticalArrowHandler) event ->
+                        event.getCode() == KeyCode.DOWN
+                                && onArrowDown != null
+                                && onArrowDown.getAsBoolean());
+
         searchButton.setOnAction(event -> triggerSearch.run());
         clearButton.setOnAction(event -> {
             searchField.clear();
@@ -126,6 +143,21 @@ public class SearchBar extends VBox {
      */
     public void focus() {
         searchField.requestFocus();
+    }
+
+    /**
+     * Sets the action run when the user presses DOWN in the search field, used to
+     * move focus out of the field and into the results below (e.g. the first table
+     * row). The action returns whether it handled the key: {@code true} when focus
+     * was moved, {@code false} when it could not (e.g. an empty table). Pass
+     * {@code null} to disable. When the action does not handle DOWN, the
+     * {@code PageArrowDispatcher} scrolls the page instead.
+     *
+     * @param action the action to run on DOWN, returning whether it handled the key,
+     *               or {@code null} to disable
+     */
+    public void setOnArrowDown(BooleanSupplier action) {
+        this.onArrowDown = action;
     }
 
     /**
