@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.model.transaction;
+package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.model.calculator.PurchaseCalculator;
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
@@ -6,9 +6,9 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Currency;
 
 /**

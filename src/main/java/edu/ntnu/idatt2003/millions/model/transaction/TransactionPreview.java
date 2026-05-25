@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.model.transaction;
 
+import edu.ntnu.idatt2003.millions.service.TransactionPreviewService;
+
 import java.math.BigDecimal;
 
 /**

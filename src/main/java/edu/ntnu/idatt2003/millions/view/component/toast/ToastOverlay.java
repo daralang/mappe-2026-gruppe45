@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.component.toast;
 
+import edu.ntnu.idatt2003.millions.service.toast.Toast;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
