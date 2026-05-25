@@ -55,18 +55,25 @@ public class PlayerStatsService {
      * Returns the player's progress toward the next status level as a value
      * between 0.0 and 1.0 (inclusive).
      *
-     * <p>Progress is computed relative to the band between the previous and next
-     * level thresholds, using {@code Math.min(weekProgress, returnProgress)} so
-     * the bar reflects the slower of the two requirements:
+     * <p>Progress is additive: two independent part-counts are summed and divided
+     * by the total parts for the current band.
+     *
+     * <p><b>NOVICE → INVESTOR (20 parts):</b>
      * <pre>
-     *   weekProgress   = (weeksTraded  − prevWeeks)  / (nextWeeks  − prevWeeks)
-     *   returnProgress = (growthPercent − prevReturn) / (nextReturn − prevReturn)
-     *   progress       = clamp(min(weekProgress, returnProgress), 0.0, 1.0)
+     *   weeksPart  = min(10, weeksTraded)
+     *   growthPart = min(10, max(0, floor(growthPercent / 2)))
+     *   progress   = (weeksPart + growthPart) / 20
      * </pre>
      *
-     * <p>Thresholds: NOVICE→INVESTOR is 0→10 weeks / 0→20% growth;
-     * INVESTOR→SPECULATOR is 10→20 weeks / 20→100% growth.
-     * For {@link PlayerStatusLevel#SPECULATOR}, always returns 1.0 (top level reached).
+     * <p><b>INVESTOR → SPECULATOR (50 parts):</b>
+     * <pre>
+     *   weeksPart  = min(10, max(0, weeksTraded − 10))
+     *   growthPart = min(40, max(0, floor((growthPercent − 20) / 2)))
+     *   progress   = (weeksPart + growthPart) / 50
+     * </pre>
+     *
+     * <p>For {@link PlayerStatusLevel#SPECULATOR}, always returns 1.0.
+     * Negative growth contributes zero to the growth part (clamped via {@code max(0, …)}).
      *
      * @param player    the player to evaluate
      * @param converter the currency converter used to compute the current net worth
@@ -79,19 +86,15 @@ public class PlayerStatsService {
         int weeksTraded = player.getTransactionArchive().countDistinctWeeks();
         double growthPercent = player.getNetWorthChangePercentSinceStart(converter).doubleValue();
 
-        double prevWeeks, nextWeeks, prevReturn, nextReturn;
         if (status == PlayerStatusLevel.NOVICE) {
-            prevWeeks = 0.0;  nextWeeks = 10.0;
-            prevReturn = 0.0; nextReturn = 20.0;
+            int weeksPart  = Math.min(10, weeksTraded);
+            int growthPart = Math.min(10, Math.max(0, (int) Math.floor(growthPercent / 2)));
+            return (weeksPart + growthPart) / 20.0;
         } else {
-            prevWeeks = 10.0; nextWeeks = 20.0;
-            prevReturn = 20.0; nextReturn = 100.0;
+            int weeksPart  = Math.min(10, Math.max(0, weeksTraded - 10));
+            int growthPart = Math.min(40, Math.max(0, (int) Math.floor((growthPercent - 20) / 2)));
+            return (weeksPart + growthPart) / 50.0;
         }
-
-        double weekProgress   = Math.min(1.0, Math.max(0.0, (weeksTraded - prevWeeks)  / (nextWeeks  - prevWeeks)));
-        double returnProgress = Math.min(1.0, Math.max(0.0, (growthPercent - prevReturn) / (nextReturn - prevReturn)));
-
-        return Math.min(weekProgress, returnProgress);
     }
 
     /**
