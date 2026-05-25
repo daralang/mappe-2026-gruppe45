@@ -128,7 +128,7 @@ class CsvStockFileHandlerTest {
             InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
                     () -> handler.readStocks(stream));
             // Assert — line 3 in the file is the bad one
-            assertEquals(3, ex.getLineNumber());
+            assertEquals(3, ex.getArgs()[0]);
         }
 
         @Test
@@ -326,7 +326,7 @@ class CsvStockFileHandlerTest {
             InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
                     () -> handler.readStocks(stream));
             // Assert
-            assertTrue(ex.getMessage().contains("blank symbol"));
+            assertEquals("error.stock.csv.blankSymbol", ex.getI18nKey());
         }
 
         @Test
@@ -339,7 +339,7 @@ class CsvStockFileHandlerTest {
             InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
                     () -> handler.readStocks(stream));
             // Assert
-            assertTrue(ex.getMessage().contains("blank name"));
+            assertEquals("error.stock.csv.blankName", ex.getI18nKey());
         }
 
         @Test
@@ -352,7 +352,7 @@ class CsvStockFileHandlerTest {
             InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
                     () -> handler.readStocks(stream));
             // Assert
-            assertTrue(ex.getMessage().contains("non-positive price"));
+            assertEquals("error.stock.csv.nonPositivePrice", ex.getI18nKey());
         }
 
         @Test
@@ -365,7 +365,7 @@ class CsvStockFileHandlerTest {
             InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
                     () -> handler.readStocks(stream));
             // Assert
-            assertTrue(ex.getMessage().contains("non-positive price"));
+            assertEquals("error.stock.csv.nonPositivePrice", ex.getI18nKey());
         }
 
         @Test
@@ -378,7 +378,7 @@ class CsvStockFileHandlerTest {
             InvalidStockDataException ex = assertThrows(InvalidStockDataException.class,
                     () -> handler.readStocks(stream));
             // Assert
-            assertEquals(2, ex.getLineNumber());
+            assertEquals(2, ex.getArgs()[0]);
         }
 
         @Test

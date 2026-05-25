@@ -194,15 +194,18 @@ public class CsvStockFileHandler implements StockFileHandler {
                 }
                 String[] fields = line.split(DELIMITER);
                 if (fields.length != EXPECTED_FIELDS) {
-                    throw new InvalidStockDataException(lineNumber, line.trim());
+                    throw new InvalidStockDataException(
+                            "error.stock.csv.invalidStockData", new Object[]{lineNumber, line.trim()});
                 }
                 String symbol = fields[SYMBOL_INDEX].trim();
                 if (symbol.isBlank()) {
-                    throw new InvalidStockDataException(lineNumber, line.trim(), "blank symbol");
+                    throw new InvalidStockDataException(
+                            "error.stock.csv.blankSymbol", new Object[]{lineNumber, line.trim()});
                 }
                 String name = fields[NAME_INDEX].trim();
                 if (name.isBlank()) {
-                    throw new InvalidStockDataException(lineNumber, line.trim(), "blank name");
+                    throw new InvalidStockDataException(
+                            "error.stock.csv.blankName", new Object[]{lineNumber, line.trim()});
                 }
                 String rawPrice = fields[PRICE_INDEX].trim();
                 BigDecimal price;
@@ -210,11 +213,11 @@ public class CsvStockFileHandler implements StockFileHandler {
                     price = new BigDecimal(rawPrice);
                 } catch (NumberFormatException e) {
                     throw new InvalidStockDataException(
-                            lineNumber, line.trim(), "non-numeric price \"" + rawPrice + "\"");
+                            "error.stock.csv.nonNumericPrice", new Object[]{rawPrice, lineNumber, line.trim()});
                 }
                 if (price.compareTo(BigDecimal.ZERO) <= 0) {
                     throw new InvalidStockDataException(
-                            lineNumber, line.trim(), "non-positive price \"" + rawPrice + "\"");
+                            "error.stock.csv.nonPositivePrice", new Object[]{rawPrice, lineNumber, line.trim()});
                 }
                 result.add(new Stock(symbol, name, new ArrayList<>(List.of(price)), currency));
             }

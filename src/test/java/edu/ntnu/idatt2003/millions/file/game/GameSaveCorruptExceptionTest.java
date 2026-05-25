@@ -12,21 +12,29 @@ import static org.junit.jupiter.api.Assertions.*;
 class GameSaveCorruptExceptionTest {
 
     @Nested
-    @DisplayName("GameSaveCorruptException(String message)")
-    class MessageConstructor {
+    @DisplayName("GameSaveCorruptException(String i18nKey, Object[] args)")
+    class NoCauseConstructor {
 
         @Test
-        @DisplayName("getMessage() returns the supplied message")
-        void messageIsPreserved() {
+        @DisplayName("getI18nKey() returns the supplied key")
+        void keyIsPreserved() {
             GameSaveCorruptException ex =
-                    new GameSaveCorruptException("save file is missing 'player' field");
-            assertEquals("save file is missing 'player' field", ex.getMessage());
+                    new GameSaveCorruptException("error.save.load.missingFields", new Object[]{"save.json"});
+            assertEquals("error.save.load.missingFields", ex.getI18nKey());
+        }
+
+        @Test
+        @DisplayName("getArgs() returns a copy of the supplied args")
+        void argsArePreserved() {
+            Object[] args = {"save.json"};
+            GameSaveCorruptException ex = new GameSaveCorruptException("some.key", args);
+            assertArrayEquals(args, ex.getArgs());
         }
 
         @Test
         @DisplayName("getCause() is null when no cause is supplied")
         void causeIsNullByDefault() {
-            GameSaveCorruptException ex = new GameSaveCorruptException("msg");
+            GameSaveCorruptException ex = new GameSaveCorruptException("some.key", new Object[0]);
             assertNull(ex.getCause());
         }
 
@@ -39,22 +47,22 @@ class GameSaveCorruptExceptionTest {
     }
 
     @Nested
-    @DisplayName("GameSaveCorruptException(String message, Throwable cause)")
+    @DisplayName("GameSaveCorruptException(String i18nKey, Object[] args, Throwable cause)")
     class ChainingConstructor {
 
         @Test
-        @DisplayName("getMessage() returns the supplied message")
-        void messageIsPreserved() {
-            GameSaveCorruptException ex =
-                    new GameSaveCorruptException("corrupt", new RuntimeException("root"));
-            assertEquals("corrupt", ex.getMessage());
+        @DisplayName("getI18nKey() returns the supplied key")
+        void keyIsPreserved() {
+            GameSaveCorruptException ex = new GameSaveCorruptException(
+                    "error.save.load.invalidJson", new Object[]{"corrupt.json"}, new RuntimeException("root"));
+            assertEquals("error.save.load.invalidJson", ex.getI18nKey());
         }
 
         @Test
         @DisplayName("getCause() returns the supplied cause")
         void causeIsPreserved() {
             RuntimeException root = new RuntimeException("root");
-            GameSaveCorruptException ex = new GameSaveCorruptException("msg", root);
+            GameSaveCorruptException ex = new GameSaveCorruptException("some.key", new Object[0], root);
             assertSame(root, ex.getCause());
         }
     }

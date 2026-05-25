@@ -12,177 +12,128 @@ import static org.junit.jupiter.api.Assertions.*;
 class InvalidStockDataExceptionTest {
 
     @Nested
-    @DisplayName("InvalidStockDataException(int lineNumber, String lineContent)")
-    class PayloadConstructor {
+    @DisplayName("InvalidStockDataException(String i18nKey, Object[] args)")
+    class NoCauseConstructor {
 
         @Test
-        @DisplayName("getLineNumber() returns the supplied line number")
-        void lineNumberIsPreserved() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(5, "AAPL,Apple,abc");
-            // Assert
-            assertEquals(5, ex.getLineNumber());
+        @DisplayName("getI18nKey() returns the supplied key")
+        void i18nKeyIsPreserved() {
+            InvalidStockDataException ex =
+                    new InvalidStockDataException("error.stock.csv.invalidStockData", new Object[]{5, "AAPL,Apple,abc"});
+            assertEquals("error.stock.csv.invalidStockData", ex.getI18nKey());
         }
 
         @Test
-        @DisplayName("getLineContent() returns the supplied line content")
-        void lineContentIsPreserved() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(5, "AAPL,Apple,abc");
-            // Assert
-            assertEquals("AAPL,Apple,abc", ex.getLineContent());
+        @DisplayName("getArgs() returns a copy with the supplied arguments")
+        void argsArePreserved() {
+            InvalidStockDataException ex =
+                    new InvalidStockDataException("error.stock.csv.blankSymbol", new Object[]{3, ",Apple,100"});
+            Object[] args = ex.getArgs();
+            assertEquals(3, args[0]);
+            assertEquals(",Apple,100", args[1]);
         }
 
         @Test
-        @DisplayName("message contains the line number")
-        void messageContainsLineNumber() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(5, "AAPL,Apple,abc");
-            // Assert
-            assertTrue(ex.getMessage().contains("5"),
-                    "message should contain the line number");
+        @DisplayName("getArgs() returns a defensive copy — mutating it does not affect stored args")
+        void argsAreDefensiveCopy() {
+            InvalidStockDataException ex =
+                    new InvalidStockDataException("error.stock.csv.blankSymbol", new Object[]{3, ",Apple,100"});
+            Object[] copy = ex.getArgs();
+            copy[0] = 999;
+            assertEquals(3, ex.getArgs()[0]);
         }
 
         @Test
-        @DisplayName("message contains the line content")
-        void messageContainsLineContent() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(5, "AAPL,Apple,abc");
-            // Assert
-            assertTrue(ex.getMessage().contains("AAPL,Apple,abc"),
-                    "message should contain the raw line content");
+        @DisplayName("null args treated as empty — getArgs() returns empty array")
+        void nullArgsBecomesEmpty() {
+            InvalidStockDataException ex =
+                    new InvalidStockDataException("error.stock.csv.invalidStockData", null);
+            assertEquals(0, ex.getArgs().length);
         }
 
         @Test
-        @DisplayName("getLineNumber() returns 1 for the first line")
-        void lineNumberOneIsPreserved() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(1, "BAD");
-            // Assert
-            assertEquals(1, ex.getLineNumber());
+        @DisplayName("getMessage() contains the key when args are empty")
+        void messageContainsKeyWhenNoArgs() {
+            InvalidStockDataException ex =
+                    new InvalidStockDataException("error.stock.csv.invalidStockData", null);
+            assertTrue(ex.getMessage().contains("error.stock.csv.invalidStockData"));
+        }
+
+        @Test
+        @DisplayName("getMessage() contains key and args in fallback form")
+        void messageContainsKeyAndArgs() {
+            InvalidStockDataException ex =
+                    new InvalidStockDataException("error.stock.csv.blankSymbol", new Object[]{5, "AAPL,Apple,abc"});
+            assertTrue(ex.getMessage().contains("error.stock.csv.blankSymbol"));
+            assertTrue(ex.getMessage().contains("5"));
+            assertTrue(ex.getMessage().contains("AAPL,Apple,abc"));
+        }
+
+        @Test
+        @DisplayName("getCause() is null")
+        void causeIsNull() {
+            InvalidStockDataException ex =
+                    new InvalidStockDataException("error.stock.csv.blankName", new Object[]{1, "BAD"});
+            assertNull(ex.getCause());
         }
 
         @Test
         @DisplayName("is a checked exception")
         void isChecked() {
-            // Arrange & Act & Assert
             assertTrue(Exception.class.isAssignableFrom(InvalidStockDataException.class));
             assertFalse(RuntimeException.class.isAssignableFrom(InvalidStockDataException.class));
         }
     }
 
     @Nested
-    @DisplayName("InvalidStockDataException(int lineNumber, String lineContent, String reason)")
-    class ReasonConstructor {
+    @DisplayName("InvalidStockDataException(String i18nKey, Object[] args, Throwable cause)")
+    class CauseConstructor {
 
         @Test
-        @DisplayName("getLineNumber() returns the supplied line number")
-        void lineNumberIsPreserved() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(3, ",Apple,100", "blank symbol");
-            // Assert
-            assertEquals(3, ex.getLineNumber());
-        }
-
-        @Test
-        @DisplayName("getLineContent() returns the supplied line content")
-        void lineContentIsPreserved() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(3, ",Apple,100", "blank symbol");
-            // Assert
-            assertEquals(",Apple,100", ex.getLineContent());
-        }
-
-        @Test
-        @DisplayName("message contains the reason")
-        void messageContainsReason() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(3, ",Apple,100", "blank symbol");
-            // Assert
-            assertTrue(ex.getMessage().contains("blank symbol"));
-        }
-
-        @Test
-        @DisplayName("message contains the line number")
-        void messageContainsLineNumber() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(3, ",Apple,100", "blank symbol");
-            // Assert
-            assertTrue(ex.getMessage().contains("3"));
-        }
-
-        @Test
-        @DisplayName("message contains the line content")
-        void messageContainsLineContent() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(3, ",Apple,100", "blank symbol");
-            // Assert
-            assertTrue(ex.getMessage().contains(",Apple,100"));
-        }
-
-        @Test
-        @DisplayName("message contains reason when reason describes a non-positive price")
-        void messageContainsNonPositivePriceReason() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(
-                    7, "AAPL,Apple,-5", "non-positive price \"-5\"");
-            // Assert
-            assertTrue(ex.getMessage().contains("non-positive price"));
-        }
-
-        @Test
-        @DisplayName("message still contains line number and content when reason is empty")
-        void emptyReasonStillIncludesLineContext() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException(2, "MSFT,Microsoft,0", "");
-            // Assert
-            assertTrue(ex.getMessage().contains("2"));
-            assertTrue(ex.getMessage().contains("MSFT,Microsoft,0"));
-        }
-    }
-
-    @Nested
-    @DisplayName("InvalidStockDataException(String message, Throwable cause)")
-    class ChainingConstructor {
-
-        @Test
-        @DisplayName("getMessage() returns the supplied message")
-        void messageIsPreserved() {
-            // Arrange & Act
+        @DisplayName("getI18nKey() returns the supplied key")
+        void i18nKeyIsPreserved() {
             InvalidStockDataException ex =
-                    new InvalidStockDataException("custom message", null);
-            // Assert
-            assertEquals("custom message", ex.getMessage());
+                    new InvalidStockDataException("error.stock.csv.nonPositivePrice",
+                            new Object[]{"-5", 7, "AAPL,Apple,-5"}, null);
+            assertEquals("error.stock.csv.nonPositivePrice", ex.getI18nKey());
+        }
+
+        @Test
+        @DisplayName("getArgs() returns the supplied arguments")
+        void argsArePreserved() {
+            InvalidStockDataException ex =
+                    new InvalidStockDataException("error.stock.csv.nonPositivePrice",
+                            new Object[]{"-5", 7, "AAPL,Apple,-5"}, null);
+            Object[] args = ex.getArgs();
+            assertEquals("-5", args[0]);
+            assertEquals(7, args[1]);
+            assertEquals("AAPL,Apple,-5", args[2]);
         }
 
         @Test
         @DisplayName("getCause() returns the supplied cause")
         void causeIsPreserved() {
-            // Arrange
             RuntimeException root = new RuntimeException("root");
-            // Act
-            InvalidStockDataException ex = new InvalidStockDataException("msg", root);
-            // Assert
+            InvalidStockDataException ex =
+                    new InvalidStockDataException("error.stock.csv.nonNumericPrice",
+                            new Object[]{"abc", 3, "AAPL,Apple,abc"}, root);
             assertSame(root, ex.getCause());
         }
 
         @Test
         @DisplayName("getCause() is null when no cause is supplied")
         void causeIsNullWhenNotSupplied() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException("msg", null);
-            // Assert
+            InvalidStockDataException ex =
+                    new InvalidStockDataException("error.stock.csv.blankSymbol", new Object[]{1, "BAD"}, null);
             assertNull(ex.getCause());
         }
 
         @Test
-        @DisplayName("getLineNumber() is -1 and getLineContent() is null for chaining constructor")
-        void payloadIsDefaultForChainingConstructor() {
-            // Arrange & Act
-            InvalidStockDataException ex = new InvalidStockDataException("msg", null);
-            // Assert
-            assertEquals(-1, ex.getLineNumber());
-            assertNull(ex.getLineContent());
+        @DisplayName("null args treated as empty")
+        void nullArgsBecomesEmpty() {
+            InvalidStockDataException ex =
+                    new InvalidStockDataException("error.stock.csv.emptyFile", null, null);
+            assertEquals(0, ex.getArgs().length);
         }
     }
 }

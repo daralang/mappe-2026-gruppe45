@@ -90,25 +90,25 @@ class EmptyStockFileExceptionTest {
     }
 
     @Nested
-    @DisplayName("Inherited fields from InvalidStockDataException")
-    class InheritedFields {
+    @DisplayName("i18n key and args")
+    class I18nPayload {
 
         @Test
-        @DisplayName("getLineNumber() is -1 since the error is file-level, not line-level")
-        void lineNumberIsMinusOne() {
+        @DisplayName("getI18nKey() returns the empty-file key")
+        void i18nKeyIsCorrect() {
             // Arrange & Act
             EmptyStockFileException ex = new EmptyStockFileException("/data/stocks.csv");
             // Assert
-            assertEquals(-1, ex.getLineNumber());
+            assertEquals("error.stock.csv.emptyFile", ex.getI18nKey());
         }
 
         @Test
-        @DisplayName("getLineContent() is null since the error is file-level, not line-level")
-        void lineContentIsNull() {
+        @DisplayName("getArgs()[0] is the supplied file path")
+        void argsContainFilePath() {
             // Arrange & Act
             EmptyStockFileException ex = new EmptyStockFileException("/data/stocks.csv");
             // Assert
-            assertNull(ex.getLineContent());
+            assertEquals("/data/stocks.csv", ex.getArgs()[0]);
         }
     }
 }
