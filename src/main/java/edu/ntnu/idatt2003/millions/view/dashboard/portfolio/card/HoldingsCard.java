@@ -9,7 +9,6 @@ import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.util.TableCells;
-import edu.ntnu.idatt2003.millions.view.component.ChevronButton;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.DetailTableCard;
@@ -118,7 +117,7 @@ public class HoldingsCard extends DetailTableCard<Share, HoldingsSort.SortColumn
     protected RowCells<HoldingsSort.SortColumn> buildRowCells(Share item, int rowIndex) {
         Stock stock = item.getStock();
         return RowCells.<HoldingsSort.SortColumn>builder()
-                .put(HoldingsSort.SortColumn.DETAILS, buildDetailsButton(item))
+                .put(HoldingsSort.SortColumn.DETAILS, buildDetailChevron(item))
                 .put(HoldingsSort.SortColumn.ACTIONS, buildActionButtons(item))
                 .put(HoldingsSort.SortColumn.COMPANY,
                         TableCells.data(stock.getSymbol() + ", " + stock.getCompany()))
@@ -229,13 +228,13 @@ public class HoldingsCard extends DetailTableCard<Share, HoldingsSort.SortColumn
     }
 
     /**
-     * Builds the details navigation button for a share row.
+     * Returns the i18n key for the holdings chevron tooltip.
      *
-     * @param share the share to open details for
-     * @return a styled {@link ChevronButton} that opens the share detail modal
+     * @return {@code "tooltip.holdings.chevron"}
      */
-    private ChevronButton buildDetailsButton(Share share) {
-        return new ChevronButton(() -> controller.openDetailsModal(share), "tooltip.holdings.chevron");
+    @Override
+    protected String chevronTooltipKey() {
+        return "tooltip.holdings.chevron";
     }
 
     /**

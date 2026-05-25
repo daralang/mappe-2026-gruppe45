@@ -1,6 +1,8 @@
 package edu.ntnu.idatt2003.millions.view.component.table;
 
 import javafx.scene.Node;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -56,6 +58,20 @@ public final class RowCells<Column> {
      */
     Node get(Column column) {
         return cells.get(column);
+    }
+
+    /**
+     * Returns an unmodifiable view of all nodes in insertion order.
+     *
+     * <p>Used by {@link SortColumnTable} to wire {@code MOUSE_CLICKED} handlers
+     * on non-{@link javafx.scene.control.ButtonBase} nodes so that clicking anywhere
+     * on a data row activates the row's action without conflicting with interactive
+     * cell controls.</p>
+     *
+     * @return an unmodifiable collection of all nodes in this row, in insertion order
+     */
+    Collection<Node> nodes() {
+        return Collections.unmodifiableCollection(cells.values());
     }
 
     /**
