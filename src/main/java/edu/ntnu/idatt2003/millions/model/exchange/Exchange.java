@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.model.exchange;
 
 import edu.ntnu.idatt2003.millions.factory.TransactionFactory;
-import edu.ntnu.idatt2003.millions.file.game.JsonGameFileHandler;
+import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.transaction.Sale;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
@@ -410,7 +410,7 @@ public class Exchange {
 
     /**
      * Reinitializes transient fields after deserialization.
-     * Must be called by {@link JsonGameFileHandler} after loading a game from file,
+     * Must be called by {@link GameFileHandler} after loading a game from file,
      * since Gson does not invoke constructors and transient fields are not restored.
      *
      * @param currencyConverter the converter to use for the loaded game session
