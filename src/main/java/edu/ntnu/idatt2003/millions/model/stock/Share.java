@@ -36,14 +36,14 @@ public class Share {
      * @param quantity      the number of shares purchased
      * @param purchasePrice the price per share at time of purchase
      * @throws NullPointerException     if the stock, quantity, or purchase price is null
-     * @throws IllegalArgumentException if the quantity is negative
+     * @throws IllegalArgumentException if the quantity is not greater than zero
      * @throws IllegalArgumentException if the purchase price is negative
      */
     public Share(Stock stock, BigDecimal quantity, BigDecimal purchasePrice) {
         Objects.requireNonNull(stock, "Stock cannot be null");
         Objects.requireNonNull(quantity, "Quantity cannot be null");
         Objects.requireNonNull(purchasePrice, "Purchase price cannot be null");
-        if (quantity.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Quantity cannot be negative");
+        if (quantity.compareTo(BigDecimal.ZERO) <= 0) throw new IllegalArgumentException("Quantity must be positive");
         if (purchasePrice.compareTo(BigDecimal.ZERO) < 0)
             throw new IllegalArgumentException("Purchase price cannot be negative");
 

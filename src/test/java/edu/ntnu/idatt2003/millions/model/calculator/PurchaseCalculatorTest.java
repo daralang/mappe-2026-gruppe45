@@ -70,17 +70,6 @@ class PurchaseCalculatorTest {
             assertBigDecimalEquals(expected, calculated);
         }
 
-        @Test
-        @DisplayName("Should return zero when quantity is zero")
-        void returnsZeroWhenQuantityIsZero() {
-            // Arrange
-            Share zeroShare = new Share(
-                    new Stock("DCL", "Dara Inc", new ArrayList<>(List.of(new BigDecimal("70")))),
-                    new BigDecimal("0"), new BigDecimal("30"));
-            PurchaseCalculator zeroCalculator = new PurchaseCalculator(zeroShare);
-            // Act & Assert
-            assertBigDecimalEquals(BigDecimal.ZERO, zeroCalculator.calculateGross());
-        }
     }
 
     @Nested
@@ -129,16 +118,5 @@ class PurchaseCalculatorTest {
             assertBigDecimalEquals(expected, calculated);
         }
 
-        @Test
-        @DisplayName("Should return zero when quantity is zero")
-        void returnsZeroWhenQuantityIsZero() {
-            // Arrange
-            Share zeroShare = new Share(
-                    new Stock("DCL", "Dara Inc", new ArrayList<>(List.of(new BigDecimal("70")))),
-                    new BigDecimal("0"), new BigDecimal("30"));
-            PurchaseCalculator zeroCalculator = new PurchaseCalculator(zeroShare);
-            // Act & Assert
-            assertBigDecimalEquals(BigDecimal.ZERO, zeroCalculator.calculateTotal());
-        }
     }
 }
