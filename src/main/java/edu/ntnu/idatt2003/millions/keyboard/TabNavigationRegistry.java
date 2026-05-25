@@ -8,7 +8,7 @@ import java.util.function.IntConsumer;
  */
 public final class TabNavigationRegistry {
 
-    private IntConsumer active;
+    private final ActiveRegistry<IntConsumer> registry = new ActiveRegistry<>();
 
     /**
      * Registers the given navigator as the active tab handler.
@@ -18,7 +18,7 @@ public final class TabNavigationRegistry {
      *                  zero-based index, or {@code null}
      */
     public void setActive(IntConsumer navigator) {
-        this.active = navigator;
+        registry.setActive(navigator);
     }
 
     /**
@@ -28,8 +28,6 @@ public final class TabNavigationRegistry {
      * @param index the zero-based index of the tab to select
      */
     public void selectTab(int index) {
-        if (active != null) {
-            active.accept(index);
-        }
+        registry.ifActive(navigator -> navigator.accept(index));
     }
 }
