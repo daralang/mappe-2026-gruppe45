@@ -1,9 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
 import javafx.scene.Node;
-import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
@@ -12,23 +10,15 @@ import javafx.scene.input.KeyEvent;
  * which descendant currently holds keyboard focus.
  *
  * <p>JavaFX only scrolls a {@link ScrollPane} with the arrow keys when the pane
- * itself is the focus owner; when focus sits on a child, UP/DOWN trigger
- * directional focus traversal instead. This pane installs a capture-phase
- * {@link KeyEvent#KEY_PRESSED} filter so UP/DOWN scroll the viewport and are
- * consumed before traversal can move focus.</p>
- *
- * <p>A focusable node that handles UP/DOWN itself (e.g. a navigable table row)
- * can opt out of scrolling by putting {@link #VERTICAL_KEYS_HANDLED} in its
- * {@link Node#getProperties()}; this pane then leaves the keys for that node.</p>
+ * itself is the focus owner; when focus sits on a child, UP/DOWN otherwise trigger
+ * directional focus traversal. This pane installs a bubble-phase
+ * {@link KeyEvent#KEY_PRESSED} handler: the focused node gets the event first, so a
+ * control that uses UP/DOWN itself (a navigable table row, a combo box, a text
+ * area) can consume it before it reaches this pane. Any UP/DOWN that is left
+ * unconsumed bubbles up here, scrolls the viewport, and is consumed so it never
+ * falls through to focus traversal.</p>
  */
 public final class KeyboardScrollPane extends ScrollPane {
-
-    /**
-     * Property key a focus owner can set to {@code Boolean.TRUE} in its
-     * {@link Node#getProperties()} to signal that it handles UP/DOWN itself,
-     * so this pane should not scroll on those keys while it is focused.
-     */
-    public static final String VERTICAL_KEYS_HANDLED = "millions.verticalKeysHandled";
 
     private static final double SCROLL_STEP_PX = 40;
 
@@ -44,12 +34,12 @@ public final class KeyboardScrollPane extends ScrollPane {
         setHbarPolicy(ScrollBarPolicy.NEVER);
         setVbarPolicy(ScrollBarPolicy.ALWAYS);
         getStyleClass().add("content-scroll");
-        addEventFilter(KeyEvent.KEY_PRESSED, this::handleVerticalScroll);
+        addEventHandler(KeyEvent.KEY_PRESSED, this::handleVerticalScroll);
     }
 
     /**
-     * Scrolls on UP/DOWN unless focus is in a text or combo input, consuming the
-     * event so it does not fall through to focus traversal.
+     * Scrolls the viewport on any UP/DOWN that bubbled up unconsumed, and consumes
+     * the event so it does not fall through to focus traversal.
      *
      * @param event the key event
      */
@@ -58,31 +48,8 @@ public final class KeyboardScrollPane extends ScrollPane {
         if (code != KeyCode.UP && code != KeyCode.DOWN) {
             return;
         }
-        if (focusOwnerHandlesVerticalKeys()) {
-            return;
-        }
         scrollBy(code == KeyCode.UP ? -SCROLL_STEP_PX : SCROLL_STEP_PX);
         event.consume();
-    }
-
-    /**
-     * Returns {@code true} when the current focus owner uses UP/DOWN itself, so
-     * this pane should not steal the keys: text inputs, combo boxes, and any node
-     * that has opted out via {@link #VERTICAL_KEYS_HANDLED}.
-     *
-     * @return whether the focus owner handles vertical keys
-     */
-    private boolean focusOwnerHandlesVerticalKeys() {
-        if (getScene() == null) {
-            return false;
-        }
-        Node focused = getScene().getFocusOwner();
-        if (focused == null) {
-            return false;
-        }
-        return focused instanceof TextInputControl
-                || focused instanceof ComboBoxBase<?>
-                || Boolean.TRUE.equals(focused.getProperties().get(VERTICAL_KEYS_HANDLED));
     }
 
     /**

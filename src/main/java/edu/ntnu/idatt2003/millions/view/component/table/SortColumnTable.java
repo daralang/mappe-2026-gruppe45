@@ -3,9 +3,9 @@ package edu.ntnu.idatt2003.millions.view.component.table;
 import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.TableCells;
-import edu.ntnu.idatt2003.millions.view.component.KeyboardScrollPane;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.geometry.VPos;
@@ -26,10 +26,11 @@ import java.util.function.Supplier;
  * for data fetching, filtering, sorting and cell construction.</p>
  *
  * <p>Data rows form a keyboard grid: each row's focus anchor is focus-traversable
- * and shows a focus highlight. UP/DOWN move focus between rows (clamped at the
- * ends) and scroll the focused row into view. The anchor opts out of page scrolling via
- * {@link KeyboardScrollPane#VERTICAL_KEYS_HANDLED}, so the arrow keys navigate rows
- * instead of scrolling the surrounding view.</p>
+ * and shows a focus highlight. UP/DOWN move focus between rows and scroll the
+ * focused row into view, consuming the keys so they navigate rows rather than
+ * scrolling the surrounding view. At the first row (UP) and last row (DOWN) the
+ * key is left unconsumed so it bubbles to the enclosing scroll pane, letting the
+ * page scroll past the table.</p>
  *
  * @param <Column> the sort-column enum type; use a wildcard or {@code Object}
  *                 when no column is sortable
@@ -47,7 +48,6 @@ public class SortColumnTable<Column> {
     private final RowScroller rowScroller = new RowScroller();
     private final List<NavigableRow> rows = new ArrayList<>();
     private final ArrowKeyNavigator rowNavigator = new ArrowKeyNavigator(
-            ArrowKeyNavigator.Orientation.VERTICAL,
             rows::size,
             index -> {
                 Node anchor = rows.get(index).anchor();
@@ -182,8 +182,8 @@ public class SortColumnTable<Column> {
      * Wires an already-inserted row into the keyboard grid: registers it as a
      * {@link NavigableRow}, binds the focus highlight, scrolls it into view on
      * focus, and delegates UP/DOWN/Enter/Space to the shared {@link ArrowKeyNavigator}.
-     * The anchor is flagged with {@link KeyboardScrollPane#VERTICAL_KEYS_HANDLED}
-     * so the surrounding scroll pane yields UP/DOWN to row navigation.
+     * At the first row (UP) and last row (DOWN) the key is left unconsumed so it
+     * bubbles to the enclosing scroll pane, letting the page scroll past the table.
      *
      * @param gridRow     the grid row the cells were written to
      * @param focusAnchor the node focused when this row is reached
@@ -192,9 +192,11 @@ public class SortColumnTable<Column> {
     private void registerSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter) {
         int index = rows.size();
         rows.add(new NavigableRow(focusAnchor, onEnter));
-        focusAnchor.getProperties().put(KeyboardScrollPane.VERTICAL_KEYS_HANDLED, Boolean.TRUE);
         rowHighlighter.bindFocus(gridRow, focusAnchor);
         focusAnchor.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (isPastEdge(event.getCode(), index)) {
+                return;
+            }
             rowNavigator.syncIndex(index);
             if (rowNavigator.navigate(event)) {
                 event.consume();
@@ -205,6 +207,43 @@ public class SortColumnTable<Column> {
                 rowScroller.ensureVisible(focusAnchor);
             }
         });
+    }
+
+    /**
+     * Returns {@code true} when the key would move past the table's edge: UP on the
+     * first row or DOWN on the last row. Such keys are left unconsumed so the
+     * enclosing scroll pane can scroll the page past the table.
+     *
+     * @param code  the pressed key code
+     * @param index the index of the focused row
+     * @return whether the key moves past the first or last row
+     */
+    private boolean isPastEdge(KeyCode code, int index) {
+        return (code == KeyCode.UP && index == 0)
+                || (code == KeyCode.DOWN && index == rows.size() - 1);
+    }
+
+    /**
+     * Moves keyboard focus to the first navigable row, if any, and scrolls it
+     * into view. Used to let a search field hand focus to the results on DOWN.
+     *
+     * <p>Returns whether the handoff actually happened, so callers such as
+     * {@link edu.ntnu.idatt2003.millions.view.component.SearchBar} can decide
+     * whether to consume the DOWN key: when the table is empty there is no row to
+     * focus, and the key should be left unconsumed so it bubbles to the enclosing
+     * {@link edu.ntnu.idatt2003.millions.view.component.KeyboardScrollPane} and
+     * scrolls the page instead of being trapped in the search field.</p>
+     *
+     * @return {@code true} if a row received focus; {@code false} if there are no rows
+     */
+    public boolean focusFirstRow() {
+        if (rows.isEmpty()) {
+            return false;
+        }
+        Node first = rows.get(0).anchor();
+        first.requestFocus();
+        rowScroller.ensureVisible(first);
+        return true;
     }
 
     /**

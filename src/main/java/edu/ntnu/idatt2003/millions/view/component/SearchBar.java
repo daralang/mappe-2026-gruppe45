@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 /**
@@ -30,6 +31,8 @@ public class SearchBar extends VBox {
 
     private final String placeholderKey;
     private final String buttonKey;
+
+    private BooleanSupplier onArrowDown;
 
     /**
      * Creates a search bar with localized text.
@@ -91,6 +94,10 @@ public class SearchBar extends VBox {
                 setClearVisible(false);
                 searchField.getParent().requestFocus();
                 event.consume();
+            } else if (event.getCode() == KeyCode.DOWN && onArrowDown != null) {
+                if (onArrowDown.getAsBoolean()) {
+                    event.consume();
+                }
             }
         });
 
@@ -126,6 +133,18 @@ public class SearchBar extends VBox {
      */
     public void focus() {
         searchField.requestFocus();
+    }
+
+    /**
+     * Sets the action run when the user presses DOWN in the search field, used to
+     * move focus out of the field and into the results below. Pass {@code null}
+     * to disable.
+     *
+     * @param action the action to run on DOWN, returning whether it handled the key,
+     *               or {@code null} to disable
+     */
+    public void setOnArrowDown(BooleanSupplier action) {
+        this.onArrowDown = action;
     }
 
     /**
