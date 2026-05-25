@@ -1,9 +1,10 @@
 package edu.ntnu.idatt2003.millions.view.leaderboard;
 
+import edu.ntnu.idatt2003.millions.keyboard.PageFocusProvider;
+import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.leaderboard.card.LeaderboardCard;
@@ -21,7 +22,7 @@ import javafx.scene.layout.VBox;
  * via {@link edu.ntnu.idatt2003.millions.observer.GameObserver} callbacks wired
  * inside the card.</p>
  */
-public class LeaderboardView extends VBox implements SearchFocusProvider {
+public class LeaderboardView extends VBox implements SearchFocusProvider, PageFocusProvider {
 
     private final LeaderboardCard card;
 
@@ -57,5 +58,13 @@ public class LeaderboardView extends VBox implements SearchFocusProvider {
     @Override
     public void focusSearch() {
         card.focusSearch();
+    }
+
+    /**
+     * Focuses the search field as the keyboard entry point for this page.
+     */
+    @Override
+    public void focusPageEntry() {
+        focusSearch();
     }
 }

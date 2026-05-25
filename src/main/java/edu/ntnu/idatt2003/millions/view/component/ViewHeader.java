@@ -93,6 +93,15 @@ public class ViewHeader extends VBox {
     }
 
     /**
+     * Requests keyboard focus on the currently active tab button, if present.
+     */
+    public void focusActiveTab() {
+        if (activeButton != null) {
+            activeButton.requestFocus();
+        }
+    }
+
+    /**
      * Updates all text elements to the current language.
      * Called automatically when the language changes.
      */

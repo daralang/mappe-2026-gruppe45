@@ -1,9 +1,10 @@
 package edu.ntnu.idatt2003.millions.view.exchange;
 
 import edu.ntnu.idatt2003.millions.controller.TradeController;
+import edu.ntnu.idatt2003.millions.keyboard.PageFocusProvider;
+import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.ExchangeOverview;
@@ -18,7 +19,7 @@ import java.util.List;
  * Contains a tab bar for navigating between overview and stocks.
  * Tab navigation is purely visual state and handled internally by this view.
  */
-public class ExchangeView extends VBox implements SearchFocusProvider {
+public class ExchangeView extends VBox implements SearchFocusProvider, PageFocusProvider {
 
     private final GameService gameService;
     private final TradeController controller;
@@ -92,6 +93,14 @@ public class ExchangeView extends VBox implements SearchFocusProvider {
         if (activeTabProvider != null) {
             activeTabProvider.focusSearch();
         }
+    }
+
+    /**
+     * Focuses the active exchange tab as the keyboard entry point for this page.
+     */
+    @Override
+    public void focusPageEntry() {
+        viewHeader.focusActiveTab();
     }
 
     private void showOverview() {
