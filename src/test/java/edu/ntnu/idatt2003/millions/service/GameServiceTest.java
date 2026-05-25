@@ -171,7 +171,7 @@ class GameServiceTest {
             newGameService.createNewGame("Dara", STARTING_MONEY, stockFile);
             // Assert
             assertEquals("Dara", newGameService.getPlayer().getName());
-            assertEquals(0, STARTING_MONEY.compareTo(newGameService.getPlayer().getMoney()));
+            assertEquals(0, STARTING_MONEY.compareTo(newGameService.getPlayer().getCash()));
             assertEquals("MainExchange", newGameService.getExchange().getName());
             assertTrue(newGameService.getExchange().hasStock("AAPL"));
             assertTrue(newGameService.getExchange().hasStock("MSFT"));
@@ -190,7 +190,7 @@ class GameServiceTest {
             newGameService.createNewGame("Dara", STARTING_MONEY);
             // Assert
             assertEquals("Dara", newGameService.getPlayer().getName());
-            assertEquals(0, STARTING_MONEY.compareTo(newGameService.getPlayer().getMoney()));
+            assertEquals(0, STARTING_MONEY.compareTo(newGameService.getPlayer().getCash()));
             assertEquals("MainExchange", newGameService.getExchange().getName());
             assertTrue(newGameService.getExchange().hasStock("NVDA"));
             assertTrue(newGameService.getExchange().hasStock("AAPL"));
@@ -279,7 +279,7 @@ class GameServiceTest {
             // Assert: 5 * 100 USD * 1.005 commission = 502.50 USD; * 9.21 NOK/USD = 4628.0250 NOK
             BigDecimal expectedRemaining = STARTING_MONEY.subtract(new BigDecimal("4628.0250"));
             assertEquals(0,
-                    expectedRemaining.compareTo(newGameService.getPlayer().getMoney()));
+                    expectedRemaining.compareTo(newGameService.getPlayer().getCash()));
             assertEquals(usd,
                     newGameService.getExchange().getStock("AAPL").getCurrency());
         }
@@ -370,7 +370,7 @@ class GameServiceTest {
             assertEquals(1, observer.updateCount);
             assertEquals(0, STARTING_MONEY.subtract(STOCK_PRICE.multiply(QUANTITY))
                     .subtract(PURCHASE_COMMISSION)
-                    .compareTo(gameService.getPlayer().getMoney()));
+                    .compareTo(gameService.getPlayer().getCash()));
         }
     }
 
@@ -394,7 +394,7 @@ class GameServiceTest {
             assertEquals(1, observer.updateCount);
             assertEquals(0, STARTING_MONEY.subtract(PURCHASE_COMMISSION)
                     .subtract(SALE_COMMISSION)
-                    .compareTo(gameService.getPlayer().getMoney()));
+                    .compareTo(gameService.getPlayer().getCash()));
         }
     }
 
@@ -446,14 +446,14 @@ class GameServiceTest {
             gameService.takeLoan(offer, new BigDecimal("500.00"));
             Share share = buyAndGetShare();
             BigDecimal obligations = gameService.getPlayer().getTotalObligationsThisWeek(nextWeek());
-            BigDecimal moneyBefore = gameService.getPlayer().getMoney();
+            BigDecimal moneyBefore = gameService.getPlayer().getCash();
             BigDecimal netNok = SalesCalculator.calculateNetNok(share, gameService.getCurrencyConverter());
             // Act
             gameService.executeForcedSale(List.of(share), nextWeek());
             // Assert — portfolio empty, cash = previous + net sale - obligations
             assertTrue(gameService.getPlayer().getPortfolio().getShares("EQNR").isEmpty());
             BigDecimal expectedMoney = moneyBefore.add(netNok).subtract(obligations);
-            assertEquals(0, expectedMoney.compareTo(gameService.getPlayer().getMoney()));
+            assertEquals(0, expectedMoney.compareTo(gameService.getPlayer().getCash()));
         }
 
         @Test
@@ -494,7 +494,7 @@ class GameServiceTest {
                     new BigDecimal("50000.00"), LoanRiskLevel.HIGH);
             gameService.takeLoan(bigRate, new BigDecimal("4000.00"));
             Share share = buyAndGetShare();
-            BigDecimal moneyBefore = gameService.getPlayer().getMoney();
+            BigDecimal moneyBefore = gameService.getPlayer().getCash();
             int weekBefore = gameService.getExchange().getWeek();
             int nw = nextWeek();
             // Act
@@ -503,7 +503,7 @@ class GameServiceTest {
             } catch (InsufficientSaleProceedsException ignored) {}
             // Assert — no state changed
             assertEquals(weekBefore, gameService.getExchange().getWeek());
-            assertEquals(0, moneyBefore.compareTo(gameService.getPlayer().getMoney()));
+            assertEquals(0, moneyBefore.compareTo(gameService.getPlayer().getCash()));
             assertFalse(gameService.getPlayer().getPortfolio().getShares("EQNR").isEmpty());
         }
 
@@ -591,11 +591,11 @@ class GameServiceTest {
                     new BigDecimal("50000.00"), LoanRiskLevel.LOW);
             BigDecimal principal = new BigDecimal("200.00");
             gameService.takeLoan(shortOffer, principal);
-            BigDecimal moneyAfterLoan = gameService.getPlayer().getMoney(); // starting + principal
+            BigDecimal moneyAfterLoan = gameService.getPlayer().getCash(); // starting + principal
             BigDecimal interest = principal.multiply(new BigDecimal("0.01")).setScale(2, java.math.RoundingMode.HALF_UP);
             gameService.advanceWeek();
             BigDecimal expectedMoney = moneyAfterLoan.subtract(interest).subtract(principal);
-            assertEquals(0, expectedMoney.compareTo(gameService.getPlayer().getMoney()));
+            assertEquals(0, expectedMoney.compareTo(gameService.getPlayer().getCash()));
         }
     }
 
@@ -721,13 +721,13 @@ class GameServiceTest {
             assertFalse(gameService.getPlayer().getPortfolio().getShares().isEmpty(),
                     "player must own shares before sell-all");
 
-            BigDecimal moneyBeforeSell = gameService.getPlayer().getMoney();
+            BigDecimal moneyBeforeSell = gameService.getPlayer().getCash();
 
             gameService.sellAllAndExit();
 
             assertTrue(gameService.getPlayer().getPortfolio().getShares().isEmpty(),
                     "portfolio must be empty after sell-all");
-            assertTrue(gameService.getPlayer().getMoney().compareTo(moneyBeforeSell) > 0,
+            assertTrue(gameService.getPlayer().getCash().compareTo(moneyBeforeSell) > 0,
                     "money must increase after liquidation");
             assertEquals(1, lbService.getAllEntries().size());
             assertEquals(Outcome.RETIRED, lbService.getAllEntries().get(0).outcome());

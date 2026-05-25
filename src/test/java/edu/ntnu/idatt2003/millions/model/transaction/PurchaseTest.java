@@ -143,12 +143,12 @@ class PurchaseTest {
         @DisplayName("Should deduct total cost from player balance after commit")
         void deductsTotalCostFromBalance() {
             // Arrange
-            BigDecimal balanceBefore = player.getMoney();
+            BigDecimal balanceBefore = player.getCash();
             BigDecimal expectedBalance = balanceBefore.subtract(purchase.getCalculator().calculateTotal());
             // Act
             purchase.commit(player);
             // Assert
-            assertEquals(0, expectedBalance.compareTo(player.getMoney()));
+            assertEquals(0, expectedBalance.compareTo(player.getCash()));
         }
 
         @Test
@@ -178,12 +178,12 @@ class PurchaseTest {
         void doesNotChangeBalanceWhenInsufficientFunds() {
             // Arrange
             Player poorPlayer = new Player("Dara", new BigDecimal("100.00"));
-            BigDecimal balanceBefore = poorPlayer.getMoney();
+            BigDecimal balanceBefore = poorPlayer.getCash();
             // Act
             assertThrows(IllegalArgumentException.class, () ->
                     purchase.commit(poorPlayer));
             // Assert
-            assertEquals(0, balanceBefore.compareTo(poorPlayer.getMoney()));
+            assertEquals(0, balanceBefore.compareTo(poorPlayer.getCash()));
         }
 
         @Test

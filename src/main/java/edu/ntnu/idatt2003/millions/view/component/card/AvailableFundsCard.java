@@ -32,7 +32,7 @@ public class AvailableFundsCard extends SimpleWidgetCard {
     public AvailableFundsCard(GameService gameService, String titleKey, String subtitleKey) {
         super(gameService,
                 titleKey,
-                () -> CurrencyFormatter.format(gameService.getPlayer().getMoney()),
+                () -> CurrencyFormatter.format(gameService.getPlayer().getCash()),
                 subtitleKey != null ? () -> LanguageManager.get(subtitleKey) : null);
     }
 }

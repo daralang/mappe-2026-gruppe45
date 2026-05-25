@@ -55,7 +55,7 @@ public class LoanController {
         Player player = gameService.getPlayer();
         int currentWeek = gameService.getExchange().getWeek();
         RepayLoanDialog[] ref = new RepayLoanDialog[1];
-        ref[0] = new RepayLoanDialog(loan, loanIndex, player.getMoney(), currentWeek,
+        ref[0] = new RepayLoanDialog(loan, loanIndex, player.getCash(), currentWeek,
                 validateRepay(loan));
         ref[0].setOnConfirm(l -> handleRepayConfirm(ref[0], l, loanIndex));
         ref[0].show();
@@ -102,7 +102,7 @@ public class LoanController {
      * Returns empty if allowed; present with an i18n error key if not.
      */
     private Optional<String> validateRepay(Loan loan) {
-        if (gameService.getPlayer().getMoney().compareTo(loan.principal()) < 0) {
+        if (gameService.getPlayer().getCash().compareTo(loan.principal()) < 0) {
             return Optional.of("loans.repay.error.insufficientFunds");
         }
         return Optional.empty();
@@ -119,11 +119,11 @@ public class LoanController {
 
     private void handleRepayConfirm(RepayLoanDialog dialog, Loan loan, int loanIndex) {
         try {
-            BigDecimal balanceBefore = gameService.getPlayer().getMoney();
+            BigDecimal balanceBefore = gameService.getPlayer().getCash();
             int week = gameService.getExchange().getWeek();
             gameService.repayLoan(loan);
             dialog.close();
-            BigDecimal balanceAfter = gameService.getPlayer().getMoney();
+            BigDecimal balanceAfter = gameService.getPlayer().getCash();
             Platform.runLater(() ->
                     new LoanRepaymentReceipt(loan, loanIndex, balanceBefore, balanceAfter, week).show());
         } catch (IllegalArgumentException e) {

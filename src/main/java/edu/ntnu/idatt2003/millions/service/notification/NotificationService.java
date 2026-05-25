@@ -109,10 +109,10 @@ public class NotificationService {
             return;
         }
 
-        boolean isLow = player.getMoney().compareTo(nextObligation) < 0;
+        boolean isLow = player.getCash().compareTo(nextObligation) < 0;
 
         if (isLow && !player.wasLowOnCash()) {
-            BigDecimal shortfall = nextObligation.subtract(player.getMoney());
+            BigDecimal shortfall = nextObligation.subtract(player.getCash());
             push(player, Severity.WARNING,
                     "notification.lowCash.title",
                     "notification.lowCash.body",
