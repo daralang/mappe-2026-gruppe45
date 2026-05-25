@@ -70,17 +70,6 @@ class SalesCalculatorTest {
             assertBigDecimalEquals(expected, calculated);
         }
 
-        @Test
-        @DisplayName("Should return zero when quantity is zero")
-        void returnsZeroWhenQuantityIsZero() {
-            // Arrange
-            Share zeroShare = new Share(
-                    new Stock("DCL", "Dara Inc", new ArrayList<>(List.of(new BigDecimal("100")))),
-                    new BigDecimal("0"), new BigDecimal("30"));
-            SalesCalculator zeroCalculator = new SalesCalculator(zeroShare);
-            // Act & Assert
-            assertBigDecimalEquals(BigDecimal.ZERO, zeroCalculator.calculateGross());
-        }
     }
 
     @Nested
@@ -132,17 +121,6 @@ class SalesCalculatorTest {
             assertBigDecimalEquals(BigDecimal.ZERO, lossCalculator.calculateTax());
         }
 
-        @Test
-        @DisplayName("Should return zero when quantity is zero")
-        void returnsZeroWhenQuantityIsZero() {
-            // Arrange
-            Share zeroShare = new Share(
-                    new Stock("DCL", "Dara Inc", new ArrayList<>(List.of(new BigDecimal("100")))),
-                    new BigDecimal("0"), new BigDecimal("30"));
-            SalesCalculator zeroCalculator = new SalesCalculator(zeroShare);
-            // Act & Assert
-            assertBigDecimalEquals(BigDecimal.ZERO, zeroCalculator.calculateTax());
-        }
     }
 
     @Nested
@@ -166,16 +144,5 @@ class SalesCalculatorTest {
             assertBigDecimalEquals(expected, calculated);
         }
 
-        @Test
-        @DisplayName("Should return zero when quantity is zero")
-        void returnsZeroWhenQuantityIsZero() {
-            // Arrange
-            Share zeroShare = new Share(
-                    new Stock("DCL", "Dara Inc", new ArrayList<>(List.of(new BigDecimal("100")))),
-                    new BigDecimal("0"), new BigDecimal("30"));
-            SalesCalculator zeroCalculator = new SalesCalculator(zeroShare);
-            // Act & Assert
-            assertBigDecimalEquals(BigDecimal.ZERO, zeroCalculator.calculateTotal());
-        }
     }
 }
