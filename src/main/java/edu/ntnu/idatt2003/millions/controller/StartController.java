@@ -14,6 +14,7 @@ import edu.ntnu.idatt2003.millions.view.titlebar.TitleBarFactory;
 import java.io.File;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
@@ -232,7 +233,12 @@ public class StartController {
         try {
             new JsonGameFileHandler().loadGame(file);
             successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
-        } catch (GameSaveCorruptException | UncheckedIOException e) {
+        } catch (GameSaveCorruptException e) {
+            inputs.setSaveFilePath("");
+            final String key = e.getI18nKey();
+            final Object[] args = e.getArgs();
+            errorSink.accept(() -> MessageFormat.format(LanguageManager.get(key), args));
+        } catch (UncheckedIOException e) {
             inputs.setSaveFilePath("");
             errorSink.accept(e::getMessage);
         }
@@ -341,17 +347,20 @@ public class StartController {
 
     /**
      * Runs the given action and translates expected game errors to a user-facing
-     * error dialog. Catches the specific exception types that the start flow can
-     * legitimately produce: input validation failures, missing game state, and
-     * file I/O errors. Programming errors such as {@link NullPointerException}
-     * are intentionally not caught so they surface during development.
+     * error dialog. Known start-flow exceptions (input validation failures, missing
+     * game state, file I/O errors) show a specific message; unrecognized exceptions
+     * fall back to a generic error.
      *
      * @param action the start-flow action to execute
      */
     private void runOrShowError(GameAction action) {
         try {
             action.execute();
-        } catch (GameSaveCorruptException | InvalidStockDataException | IllegalArgumentException
+        } catch (GameSaveCorruptException exception) {
+            final String key = exception.getI18nKey();
+            final Object[] args = exception.getArgs();
+            errorSink.accept(() -> MessageFormat.format(LanguageManager.get(key), args));
+        } catch (InvalidStockDataException | IllegalArgumentException
                  | IllegalStateException | UncheckedIOException exception) {
             errorSink.accept(exception::getMessage);
         } catch (Exception _) {
