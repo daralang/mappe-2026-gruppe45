@@ -6,7 +6,7 @@ import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
+import edu.ntnu.idatt2003.millions.view.component.card.DetailTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort;
@@ -18,13 +18,10 @@ import java.util.List;
 
 /**
  * Market card with controls for searching, sorting, and paginating stocks listed on the exchange.
- * Extends {@link SortableTableCard} for shared pagination, search, sort state, and refresh algorithm.
- *
- * <p>Column structure and sort state are owned by {@link SortColumnTable};
- * domain-specific sort logic is delegated to {@link StocksSort};
- * row rendering is delegated to {@link StocksRowRenderer}.</p>
+ * Extends {@link DetailTableCard} for shared pagination, search, sort state, refresh algorithm,
+ * and row-activation routing to {@link #openDetail(Stock)}.
  */
-public class StocksCard extends SortableTableCard<Stock, StocksSort.SortColumn> {
+public class StocksCard extends DetailTableCard<Stock, StocksSort.SortColumn> {
 
     private static final int PAGE_SIZE = 20;
     private static final double ROW_HEIGHT = 34.0;
@@ -41,7 +38,7 @@ public class StocksCard extends SortableTableCard<Stock, StocksSort.SortColumn> 
      * @param controller  the controller used to open buy/sell dialogs
      */
     public StocksCard(GameService gameService, TradeController controller) {
-        super(gameService, PAGE_SIZE, "exchange.stocks.status", "exchange.stocks.empty");
+        super(gameService, controller, PAGE_SIZE, "exchange.stocks.status", "exchange.stocks.empty");
         this.gameService = gameService;
         this.sort = new StocksSort(
                 gameService.getCurrencyConverter(),
@@ -54,8 +51,7 @@ public class StocksCard extends SortableTableCard<Stock, StocksSort.SortColumn> 
                     } else {
                         gameService.addToWatchlist(symbol);
                     }
-                },
-                controller::openStockDetail);
+                });
         this.table = new SortColumnTable<>(sort::getColumnDefs, 10);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         this.title = StyledText.sectionTitle(LanguageManager.get("exchange.stocks.market"));
@@ -85,7 +81,8 @@ public class StocksCard extends SortableTableCard<Stock, StocksSort.SortColumn> 
 
     @Override
     protected RowCells<StocksSort.SortColumn> buildRowCells(Stock item, int rowIndex) {
-        return rowRenderer.buildRow(item);
+        return rowRenderer.buildRow(item)
+                .put(StocksSort.SortColumn.DETAILS, buildDetailChevron(item));
     }
 
     @Override
@@ -94,6 +91,17 @@ public class StocksCard extends SortableTableCard<Stock, StocksSort.SortColumn> 
             return LanguageManager.get("exchange.stocks.empty");
         }
         return MessageFormat.format(LanguageManager.get("exchange.stocks.empty.search"), term);
+    }
+
+    /**
+     * Opens the stock detail modal for the given stock. Whenever the user
+     * activates a row via keyboard or mouse click on a data cell.
+     *
+     * @param item the stock to show details for
+     */
+    @Override
+    protected void openDetail(Stock item) {
+        controller.openStockDetail(item);
     }
 
     /**
