@@ -349,13 +349,15 @@ public class Player {
      * Deducts one week's interest for every active loan from the player's
      * cash balance and records an INTEREST ledger entry for each loan.
      *
-     * <p>If the balance is insufficient to cover the full amount, the balance
-     * is reduced to zero and the unpaid shortfall is returned so the caller
-     * can trigger forced share sales. The ledger entries always record the
-     * full owed amount regardless of whether the player could cover it;
-     * the forced-sale flow that handles shortfalls is tracked separately.</p>
+     * <p>This method assumes the caller has already verified the player can
+     * cover the obligation — see
+     * {@link #canCoverObligationsThisWeek(int)} and the dispatch logic in
+     * the controller layer. When the player cannot cover obligations from
+     * cash alone, the forced-sale flow runs instead via
+     * {@link edu.ntnu.idatt2003.millions.service.GameService#executeForcedSale}.
      *
-     * @param week the game week in which interest is collected; used for ledger entries
+     * @param week the game week in which interest is collected;
+     *             used for ledger entries
      */
     public void collectWeeklyInterest(int week) {
         List<Loan> loans = activeLoansInternal();
