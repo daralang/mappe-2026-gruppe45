@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.exchange;
 
 import java.math.BigDecimal;
@@ -5,11 +6,8 @@ import java.math.BigDecimal;
 /**
  * Strategy interface for computing the next sales price of a stock.
  *
- * <p>Implementations define a pricing model (for example a random walk or a
- * trend-based model, without coupling the model to {@link Exchange}).
- * The interface is FunctionalInterface-annotated, so implementations
- * may be supplied as lambdas where deterministic behaviour is needed (e.g. in tests)</p>
- *
+ * <p>Implementations define a pricing model (for example a random walk or a trend-based model).
+ * May be supplied as a lambda for deterministic behaviour in tests.</p>
  */
 @FunctionalInterface
 public interface PriceSimulator {
