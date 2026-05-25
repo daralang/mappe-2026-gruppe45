@@ -44,7 +44,8 @@ public final class StockHistoryService {
      * @param converter the converter used for the NOK column; must not be {@code null}
      * @return up to four {@link WeeklyPriceChange} rows, newest first, or an empty list
      *         when fewer than two prices exist (no change has occurred yet)
-     * @throws NullPointerException if {@code stock} or {@code converter} is {@code null}
+     * @throws NullPointerException     if {@code stock} or {@code converter} is {@code null}
+     * @throws IllegalArgumentException if the stock's currency cannot be converted to NOK
      */
     public List<WeeklyPriceChange> getRecentWeeklyChanges(Stock stock, CurrencyConverter converter) {
         return getRecentWeeklyChanges(stock, converter, DEFAULT_MAX_ROWS);
@@ -58,7 +59,8 @@ public final class StockHistoryService {
      * @param maxRows   the maximum number of rows to return; must be greater than zero
      * @return up to {@code maxRows} {@link WeeklyPriceChange} rows, newest first
      * @throws NullPointerException     if {@code stock} or {@code converter} is {@code null}
-     * @throws IllegalArgumentException if {@code maxRows} is not greater than zero
+     * @throws IllegalArgumentException if {@code maxRows} is not greater than zero, or if the
+     *                                  stock's currency cannot be converted to NOK
      */
     public List<WeeklyPriceChange> getRecentWeeklyChanges(Stock stock, CurrencyConverter converter, int maxRows) {
         Objects.requireNonNull(stock, "stock must not be null");
