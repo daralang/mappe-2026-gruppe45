@@ -2,12 +2,12 @@ package edu.ntnu.idatt2003.millions.view.exchange.stocks;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.service.StockStatsService;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import java.util.Comparator;
-import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -22,8 +22,6 @@ import javafx.geometry.HPos;
  */
 public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
 
-    private static final Currency NOK = Currency.getInstance("NOK");
-
     /**
      * All columns in the stocks table.
      * Sortable columns are WATCHLIST, TICKER, PRICE_NOK,
@@ -34,6 +32,7 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
         WATCHLIST, TICKER, COMPANY, PRICE_NOK, CHANGE_KR, CHANGE_PCT, TREND, TRADE, DETAILS
     }
 
+    private final StockStatsService statsService = new StockStatsService();
     private final CurrencyConverter converter;
     private final Predicate<String> isWatched;
 
@@ -90,8 +89,8 @@ public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
         return switch (column) {
             case WATCHLIST -> Comparator.comparing(s -> !isWatched.test(s.getSymbol()));
             case TICKER -> Comparator.comparing(Stock::getSymbol);
-            case PRICE_NOK -> Comparator.comparing(s -> priceInNok(s, converter, NOK));
-            case CHANGE_KR -> Comparator.comparing(s -> changeInNok(s, converter, NOK));
+            case PRICE_NOK -> Comparator.comparing(s -> statsService.priceInNok(s, converter));
+            case CHANGE_KR -> Comparator.comparing(s -> statsService.changeInNok(s, converter));
             case CHANGE_PCT -> Comparator.comparing(Stock::getWeeklyChangePercent);
             case COMPANY, TREND, TRADE, DETAILS ->
                     throw new IllegalStateException(column + " is not sortable");
