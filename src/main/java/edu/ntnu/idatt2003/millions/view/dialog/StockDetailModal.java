@@ -12,12 +12,14 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Modal;
 import edu.ntnu.idatt2003.millions.view.component.PriceHistoryList;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.component.WeekRangeFilter;
 import edu.ntnu.idatt2003.millions.view.component.chart.TimeSeriesChart;
 import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -42,6 +44,7 @@ import java.util.Objects;
 public class StockDetailModal extends Modal {
 
     private static final double CHART_HEIGHT = 200;
+    private static final double WEEKLY_MAX_HEIGHT = 180;
 
     private final Stock stock;
     private final GameService gameService;
@@ -143,7 +146,7 @@ public class StockDetailModal extends Modal {
     private VBox buildBody() {
         VBox body = new VBox();
         body.getStyleClass().add("modal-body");
-        body.getChildren().addAll(buildStatGrid(), buildChartRow(), buildWeeklyChangeTable(),
+        body.getChildren().addAll(buildStatGrid(), buildChartRow(), buildWeeklySection(),
                 buildActions());
         return body;
     }
@@ -218,25 +221,63 @@ public class StockDetailModal extends Modal {
     }
 
     /**
-     * Builds the adaptive weekly-change table, or an info line when no change has
-     * occurred yet (week 1). Rows come from {@link StockHistoryService}, newest first.
+     * Builds the weekly-changes section: a header with the title and a {@link WeekRangeFilter}
+     * on the right, above a scrollable table that rebuilds whenever the selected range changes.
      *
-     * @return the weekly-change section
+     * @return the weekly-changes section
      */
-    private VBox buildWeeklyChangeTable() {
-        List<WeeklyPriceChange> rows =
-                historyService.getRecentWeeklyChanges(stock, gameService.getCurrencyConverter());
+    private VBox buildWeeklySection() {
+        int currentWeek = Math.max(1, gameService.getExchange().getWeek());
+        WeekRangeFilter filter = new WeekRangeFilter(1, currentWeek);
+
+        VBox content = new VBox();
+        ScrollPane scroll = new ScrollPane(content);
+        scroll.getStyleClass().add("content-scroll");
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setMaxHeight(WEEKLY_MAX_HEIGHT);
+
+        Runnable rebuild = () ->
+                content.getChildren().setAll(buildWeeklyContent(filter.getFromWeek(), filter.getToWeek()));
+        filter.fromWeekProperty().addListener((obs, oldVal, newVal) -> rebuild.run());
+        filter.toWeekProperty().addListener((obs, oldVal, newVal) -> rebuild.run());
+        rebuild.run();
+
+        VBox section = new VBox(8, buildWeeklyHeader(filter), scroll);
+        section.getStyleClass().add("stock-detail-panel");
+        return section;
+    }
+
+    /**
+     * Builds the weekly-changes header: the section title on the left and the
+     * week-range filter on the right.
+     *
+     * @param filter the week-range filter to place on the right
+     * @return the header row
+     */
+    private HBox buildWeeklyHeader(WeekRangeFilter filter) {
+        StyledText title = StyledText.sectionTitle(LanguageManager.get("stockDetail.weeklyTitle"));
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox header = new HBox(8, title, spacer, filter);
+        header.setAlignment(Pos.CENTER_LEFT);
+        return header;
+    }
+
+    /**
+     * Builds the weekly-change table for the selected week range, or an info line when no
+     * change exists in that range (e.g. week 1). Rows come from {@link StockHistoryService}.
+     *
+     * @param fromWeek the first selected week (inclusive)
+     * @param toWeek   the last selected week (inclusive)
+     * @return the table, or an info label when there is nothing to show
+     */
+    private Region buildWeeklyContent(int fromWeek, int toWeek) {
+        List<WeeklyPriceChange> rows = historyService.getWeeklyChanges(
+                stock, gameService.getCurrencyConverter(), fromWeek, toWeek);
         if (rows.isEmpty()) {
-            VBox empty = new VBox(8,
-                    StyledText.sectionTitle(LanguageManager.get("stockDetail.weeklyTitle")),
-                    StyledText.detailLabel(LanguageManager.get("stockDetail.weeklyEmpty")));
-            empty.getStyleClass().add("stock-detail-panel");
-            return empty;
+            return StyledText.detailLabel(LanguageManager.get("stockDetail.weeklyEmpty"));
         }
-        int newest = rows.get(0).week();
-        int from = rows.get(rows.size() - 1).week() - 1;
-        StyledText title = StyledText.sectionTitle(LanguageManager.get("stockDetail.weeklyTitle")
-                + " " + MessageFormat.format(LanguageManager.get("stockDetail.weekRange"), from, newest));
         String code = stock.getCurrency().getCurrencyCode();
         GridPane table = new GridPane();
         table.getStyleClass().add("stock-detail-weekly");
@@ -262,9 +303,7 @@ public class StockDetailModal extends Modal {
                     ChangeFormatter.styledAmount(row.nokChange(), "detail-value"),
                     ChangeFormatter.styledPercent(row.percentChange(), "detail-value"));
         }
-        VBox section = new VBox(8, title, table);
-        section.getStyleClass().add("stock-detail-panel");
-        return section;
+        return table;
     }
 
     /**
