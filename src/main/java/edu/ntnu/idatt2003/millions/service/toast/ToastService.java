@@ -1,7 +1,5 @@
 package edu.ntnu.idatt2003.millions.service.toast;
 
-import edu.ntnu.idatt2003.millions.view.component.toast.Toast;
-import edu.ntnu.idatt2003.millions.view.component.toast.ToastType;
 
 import java.util.ArrayList;
 import java.util.List;
