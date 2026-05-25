@@ -51,8 +51,7 @@ public class StocksCard extends DetailTableCard<Stock, StocksSort.SortColumn> {
                     } else {
                         gameService.addToWatchlist(symbol);
                     }
-                },
-                controller::openStockDetail);
+                });
         this.table = new SortColumnTable<>(sort::getColumnDefs, 10);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         this.title = StyledText.sectionTitle(LanguageManager.get("exchange.stocks.market"));
@@ -82,7 +81,8 @@ public class StocksCard extends DetailTableCard<Stock, StocksSort.SortColumn> {
 
     @Override
     protected RowCells<StocksSort.SortColumn> buildRowCells(Stock item, int rowIndex) {
-        return rowRenderer.buildRow(item);
+        return rowRenderer.buildRow(item)
+                .put(StocksSort.SortColumn.DETAILS, buildDetailChevron(item));
     }
 
     @Override

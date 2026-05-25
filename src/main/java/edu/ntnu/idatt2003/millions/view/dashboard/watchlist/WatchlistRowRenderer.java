@@ -27,8 +27,9 @@ import java.util.function.Consumer;
  *
  * <p>Each call to {@link #buildRow(WatchlistItem)} produces a {@link RowCells} map with
  * ticker, company, price in NOK, price in the stock's native currency, weekly change
- * (NOK and %), 4-week high/low, a sparkline trend, a buy button, a note button, and a
- * remove button. The owning card inserts the cells and registers the row for navigation.</p>
+ * (NOK and %), 4-week high/low, a sparkline trend, a buy button, a note button, a
+ * chevron button detail link, and a remove button.
+ * The owning card inserts the cells and registers the row for navigation.</p>
  *
  * <p>This class is stateless and may be reused across refreshes.</p>
  */
@@ -44,6 +45,8 @@ class WatchlistRowRenderer extends RowRenderer {
     private final Consumer<WatchlistItem> onNote;
 
     /**
+     * Constructs a new WatchlistRowRenderer.
+     *
      * @param gameService     the game service used to read converter and game-over state
      * @param tradeController the controller used to open the buy dialog
      * @param onRemove        callback invoked with the stock symbol when the player clicks ×
@@ -61,10 +64,6 @@ class WatchlistRowRenderer extends RowRenderer {
 
     /**
      * Builds the column-keyed cells for the given watchlist item.
-     *
-     * <p>The note button is inserted first so it serves as the row's default
-     * keyboard-focus anchor (see {@link RowCells#firstNode()}); unlike the buy
-     * button it is never disabled when the game is over.</p>
      *
      * @param item the watchlist item to render
      * @return the column-keyed cells for this item, keyed by {@link WatchlistSort.SortColumn}

@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.component.card;
 
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.view.component.ChevronButton;
 
 /**
  * Abstract base for sortable table cards that open a detail view when a row is activated.
@@ -65,4 +66,28 @@ public abstract class DetailTableCard<T, Column> extends SortableTableCard<T, Co
      * @param item the item to show details for
      */
     protected abstract void openDetail(T item);
+
+    /**
+     * Returns the i18n key for the chevron button tooltip.
+     *
+     * @return the tooltip i18n key
+     */
+    protected String chevronTooltipKey() {
+        return "tooltip.stocks.chevron";
+    }
+
+    /**
+     * Builds a {@link ChevronButton} that opens the detail view for the given item.
+     *
+     * <p>The button delegates to {@link #openDetail(Object)} and uses the tooltip key
+     * returned by {@link #chevronTooltipKey()}. Intended to be placed in the
+     * {@code DETAILS} column of {@link edu.ntnu.idatt2003.millions.view.component.table.RowCells}
+     * by concrete subclasses.</p>
+     *
+     * @param item the item to open the detail view for
+     * @return a configured {@link ChevronButton}
+     */
+    protected final ChevronButton buildDetailChevron(T item) {
+        return new ChevronButton(() -> openDetail(item), chevronTooltipKey());
+    }
 }
