@@ -11,7 +11,10 @@ import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
 import edu.ntnu.idatt2003.millions.model.transaction.Sale;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
+
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -107,14 +110,14 @@ public class JsonGameFileHandler implements GameFileHandler {
             gameState = gson.fromJson(reader, JsonObject.class);
         } catch (JsonParseException e) {
             throw new GameSaveCorruptException(
-                    "Save file contains invalid JSON: " + label, e);
+                    MessageFormat.format(LanguageManager.get("error.save.load.invalidJson"), label), e);
         }
 
         if (gameState == null
                 || !gameState.has("player")
                 || !gameState.has("exchange")) {
             throw new GameSaveCorruptException(
-                    "Save file is missing required fields 'player' or 'exchange': " + label);
+                    MessageFormat.format(LanguageManager.get("error.save.load.missingFields"), label));
         }
 
         Exchange exchange;
@@ -124,7 +127,7 @@ public class JsonGameFileHandler implements GameFileHandler {
             player = gson.fromJson(gameState.get("player"), Player.class);
         } catch (JsonParseException e) {
             throw new GameSaveCorruptException(
-                    "Save file has an unreadable structure: " + label, e);
+                    MessageFormat.format(LanguageManager.get("error.save.load.unreadableStructure"), label), e);
         }
 
         relinkShares(player, exchange);
@@ -165,7 +168,11 @@ public class JsonGameFileHandler implements GameFileHandler {
                 @Override
                 public T read(JsonReader in) throws IOException {
                     JsonObject obj = elementAdapter.read(in).getAsJsonObject();
-                    String type = obj.get("type").getAsString();
+                    JsonElement typeEl = obj.get("type");
+                    if (typeEl == null) {
+                        throw new JsonParseException("Missing 'type' field in transaction object");
+                    }
+                    String type = typeEl.getAsString();
 
                     if ("PURCHASE".equals(type)) {
                         return (T) gson.getDelegateAdapter(
@@ -198,9 +205,7 @@ public class JsonGameFileHandler implements GameFileHandler {
         for (Transaction transaction : player.getTransactionArchive().getAll()) {
             Share oldShare = transaction.getShare();
             var canonicalStock = exchange.getStock(oldShare.getStock().getSymbol());
-            if (canonicalStock != null) {
-                transaction.relinkShare(new Share(canonicalStock, oldShare.getQuantity(), oldShare.getPurchasePrice()));
-            }
+            transaction.relinkShare(new Share(canonicalStock, oldShare.getQuantity(), oldShare.getPurchasePrice()));
         }
     }
 

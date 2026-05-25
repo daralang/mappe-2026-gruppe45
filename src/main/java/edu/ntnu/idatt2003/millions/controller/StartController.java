@@ -354,6 +354,8 @@ public class StartController {
         } catch (GameSaveCorruptException | InvalidStockDataException | IllegalArgumentException
                  | IllegalStateException | UncheckedIOException exception) {
             errorSink.accept(exception::getMessage);
+        } catch (Exception _) {
+            errorSink.accept(() -> LanguageManager.get("error.save.load.failed"));
         }
     }
 
