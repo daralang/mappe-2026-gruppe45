@@ -50,9 +50,9 @@ class SaleTest {
         void valuesAreSetOnConstruction() {
             Sale sale = new Sale(share, 1);
             assertNotNull(sale.getGross());
-            assertNotNull(sale.getCommission());
-            assertNotNull(sale.getTax());
-            assertNotNull(sale.getTotal());
+            assertNotNull(sale.getCommissionNative());
+            assertNotNull(sale.getTaxNative());
+            assertNotNull(sale.getSignedTotalNative());
             assertNotNull(sale.getProfit());
             assertNotNull(sale.getProfitPercent());
         }
@@ -63,9 +63,9 @@ class SaleTest {
             SalesCalculator expected = new SalesCalculator(share);
             Sale sale = new Sale(share, 1);
             assertEquals(0, expected.calculateGross().compareTo(sale.getGross()));
-            assertEquals(0, expected.calculateCommission().compareTo(sale.getCommission()));
-            assertEquals(0, expected.calculateTax().compareTo(sale.getTax()));
-            assertEquals(0, expected.calculateTotal().compareTo(sale.getTotal()));
+            assertEquals(0, expected.calculateCommission().compareTo(sale.getCommissionNative()));
+            assertEquals(0, expected.calculateTax().compareTo(sale.getTaxNative()));
+            assertEquals(0, expected.calculateTotal().compareTo(sale.getSignedTotalNative()));
             assertEquals(0, expected.calculateProfit().compareTo(sale.getProfit()));
             assertEquals(0, expected.calculateProfitPercent().compareTo(sale.getProfitPercent()));
         }
@@ -74,16 +74,16 @@ class SaleTest {
         @DisplayName("Frozen values do not change when stock price advances")
         void valuesDoNotChangeWhenPriceMoves() {
             Sale sale = new Sale(share, 1);
-            BigDecimal frozenCommission = sale.getCommission();
-            BigDecimal frozenTax        = sale.getTax();
-            BigDecimal frozenTotal      = sale.getTotal();
+            BigDecimal frozenCommission = sale.getCommissionNative();
+            BigDecimal frozenTax        = sale.getTaxNative();
+            BigDecimal frozenTotal      = sale.getSignedTotalNative();
             BigDecimal frozenProfit     = sale.getProfit();
 
             share.getStock().addNewSalesPrice(new BigDecimal("999.00"));
 
-            assertEquals(0, frozenCommission.compareTo(sale.getCommission()));
-            assertEquals(0, frozenTax.compareTo(sale.getTax()));
-            assertEquals(0, frozenTotal.compareTo(sale.getTotal()));
+            assertEquals(0, frozenCommission.compareTo(sale.getCommissionNative()));
+            assertEquals(0, frozenTax.compareTo(sale.getTaxNative()));
+            assertEquals(0, frozenTotal.compareTo(sale.getSignedTotalNative()));
             assertEquals(0, frozenProfit.compareTo(sale.getProfit()));
         }
     }

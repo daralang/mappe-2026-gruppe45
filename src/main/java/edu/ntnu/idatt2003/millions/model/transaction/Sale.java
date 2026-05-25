@@ -81,7 +81,7 @@ public class Sale extends Transaction {
     public void commit(Player player) {
         Objects.requireNonNull(player, "Player cannot be null");
         if (isCommitted()) throw new IllegalStateException("Sale is already committed");
-        if (!player.getPortfolio().contains(getShare())) throw new IllegalStateException("Sale is not in portfolio");
+        if (!player.getPortfolio().contains(getShare())) throw new IllegalStateException("Share is not in portfolio");
 
         player.getPortfolio().removeShare(getShare());
         player.getTransactionArchive().add(this);
@@ -91,21 +91,6 @@ public class Sale extends Transaction {
     /** Returns the gross sale value (sales price × quantity) in native currency. */
     public BigDecimal getGross() {
         return gross;
-    }
-
-    /** Returns the commission paid on this sale (1% of gross) in native currency. */
-    public BigDecimal getCommission() {
-        return commission;
-    }
-
-    /** Returns the tax paid on this sale (30% of profit, or zero if a loss) in native currency. */
-    public BigDecimal getTax() {
-        return tax;
-    }
-
-    /** Returns the net payout of this sale (gross − commission − tax) in native currency. */
-    public BigDecimal getTotal() {
-        return total;
     }
 
     /** Returns the realized profit or loss on this sale (total − original purchase costs) in native currency. */

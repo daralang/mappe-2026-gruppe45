@@ -187,7 +187,7 @@ public class TransactionArchive {
      * @return commission totals per currency; empty map if no sales exist
      */
     public Map<Currency, BigDecimal> getTotalSaleCommissionByCurrency() {
-        return sumSalesAttribute(Sale::getCommission);
+        return sumSalesAttribute(Sale::getCommissionNative);
     }
 
     /**
@@ -197,7 +197,7 @@ public class TransactionArchive {
      * @return tax totals per currency; empty map if no sales exist
      */
     public Map<Currency, BigDecimal> getTotalSaleTaxByCurrency() {
-        return sumSalesAttribute(Sale::getTax);
+        return sumSalesAttribute(Sale::getTaxNative);
     }
 
     /**
