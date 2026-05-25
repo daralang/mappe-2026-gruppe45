@@ -18,9 +18,8 @@ import java.util.Objects;
  * <p>Dispatch order on each key event:</p>
  * <ol>
  *   <li>The universal {@link ShortcutRegistry}, for shortcuts that must fire
- *       regardless of context (e.g. Enter > fire focused button).</li>
- *   <li>If the universal registry did not handle the event, the global
- *       {@link ShortcutRegistry} is consulted.</li>
+ *       regardless of context (e.g. Enter to fire the focused button).</li>
+ *   <li>The global {@link ShortcutRegistry}, for application-wide shortcuts.</li>
  * </ol>
  *
  * <p>Modal dialogs are isolated naturally: each is its own

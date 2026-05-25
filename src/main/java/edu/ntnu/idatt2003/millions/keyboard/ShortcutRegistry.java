@@ -43,7 +43,7 @@ public final class ShortcutRegistry {
     /**
      * Registers a conditional action for the given combination, replacing any previous mapping.
      * The event is consumed only if {@code action} returns {@code true}, allowing the action
-     * to decline handling (e.g. when the focused node is a text input rather than a button).
+     * to decline handling and let the event propagate.
      *
      * @param combination the key combination
      * @param action      the action; return {@code true} if the event was handled,
