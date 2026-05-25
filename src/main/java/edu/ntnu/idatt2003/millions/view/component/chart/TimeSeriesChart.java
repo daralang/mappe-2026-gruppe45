@@ -109,6 +109,22 @@ public class TimeSeriesChart extends AreaChart<Number, Number> {
     updateXAxis();
   }
 
+  /**
+   * Replaces all data points with the given values, rebuilding the series from scratch.
+   * x-positions are assigned positionally (1, 2, 3, …) to match constructor semantics.
+   *
+   * @param values the new data points, oldest first; must not be {@code null}
+   * @throws NullPointerException if {@code values} is {@code null}
+   */
+  public void setPoints(List<BigDecimal> values) {
+    Objects.requireNonNull(values, "values must not be null");
+    series.getData().clear();
+    for (int i = 0; i < values.size(); i++) {
+      series.getData().add(new XYChart.Data<>(i + 1, values.get(i).doubleValue()));
+    }
+    updateXAxis();
+  }
+
   private void updateXAxis() {
     int count = series.getData().size();
     xAxis.setUpperBound(Math.max(2, count) + 0.5);

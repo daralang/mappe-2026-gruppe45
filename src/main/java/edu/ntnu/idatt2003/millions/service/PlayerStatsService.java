@@ -5,6 +5,8 @@ import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Stateless read service for player net-worth and status queries.
@@ -90,5 +92,15 @@ public class PlayerStatsService {
         double returnProgress = Math.min(1.0, Math.max(0.0, (growthPercent - prevReturn) / (nextReturn - prevReturn)));
 
         return Math.min(weekProgress, returnProgress);
+    }
+
+    /**
+     * Returns the player's recorded net-worth history — one entry per game week,
+     * in order from week 1 to the current week. The returned list is a defensive
+     * copy and does not reflect later mutations of the player.
+     */
+    public List<BigDecimal> getNetWorthHistory(Player player) {
+        Objects.requireNonNull(player, "Player cannot be null");
+        return List.copyOf(player.getNetWorthHistory());
     }
 }
