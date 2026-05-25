@@ -41,7 +41,7 @@ public class NetWorthCard extends WidgetCard {
         this.gameService = gameService;
 
         chart = new TimeSeriesChart(
-                gameService.getPlayer().getNetWorthHistory(),
+                statsService.getNetWorthHistory(gameService.getPlayer()),
                 LanguageManager.get("app.week").toUpperCase());
 
         InfoTooltip infoTooltip = new InfoTooltip("tooltip.dashboard.netWorth");
@@ -82,8 +82,7 @@ public class NetWorthCard extends WidgetCard {
      */
     @Override
     public void onGameUpdated() {
-        BigDecimal netWorth = statsService.getNetWorth(gameService.getPlayer(), gameService.getCurrencyConverter());
-        chart.addPoint(netWorth);
+        chart.setPoints(statsService.getNetWorthHistory(gameService.getPlayer()));
         refreshDisplay();
     }
 }

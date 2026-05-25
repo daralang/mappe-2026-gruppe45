@@ -42,5 +42,38 @@
     "status": "NOVICE",
     "outcome": "BANKRUPTCY",
     "lastUpdated": "2026-05-16T04:33:47.739156800Z"
+  },
+  {
+    "sessionId": "d9cb640d-d833-4130-aaf7-572c9ae35139",
+    "playerName": "Test",
+    "startingCapital": 100000,
+    "finalNetWorth": 100350.2733,
+    "returnPercent": 0.4,
+    "weeksPlayed": 18,
+    "status": "NOVICE",
+    "outcome": "RETIRED",
+    "lastUpdated": "2026-05-16T10:15:16.965925300Z"
+  },
+  {
+    "sessionId": "07f86902-1037-4521-8ad0-eee8ca8b6e13",
+    "playerName": "kristoffer",
+    "startingCapital": 10000,
+    "finalNetWorth": 8582.4712,
+    "returnPercent": -14.2,
+    "weeksPlayed": 21,
+    "status": "NOVICE",
+    "outcome": "ACTIVE",
+    "lastUpdated": "2026-05-25T10:53:21.302989700Z"
+  },
+  {
+    "sessionId": "c3be11fc-78d6-4e06-89c7-512d864d018e",
+    "playerName": "Leo",
+    "startingCapital": 1000000,
+    "finalNetWorth": 992112.4437,
+    "returnPercent": -0.8,
+    "weeksPlayed": 181,
+    "status": "NOVICE",
+    "outcome": "RETIRED",
+    "lastUpdated": "2026-05-25T11:54:09.552991700Z"
   }
 ]
