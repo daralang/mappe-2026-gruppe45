@@ -9,6 +9,7 @@ import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreviewService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog.*;
+import edu.ntnu.idatt2003.millions.view.dialog.StockDetailModal;
 import javafx.application.Platform;
 
 import java.math.BigDecimal;
@@ -211,5 +212,14 @@ public class TradeController {
     public void openDetailsModal(Share share) {
         ShareDetailsModal modal = new ShareDetailsModal(share, this);
         modal.show();
+    }
+
+    /**
+     * Opens the read-only detail dialog for the given stock.
+     *
+     * @param stock the stock to show details for
+     */
+    public void openStockDetail(Stock stock) {
+        new StockDetailModal(stock, gameService, this).show();
     }
 }

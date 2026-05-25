@@ -68,26 +68,65 @@ public final class StockHistoryService {
         if (maxRows <= 0) {
             throw new IllegalArgumentException("maxRows must be greater than zero");
         }
-
-        List<BigDecimal> prices = stock.getHistoricalPrices();
-        int transitions = prices.size() - 1;
+        int priceCount = stock.getHistoricalPrices().size();
+        int transitions = priceCount - 1;
         if (transitions <= 0) {
             return List.of();
         }
-
         int rowCount = Math.min(maxRows, transitions);
-        List<WeeklyPriceChange> rows = new ArrayList<>(rowCount);
-        for (int week = prices.size(); week > prices.size() - rowCount; week--) {
-            BigDecimal current = prices.get(week - 1);
-            BigDecimal previous = prices.get(week - 2);
-            BigDecimal nativeChange = current.subtract(previous);
-            BigDecimal nokChange = converter.convert(nativeChange, stock.getCurrency(), NOK);
-            BigDecimal percentChange = previous.signum() == 0
-                    ? BigDecimal.ZERO
-                    : nativeChange.multiply(BigDecimal.valueOf(100))
-                            .divide(previous, PERCENT_SCALE, RoundingMode.HALF_UP);
-            rows.add(new WeeklyPriceChange(week, nativeChange, nokChange, percentChange));
+        return getWeeklyChanges(stock, converter, priceCount - rowCount + 1, priceCount);
+    }
+
+    /**
+     * Returns the weekly price changes for the transition weeks within the inclusive
+     * range {@code [fromWeek, toWeek]}, newest first.
+     *
+     * @param stock     the stock whose price history is read; must not be {@code null}
+     * @param converter the converter used for the NOK column; must not be {@code null}
+     * @param fromWeek  the first week of the range (inclusive)
+     * @param toWeek    the last week of the range (inclusive)
+     * @return the matching {@link WeeklyPriceChange} rows, newest first (possibly empty)
+     * @throws NullPointerException     if {@code stock} or {@code converter} is {@code null}
+     * @throws IllegalArgumentException if {@code toWeek < fromWeek}, or if the stock's
+     *                                  currency cannot be converted to NOK
+     */
+    public List<WeeklyPriceChange> getWeeklyChanges(Stock stock, CurrencyConverter converter,
+                                                    int fromWeek, int toWeek) {
+        Objects.requireNonNull(stock, "stock must not be null");
+        Objects.requireNonNull(converter, "converter must not be null");
+        if (toWeek < fromWeek) {
+            throw new IllegalArgumentException("toWeek must be greater than or equal to fromWeek");
+        }
+        List<BigDecimal> prices = stock.getHistoricalPrices();
+        int upper = Math.min(toWeek, prices.size());
+        int lower = Math.max(fromWeek, 2);
+        List<WeeklyPriceChange> rows = new ArrayList<>();
+        for (int week = upper; week >= lower; week--) {
+            rows.add(weeklyChange(prices, week, stock.getCurrency(), converter));
         }
         return rows;
+    }
+
+    /**
+     * Builds the {@link WeeklyPriceChange} for the transition into {@code week}
+     * (from {@code week - 1} to {@code week}).
+     *
+     * @param prices    the full price history, oldest first
+     * @param week      the week the change leads into ({@code week - 2} must be a valid index)
+     * @param currency  the stock's own currency
+     * @param converter the converter used for the NOK column
+     * @return the computed weekly price change
+     */
+    private WeeklyPriceChange weeklyChange(List<BigDecimal> prices, int week,
+                                           Currency currency, CurrencyConverter converter) {
+        BigDecimal current = prices.get(week - 1);
+        BigDecimal previous = prices.get(week - 2);
+        BigDecimal nativeChange = current.subtract(previous);
+        BigDecimal nokChange = converter.convert(nativeChange, currency, NOK);
+        BigDecimal percentChange = previous.signum() == 0
+                ? BigDecimal.ZERO
+                : nativeChange.multiply(BigDecimal.valueOf(100))
+                        .divide(previous, PERCENT_SCALE, RoundingMode.HALF_UP);
+        return new WeeklyPriceChange(week, nativeChange, nokChange, percentChange);
     }
 }

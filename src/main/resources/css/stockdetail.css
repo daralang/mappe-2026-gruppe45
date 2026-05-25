@@ -1,0 +1,70 @@
+/* ─── Stock detail dialog ─────────────────────────────────────────────── */
+
+.modal-card-stock-detail {
+    -fx-min-width: 760;
+    -fx-max-width: 760;
+}
+
+.stock-detail-eyebrow {
+    -fx-text-fill: -text-muted;
+}
+
+/* Key-figure stat cards */
+.stock-detail-stat {
+    -fx-background-color: -surface-alt;
+    -fx-background-radius: 8;
+    -fx-border-color: -border-light;
+    -fx-border-radius: 8;
+    -fx-padding: 12 14 12 14;
+}
+
+.stock-detail-chart-row {
+    -fx-padding: 4 0 0 0;
+}
+
+.stock-detail-weekly {
+    -fx-padding: 4 0 0 0;
+}
+
+/* Native price-history list rows */
+.price-history-row {
+    -fx-padding: 7 2 7 2;
+    -fx-border-color: transparent transparent -border-light transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Watchlist star toggle */
+.stock-detail-star {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 16 10 16;
+    -fx-font-size: 16;
+    -fx-cursor: hand;
+}
+
+.stock-detail-star:hover {
+    -fx-background-color: -surface-alt;
+}
+
+.stock-detail-star--active {
+    -fx-text-fill: -yellow-text;
+    -fx-background-color: -yellow-bg;
+    -fx-border-color: -yellow-border;
+}
+
+/* Section titles scoped to this dialog only (smaller than the global section-title) */
+.modal-card-stock-detail .section-title {
+    -fx-font-size: 16;
+}
+
+/* Grey content panels: price chart, native price list and weekly-change table */
+.stock-detail-panel {
+    -fx-background-color: -surface;
+    -fx-background-radius: 8;
+    -fx-border-color: -border;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 16;
+}
