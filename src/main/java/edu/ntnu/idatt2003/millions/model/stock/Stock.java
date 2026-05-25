@@ -51,7 +51,7 @@ public class Stock {
 
         this.symbol = symbol;
         this.company = company;
-        this.prices = prices;
+        this.prices = new ArrayList<>(prices);
         this.currency = currency;
     }
 
