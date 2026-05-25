@@ -53,3 +53,18 @@
     -fx-background-color: -yellow-bg;
     -fx-border-color: -yellow-border;
 }
+
+/* Section titles scoped to this dialog only (smaller than the global section-title) */
+.modal-card-stock-detail .section-title {
+    -fx-font-size: 16;
+}
+
+/* Grey content panels: price chart, native price list and weekly-change table */
+.stock-detail-panel {
+    -fx-background-color: -surface;
+    -fx-background-radius: 8;
+    -fx-border-color: -border;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 16;
+}

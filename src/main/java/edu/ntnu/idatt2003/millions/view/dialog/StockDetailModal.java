@@ -25,7 +25,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
@@ -49,6 +48,7 @@ public class StockDetailModal extends Modal {
     private final TradeController controller;
     private final StockStatsService statsService = new StockStatsService();
     private final StockHistoryService historyService = new StockHistoryService();
+    private Runnable onExplore;
 
     /**
      * Constructs a {@code StockDetailModal} for the given stock.
@@ -63,6 +63,16 @@ public class StockDetailModal extends Modal {
         this.stock = Objects.requireNonNull(stock, "stock must not be null");
         this.gameService = Objects.requireNonNull(gameService, "gameService must not be null");
         this.controller = Objects.requireNonNull(controller, "controller must not be null");
+    }
+
+    /**
+     * Sets an optional «explore other stocks» action. When set, a full-width button is shown
+     * at the bottom of the actions; when unset (e.g. opened from the market itself), it is hidden.
+     *
+     * @param onExplore the action to run when the explore button is clicked
+     */
+    public void setOnExplore(Runnable onExplore) {
+        this.onExplore = onExplore;
     }
 
     /**
@@ -99,7 +109,7 @@ public class StockDetailModal extends Modal {
      */
     private Region buildHeader() {
         StyledText eyebrow = StyledText.detailLabel(LanguageManager.get("stockDetail.eyebrow"));
-        eyebrow.getStyleClass().add("stock-detail-eyebrow");
+        eyebrow.getStyleClass().add("modal-title");
 
         Label identity = new Label(stock.getSymbol() + ", " + stock.getCompany());
         identity.getStyleClass().add("modal-title");
@@ -134,7 +144,7 @@ public class StockDetailModal extends Modal {
         VBox body = new VBox();
         body.getStyleClass().add("modal-body");
         body.getChildren().addAll(buildStatGrid(), buildChartRow(), buildWeeklyChangeTable(),
-                buildActions(), buildFooter());
+                buildActions());
         return body;
     }
 
@@ -188,13 +198,18 @@ public class StockDetailModal extends Modal {
                 LanguageManager.get("app.week").toUpperCase());
         chart.setPrefHeight(CHART_HEIGHT);
         VBox chartSection = new VBox(8,
-                StyledText.sectionTitle(LanguageManager.get("stockDetail.chartTitle")), chart);
+                StyledText.sectionTitle(MessageFormat.format(
+                        LanguageManager.get("stockDetail.chartTitle"),
+                        stock.getCurrency().getCurrencyCode())),
+                chart);
+        chartSection.getStyleClass().add("stock-detail-panel");
         HBox.setHgrow(chartSection, Priority.ALWAYS);
 
         PriceHistoryList list = new PriceHistoryList(stock.getHistoricalPrices(), stock.getCurrency());
         list.setMaxHeight(CHART_HEIGHT);
         VBox listSection = new VBox(8,
                 StyledText.sectionTitle(LanguageManager.get("stockDetail.historyTitle")), list);
+        listSection.getStyleClass().add("stock-detail-panel");
         listSection.setMinWidth(220);
 
         HBox row = new HBox(16, chartSection, listSection);
@@ -211,11 +226,17 @@ public class StockDetailModal extends Modal {
     private VBox buildWeeklyChangeTable() {
         List<WeeklyPriceChange> rows =
                 historyService.getRecentWeeklyChanges(stock, gameService.getCurrencyConverter());
-        StyledText title = StyledText.sectionTitle(LanguageManager.get("stockDetail.weeklyTitle"));
         if (rows.isEmpty()) {
-            return new VBox(8, title,
+            VBox empty = new VBox(8,
+                    StyledText.sectionTitle(LanguageManager.get("stockDetail.weeklyTitle")),
                     StyledText.detailLabel(LanguageManager.get("stockDetail.weeklyEmpty")));
+            empty.getStyleClass().add("stock-detail-panel");
+            return empty;
         }
+        int newest = rows.get(0).week();
+        int from = rows.get(rows.size() - 1).week() - 1;
+        StyledText title = StyledText.sectionTitle(LanguageManager.get("stockDetail.weeklyTitle")
+                + " " + MessageFormat.format(LanguageManager.get("stockDetail.weekRange"), from, newest));
         String code = stock.getCurrency().getCurrencyCode();
         GridPane table = new GridPane();
         table.getStyleClass().add("stock-detail-weekly");
@@ -241,7 +262,9 @@ public class StockDetailModal extends Modal {
                     ChangeFormatter.styledAmount(row.nokChange(), "detail-value"),
                     ChangeFormatter.styledPercent(row.percentChange(), "detail-value"));
         }
-        return new VBox(8, title, table);
+        VBox section = new VBox(8, title, table);
+        section.getStyleClass().add("stock-detail-panel");
+        return section;
     }
 
     /**
@@ -279,11 +302,17 @@ public class StockDetailModal extends Modal {
      * @return the trend value label
      */
     private Label buildTrendValue() {
-        BigDecimal change = stock.getLatestPriceChange();
-        boolean up = change.signum() >= 0;
-        Label value = new Label((up ? "▲ " : "▼ ")
-                + LanguageManager.get(up ? "stockDetail.trend.up" : "stockDetail.trend.down"));
-        value.getStyleClass().addAll("modal-section-value", up ? "positive" : "negative");
+        int sign = stock.getLatestPriceChange().signum();
+        String key = sign > 0 ? "stockDetail.trend.up"
+                : sign < 0 ? "stockDetail.trend.down" : "stockDetail.trend.flat";
+        String arrow = sign > 0 ? "▲ " : sign < 0 ? "▼ " : "— ";
+        Label value = new Label(arrow + LanguageManager.get(key));
+        value.getStyleClass().add("modal-section-value");
+        if (sign > 0) {
+            value.getStyleClass().add("positive");
+        } else if (sign < 0) {
+            value.getStyleClass().add("negative");
+        }
         return value;
     }
 
@@ -293,7 +322,7 @@ public class StockDetailModal extends Modal {
      *
      * @return the actions section
      */
-    private VBox buildActions() {
+    private GridPane buildActions() {
         Button buy = new Button(LanguageManager.get("exchange.stocks.buy"));
         buy.getStyleClass().addAll("modal-button", "modal-button-primary");
         buy.setMaxWidth(Double.MAX_VALUE);
@@ -302,14 +331,23 @@ public class StockDetailModal extends Modal {
             close();
             Platform.runLater(() -> controller.openBuyDialog(stock));
         });
-        HBox.setHgrow(buy, Priority.ALWAYS);
 
-        HBox primaryRow = new HBox(12, buy, buildWatchlistStar());
-        primaryRow.setAlignment(Pos.CENTER);
+        GridPane actions = new GridPane();
+        actions.setHgap(12);
+        actions.setVgap(10);
+        ColumnConstraints grow = new ColumnConstraints();
+        grow.setHgrow(Priority.ALWAYS);
+        grow.setFillWidth(true);
+        actions.getColumnConstraints().addAll(grow, new ColumnConstraints());
 
-        VBox actions = new VBox(10, primaryRow);
+        actions.add(buy, 0, 0);
+        actions.add(buildWatchlistStar(), 1, 0);
+        int row = 1;
         if (isOwned()) {
-            actions.getChildren().add(buildSellButton());
+            actions.add(buildSellButton(), 0, row++);
+        }
+        if (onExplore != null) {
+            actions.add(buildExploreButton(), 0, row);
         }
         return actions;
     }
@@ -387,16 +425,16 @@ public class StockDetailModal extends Modal {
     }
 
     /**
-     * Builds the centered footer link that closes the dialog.
+     * Builds the full-width «explore other stocks» button. Only added when an explore action
+     * has been set via {@link #setOnExplore(Runnable)}; runs that action on click.
      *
-     * @return the footer node
+     * @return the explore button
      */
-    private Region buildFooter() {
-        Button link = new Button(LanguageManager.get("dashboard.exploreStocks") + "  →");
-        link.getStyleClass().add("modal-button-link");
-        link.setOnAction(e -> close());
-        HBox footer = new HBox(link);
-        footer.setAlignment(Pos.CENTER);
-        return footer;
+    private Button buildExploreButton() {
+        Button explore = new Button(LanguageManager.get("dashboard.exploreStocks") + "  →");
+        explore.getStyleClass().add("explore-stocks-button");
+        explore.setMaxWidth(Double.MAX_VALUE);
+        explore.setOnAction(e -> onExplore.run());
+        return explore;
     }
 }
