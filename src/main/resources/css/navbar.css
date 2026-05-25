@@ -18,6 +18,12 @@
     -fx-background-color: transparent;
     -fx-cursor: hand;
     -fx-padding: 50 0 8 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
+}
+
+.navbar-link:focused {
+    -fx-border-color: white;
 }
 
 .navbar-action {
