@@ -266,4 +266,107 @@ class StockHistoryServiceTest {
                     () -> service.getRecentWeeklyChanges(stock, converter()));
         }
     }
+
+    @Nested
+    @DisplayName("getWeeklyChanges()")
+    class GetWeeklyChanges {
+
+        @Test
+        @DisplayName("Should return rows for the selected range, newest first")
+        void returnsRowsForSelectedRange() {
+            // Arrange: prices weeks 1..5
+            Stock stock = usdStock(100, 110, 105, 120, 126);
+
+            // Act: weeks 2..4 -> transition rows 4, 3, 2
+            List<WeeklyPriceChange> rows = service.getWeeklyChanges(stock, converter(), 2, 4);
+
+            // Assert
+            assertEquals(List.of(4, 3, 2), weeksOf(rows));
+        }
+
+        @Test
+        @DisplayName("Should clamp the upper bound to the available price history")
+        void clampsUpperBoundToAvailablePrices() {
+            // Arrange: only 5 prices, but week 99 requested
+            Stock stock = usdStock(100, 110, 105, 120, 126);
+
+            // Act
+            List<WeeklyPriceChange> rows = service.getWeeklyChanges(stock, converter(), 2, 99);
+
+            // Assert
+            assertEquals(List.of(5, 4, 3, 2), weeksOf(rows));
+        }
+
+        @Test
+        @DisplayName("Should clamp the lower bound to week two when fromWeek is one")
+        void clampsLowerBoundToWeekTwo() {
+            // Arrange
+            Stock stock = usdStock(100, 110, 105, 120, 126);
+
+            // Act: from week 1 -> first change row is week 2, not week 1
+            List<WeeklyPriceChange> rows = service.getWeeklyChanges(stock, converter(), 1, 3);
+
+            // Assert
+            assertEquals(List.of(3, 2), weeksOf(rows));
+        }
+
+        @Test
+        @DisplayName("Should return an empty list when the range ends before week two")
+        void returnsEmptyWhenRangeEndsBeforeWeekTwo() {
+            // Arrange
+            Stock stock = usdStock(100, 110, 105);
+
+            // Act: range [1, 1] contains no transition week
+            List<WeeklyPriceChange> rows = service.getWeeklyChanges(stock, converter(), 1, 1);
+
+            // Assert
+            assertTrue(rows.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should compute native change, NOK change and percent for a single-week range")
+        void computesValuesForSingleWeekRange() {
+            // Arrange: week 4 = 126, week 3 = 105 -> native = 21, nok = 210, percent = 2100 / 105 = 20.00
+            Stock stock = usdStock(100, 110, 105, 126);
+
+            // Act
+            WeeklyPriceChange row = service.getWeeklyChanges(stock, converter(), 4, 4).get(0);
+
+            // Assert
+            assertEquals(4, row.week());
+            assertBigDecimalEquals(BigDecimal.valueOf(21), row.nativeChange());
+            assertBigDecimalEquals(BigDecimal.valueOf(210), row.nokChange());
+            assertBigDecimalEquals(new BigDecimal("20.00"), row.percentChange());
+        }
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when toWeek is before fromWeek")
+        void throwsIllegalArgumentExceptionWhenToBeforeFrom() {
+            // Arrange
+            Stock stock = usdStock(100, 110, 105);
+
+            // Act & Assert
+            assertThrows(IllegalArgumentException.class,
+                    () -> service.getWeeklyChanges(stock, converter(), 5, 3));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when stock is null")
+        void throwsNullPointerExceptionWhenStockIsNull() {
+            // Act & Assert
+            assertThrows(NullPointerException.class,
+                    () -> service.getWeeklyChanges(null, converter(), 1, 4));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when converter is null")
+        void throwsNullPointerExceptionWhenConverterIsNull() {
+            // Arrange
+            Stock stock = usdStock(100, 110);
+
+            // Act & Assert
+            assertThrows(NullPointerException.class,
+                    () -> service.getWeeklyChanges(stock, null, 1, 2));
+        }
+    }
 }

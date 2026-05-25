@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.dashboard.transactions.component;
+package edu.ntnu.idatt2003.millions.view.component;
 
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.beans.property.IntegerProperty;
@@ -13,26 +13,12 @@ import javafx.scene.layout.HBox;
 /**
  * Reusable inline week-range filter rendered as "Uke [from] – [to]".
  *
- * <p>The component owns two spinners — one for the start of the range
- * and one for the (inclusive) end — and enforces {@code from <= to} by
- * adjusting each spinner's bounds when the other side changes. That
- * makes invalid ranges unreachable in the UI; callers never have to
- * validate the values they read back.</p>
+ * <p>The component owns two spinners, one for the start of the range
+ * and one for the (inclusive) end and enforces {@code from <= to} by
+ * adjusting each spinner's bounds when the other side changes.</p>
  *
- * <p>Communication with callers happens through two observable
- * {@link IntegerProperty} values, the same pattern used elsewhere in
- * the app (see {@code SearchField.textProperty()}). Callers register
- * listeners on {@link #fromWeekProperty()} and {@link #toWeekProperty()}
- * and read the current values via {@link #getFromWeek()} and
- * {@link #getToWeek()} when they rebuild their filter predicate.</p>
- *
- * <p>The upper bound is dynamic: callers call {@link #setMaxWeek(int)}
- * from their {@code onGameUpdated()} hook so that as the game advances,
- * the user can pick weeks up to the new current week. The currently
- * selected range is preserved; only the maximum selectable value moves.</p>
- *
- * <p>Designed first for the transactions tab, with reuse in mind for the
- * watchlist and analysis views where week-based filtering also applies.</p>
+ * Communication with callers happens through two observable
+ * {@link IntegerProperty} values. The upper bound is dynamic.
  */
 public class WeekRangeFilter extends HBox {
 
@@ -47,6 +33,7 @@ public class WeekRangeFilter extends HBox {
     private final Spinner<Integer> fromSpinner;
     private final Spinner<Integer> toSpinner;
     private final Label label;
+    private final Runnable languageObserver = this::refreshLabel;
 
     private final int minWeek;
 
@@ -83,7 +70,22 @@ public class WeekRangeFilter extends HBox {
 
         getChildren().addAll(label, fromSpinner, separator, toSpinner);
 
-        LanguageManager.addObserver(() -> label.setText(LanguageManager.get("filter.week")));
+        // Register the language observer only while attached to a scene, so transient
+        // hosts (e.g. modals) do not leak an observer on every open.
+        sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                LanguageManager.addObserver(languageObserver);
+            } else {
+                LanguageManager.removeObserver(languageObserver);
+            }
+        });
+    }
+
+    /**
+     * Refreshes the label text from the active language.
+     */
+    private void refreshLabel() {
+        label.setText(LanguageManager.get("filter.week"));
     }
 
     /**
