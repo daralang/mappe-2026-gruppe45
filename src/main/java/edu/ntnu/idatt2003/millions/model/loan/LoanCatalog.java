@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.loan;
 
 import java.math.BigDecimal;
@@ -6,10 +7,6 @@ import java.util.Objects;
 
 /**
  * Centralised source of the standard {@link LoanOffer}s available in the game.
- *
- * <p>Callers retrieve the offers via {@link #getOffers()} or look up a
- * specific offer by its id with {@link #findById(String)}. The returned
- * list is unmodifiable.</p>
  */
 public final class LoanCatalog {
 
@@ -22,9 +19,7 @@ public final class LoanCatalog {
                     new BigDecimal("100000.00"), LoanRiskLevel.HIGH)
     );
 
-    private LoanCatalog() {
-        // Utility class - should not be instantiated
-    }
+    private LoanCatalog() {}
 
     /**
      * Returns the unmodifiable list of standard loan offers.
