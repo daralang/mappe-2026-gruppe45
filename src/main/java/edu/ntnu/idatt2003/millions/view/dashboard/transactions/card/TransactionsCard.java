@@ -13,10 +13,11 @@ import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.TransactionsSort;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.LedgerTypeFilter;
-import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
+import edu.ntnu.idatt2003.millions.view.component.WeekRangeFilter;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -161,16 +162,33 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     }
 
     /**
-     * Renders one page of transactions into the table.
+     * Builds the column-keyed cells for one transaction row.
      *
-     * @param page the sub-list of transactions for the current page
+     * @param item     the transaction to render
+     * @param rowIndex the one-based grid row this transaction occupies
+     * @return the column-keyed cells for this transaction
      */
     @Override
-    protected void renderPage(List<Transaction> page) {
-        int row = 1;
-        for (Transaction transaction : page) {
-            addDataRow(row++, transaction);
-        }
+    protected RowCells<TransactionsSort.SortColumn> buildRowCells(Transaction item, int rowIndex) {
+        Stock stock = item.getShare().getStock();
+        TransactionStatsService.TransactionStats stats =
+                statsService.getStats(item, gameService.getCurrencyConverter());
+        return RowCells.<TransactionsSort.SortColumn>builder()
+                .put(TransactionsSort.SortColumn.WEEK,
+                        TableCells.data(String.valueOf(item.getWeek())))
+                .put(TransactionsSort.SortColumn.COMPANY,
+                        TableCells.data(stock.getSymbol() + ", " + stock.getCompany()))
+                .put(TransactionsSort.SortColumn.TYPE, typeBadge(item))
+                .put(TransactionsSort.SortColumn.QUANTITY,
+                        TableCells.data(MoneyFormatter.format(stats.quantity())))
+                .put(TransactionsSort.SortColumn.CURRENCY,
+                        TableCells.data(stock.getCurrency().getCurrencyCode()))
+                .put(TransactionsSort.SortColumn.PRICE,
+                        TableCells.data(MoneyFormatter.format(stats.pricePerShare())))
+                .put(TransactionsSort.SortColumn.COMMISSION,
+                        TableCells.data(MoneyFormatter.format(stats.commissionNok())))
+                .put(TransactionsSort.SortColumn.TAX, taxCell(stats))
+                .put(TransactionsSort.SortColumn.AMOUNT, amountCell(stats.amountNok()));
     }
 
     /**
@@ -198,30 +216,6 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     }
 
     /**
-     * Renders one transaction as a data row in the table.
-     *
-     * @param row         the table row index to write to
-     * @param transaction the transaction to render
-     */
-    private void addDataRow(int row, Transaction transaction) {
-        Stock stock = transaction.getShare().getStock();
-        TransactionStatsService.TransactionStats stats =
-                statsService.getStats(transaction, gameService.getCurrencyConverter());
-
-        table.addRow(row,
-                TableCells.data(String.valueOf(transaction.getWeek())),
-                TableCells.data(stock.getSymbol() + ", " + stock.getCompany()),
-                typeBadge(transaction),
-                TableCells.data(MoneyFormatter.format(stats.quantity())),
-                TableCells.data(stock.getCurrency().getCurrencyCode()),
-                TableCells.data(MoneyFormatter.format(stats.pricePerShare())),
-                TableCells.data(MoneyFormatter.format(stats.commissionNok())),
-                taxCell(stats),
-                amountCell(stats.amountNok())
-        );
-    }
-
-    /**
      * Creates the pill-shaped type badge for a transaction.
      *
      * @param transaction the transaction to label
@@ -237,7 +231,7 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
     }
 
     private Label amountCell(java.math.BigDecimal amountNok) {
-        return ChangeFormatter.styledAmount(amountNok, "holdings-cell");
+        return ChangeFormatter.styledAmount(amountNok, "table-cell");
     }
 
     /**

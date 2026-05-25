@@ -68,6 +68,20 @@ public class LanguageManager {
     }
 
     /**
+     * Removes a previously registered observer so it is no longer notified.
+     * Transient UI components should call this when they are detached, to avoid
+     * leaking observers that keep updating (and keep the component alive) after disposal.
+     * Does nothing if the observer was not registered.
+     *
+     * @param observer the observer to remove
+     * @throws NullPointerException if observer is null
+     */
+    public static void removeObserver(Runnable observer) {
+        Objects.requireNonNull(observer, "Observer cannot be null");
+        observers.remove(observer);
+    }
+
+    /**
      * Sets the active language, reloads the resource bundle,
      * and notifies all registered observers.
      *

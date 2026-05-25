@@ -9,7 +9,7 @@ import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.LoanLedgerCa
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.TransactionsActivityCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.TransactionsCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.card.TransactionsSummaryCard;
-import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
+import edu.ntnu.idatt2003.millions.view.component.WeekRangeFilter;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;

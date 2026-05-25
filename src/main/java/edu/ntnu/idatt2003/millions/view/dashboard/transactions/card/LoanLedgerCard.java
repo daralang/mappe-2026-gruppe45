@@ -10,10 +10,11 @@ import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.SearchBar;
 import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.LoanLedgerSort;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.LedgerTypeFilter;
-import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
+import edu.ntnu.idatt2003.millions.view.component.WeekRangeFilter;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -172,16 +173,23 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
     }
 
     /**
-     * Renders one page of loan-ledger entries into the table.
+     * Builds the column-keyed cells for one loan-ledger entry. The loan label is
+     * looked up from {@link #loanLabels} (keyed by {@link Loan}), which is rebuilt
+     * on every {@link #fetchAll()} call.
      *
-     * @param page the sub-list of entries for the current page
+     * @param item     the entry to render
+     * @param rowIndex the one-based grid row this entry occupies
+     * @return the column-keyed cells for this entry
      */
     @Override
-    protected void renderPage(List<LoanLedgerEntry> page) {
-        int row = 1;
-        for (LoanLedgerEntry entry : page) {
-            addDataRow(row++, entry, loanLabels.getOrDefault(entry.loan(), "?"));
-        }
+    protected RowCells<LoanLedgerSort.SortColumn> buildRowCells(LoanLedgerEntry item, int rowIndex) {
+        String loanLabel = loanLabels.getOrDefault(item.loan(), "?");
+        return RowCells.<LoanLedgerSort.SortColumn>builder()
+                .put(LoanLedgerSort.SortColumn.WEEK, TableCells.data(String.valueOf(item.week())))
+                .put(LoanLedgerSort.SortColumn.LOAN, TableCells.data(loanLabel))
+                .put(LoanLedgerSort.SortColumn.TYPE, typeBadge(item.type()))
+                .put(LoanLedgerSort.SortColumn.AMOUNT,
+                        ChangeFormatter.styledAmount(item.amount(), "table-cell"));
     }
 
     /**
@@ -231,26 +239,11 @@ public class LoanLedgerCard extends SortableTableCard<LoanLedgerEntry, LoanLedge
     }
 
     /**
-     * Renders one loan-ledger entry as a data row in the table.
+     * Maps a loan-ledger entry type to its chronological tiebreak priority,
+     * so entries within the same week order interest, then disbursement, then repayment.
      *
-     * @param row       the table row index to write to
-     * @param entry     the entry to render
-     * @param loanLabel the human-readable label for the entry's loan
-     */
-    private void addDataRow(int row, LoanLedgerEntry entry, String loanLabel) {
-        table.addRow(row,
-                TableCells.data(String.valueOf(entry.week())),
-                TableCells.data(loanLabel),
-                typeBadge(entry.type()),
-                ChangeFormatter.styledAmount(entry.amount(), "holdings-cell")
-        );
-    }
-
-    /**
-     * Creates a pill-shaped type badge for a loan-ledger entry type.
-     *
-     * @param type the entry type to label
-     * @return a styled badge label
+     * @param type the entry type to prioritise
+     * @return the sort priority for the given type
      */
     private static int typePriority(LoanLedgerEntryType type) {
         return switch (type) {
