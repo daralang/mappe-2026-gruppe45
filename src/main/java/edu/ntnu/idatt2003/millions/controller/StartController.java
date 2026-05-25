@@ -211,7 +211,10 @@ public class StartController {
         try {
             new CsvStockFileHandler().readStocks(file.toPath(), currency);
             successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
-        } catch (InvalidStockDataException | UncheckedIOException e) {
+        } catch (InvalidStockDataException e) {
+            inputs.setStockFilePath("");
+            resolveLocalizedError(e.getI18nKey(), e.getArgs());
+        } catch (UncheckedIOException e) {
             inputs.setStockFilePath("");
             errorSink.accept(e::getMessage);
         }
@@ -235,9 +238,7 @@ public class StartController {
             successSink.accept(() -> LanguageManager.get("start.file.uploadSuccess"));
         } catch (GameSaveCorruptException e) {
             inputs.setSaveFilePath("");
-            final String key = e.getI18nKey();
-            final Object[] args = e.getArgs();
-            errorSink.accept(() -> MessageFormat.format(LanguageManager.get(key), args));
+            resolveLocalizedError(e.getI18nKey(), e.getArgs());
         } catch (UncheckedIOException e) {
             inputs.setSaveFilePath("");
             errorSink.accept(e::getMessage);
@@ -357,15 +358,18 @@ public class StartController {
         try {
             action.execute();
         } catch (GameSaveCorruptException exception) {
-            final String key = exception.getI18nKey();
-            final Object[] args = exception.getArgs();
-            errorSink.accept(() -> MessageFormat.format(LanguageManager.get(key), args));
-        } catch (InvalidStockDataException | IllegalArgumentException
-                 | IllegalStateException | UncheckedIOException exception) {
+            resolveLocalizedError(exception.getI18nKey(), exception.getArgs());
+        } catch (InvalidStockDataException exception) {
+            resolveLocalizedError(exception.getI18nKey(), exception.getArgs());
+        } catch (IllegalArgumentException | IllegalStateException | UncheckedIOException exception) {
             errorSink.accept(exception::getMessage);
         } catch (Exception _) {
             errorSink.accept(() -> LanguageManager.get("error.save.load.failed"));
         }
+    }
+
+    private void resolveLocalizedError(String key, Object[] args) {
+        errorSink.accept(() -> MessageFormat.format(LanguageManager.get(key), args));
     }
 
     /**

@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.file.stock;
 
+import java.util.Arrays;
+
 /**
  * Thrown when a CSV stock file contains a line that cannot be parsed. Triggering
  * conditions include:
@@ -13,71 +15,68 @@ package edu.ntnu.idatt2003.millions.file.stock;
  * <p>Blank lines and lines beginning with {@code #} are skipped silently and
  * never trigger this exception.
  *
- * <p>Callers should report the {@link #getLineNumber() line number} and
- * {@link #getLineContent() raw content} to the user so they can locate and
- * correct the malformed entry in the file.
+ * <p>The exception carries an opaque {@link #getI18nKey() i18nKey} and structured
+ * {@link #getArgs() args} (typically line number and raw line content) rather than
+ * a pre-resolved string. Callers in the controller layer resolve the key at display
+ * time via {@code LanguageManager} so the message is shown in the user's current
+ * language.
+ *
+ * <p>{@link #getMessage()} returns a fallback string intended for logging and
+ * debugging only — it is not the user-facing message.
  *
  * <p>{@link EmptyStockFileException} is a subclass for the case where the file
  * contains no valid stock entries at all.
  */
 public class InvalidStockDataException extends Exception {
 
-    private final int lineNumber;
-    private final String lineContent;
+    private final String i18nKey;
+    private final Object[] args;
 
     /**
-     * Creates an exception identifying the malformed line by its position in
-     * the file and its raw content.
+     * Creates an exception with an i18n key and structured arguments but no chained cause.
      *
-     * @param lineNumber  the 1-based line number of the malformed entry
-     * @param lineContent the raw text of the malformed line
+     * @param i18nKey the resource-bundle key identifying the error message template
+     * @param args    the format arguments (e.g. line number and raw content); may be null or empty
      */
-    public InvalidStockDataException(int lineNumber, String lineContent) {
-        super("Invalid stock data at line " + lineNumber + ": \"" + lineContent + "\"");
-        this.lineNumber = lineNumber;
-        this.lineContent = lineContent;
-    }
-
-    /**
-     * Creates an exception identifying the malformed line by its position, raw content,
-     * and a specific reason describing why the line failed validation.
-     *
-     * <p>Use this constructor when the generic "invalid stock data" message is not
-     * descriptive enough, for example when a required field is blank or the price
-     * is non-positive.
-     *
-     * @param lineNumber  the 1-based line number of the malformed entry
-     * @param lineContent the raw text of the malformed line
-     * @param reason      a short description of why the line is invalid
-     *                    (e.g. {@code "blank symbol"} or {@code "non-positive price \"-1\""})
-     */
-    public InvalidStockDataException(int lineNumber, String lineContent, String reason) {
-        super(reason + " at line " + lineNumber + ": \"" + lineContent + "\"");
-        this.lineNumber = lineNumber;
-        this.lineContent = lineContent;
+    public InvalidStockDataException(String i18nKey, Object[] args) {
+        super(formatFallback(i18nKey, args));
+        this.i18nKey = i18nKey;
+        this.args = args != null ? args.clone() : new Object[0];
     }
 
     /**
-     * Creates an exception with a descriptive message and a chained cause.
-     * Use this constructor when wrapping a lower-level exception such as a
-     * {@link java.io.IOException}.
+     * Creates an exception with an i18n key, structured arguments, and a chained cause.
      *
-     * @param message a human-readable description of the parse failure
-     * @param cause   the lower-level exception that triggered this one
+     * @param i18nKey the resource-bundle key identifying the error message template
+     * @param args    the format arguments (e.g. line number and raw content); may be null or empty
+     * @param cause   the lower-level exception that triggered this one; may be null
      */
-    public InvalidStockDataException(String message, Throwable cause) {
-        super(message, cause);
-        this.lineNumber = -1;
-        this.lineContent = null;
+    public InvalidStockDataException(String i18nKey, Object[] args, Throwable cause) {
+        super(formatFallback(i18nKey, args), cause);
+        this.i18nKey = i18nKey;
+        this.args = args != null ? args.clone() : new Object[0];
     }
 
-    /** @return the 1-based line number of the malformed entry, or -1 if not set */
-    public int getLineNumber() {
-        return lineNumber;
+    /**
+     * Returns the resource-bundle key for the error message template.
+     * Controllers pass this to {@code LanguageManager.get(key)} at display time.
+     *
+     * @return the i18n key
+     */
+    public String getI18nKey() {
+        return i18nKey;
     }
 
-    /** @return the raw text of the malformed line, or null if not set */
-    public String getLineContent() {
-        return lineContent;
+    /**
+     * Returns a defensive copy of the format arguments for the message template.
+     *
+     * @return the format arguments; never null, may be empty
+     */
+    public Object[] getArgs() {
+        return args.clone();
+    }
+
+    private static String formatFallback(String key, Object[] args) {
+        return key + (args != null && args.length > 0 ? " " + Arrays.toString(args) : "");
     }
 }

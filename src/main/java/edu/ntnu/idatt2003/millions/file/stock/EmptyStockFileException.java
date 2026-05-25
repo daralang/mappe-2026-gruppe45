@@ -21,6 +21,6 @@ public class EmptyStockFileException extends InvalidStockDataException {
    * @param filePath the path or name of the stock file that was empty
    */
   public EmptyStockFileException(String filePath) {
-    super("Stock file contains no valid entries: \"" + filePath + "\"", null);
+    super("error.stock.csv.emptyFile", new Object[]{filePath}, null);
   }
 }
