@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.stock;
 
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
@@ -15,6 +16,9 @@ import java.util.Objects;
  * prices (GAV = total cost / total quantity).
  * Shares are held in a player's portfolio and can be sold on an exchange.
  */
+// Not a record: Stock is mutable (prices grow over time), so Share cannot carry value-type semantics.
+// Portfolio also relies on reference equality for contains() / remove().
+@SuppressWarnings("ClassCanBeRecord")
 public class Share {
     private final Stock stock;
     private final BigDecimal quantity;
@@ -43,26 +47,16 @@ public class Share {
         this.purchasePrice = purchasePrice;
     }
 
-    /**
-     * Gets the stock associated with this share.
-     *
-     * @return the stock
-     */
     public Stock getStock() {
         return stock;
     }
 
-    /**
-     * Gets the quantity of shares held.
-     *
-     * @return the number of shares
-     */
     public BigDecimal getQuantity() {
         return quantity;
     }
 
     /**
-     * Gets the weighted-average purchase price (GAV) per share.
+     * Returns the weighted-average purchase price (GAV) per share.
      * For a position consolidated from multiple purchases this is the
      * weighted-average of all individual purchase prices; for a single
      * purchase it equals the original price paid.
@@ -140,8 +134,6 @@ public class Share {
     /**
      * Returns the net amount the player would receive if the entire position
      * were sold at the current price, after commission and tax.
-     * Delegates to {@link SalesCalculator} so the business rules for fees
-     * remain in the domain model.
      *
      * @return liquidation value in the stock's native currency
      */
