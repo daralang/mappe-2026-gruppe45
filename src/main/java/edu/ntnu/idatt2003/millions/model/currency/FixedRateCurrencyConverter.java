@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.currency;
 
 import java.math.BigDecimal;
@@ -10,14 +11,13 @@ import java.util.Objects;
 /**
  * A {@link CurrencyConverter} backed by a fixed table of exchange rates.
  *
- * <p> All rates are defined relative to NOK and used as the pivot for
- * conversion between any two supported currencies. Conversion follows
- * the formula: {@code (amount * fromRateToNok) / toRateToNok}.</p>
+ * <p>All rates are defined relative to NOK, which is used as the pivot for
+ * conversion between any two supported currencies.</p>
  *
- * <p> Supported currencies: NOK, USD, EUR, GBP. Conversion of an amount
- * to and from the same currency returns the original amount unchanged.</p>
+ * <p>Supported currencies: NOK, USD, EUR, GBP, SEK, DKK. Converting between
+ * identical currencies returns the original amount unchanged.</p>
  *
- * <p> Last updated currency: 8. May 2026</p>
+ * <p>Rates last updated: 8 May 2026.</p>
  */
 public class FixedRateCurrencyConverter implements CurrencyConverter {
 

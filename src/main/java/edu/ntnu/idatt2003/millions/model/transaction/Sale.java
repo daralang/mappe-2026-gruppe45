@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.transaction;
 
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
@@ -17,10 +18,6 @@ import java.util.Objects;
  * realized financial values in the transaction archive reflect the price at
  * sale time, not the current price.
  *
- * <p>Note: {@link #getShare()}{@code .getStock().getSalesPrice()} still returns
- * the current stock price, not the sale-time price. The frozen fields on Sale
- * cover all current uses. If a future feature requires the sale-time stock price
- * as a separate piece of data, add a {@code salesPriceAtCommit} field at that point.
  */
 public class Sale extends Transaction {
 
@@ -35,8 +32,6 @@ public class Sale extends Transaction {
 
     /**
      * Constructs a new Sale for the specified share and week.
-     * All financial values are captured immediately from the current stock price
-     * and remain fixed for the lifetime of this object.
      *
      * @param share the share being sold
      * @param week  the week in which the sale takes place
@@ -75,7 +70,7 @@ public class Sale extends Transaction {
     /**
      * Commits this sale for the given player.
      * Removes the share from the player's portfolio and records the transaction
-     * in the archive. Financial values are already frozen from construction.
+     * in the archive.
      *
      * @param player the player executing the sale
      * @throws NullPointerException  if the player is null
@@ -86,7 +81,7 @@ public class Sale extends Transaction {
     public void commit(Player player) {
         Objects.requireNonNull(player, "Player cannot be null");
         if (isCommitted()) throw new IllegalStateException("Sale is already committed");
-        if (!player.getPortfolio().contains(getShare())) throw new IllegalStateException("Sale is not in portfolio");
+        if (!player.getPortfolio().contains(getShare())) throw new IllegalStateException("Share is not in portfolio");
 
         player.getPortfolio().removeShare(getShare());
         player.getTransactionArchive().add(this);
@@ -96,21 +91,6 @@ public class Sale extends Transaction {
     /** Returns the gross sale value (sales price × quantity) in native currency. */
     public BigDecimal getGross() {
         return gross;
-    }
-
-    /** Returns the commission paid on this sale (1% of gross) in native currency. */
-    public BigDecimal getCommission() {
-        return commission;
-    }
-
-    /** Returns the tax paid on this sale (30% of profit, or zero if a loss) in native currency. */
-    public BigDecimal getTax() {
-        return tax;
-    }
-
-    /** Returns the net payout of this sale (gross − commission − tax) in native currency. */
-    public BigDecimal getTotal() {
-        return total;
     }
 
     /** Returns the realized profit or loss on this sale (total − original purchase costs) in native currency. */

@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.calculator;
 
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -23,7 +24,7 @@ public class PurchaseCalculator implements TransactionCalculator {
     /**
      * Constructs a PurchaseCalculator for the given share.
      *
-     * @param share the share being purchased, used to retrieve purchase price and quantity
+     * @param share the share being purchased
      * @throws NullPointerException if the share is null
      */
     public PurchaseCalculator(Share share) {
@@ -36,7 +37,7 @@ public class PurchaseCalculator implements TransactionCalculator {
      * Calculates the gross value of the purchase.
      * Gross value is defined as purchase price multiplied by quantity.
      *
-     * @return the gross value as a {@link BigDecimal}
+     * @return the gross purchase value
      */
     @Override
     public BigDecimal calculateGross() {
@@ -47,7 +48,7 @@ public class PurchaseCalculator implements TransactionCalculator {
      * Calculates the commission fee for the purchase.
      * Commission is 0.5% of the gross value.
      *
-     * @return the commission amount as a {@link BigDecimal}
+     * @return the commission amount
      */
     @Override
     public BigDecimal calculateCommission() {
@@ -58,7 +59,7 @@ public class PurchaseCalculator implements TransactionCalculator {
      * Returns the tax for a purchase transaction.
      * No tax is applied on purchases, so this always returns zero.
      *
-     * @return {@link BigDecimal#ZERO}
+     * @return always zero; purchases are not taxed
      */
     @Override
     public BigDecimal calculateTax() {
@@ -67,9 +68,8 @@ public class PurchaseCalculator implements TransactionCalculator {
 
     /**
      * Calculates the total cost of the purchase.
-     * Total is defined as gross value plus commission plus tax.
      *
-     * @return the total cost as a {@link BigDecimal}
+     * @return the total cost to the buyer
      */
     @Override
     public BigDecimal calculateTotal() {

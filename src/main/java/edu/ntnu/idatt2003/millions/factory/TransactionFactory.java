@@ -3,7 +3,6 @@ package edu.ntnu.idatt2003.millions.factory;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
 import edu.ntnu.idatt2003.millions.model.transaction.Sale;
-import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 
 import java.math.BigDecimal;
 
@@ -36,7 +35,7 @@ public class TransactionFactory {
      * @throws NullPointerException     if share is null
      * @throws IllegalArgumentException if week is less than 1
      */
-    public static Transaction createPurchase(Share share, int week) {
+    public static Purchase createPurchase(Share share, int week) {
         return new Purchase(share, week);
     }
 
@@ -50,7 +49,7 @@ public class TransactionFactory {
      * @throws NullPointerException     if share or settlement amount is null
      * @throws IllegalArgumentException if week is less than 1 or settlement amount is negative
      */
-    public static Transaction createPurchase(Share share, int week, BigDecimal settlementAmount) {
+    public static Purchase createPurchase(Share share, int week, BigDecimal settlementAmount) {
         return new Purchase(share, week, settlementAmount);
     }
 
@@ -63,7 +62,7 @@ public class TransactionFactory {
      * @throws NullPointerException     if share is null
      * @throws IllegalArgumentException if week is less than 1
      */
-    public static Transaction createSale(Share share, int week) {
+    public static Sale createSale(Share share, int week) {
         return new Sale(share, week);
     }
 }

@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.transaction;
 
 import edu.ntnu.idatt2003.millions.model.calculator.TransactionCalculator;
@@ -9,8 +10,6 @@ import java.util.Objects;
 
 /**
  * Represents an abstract financial transaction involving a share.
- * A transaction records the share, the week it takes place, and the calculator
- * used to process it. Subclasses must implement {@link #commit(Player)}.
  */
 public abstract class Transaction {
     private Share share;
@@ -40,11 +39,6 @@ public abstract class Transaction {
         this.committed = false;
     }
 
-    /**
-     * Gets the share involved in this transaction.
-     *
-     * @return the share
-     */
     public Share getShare() {
         return share;
     }
@@ -62,11 +56,6 @@ public abstract class Transaction {
         this.share = newShare;
     }
 
-    /**
-     * Gets the week in which this transaction takes place.
-     *
-     * @return the week number
-     */
     public int getWeek() {
         return week;
     }
@@ -99,7 +88,7 @@ public abstract class Transaction {
     }
 
     /**
-     * Marks this transactionn as committed.
+     * Marks this transaction as committed.
      */
     protected void markAsCommitted() {
         this.committed = true;
@@ -114,7 +103,6 @@ public abstract class Transaction {
 
     /**
      * Returns the tax paid on this transaction in the stock's native currency.
-     * Always zero for purchases.
      *
      * @return tax amount in native currency
      */
@@ -138,7 +126,6 @@ public abstract class Transaction {
 
     /**
      * Commits this transaction for the given player.
-     * Must be implemented by subclasses.
      *
      * @param player the player executing the transaction
      */

@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.transaction;
 
 import java.math.BigDecimal;
@@ -5,8 +6,7 @@ import java.util.*;
 
 /**
  * Represents an archive of transactions.
- * The archive stores the transactions added and provides methods for retrieving
- * transactions by week, type ({@link Purchase} or {@link Sale}), and counting distinct weeks of activity.
+ * Provides retrieval by week, by type ({@link Purchase} or {@link Sale}), and counting of distinct weeks of activity.
  */
 public class TransactionArchive {
     private final List<Transaction> transactions;
@@ -35,7 +35,7 @@ public class TransactionArchive {
     }
 
     /**
-     * Returns whether the archive contains transactions or not.
+     * Returns whether the archive contains no transactions.
      *
      * @return {@code true} if the archive is empty, {@code false} otherwise
      */
@@ -45,7 +45,6 @@ public class TransactionArchive {
 
     /**
      * Returns all transactions in the archive regardless of week.
-     * Used by the file handler to iterate every archived transaction during relinking.
      *
      * @return a defensive copy of all transactions
      */
@@ -188,7 +187,7 @@ public class TransactionArchive {
      * @return commission totals per currency; empty map if no sales exist
      */
     public Map<Currency, BigDecimal> getTotalSaleCommissionByCurrency() {
-        return sumSalesAttribute(Sale::getCommission);
+        return sumSalesAttribute(Sale::getCommissionNative);
     }
 
     /**
@@ -198,7 +197,7 @@ public class TransactionArchive {
      * @return tax totals per currency; empty map if no sales exist
      */
     public Map<Currency, BigDecimal> getTotalSaleTaxByCurrency() {
-        return sumSalesAttribute(Sale::getTax);
+        return sumSalesAttribute(Sale::getTaxNative);
     }
 
     /**
@@ -224,11 +223,6 @@ public class TransactionArchive {
                 .count();
     }
 
-    /**
-     * Aggregates per-sale profit values into a sum per currency, applying the
-     * given filter and mapping function. The mapping function is used to convert
-     * the profit value (e.g. take the absolute value for losses).
-     */
     private Map<Currency, BigDecimal> sumSalesByCurrency(
             java.util.function.Predicate<BigDecimal> filter,
             java.util.function.UnaryOperator<BigDecimal> mapper) {
@@ -242,11 +236,6 @@ public class TransactionArchive {
         return result;
     }
 
-    /**
-     * Aggregates a per-sale attribute (e.g. commission, tax) into a sum per
-     * currency. Used by {@link #getTotalSaleCommissionByCurrency()} and
-     * {@link #getTotalSaleTaxByCurrency()}.
-     */
     private Map<Currency, BigDecimal> sumSalesAttribute(
             java.util.function.Function<Sale, BigDecimal> extractor) {
         return getAllSales().stream()

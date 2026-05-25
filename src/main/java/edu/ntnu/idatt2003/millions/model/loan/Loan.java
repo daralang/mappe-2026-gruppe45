@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.loan;
 
 import java.math.BigDecimal;
@@ -48,12 +49,20 @@ public record Loan(LoanOffer offer, BigDecimal principal, int takenAtWeek) {
      *
      * <p>Precondition: {@code currentWeek >= takenAtWeek}. Behaviour for earlier
      * weeks is undefined (the result will be negative).
+     *
+     * @param currentWeek the current game week
+     * @return number of weeks since the loan was taken
      */
     public int weeksElapsed(int currentWeek) {
         return currentWeek - takenAtWeek;
     }
 
-    /** Number of weeks remaining in the loan term, floored at zero. */
+    /**
+     * Number of weeks remaining in the loan term, floored at zero.
+     *
+     * @param currentWeek the current game week
+     * @return weeks left in the term, or zero if the loan is at or past its due date
+     */
     public int weeksRemaining(int currentWeek) {
         return Math.max(0, offer.termWeeks() - weeksElapsed(currentWeek));
     }
@@ -63,12 +72,20 @@ public record Loan(LoanOffer offer, BigDecimal principal, int takenAtWeek) {
      *
      * <p>Precondition: {@code currentWeek >= takenAtWeek}. Behaviour for earlier
      * weeks is undefined (the result will be negative).
+     *
+     * @param currentWeek the current game week
+     * @return total interest charged so far
      */
     public BigDecimal interestPaid(int currentWeek) {
         return weeklyInterest().multiply(BigDecimal.valueOf(weeksElapsed(currentWeek)));
     }
 
-    /** Interest that would be saved by repaying now (weeklyInterest × weeksRemaining). */
+    /**
+     * Interest that would be saved by repaying now (weeklyInterest × weeksRemaining).
+     *
+     * @param currentWeek the current game week
+     * @return interest avoided by early repayment
+     */
     public BigDecimal interestSaved(int currentWeek) {
         return weeklyInterest().multiply(BigDecimal.valueOf(weeksRemaining(currentWeek)));
     }
@@ -76,12 +93,11 @@ public record Loan(LoanOffer offer, BigDecimal principal, int takenAtWeek) {
     /**
      * Returns true when this loan's principal is due — that is, when
      * {@code currentWeek >= takenAtWeek + termWeeks}.
+     * Returns true for the due week and all subsequent weeks;
+     * preventing duplicate settlement is the caller's responsibility.
      *
-     * <p>Note that this returns true for the due week and any week thereafter;
-     * preventing duplicate settlement is the caller's responsibility. In
-     * practice, settled loans are removed from the active-loans list
-     * immediately, so this method is only ever evaluated for loans that have
-     * not yet been settled.
+     * @param currentWeek the current game week
+     * @return true if the loan term has expired
      */
     public boolean isDueThisWeek(int currentWeek) {
         return weeksRemaining(currentWeek) == 0;

@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.stock;
 
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
@@ -13,8 +14,16 @@ import java.util.Objects;
  * {@link edu.ntnu.idatt2003.millions.model.player.Portfolio} into a single Share
  * whose {@code purchasePrice} is the weighted-average of all individual purchase
  * prices (GAV = total cost / total quantity).
+ *
+ * <p>Identity is based on object reference; two Share instances with identical
+ * fields are not considered equal. Portfolio relies on this for
+ * {@code contains()} and {@code removeShare()}.
+ * <p>
  * Shares are held in a player's portfolio and can be sold on an exchange.
  */
+// Not a record: Stock is mutable (prices grow over time), so Share cannot carry value-type semantics.
+// Portfolio also relies on reference equality for contains() / remove().
+@SuppressWarnings("ClassCanBeRecord")
 public class Share {
     private final Stock stock;
     private final BigDecimal quantity;
@@ -27,14 +36,14 @@ public class Share {
      * @param quantity      the number of shares purchased
      * @param purchasePrice the price per share at time of purchase
      * @throws NullPointerException     if the stock, quantity, or purchase price is null
-     * @throws IllegalArgumentException if the quantity is negative
+     * @throws IllegalArgumentException if the quantity is not greater than zero
      * @throws IllegalArgumentException if the purchase price is negative
      */
     public Share(Stock stock, BigDecimal quantity, BigDecimal purchasePrice) {
         Objects.requireNonNull(stock, "Stock cannot be null");
         Objects.requireNonNull(quantity, "Quantity cannot be null");
         Objects.requireNonNull(purchasePrice, "Purchase price cannot be null");
-        if (quantity.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Quantity cannot be negative");
+        if (quantity.compareTo(BigDecimal.ZERO) <= 0) throw new IllegalArgumentException("Quantity must be positive");
         if (purchasePrice.compareTo(BigDecimal.ZERO) < 0)
             throw new IllegalArgumentException("Purchase price cannot be negative");
 
@@ -43,26 +52,16 @@ public class Share {
         this.purchasePrice = purchasePrice;
     }
 
-    /**
-     * Gets the stock associated with this share.
-     *
-     * @return the stock
-     */
     public Stock getStock() {
         return stock;
     }
 
-    /**
-     * Gets the quantity of shares held.
-     *
-     * @return the number of shares
-     */
     public BigDecimal getQuantity() {
         return quantity;
     }
 
     /**
-     * Gets the weighted-average purchase price (GAV) per share.
+     * Returns the weighted-average purchase price (GAV) per share.
      * For a position consolidated from multiple purchases this is the
      * weighted-average of all individual purchase prices; for a single
      * purchase it equals the original price paid.
@@ -140,8 +139,6 @@ public class Share {
     /**
      * Returns the net amount the player would receive if the entire position
      * were sold at the current price, after commission and tax.
-     * Delegates to {@link SalesCalculator} so the business rules for fees
-     * remain in the domain model.
      *
      * @return liquidation value in the stock's native currency
      */

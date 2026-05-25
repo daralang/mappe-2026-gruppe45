@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.transaction;
 
 import edu.ntnu.idatt2003.millions.model.calculator.PurchaseCalculator;
@@ -9,16 +10,15 @@ import java.util.Objects;
 
 /**
  * Represents a purchase transaction for a given share.
- * A purchase records the share bought and the week it was acquired,
- * uses a {@link PurchaseCalculator} to calculate the share cost, and owns
- * the balance withdrawal when the transaction is committed for a {@link Player}.
+ * When committed, withdraws the total cost from the player's balance in NOK
+ * and adds the share to the player's portfolio.
  */
 public class Purchase extends Transaction {
     private final BigDecimal settlementAmount;
 
     /**
      * Constructs a new Purchase for the specified share and week.
-     * The settlement amount defaults to the total calculated by {@link PurchaseCalculator}.
+     * The settlement amount defaults to the total cost of the acquired share.
      *
      * @param share the share being purchased
      * @param week  the week in which the purchase takes place
@@ -40,6 +40,7 @@ public class Purchase extends Transaction {
      * @throws NullPointerException     if the settlement amount is null
      * @throws IllegalArgumentException if the settlement amount is negative
      */
+    @SuppressWarnings("java:S8433") // validation after super() is safe; super has no side effects beyond field assignment
     public Purchase(Share share, int week, BigDecimal settlementAmount) {
         super(share, week, new PurchaseCalculator(share));
         Objects.requireNonNull(settlementAmount, "Settlement amount cannot be null");
@@ -54,11 +55,13 @@ public class Purchase extends Transaction {
         return new PurchaseCalculator(getShare()).calculateCommission();
     }
 
+    /** Purchases are not taxed; always returns zero. */
     @Override
     public BigDecimal getTaxNative() {
         return BigDecimal.ZERO;
     }
 
+    /** Returns the total cost as a negative value — a cash outflow from the buyer's perspective. */
     @Override
     public BigDecimal getSignedTotalNative() {
         return new PurchaseCalculator(getShare()).calculateTotal().negate();

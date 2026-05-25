@@ -381,19 +381,6 @@ class PortfolioTest {
         }
 
         @Test
-        @DisplayName("Should return zero when share has zero quantity")
-        void returnsZeroWhenShareHasZeroQuantity() {
-            // Arrange
-            Share zeroShare = new Share(
-                    new Stock("DCL", "Dara, Inc",
-                            new ArrayList<>(List.of(new BigDecimal("100.00"))), NOK),
-                    new BigDecimal("0"), new BigDecimal("50.00"));
-            portfolio.addShare(zeroShare);
-            // Act & Assert
-            assertEquals(0, BigDecimal.ZERO.compareTo(portfolio.getNetWorth(converter)));
-        }
-
-        @Test
         @DisplayName("Should return correct net worth after share is removed")
         void returnsCorrectNetWorthAfterShareIsRemoved() {
             // Arrange
