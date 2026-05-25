@@ -60,88 +60,101 @@ class PlayerStatsServiceTest {
     class GetProgressToNextStatus {
 
         @Test
-        @DisplayName("Novice with 0 weeks and 0% growth returns 0.0")
+        @DisplayName("Novice with 0 weeks and 0% growth → 0/20 = 0.0")
         void noviceZeroWeeksZeroGrowth() {
             // Arrange
-            Player p = playerWith("100");
+            Player p = playerWith("1000");
             // Act
             double progress = service.getProgressToNextStatus(p, converter);
-            // Assert
+            // Assert — weeksPart=min(10,0)=0, growthPart=min(10,floor(0/2))=0; (0+0)/20=0.0
             assertEquals(0.0, progress);
         }
 
         @Test
-        @DisplayName("Novice with 10 weeks and 10% growth returns 0.5 (return is the bottleneck)")
-        void noviceTenWeeksTenPercentGrowth() {
-            // Arrange — 10 weeks, +10 money: growth = 10%, net worth 110 < 120 threshold → NOVICE
-            Player p = playerWith("100");
-            addWeeks(p, 10);
-            p.addMoney(new BigDecimal("10"));
-            // Act
-            double progress = service.getProgressToNextStatus(p, converter);
-            // Assert — weekProgress=(10-0)/10=1.0, returnProgress=(10-0)/20=0.5, min=0.5
-            assertEquals(0.5, progress);
-        }
-
-        @Test
-        @DisplayName("Novice with 10 weeks and 16% growth returns 0.8")
-        void noviceTenWeeksSixteenPercentGrowth() {
-            // Arrange — 10 weeks, +16 money: growth = 16%, net worth 116 < 120 → NOVICE
-            Player p = playerWith("100");
-            addWeeks(p, 10);
-            p.addMoney(new BigDecimal("16"));
-            // Act
-            double progress = service.getProgressToNextStatus(p, converter);
-            // Assert — weekProgress=1.0, returnProgress=(16-0)/20=0.8, min=0.8
-            assertEquals(0.8, progress);
-        }
-
-        @Test
-        @DisplayName("Novice with 5 weeks and 30% growth returns 0.5 (weeks are the bottleneck)")
-        void noviceFiveWeeksThirtyPercentGrowthCapped() {
-            // Arrange — 5 weeks (<10) so still NOVICE despite 30% growth exceeding 20% threshold
-            Player p = playerWith("100");
+        @DisplayName("Novice with 5 weeks and 0% growth → 5/20 = 0.25")
+        void noviceFiveWeeksZeroGrowth() {
+            // Arrange
+            Player p = playerWith("1000");
             addWeeks(p, 5);
-            p.addMoney(new BigDecimal("30"));
             // Act
             double progress = service.getProgressToNextStatus(p, converter);
-            // Assert — weekProgress=(5-0)/10=0.5, returnProgress=min(1.0,30/20)=1.0, min=0.5
+            // Assert — weeksPart=min(10,5)=5, growthPart=0; (5+0)/20=0.25
+            assertEquals(0.25, progress);
+        }
+
+        @Test
+        @DisplayName("Novice with 0 weeks and 10% growth (5 full 2% steps) → 5/20 = 0.25")
+        void noviceZeroWeeksTenPercentGrowth() {
+            // Arrange — start=1000, add 100 → net worth 1100, growth 10%
+            Player p = playerWith("1000");
+            p.addMoney(new BigDecimal("100"));
+            // Act
+            double progress = service.getProgressToNextStatus(p, converter);
+            // Assert — weeksPart=0, growthPart=min(10,floor(10/2))=min(10,5)=5; (0+5)/20=0.25
+            assertEquals(0.25, progress);
+        }
+
+        @Test
+        @DisplayName("Novice with 5 weeks and 11.9% growth → (5+5)/20 = 0.5 (discrete: 11.9% is 5 steps)")
+        void noviceFiveWeeksElevenPointNinePercentGrowth() {
+            // Arrange — start=1000, add 119 → net worth 1119, growth 11.9%
+            Player p = playerWith("1000");
+            addWeeks(p, 5);
+            p.addMoney(new BigDecimal("119"));
+            // Act
+            double progress = service.getProgressToNextStatus(p, converter);
+            // Assert — growthPart=floor(11.9/2)=floor(5.95)=5; (5+5)/20=0.5
             assertEquals(0.5, progress);
         }
 
         @Test
-        @DisplayName("Investor who just leveled up shows 0% progress toward Speculator")
-        void investorJustLeveledUpShowsZeroProgress() {
-            // Arrange — exactly 10 weeks and 20% growth: net worth 120 >= 120 and 10 >= 10 → INVESTOR
-            Player p = playerWith("100");
+        @DisplayName("Novice with 10 weeks and 19.9% growth → (10+9)/20 = 0.95 (not yet Investor)")
+        void noviceTenWeeksNineteenPointNinePercentGrowth() {
+            // Arrange — start=1000, add 199 → net worth 1199 < 1200 threshold → NOVICE
+            Player p = playerWith("1000");
             addWeeks(p, 10);
-            p.addMoney(new BigDecimal("20"));
+            p.addMoney(new BigDecimal("199"));
             // Act
             double progress = service.getProgressToNextStatus(p, converter);
-            // Assert — weekProgress=(10-10)/10=0.0, returnProgress=(20-20)/80=0.0, min=0.0
+            // Assert — growthPart=floor(19.9/2)=floor(9.95)=9; (10+9)/20=0.95
+            assertEquals(0.95, progress);
+        }
+
+        @Test
+        @DisplayName("Novice with 10 weeks and 20% growth → INVESTOR, new bar starts at 0.0")
+        void investorJustReachedShowsZeroProgressOnNewBar() {
+            // Arrange — start=1000, add 200 → net worth 1200 >= 1200 and 10 >= 10 → INVESTOR
+            Player p = playerWith("1000");
+            addWeeks(p, 10);
+            p.addMoney(new BigDecimal("200"));
+            // Act
+            double progress = service.getProgressToNextStatus(p, converter);
+            // Assert — INVESTOR bar: weeksPart=min(10,max(0,10-10))=0, growthPart=min(40,max(0,floor((20-20)/2)))=0;
+            //          (0+0)/50=0.0
             assertEquals(0.0, progress);
         }
 
         @Test
-        @DisplayName("Investor with 15 weeks and 50% growth returns 0.375 (return is the bottleneck)")
+        @DisplayName("Investor with 15 weeks and 50% growth → 20/50 = 0.4")
         void investorFifteenWeeksFiftyPercentGrowth() {
-            // Arrange — 15 weeks, +50% growth: net worth 150 >= 120 and 15 >= 10 → INVESTOR
-            Player p = playerWith("100");
+            // Arrange — start=1000, add 500 → net worth 1500 >= 1200 and 15 >= 10 → INVESTOR
+            Player p = playerWith("1000");
             addWeeks(p, 15);
-            p.addMoney(new BigDecimal("50"));
+            p.addMoney(new BigDecimal("500"));
             // Act
             double progress = service.getProgressToNextStatus(p, converter);
-            // Assert — weekProgress=(15-10)/10=0.5, returnProgress=(50-20)/80=0.375, min=0.375
-            assertEquals(0.375, progress);
+            // Assert — weeksPart=min(10,15-10)=5, growthPart=min(40,floor((50-20)/2))=min(40,15)=15;
+            //          (5+15)/50=0.4
+            assertEquals(0.4, progress);
         }
 
         @Test
-        @DisplayName("Speculator returns 1.0 regardless of values")
+        @DisplayName("Investor with 20 weeks and 100% growth → SPECULATOR, returns 1.0")
         void speculatorAlwaysReturnsOne() {
-            // Arrange — 20 weeks, +100% growth: net worth 200 = 200 threshold and 20 weeks → SPECULATOR
-            Player p = playerWith("100");
+            // Arrange — start=1000, add 1000 → net worth 2000 >= 2000 and 20 >= 20 → SPECULATOR
+            Player p = playerWith("1000");
             addWeeks(p, 20);
-            p.addMoney(new BigDecimal("100"));
+            p.addMoney(new BigDecimal("1000"));
             // Act
             double progress = service.getProgressToNextStatus(p, converter);
             // Assert
@@ -149,15 +162,30 @@ class PlayerStatsServiceTest {
         }
 
         @Test
-        @DisplayName("Negative growth does not produce a negative result")
-        void negativeGrowthClampedToZero() {
-            // Arrange — withdraw half starting money so net worth drops below start → negative growth
+        @DisplayName("Degradation: 15 trade-weeks but only 10% growth → NOVICE, (10+5)/20 = 0.75")
+        void degradationInvestorWeeksButLowGrowthReverts() {
+            // Arrange — start=1000, 15 weeks traded, only 10% growth: 1100 < 1200 threshold → NOVICE
             Player p = playerWith("1000");
-            p.withdrawMoney(new BigDecimal("500"));
+            addWeeks(p, 15);
+            p.addMoney(new BigDecimal("100"));
             // Act
             double progress = service.getProgressToNextStatus(p, converter);
-            // Assert — growth sub-score must be clamped to 0, not go negative
-            assertEquals(0.0, progress);
+            // Assert — NOVICE bar: weeksPart=min(10,15)=10, growthPart=min(10,floor(10/2))=5;
+            //          (10+5)/20=0.75
+            assertEquals(0.75, progress);
+        }
+
+        @Test
+        @DisplayName("Novice with 5 weeks and -10% growth → (5+0)/20 = 0.25 (negative growth doesn't reduce week-part)")
+        void noviceFiveWeeksNegativeGrowthWeeksPartUnaffected() {
+            // Arrange — start=1000, withdraw 100 → net worth 900, growth -10%
+            Player p = playerWith("1000");
+            addWeeks(p, 5);
+            p.withdrawMoney(new BigDecimal("100"));
+            // Act
+            double progress = service.getProgressToNextStatus(p, converter);
+            // Assert — weeksPart=5, growthPart=max(0,floor(-10/2))=max(0,-5)=0; (5+0)/20=0.25
+            assertEquals(0.25, progress);
         }
     }
 
