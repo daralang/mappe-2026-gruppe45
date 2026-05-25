@@ -432,14 +432,38 @@ class ArrowKeyNavigatorTest {
     }
 
     @Nested
-    @DisplayName("navigate() unrelated keys")
-    class UnrelatedKeys {
+    @DisplayName("navigate() SPACE key")
+    class SpaceKey {
 
         @Test
-        @DisplayName("SPACE returns false")
-        void spaceReturnsFalse() {
-            assertFalse(vertical(3, i -> {}, i -> {}, false).navigate(key(KeyCode.SPACE)));
+        @DisplayName("fires onConfirm with current index and returns true")
+        void spaceFiresConfirmWithCurrentIndex() {
+            AtomicInteger confirmed = new AtomicInteger(-1);
+            ArrowKeyNavigator nav = vertical(3, i -> {}, confirmed::set, false);
+            nav.select(2);
+
+            boolean handled = nav.navigate(key(KeyCode.SPACE));
+
+            assertTrue(handled);
+            assertEquals(2, confirmed.get());
         }
+
+        @Test
+        @DisplayName("does not call onSelect")
+        void spaceDoesNotCallOnSelect() {
+            AtomicInteger selected = new AtomicInteger(-1);
+            ArrowKeyNavigator nav = vertical(3, selected::set, i -> {}, false);
+            selected.set(-1);
+
+            nav.navigate(key(KeyCode.SPACE));
+
+            assertEquals(-1, selected.get());
+        }
+    }
+
+    @Nested
+    @DisplayName("navigate() unrelated keys")
+    class UnrelatedKeys {
 
         @Test
         @DisplayName("ESCAPE returns false")
