@@ -26,6 +26,8 @@ public class ExchangeView extends VBox implements SearchFocusProvider, PageFocus
     private final ViewHeader viewHeader;
     private final VBox contentArea;
     private SearchFocusProvider activeTabProvider;
+    private ExchangeOverview overviewView;
+    private StocksView stocksView;
 
     /**
      * Constructs a new ExchangeView with the overview tab active.
@@ -104,12 +106,17 @@ public class ExchangeView extends VBox implements SearchFocusProvider, PageFocus
     }
 
     private void showOverview() {
+        if (overviewView == null) {
+            overviewView = new ExchangeOverview(gameService);
+        }
         activeTabProvider = null;
-        contentArea.getChildren().setAll(new ExchangeOverview(gameService));
+        contentArea.getChildren().setAll(overviewView);
     }
 
     private void showStocks() {
-        StocksView stocksView = new StocksView(gameService, controller);
+        if (stocksView == null) {
+            stocksView = new StocksView(gameService, controller);
+        }
         activeTabProvider = stocksView;
         contentArea.getChildren().setAll(stocksView);
     }
