@@ -9,7 +9,7 @@ import java.util.function.IntSupplier;
 /**
  * Reusable keyboard-navigation logic for linearly indexed UI elements.
  *
- * <p>Handles arrow-key movement and Enter confirmation over a list of items
+ * <p>Handles arrow-key movement and Enter/Space confirmation over a list of items
  * identified by integer indices. The navigator is orientation-aware:
  * {@link Orientation#HORIZONTAL} responds to LEFT/RIGHT, while
  * {@link Orientation#VERTICAL} responds to UP/DOWN.</p>
@@ -42,7 +42,7 @@ public final class ArrowKeyNavigator {
      * @param orientation  which arrow keys to respond to
      * @param sizeSupplier supplies the current number of items; queried on each event
      * @param onSelect     called with the new index whenever selection moves
-     * @param onConfirm    called with the current index when Enter is pressed
+     * @param onConfirm    called with the current index when Enter or Space is pressed
      * @param wrap         whether navigation wraps around at the ends
      */
     public ArrowKeyNavigator(
@@ -87,7 +87,7 @@ public final class ArrowKeyNavigator {
                 if (orientation == Orientation.VERTICAL) { moveTo(selectedIndex + 1, size); yield true; }
                 yield false;
             }
-            case ENTER -> { onConfirm.accept(selectedIndex); yield true; }
+            case ENTER, SPACE -> { onConfirm.accept(selectedIndex); yield true; }
             default -> false;
         };
     }
