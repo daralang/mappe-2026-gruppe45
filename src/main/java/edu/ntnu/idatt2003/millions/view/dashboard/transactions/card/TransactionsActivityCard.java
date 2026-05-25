@@ -6,7 +6,7 @@ import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
+import edu.ntnu.idatt2003.millions.view.component.WeekRangeFilter;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -122,7 +122,7 @@ public class TransactionsActivityCard extends Card {
         grid.add(rowValue(saleCount, false), 1, 1);
 
         Region divider = new Region();
-        divider.getStyleClass().add("holdings-total-divider");
+        divider.getStyleClass().add("table-total-divider");
         GridPane.setColumnSpan(divider, 2);
         grid.add(divider, 0, 2);
 

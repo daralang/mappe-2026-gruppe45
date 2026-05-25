@@ -3,13 +3,14 @@
 @import "navbar.css";
 @import "tabs.css";
 @import "layout.css";
+@import "table.css";
 @import "chart.css";
-@import "holdings.css";
 @import "portfolio.css";
 @import "badges.css";
 @import "footer.css";
 @import "loans.css";
 @import "modal.css";
+@import "stockdetail.css";
 @import "utilities.css";
 @import "tooltip.css";
 @import "filters.css";

@@ -200,6 +200,28 @@ public class Stock {
     }
 
     /**
+     * Returns the lowest price among the most recent {@code weeks} prices.
+     *
+     * @param weeks the number of recent weeks to consider
+     * @return the lowest price in the recent window
+     * @throws IllegalArgumentException if {@code weeks} is not greater than zero
+     */
+    public BigDecimal getRecentLow(int weeks) {
+        return getRecentPrices(weeks).stream().min(BigDecimal::compareTo).orElseThrow();
+    }
+
+    /**
+     * Returns the highest price among the most recent {@code weeks} prices.
+     *
+     * @param weeks the number of recent weeks to consider
+     * @return the highest price in the recent window
+     * @throws IllegalArgumentException if {@code weeks} is not greater than zero
+     */
+    public BigDecimal getRecentHigh(int weeks) {
+        return getRecentPrices(weeks).stream().max(BigDecimal::compareTo).orElseThrow();
+    }
+
+    /**
      * Returns the price change this week as a percentage of the previous price.
      * Returns zero if there is no previous price to compare against.
      *

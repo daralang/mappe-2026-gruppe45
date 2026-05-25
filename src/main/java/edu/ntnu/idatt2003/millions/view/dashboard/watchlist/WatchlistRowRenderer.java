@@ -4,35 +4,31 @@ import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.StockStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
 import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
-import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
 import java.math.BigDecimal;
-import java.util.Currency;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * Responsible for rendering a single {@link WatchlistItem} row into a {@link SortColumnTable}.
+ * Responsible for building the column-keyed cells for a single {@link WatchlistItem} row.
  *
- * <p>Each call to {@link #buildRow} populates one row with ticker, company,
- * price in NOK, price in the stock's native currency, weekly change (NOK and %),
- * 4-week high/low, a sparkline trend, the week the entry was added,
- * a buy button, a note button, and a remove button.</p>
+ * <p>Each call to {@link #buildRow(WatchlistItem)} produces a {@link RowCells} map with
+ * ticker, company, price in NOK, price in the stock's native currency, weekly change
+ * (NOK and %), 4-week high/low, a sparkline trend, a buy button, a note button, and a
+ * remove button. The owning card inserts the cells and registers the row for navigation.</p>
  *
  * <p>This class is stateless and may be reused across refreshes.</p>
  */
@@ -40,9 +36,9 @@ class WatchlistRowRenderer extends RowRenderer {
 
     private static final int MAX_SPARKLINE_WEEKS = 8;
     private static final int HIGH_LOW_WEEKS = 4;
-    private static final Currency NOK = Currency.getInstance("NOK");
 
     private final GameService gameService;
+    private final StockStatsService statsService = new StockStatsService();
     private final TradeController tradeController;
     private final Consumer<String> onRemove;
     private final Consumer<WatchlistItem> onNote;
@@ -64,27 +60,30 @@ class WatchlistRowRenderer extends RowRenderer {
     }
 
     /**
-     * Renders the given item as a row at {@code rowIndex} in the provided table.
+     * Builds the column-keyed cells for the given watchlist item.
      *
-     * @param item     the watchlist item to render
-     * @param rowIndex the table row index (0 is reserved for the header)
-     * @param table    the {@link SortColumnTable} to add the row nodes into
+     * <p>The note button is inserted first so it serves as the row's default
+     * keyboard-focus anchor (see {@link RowCells#firstNode()}); unlike the buy
+     * button it is never disabled when the game is over.</p>
+     *
+     * @param item the watchlist item to render
+     * @return the column-keyed cells for this item, keyed by {@link WatchlistSort.SortColumn}
      */
-    void buildRow(WatchlistItem item, int rowIndex, SortColumnTable<?> table) {
+    RowCells<WatchlistSort.SortColumn> buildRow(WatchlistItem item) {
         Stock stock = item.stock();
         CurrencyConverter converter = gameService.getCurrencyConverter();
 
         Label tickerLabel = TableCells.data(stock.getSymbol());
         Label companyLabel = TableCells.data(stock.getCompany());
 
-        BigDecimal priceNok = converter.convert(stock.getSalesPrice(), stock.getCurrency(), NOK);
+        BigDecimal priceNok = statsService.priceInNok(stock, converter);
         Label priceNokLabel = TableCells.data(ChangeFormatter.formatPlain(priceNok));
         Label currencyLabel = TableCells.data(stock.getCurrency().getCurrencyCode());
         Label priceAltLabel = TableCells.data(ChangeFormatter.formatPlain(stock.getSalesPrice()));
 
-        BigDecimal changeNok = converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
-        Label changeNokLabel = ChangeFormatter.styledAmount(changeNok, "holdings-cell");
-        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "holdings-cell");
+        BigDecimal changeNok = statsService.changeInNok(stock, converter);
+        Label changeNokLabel = ChangeFormatter.styledAmount(changeNok, "table-cell");
+        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "table-cell");
 
         Label highLowLabel = TableCells.data(formatHighLow(stock, HIGH_LOW_WEEKS));
 
@@ -94,29 +93,25 @@ class WatchlistRowRenderer extends RowRenderer {
         Button noteButton = buildNoteButton(item);
         Button removeButton = buildRemoveButton(stock.getSymbol());
 
-        GridPane.setValignment(tickerLabel, VPos.TOP);
-        GridPane.setValignment(companyLabel, VPos.TOP);
-        GridPane.setValignment(priceNokLabel, VPos.TOP);
-        GridPane.setValignment(currencyLabel, VPos.TOP);
-        GridPane.setValignment(priceAltLabel, VPos.TOP);
-        GridPane.setValignment(changeNokLabel, VPos.TOP);
-        GridPane.setValignment(changePctLabel, VPos.TOP);
-        GridPane.setValignment(highLowLabel, VPos.TOP);
-        GridPane.setValignment(sparkline, VPos.TOP);
-        GridPane.setValignment(actions, VPos.TOP);
-        GridPane.setValignment(noteButton, VPos.CENTER);
-        GridPane.setValignment(removeButton, VPos.CENTER);
-
-        Node[] cells = {tickerLabel, companyLabel, currencyLabel, priceAltLabel, priceNokLabel,
-                changeNokLabel, changePctLabel, highLowLabel, sparkline,
-                actions, noteButton, removeButton};
-        table.addRow(rowIndex, cells);
+        return RowCells.<WatchlistSort.SortColumn>builder()
+                .put(WatchlistSort.SortColumn.NOTE, noteButton)
+                .put(WatchlistSort.SortColumn.TICKER, tickerLabel)
+                .put(WatchlistSort.SortColumn.COMPANY, companyLabel)
+                .put(WatchlistSort.SortColumn.CURRENCY, currencyLabel)
+                .put(WatchlistSort.SortColumn.PRICE_ALT, priceAltLabel)
+                .put(WatchlistSort.SortColumn.PRICE_NOK, priceNokLabel)
+                .put(WatchlistSort.SortColumn.CHANGE_NOK, changeNokLabel)
+                .put(WatchlistSort.SortColumn.CHANGE_PCT, changePctLabel)
+                .put(WatchlistSort.SortColumn.HIGH_LOW, highLowLabel)
+                .put(WatchlistSort.SortColumn.TREND, sparkline)
+                .put(WatchlistSort.SortColumn.TRADE, actions)
+                .put(WatchlistSort.SortColumn.REMOVE, removeButton);
     }
 
     private HBox buildActionButtons(WatchlistItem item) {
         boolean gameOver = gameService.isGameOver();
         Button buyButton = new Button(LanguageManager.get("watchlist.buy"));
-        buyButton.getStyleClass().addAll("holdings-action-link", "holdings-action-buy");
+        buyButton.getStyleClass().addAll("table-action-link", "table-action-buy");
         buyButton.setDisable(gameOver);
         buyButton.setOnAction(e -> tradeController.openBuyDialog(item.stock()));
         HBox box = new HBox(buyButton);
@@ -137,7 +132,7 @@ class WatchlistRowRenderer extends RowRenderer {
 
         Button noteButton = new Button();
         noteButton.setGraphic(loadIcon(defaultPath, size));
-        noteButton.getStyleClass().addAll("holdings-action-link", "watchlist-note-btn");
+        noteButton.getStyleClass().addAll("table-action-link", "watchlist-note-btn");
         noteButton.setOnMouseEntered(e -> noteButton.setGraphic(loadIcon("/icons/edit-blue.png", size)));
         noteButton.setOnMouseExited(e -> noteButton.setGraphic(loadIcon(defaultPath, size)));
         noteButton.setOnAction(e -> onNote.accept(item));
@@ -162,7 +157,7 @@ class WatchlistRowRenderer extends RowRenderer {
 
     private Button buildRemoveButton(String symbol) {
         Button removeButton = new Button("×");
-        removeButton.getStyleClass().addAll("holdings-action-link", "watchlist-action-remove");
+        removeButton.getStyleClass().addAll("table-action-link", "watchlist-action-remove");
         removeButton.setOnAction(e -> onRemove.accept(symbol));
         return removeButton;
     }

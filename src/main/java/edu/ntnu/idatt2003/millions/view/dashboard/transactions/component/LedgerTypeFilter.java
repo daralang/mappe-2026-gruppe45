@@ -22,7 +22,7 @@ import java.util.List;
  *   <li>Loan ledger filter — {@code T = LoanLedgerEntryType} (DISBURSEMENT / INTEREST / REPAYMENT)</li>
  * </ul>
  *
- * <p>Mirrors {@link WeekRangeFilter} in shape: extends a JavaFX control, exposes an
+ * <p>Mirrors {@link edu.ntnu.idatt2003.millions.view.component.WeekRangeFilter} in shape: extends a JavaFX control, exposes an
  * observable property, and handles its own localization via {@link LanguageManager}.</p>
  *
  * @param <T> the type of value each option represents
