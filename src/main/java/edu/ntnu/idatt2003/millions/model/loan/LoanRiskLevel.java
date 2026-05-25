@@ -1,6 +1,5 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.loan;
-
-import java.math.BigDecimal;
 
 /**
  * Risk profile of a {@link LoanOffer}.
@@ -17,19 +16,4 @@ public enum LoanRiskLevel {
     LOW,
     MEDIUM,
     HIGH;
-
-    /**
-     * Returns the minimum collateral ratio for this risk level.
-     * The player's net worth must be at least {@code principal × collateralRatio()}
-     * to qualify for a loan of that size.
-     *
-     * @return collateral ratio as a decimal (e.g. {@code 0.10} = 10 %)
-     */
-    public BigDecimal collateralRatio() {
-        return switch (this) {
-            case LOW    -> new BigDecimal("0.10");
-            case MEDIUM -> new BigDecimal("0.20");
-            case HIGH   -> new BigDecimal("0.30");
-        };
-    }
 }
