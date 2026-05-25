@@ -9,7 +9,11 @@ import javafx.scene.input.KeyCode;
  * so the dispatcher (in the {@code keyboard} package) can scroll the active page
  * without depending on the concrete view component. This keeps the dependency
  * direction one-way: the view depends on {@code keyboard}, not the reverse.</p>
+ *
+ * <p>Marked as {@link FunctionalInterface} because it has a single abstract method,
+ * allowing implementations to be expressed as lambdas where convenient.</p>
  */
+@FunctionalInterface
 public interface PageScroller {
 
     /**
