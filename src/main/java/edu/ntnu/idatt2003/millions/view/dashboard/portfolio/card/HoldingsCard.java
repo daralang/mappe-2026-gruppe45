@@ -12,7 +12,7 @@ import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.ChevronButton;
 import edu.ntnu.idatt2003.millions.view.component.Pagination;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
-import edu.ntnu.idatt2003.millions.view.component.card.SortableTableCard;
+import edu.ntnu.idatt2003.millions.view.component.card.DetailTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.TableTotalRow;
@@ -34,19 +34,19 @@ import java.util.List;
  * headers, search, pagination, action buttons for buy / sell / sell all / details,
  * and a persistent total row below the pagination.
  *
- * <p>Extends {@link SortableTableCard} for shared pagination, search, sort state,
- * and the common refresh Template Method. The total row is a {@link TableTotalRow}
+ * <p>Extends {@link DetailTableCard} for shared pagination, search, sort state,
+ * the common refresh Template Method, and row-activation routing to
+ * {@link #openDetail(Share)}. The total row is a {@link TableTotalRow}
  * sharing the table's column constraints, so values align regardless of which page is
  * active. The {@link #afterFilter} hook is overridden to update the total row's
  * visibility and values after each filter pass.</p>
  */
-public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColumn> {
+public class HoldingsCard extends DetailTableCard<Share, HoldingsSort.SortColumn> {
 
     private static final int PAGE_SIZE = 9;
 
     private final GameService gameService;
     private final PortfolioService portfolioService;
-    private final TradeController controller;
     private final HoldingsSort sort;
     private final TableTotalRow<HoldingsSort.SortColumn> totalRow;
 
@@ -59,10 +59,9 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
      */
     public HoldingsCard(GameService gameService, TradeController controller,
                         PortfolioService portfolioService) {
-        super(gameService, PAGE_SIZE,
+        super(gameService, controller, PAGE_SIZE,
                 "dashboard.portfolio.holdings.status", "dashboard.portfolio.empty");
         this.gameService = gameService;
-        this.controller = controller;
         this.portfolioService = portfolioService;
         this.sort = new HoldingsSort(portfolioService, gameService.getCurrencyConverter());
         this.sortProvider = sort;
@@ -138,12 +137,13 @@ public class HoldingsCard extends SortableTableCard<Share, HoldingsSort.SortColu
     }
 
     /**
-     * Opens the share details modal when the user presses Enter on a row.
+     * Opens the share details modal for the given share position. Whenever the user
+     * activates a row via keyboard or mouse click on a data cell.
      *
-     * @param item the share whose row was confirmed
+     * @param item the share to show details for
      */
     @Override
-    protected void onRowEnter(Share item) {
+    protected void openDetail(Share item) {
         controller.openDetailsModal(item);
     }
 

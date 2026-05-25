@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.component.card;
 
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.view.component.Pagination;
 
 /**
  * Abstract base class for paginated card components.
@@ -36,8 +37,7 @@ public abstract class PaginatedCard extends Card {
 
     /**
      * Navigates to the given page and refreshes the table.
-     * Called by {@link edu.ntnu.idatt2003.millions.view.component.Pagination}
-     * when the user clicks Prev or Next.
+     * Called by {@link Pagination} when the user clicks Prev or Next.
      *
      * @param page the zero-based page index to navigate to
      */
