@@ -2,6 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.service.StockStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
@@ -12,7 +13,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
-import java.util.Currency;
 import java.util.List;
 
 /**
@@ -31,7 +31,7 @@ import java.util.List;
 class StockInfoCard extends VBox {
 
     private static final int SPARKLINE_WEEKS = 8;
-    private static final Currency NOK = Currency.getInstance("NOK");
+    private final StockStatsService statsService = new StockStatsService();
 
     /**
      * Constructs a new {@link StockInfoCard} for the given stock.
@@ -44,7 +44,7 @@ class StockInfoCard extends VBox {
 
         String currencyCode = stock.getCurrency().getCurrencyCode();
         BigDecimal price = stock.getSalesPrice();
-        BigDecimal priceNok = converter.convert(price, stock.getCurrency(), NOK);
+        BigDecimal priceNok = statsService.priceInNok(stock, converter);
         BigDecimal changePercent = stock.getWeeklyChangePercent();
 
         getChildren().addAll(
