@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.service.toast;
 
-import edu.ntnu.idatt2003.millions.view.component.toast.Toast;
-import edu.ntnu.idatt2003.millions.view.component.toast.ToastType;
+import edu.ntnu.idatt2003.millions.service.toast.Toast;
+import edu.ntnu.idatt2003.millions.service.toast.ToastType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
