@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.player;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Represents a portfolio that holds a player's share holdings.
@@ -70,36 +72,33 @@ public class Portfolio {
     }
 
     /**
-     * Gets all shares in the portfolio.
+     * Returns a defensive copy of all share positions in the portfolio.
      *
-     * @return a list of all shares
+     * @return mutable copy of all shares; empty if the portfolio has no holdings
      */
     public List<Share> getShares() {
         return new ArrayList<>(shares);
     }
 
     /**
-     * Gets all shares of a specific stock by symbol.
-     * Returns an empty list if {@code symbol} is null or no shares match.
+     * Returns all shares matching the given stock symbol.
      *
-     * @param symbol the stock symbol to filter by; null returns an empty list
-     * @return a list of shares whose stock symbol equals {@code symbol}, never null
+     * @param symbol the stock symbol to filter by; {@code null} returns an empty list
+     * @return mutable defensive copy of matching shares; empty if {@code symbol} is null or no shares match
      */
     public List<Share> getShares(String symbol) {
         if (symbol == null) return List.of();
 
         return shares.stream()
                 .filter(share -> Objects.equals(share.getStock().getSymbol(), symbol))
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
-     * Replaces all shares in the portfolio with the given list of shares.
-     * Used after deserialization in JsonGameFileHandler to relink shares to the correct
-     * stock references from the exchange.
+     * Replaces all current share positions with the given list.
      *
-     * @param shares the new list of shares to set
-     * @throws NullPointerException if the list or any share in the list is null
+     * @param shares the new list of shares; must not be null, and must contain no null elements
+     * @throws NullPointerException if the list or any element in the list is null
      */
     public void setShares(List<Share> shares) {
         Objects.requireNonNull(shares, "Shares cannot be null");
@@ -121,17 +120,11 @@ public class Portfolio {
     }
 
     /**
-     * Returns the total market value of the portfolio in NOK.
+     * Returns the gross market value of all positions in the portfolio, converted to NOK.
+     * Sale commission and tax are not deducted.
      *
-     * <p>For each share, the current market value ({@link edu.ntnu.idatt2003.millions.model.stock.Share#getCurrentValue()},
-     * i.e. {@code salesPrice × quantity}) is converted to NOK via the given
-     * {@link CurrencyConverter}. The converted values are summed.
-     * Sale commission and tax are NOT deducted — those are transaction-level
-     * concerns handled by {@link edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator}
-     * at the point of sale.
-     *
-     * @param converter the currency converter used to translate each share's market value to NOK
-     * @return the total market value of all positions in NOK
+     * @param converter the currency converter used to translate each position's market value to NOK
+     * @return the total gross market value of all positions in NOK
      * @throws NullPointerException if converter is null
      */
     public BigDecimal getNetWorth(CurrencyConverter converter) {
@@ -140,30 +133,6 @@ public class Portfolio {
         return shares.stream()
                 .map(share -> converter.convert(
                         share.getCurrentValue(), share.getStock().getCurrency(), nok))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    /**
-     * Returns the total current market value of all positions in the portfolio
-     * in each stock's native currency. Only meaningful for single-currency portfolios.
-     *
-     * @return sum of {@link Share#getCurrentValue()} for all shares
-     */
-    public BigDecimal getTotalValueNative() {
-        return shares.stream()
-                .map(Share::getCurrentValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    /**
-     * Returns the total absolute return across all positions in each stock's
-     * native currency. Only meaningful for single-currency portfolios.
-     *
-     * @return sum of {@link Share#getReturnNative()} for all shares
-     */
-    public BigDecimal getTotalReturnNative() {
-        return shares.stream()
-                .map(Share::getReturnNative)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
