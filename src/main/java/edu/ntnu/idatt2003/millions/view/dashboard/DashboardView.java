@@ -45,9 +45,12 @@ public class DashboardView extends VBox implements SearchFocusProvider, PageFocu
     /**
      * Constructs a new DashboardView with a tab bar.
      *
-     * @param gameService the game manager containing player and exchange
-     * @param weekBar     the week bar owned exclusively by this view; each top-level view
-     *                    receives its own instance since a JavaFX node can only belong to one parent at a time
+     * @param gameService      the game manager containing player and exchange
+     * @param tradeController  the controller used to open buy/sell dialogs
+     * @param loanController   the controller used to open loan dialogs
+     * @param weekBar          the week bar owned exclusively by this view; each top-level view
+     *                         receives its own instance since a JavaFX node can only belong to one parent at a time
+     * @param onExploreStocks  callback invoked when the user navigates to the exchange stocks tab
      */
     public DashboardView(GameService gameService,
                          TradeController tradeController,
@@ -74,81 +77,30 @@ public class DashboardView extends VBox implements SearchFocusProvider, PageFocu
         contentArea = new VBox();
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
-        viewHeader.setTabAction(0, this::showPortfolio);
-        viewHeader.setTabAction(1, this::showTransactions);
-        viewHeader.setTabAction(2, this::showWatchlist);
-        viewHeader.setTabAction(3, this::showLoans);
+        viewHeader.setTabAction(0, () -> showTab(0));
+        viewHeader.setTabAction(1, () -> showTab(1));
+        viewHeader.setTabAction(2, () -> showTab(2));
+        viewHeader.setTabAction(3, () -> showTab(3));
 
         getChildren().addAll(viewHeader, contentArea);
-        showPortfolio();
-    }
-
-    /**
-     * Switches the content area to the portfolio sub-view.
-     * Lazily initialises {@link PortfolioView} on first call.
-     */
-    public void showPortfolio() {
-        if (portfolioView == null) {
-            portfolioView = new PortfolioView(gameService, tradeController, onExploreStocks);
-        }
-        activeSubview = portfolioView;
-        viewHeader.setActive(viewHeader.getTabButton(0));
-        contentArea.getChildren().setAll(portfolioView);
-    }
-
-    /**
-     * Switches the content area to the transactions sub-view.
-     * Lazily initialises {@link TransactionsView} on first call.
-     */
-    public void showTransactions() {
-        if (transactionsView == null) {
-            transactionsView = new TransactionsView(gameService);
-        }
-        activeSubview = transactionsView;
-        viewHeader.setActive(viewHeader.getTabButton(1));
-        contentArea.getChildren().setAll(transactionsView);
-    }
-
-    /**
-     * Switches the content area to the watchlist sub-view.
-     * Lazily initialises {@link WatchlistView} on first call.
-     */
-    public void showWatchlist() {
-        if (watchlistView == null) {
-            watchlistView = new WatchlistView(gameService, tradeController, onExploreStocks);
-        }
-        activeSubview = watchlistView;
-        viewHeader.setActive(viewHeader.getTabButton(2));
-        contentArea.getChildren().setAll(watchlistView);
-    }
-
-    /**
-     * Switches the content area to the loans sub-view.
-     * Lazily initialises {@link LoansView} on first call.
-     */
-    public void showLoans() {
-        if (loansView == null) {
-            loansView = new LoansView(gameService, loanController);
-            loansView.getAvailableLoansCard().setOnApplyClicked(loanController::openLoanDialog);
-        }
-        activeSubview = null;
-        viewHeader.setActive(viewHeader.getTabButton(3));
-        contentArea.getChildren().setAll(loansView);
+        showTab(0);
     }
 
     /**
      * Switches to the tab at the given zero-based index.
-     * Called by {@link TabNavigationRegistry} when a {@code Shift+N} shortcut fires.
+     * Updates the active tab indicator in {@link ViewHeader} and delegates to the
+     * appropriate private show-method. Called by {@link TabNavigationRegistry}
+     * when a {@code Shift+N} shortcut fires and by the tab buttons in the header.
      * Indices out of range are ignored.
      *
      * @param index 0 = Portfolio, 1 = Transactions, 2 = Watchlist, 3 = Loans
      */
     public void showTab(int index) {
         switch (index) {
-            case 0 -> showPortfolio();
-            case 1 -> showTransactions();
-            case 2 -> showWatchlist();
-            case 3 -> showLoans();
+            case 0 -> { viewHeader.setActive(viewHeader.getTabButton(0)); showPortfolio(); }
+            case 1 -> { viewHeader.setActive(viewHeader.getTabButton(1)); showTransactions(); }
+            case 2 -> { viewHeader.setActive(viewHeader.getTabButton(2)); showWatchlist(); }
+            case 3 -> { viewHeader.setActive(viewHeader.getTabButton(3)); showLoans(); }
             default -> { }
         }
     }
@@ -170,5 +122,54 @@ public class DashboardView extends VBox implements SearchFocusProvider, PageFocu
     @Override
     public void focusPageEntry() {
         viewHeader.focusActiveTab();
+    }
+
+    /**
+     * Switches the content area to the portfolio sub-view.
+     * Lazily initialises {@link PortfolioView} on first call.
+     */
+    private void showPortfolio() {
+        if (portfolioView == null) {
+            portfolioView = new PortfolioView(gameService, tradeController, onExploreStocks);
+        }
+        activeSubview = portfolioView;
+        contentArea.getChildren().setAll(portfolioView);
+    }
+
+    /**
+     * Switches the content area to the transactions sub-view.
+     * Lazily initialises {@link TransactionsView} on first call.
+     */
+    private void showTransactions() {
+        if (transactionsView == null) {
+            transactionsView = new TransactionsView(gameService);
+        }
+        activeSubview = transactionsView;
+        contentArea.getChildren().setAll(transactionsView);
+    }
+
+    /**
+     * Switches the content area to the watchlist sub-view.
+     * Lazily initialises {@link WatchlistView} on first call.
+     */
+    private void showWatchlist() {
+        if (watchlistView == null) {
+            watchlistView = new WatchlistView(gameService, tradeController, onExploreStocks);
+        }
+        activeSubview = watchlistView;
+        contentArea.getChildren().setAll(watchlistView);
+    }
+
+    /**
+     * Switches the content area to the loans sub-view.
+     * Lazily initialises {@link LoansView} on first call.
+     */
+    private void showLoans() {
+        if (loansView == null) {
+            loansView = new LoansView(gameService, loanController);
+            loansView.getAvailableLoansCard().setOnApplyClicked(loanController::openLoanDialog);
+        }
+        activeSubview = null;
+        contentArea.getChildren().setAll(loansView);
     }
 }
