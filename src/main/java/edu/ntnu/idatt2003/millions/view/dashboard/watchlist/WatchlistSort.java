@@ -2,13 +2,14 @@ package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.service.StockStatsService;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;
 import java.util.List;
 import javafx.geometry.HPos;
 
 import java.util.Comparator;
-import java.util.Currency;
 import java.util.Objects;
 
 /**
@@ -21,7 +22,6 @@ import java.util.Objects;
 class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn> {
 
     private static final int HIGH_LOW_WEEKS = 4;
-    private static final Currency NOK = Currency.getInstance("NOK");
 
     /**
      * All columns in the watchlist table.
@@ -35,6 +35,7 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
         TREND, TRADE, NOTE, REMOVE
     }
 
+    private final StockStatsService statsService = new StockStatsService();
     private final CurrencyConverter converter;
 
     /**
@@ -98,10 +99,10 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
             case COMPANY -> Comparator.comparing(i -> i.stock().getCompany());
             case CURRENCY -> Comparator.comparing(i -> i.stock().getCurrency().getCurrencyCode());
             case PRICE_ALT -> Comparator.comparing(i -> i.stock().getSalesPrice());
-            case PRICE_NOK -> Comparator.comparing(i -> priceInNok(i.stock(), converter, NOK));
-            case CHANGE_NOK -> Comparator.comparing(i -> changeInNok(i.stock(), converter, NOK));
+            case PRICE_NOK -> Comparator.comparing(i -> statsService.priceInNok(i.stock(), converter));
+            case CHANGE_NOK -> Comparator.comparing(i -> statsService.changeInNok(i.stock(), converter));
             case CHANGE_PCT -> Comparator.comparing(i -> i.stock().getWeeklyChangePercent());
-            case HIGH_LOW -> Comparator.comparing(i -> highLowRange(i.stock(), converter, NOK, HIGH_LOW_WEEKS));
+            case HIGH_LOW -> Comparator.comparing(i -> statsService.highLowRangeInNok(i.stock(), converter, HIGH_LOW_WEEKS));
             case TREND, TRADE, NOTE, REMOVE ->
                     throw new IllegalStateException(column + " is not sortable");
         };
