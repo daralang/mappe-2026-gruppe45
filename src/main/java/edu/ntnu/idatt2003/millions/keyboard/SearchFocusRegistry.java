@@ -1,8 +1,12 @@
 package edu.ntnu.idatt2003.millions.keyboard;
 
+/**
+ * Tracks the currently active {@link SearchFocusProvider} and delegates
+ * search-focus requests to it.
+ */
 public final class SearchFocusRegistry {
 
-    private SearchFocusProvider active;
+    private final ActiveRegistry<SearchFocusProvider> registry = new ActiveRegistry<>();
 
     /**
      * Registers the given provider as the active search target.
@@ -11,7 +15,7 @@ public final class SearchFocusRegistry {
      * @param provider the provider to activate, or {@code null}
      */
     public void setActive(SearchFocusProvider provider) {
-        this.active = provider;
+        registry.setActive(provider);
     }
 
     /**
@@ -19,8 +23,6 @@ public final class SearchFocusRegistry {
      * Does nothing if no provider is currently active.
      */
     public void focusActive() {
-        if (active != null) {
-            active.focusSearch();
-        }
+        registry.ifActive(SearchFocusProvider::focusSearch);
     }
 }
