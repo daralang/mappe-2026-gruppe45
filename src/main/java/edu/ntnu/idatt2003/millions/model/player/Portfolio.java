@@ -60,10 +60,13 @@ public class Portfolio {
     }
 
     /**
-     * Removes a share from the portfolio.
+     * Removes the given Share reference from the portfolio.
+     * Uses reference equality (==), not field equality — see
+     * {@link Share} class documentation for the rationale.
      *
      * @param share the share to remove
-     * @return true if the share was removed, false if it wasn't found
+     * @return true if the share was removed, false if the exact
+     *         reference was not found
      * @throws NullPointerException if the share is null
      */
     public boolean removeShare(Share share) {
@@ -108,10 +111,12 @@ public class Portfolio {
     }
 
     /**
-     * Checks if the portfolio contains a specific share.
+     * Checks if the portfolio contains the given Share reference.
+     * Uses reference equality (==), not field equality — see
+     * {@link Share} class documentation for the rationale.
      *
      * @param share the share to check for
-     * @return true if the share exists in the portfolio
+     * @return true if the exact Share reference exists in the portfolio
      * @throws NullPointerException if the share is null
      */
     public boolean contains(Share share) {

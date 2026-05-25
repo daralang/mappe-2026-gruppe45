@@ -14,6 +14,11 @@ import java.util.Objects;
  * {@link edu.ntnu.idatt2003.millions.model.player.Portfolio} into a single Share
  * whose {@code purchasePrice} is the weighted-average of all individual purchase
  * prices (GAV = total cost / total quantity).
+ *
+ * <p>Identity is based on object reference; two Share instances with identical
+ * fields are not considered equal. Portfolio relies on this for
+ * {@code contains()} and {@code removeShare()}.
+ * <p>
  * Shares are held in a player's portfolio and can be sold on an exchange.
  */
 // Not a record: Stock is mutable (prices grow over time), so Share cannot carry value-type semantics.
