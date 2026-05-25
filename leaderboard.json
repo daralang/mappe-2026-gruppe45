@@ -75,5 +75,16 @@
     "status": "NOVICE",
     "outcome": "ACTIVE",
     "lastUpdated": "2026-05-25T10:53:21.302989700Z"
+  },
+  {
+    "sessionId": "c3be11fc-78d6-4e06-89c7-512d864d018e",
+    "playerName": "Leo",
+    "startingCapital": 1000000,
+    "finalNetWorth": 992112.4437,
+    "returnPercent": -0.8,
+    "weeksPlayed": 181,
+    "status": "NOVICE",
+    "outcome": "RETIRED",
+    "lastUpdated": "2026-05-25T11:54:09.552991700Z"
   }
 ]
