@@ -100,10 +100,9 @@ public class TransactionsCard extends SortableTableCard<Transaction, Transaction
      */
     @Override
     protected HBox buildSearchRow(Button clearSortButton) {
-        ownSearchBar = new SearchBar(
+        ownSearchBar = createSearchBar(
                 "transactions.search.placeholder",
                 "search.button",
-                searchCallback(),
                 metadataRow);
         HBox row = new HBox(36, ownSearchBar, typeFilter, weekRangeFilter, clearSortButton);
         row.setAlignment(Pos.TOP_LEFT);
