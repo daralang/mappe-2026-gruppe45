@@ -1,6 +1,5 @@
 package edu.ntnu.idatt2003.millions.controller;
 
-import edu.ntnu.idatt2003.millions.keyboard.KeyboardContext;
 import edu.ntnu.idatt2003.millions.keyboard.KeyboardNavigationService;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;
 import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
