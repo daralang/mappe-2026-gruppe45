@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.player;
 
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
@@ -35,7 +36,7 @@ public class Player {
     private final String name;
     private final BigDecimal startingMoney;
     private final String sessionId;
-    private BigDecimal money;
+    private BigDecimal cash;
 
     private final Portfolio portfolio;
     private final TransactionArchive transactionArchive;
@@ -73,7 +74,7 @@ public class Player {
         this.name = name;
         this.startingMoney = startingMoney;
         this.sessionId = UUID.randomUUID().toString();
-        this.money = startingMoney;
+        this.cash = startingMoney;
 
         this.portfolio = new Portfolio();
         this.transactionArchive = new TransactionArchive();
@@ -83,20 +84,10 @@ public class Player {
         netWorthHistory.add(startingMoney);
     }
 
-    /**
-     * Gets the player's name.
-     *
-     * @return the name
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * Gets the amount of money the player started with.
-     *
-     * @return the starting balance
-     */
     public BigDecimal getStartingMoney() {
         return startingMoney;
     }
@@ -115,23 +106,13 @@ public class Player {
     }
 
     public BigDecimal getCash() {
-        return money;
+        return cash;
     }
 
-    /**
-     * Gets the player's portfolio of shares.
-     *
-     * @return the portfolio
-     */
     public Portfolio getPortfolio() {
         return portfolio;
     }
 
-    /**
-     * Gets the player's transaction archive.
-     *
-     * @return the transaction archive
-     */
     public TransactionArchive getTransactionArchive() {
         return transactionArchive;
     }
@@ -144,7 +125,7 @@ public class Player {
      */
     public void addMoney(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Amount cannot be negative");
-        this.money = this.money.add(amount);
+        this.cash = this.cash.add(amount);
     }
 
     /**
@@ -155,31 +136,31 @@ public class Player {
      */
     public void withdrawMoney(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Amount cannot be negative");
-        if (this.money.compareTo(amount) < 0) {
+        if (this.cash.compareTo(amount) < 0) {
             throw new IllegalArgumentException("Cannot withdraw more money than the current balance");
         }
-        this.money = this.money.subtract(amount);
+        this.cash = this.cash.subtract(amount);
     }
 
     /**
      * Returns the player's total net worth in NOK: cash balance plus the market
-     * value of all portfolio positions.
+     * value of all portfolio positions, minus outstanding debt.
      *
      * <p>Market value is {@code salesPrice × quantity} per share, converted to
      * NOK via the given {@link CurrencyConverter}. Sale commission and tax are
      * NOT deducted — this is the gross market value, not a liquidation estimate.
      *
      * @param converter the currency converter used to translate share values to NOK
-     * @return cash plus market value of holdings, in NOK
+     * @return cash plus market value of holdings minus outstanding debt, in NOK
      * @throws NullPointerException if converter is null
      */
     public BigDecimal getNetWorth(CurrencyConverter converter) {
         Objects.requireNonNull(converter, "Converter cannot be null");
-        return money.add(portfolio.getNetWorth(converter)).subtract(getTotalDebt());
+        return cash.add(portfolio.getNetWorth(converter)).subtract(getTotalDebt());
     }
 
     /**
-     * Records the player's current net worth in the history.
+     * Appends the player's current net worth to the history list.
      * Called by {@link edu.ntnu.idatt2003.millions.service.GameService}
      * before advancing the week.
      *
@@ -225,16 +206,16 @@ public class Player {
         this.previousNetWorth = previousNetWorth;
     }
 
-    /**
-     * Returns a defensive copy of the player's active loans.
-     *
-     * @return immutable snapshot of active loans
-     */
     private List<Loan> activeLoansInternal() {
         if (activeLoans == null) activeLoans = new ArrayList<>();
         return activeLoans;
     }
 
+    /**
+     * Returns a defensive copy of the player's active loans.
+     *
+     * @return mutable snapshot of active loans; empty if none have been taken
+     */
     public List<Loan> getActiveLoans() {
         return new ArrayList<>(activeLoansInternal());
     }
@@ -350,14 +331,14 @@ public class Player {
      */
     public void repayLoan(Loan loan, int currentWeek) {
         Objects.requireNonNull(loan, "Loan cannot be null");
-        if (money.compareTo(loan.principal()) < 0) {
+        if (cash.compareTo(loan.principal()) < 0) {
             throw new IllegalArgumentException(
                     "Insufficient funds to repay loan of " + loan.principal() + " NOK");
         }
         if (!activeLoansInternal().remove(loan)) {
             throw new IllegalArgumentException("Loan is not an active loan for this player");
         }
-        money = money.subtract(loan.principal());
+        cash = cash.subtract(loan.principal());
         if (loanLedger == null) loanLedger = new ArrayList<>();
         loanLedger.add(new LoanLedgerEntry(
                 Math.max(currentWeek, 1), loan,
@@ -375,9 +356,8 @@ public class Player {
      * the forced-sale flow that handles shortfalls is tracked separately.</p>
      *
      * @param week the game week in which interest is collected; used for ledger entries
-     * @return the interest amount that could not be paid; zero when fully covered
      */
-    public BigDecimal collectWeeklyInterest(int week) {
+    public void collectWeeklyInterest(int week) {
         List<Loan> loans = activeLoansInternal();
         BigDecimal total = BigDecimal.ZERO;
         if (loanLedger == null) loanLedger = new ArrayList<>();
@@ -390,10 +370,9 @@ public class Player {
                         LoanLedgerEntryType.INTEREST, interest.negate()));
             }
         }
-        if (total.signum() == 0) return BigDecimal.ZERO;
-        BigDecimal paid = total.min(money);
-        money = money.subtract(paid);
-        return total.subtract(paid);
+        if (total.signum() == 0) return;
+        BigDecimal paid = total.min(cash);
+        cash = cash.subtract(paid);
     }
 
     /**
@@ -414,7 +393,7 @@ public class Player {
      * @return true if the player can cover this week's interest without selling shares
      */
     public boolean canCoverInterestThisWeek() {
-        return money.compareTo(getWeeklyInterestDue()) >= 0;
+        return cash.compareTo(getWeeklyInterestDue()) >= 0;
     }
 
     /**
@@ -461,7 +440,7 @@ public class Player {
      * @return true if no forced share sale is required
      */
     public boolean canCoverObligationsThisWeek(int currentWeek) {
-        return money.compareTo(getTotalObligationsThisWeek(currentWeek)) >= 0;
+        return cash.compareTo(getTotalObligationsThisWeek(currentWeek)) >= 0;
     }
 
     /**
@@ -520,7 +499,7 @@ public class Player {
         BigDecimal portfolioLiquidation = portfolio.getShares().stream()
                 .map(s -> SalesCalculator.calculateNetNok(s, converter))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        return money.add(portfolioLiquidation);
+        return cash.add(portfolioLiquidation);
     }
 
     /**
@@ -605,34 +584,68 @@ public class Player {
                 .setScale(1, RoundingMode.HALF_UP);
     }
 
+    /**
+     * Returns an unmodifiable view of the player's notifications, oldest first.
+     *
+     * @return unmodifiable list of notifications; empty if none have been added
+     */
     public List<Notification> getNotifications() {
         if (notifications == null) notifications = new ArrayList<>();
         return Collections.unmodifiableList(notifications);
     }
 
+    /**
+     * Returns the number of notifications the player has not yet read.
+     *
+     * @return count of unread notifications; zero if all have been read or none exist
+     */
     public int getUnreadNotificationCount() {
         if (notifications == null) return 0;
         return (int) notifications.stream().filter(n -> !n.read()).count();
     }
 
+    /**
+     * Returns the debt-threshold flag recorded during the most recent weekly advance.
+     *
+     * @return {@code true} if the player was above the debt threshold when last checked
+     */
     public boolean wasAboveDebtThreshold() {
         return wasAboveDebtThreshold;
     }
 
+    /**
+     * Returns the low-cash flag recorded during the most recent weekly advance.
+     *
+     * @return {@code true} if the player was considered low on cash when last checked
+     */
     public boolean wasLowOnCash() {
         return wasLowOnCash;
     }
 
+    /**
+     * Returns the next notification ID and advances the internal counter.
+     * Each call returns a unique, strictly increasing integer starting at 1.
+     *
+     * @return the next available notification ID
+     */
     public int nextNotificationId() {
         if (nextNotificationId <= 0) nextNotificationId = 1;
         return nextNotificationId++;
     }
 
+    /**
+     * Appends a notification to the player's notification list.
+     *
+     * @param notification the notification to append
+     */
     public void addNotification(Notification notification) {
         if (notifications == null) notifications = new ArrayList<>();
         notifications.add(notification);
     }
 
+    /**
+     * Marks every unread notification as read.
+     */
     public void markAllNotificationsAsRead() {
         if (notifications == null) return;
         for (int i = 0; i < notifications.size(); i++) {
@@ -642,6 +655,9 @@ public class Player {
         }
     }
 
+    /**
+     * Removes all notifications from the player's notification list.
+     */
     public void clearAllNotifications() {
         if (notifications == null) notifications = new ArrayList<>();
         notifications.clear();
@@ -655,6 +671,12 @@ public class Player {
         this.wasLowOnCash = value;
     }
 
+    /**
+     * Returns the player's status level recorded at the end of the previous week.
+     * Returns {@link PlayerStatusLevel#NOVICE} if no status has been recorded yet.
+     *
+     * @return the previously recorded status level; never {@code null}
+     */
     public PlayerStatusLevel getPreviousStatus() {
         return previousStatus == null ? PlayerStatusLevel.NOVICE : previousStatus;
     }
@@ -734,7 +756,7 @@ public class Player {
         }
     }
 
-    /***
+    /**
      * Returns the players current status based on net worth growth and number of weeks with active
      * trading.
      * <ul>
