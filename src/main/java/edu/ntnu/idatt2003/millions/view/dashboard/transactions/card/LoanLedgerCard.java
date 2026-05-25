@@ -14,7 +14,7 @@ import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.LoanLedgerSort;
 import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.LedgerTypeFilter;
-import edu.ntnu.idatt2003.millions.view.dashboard.transactions.component.WeekRangeFilter;
+import edu.ntnu.idatt2003.millions.view.component.WeekRangeFilter;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
