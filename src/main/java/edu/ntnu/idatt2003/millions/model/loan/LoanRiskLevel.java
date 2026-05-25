@@ -14,5 +14,5 @@ package edu.ntnu.idatt2003.millions.model.loan;
 public enum LoanRiskLevel {
     LOW,
     MEDIUM,
-    HIGH;
+    HIGH
 }
