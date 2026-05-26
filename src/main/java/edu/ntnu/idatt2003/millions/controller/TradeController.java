@@ -19,6 +19,8 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controller for portfolio actions (buy, sell, sell all, view details, and watchlist).
@@ -32,6 +34,7 @@ import java.util.Optional;
  */
 public class TradeController {
 
+    private static final Logger LOGGER = Logger.getLogger(TradeController.class.getName());
     private static final int MAX_QUANTITY_SCALE = 4;
     private static final BigDecimal MIN_TRANSACTION_VALUE_NOK = BigDecimal.ONE;
 
@@ -133,6 +136,10 @@ public class TradeController {
      * @param symbol the ticker symbol of the stock to toggle
      */
     public void toggleWatchlist(String symbol) {
+        if (symbol == null || symbol.isBlank()) {
+            LOGGER.log(Level.WARNING, "Watchlist toggle rejected — blank symbol");
+            return;
+        }
         boolean isWatched = gameService.getPlayer().isOnWatchlist(symbol);
         String label = buildWatchlistLabel(symbol);
         try {
@@ -147,11 +154,12 @@ public class TradeController {
                         MessageFormat.format(LanguageManager.get("toast.watchlist.added"), label),
                         ToastType.SUCCESS);
             }
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             String errorKey = isWatched
                     ? "toast.watchlist.removeFailed"
                     : "toast.watchlist.addFailed";
             toastService.show(LanguageManager.get(errorKey), ToastType.ERROR);
+            LOGGER.log(Level.WARNING, "Watchlist toggle failed", e);
         }
     }
 
@@ -162,14 +170,19 @@ public class TradeController {
      * @param symbol the ticker symbol of the stock to remove
      */
     public void removeFromWatchlist(String symbol) {
+        if (symbol == null || symbol.isBlank()) {
+            LOGGER.log(Level.WARNING, "Watchlist remove rejected — blank symbol");
+            return;
+        }
         String label = buildWatchlistLabel(symbol);
         try {
             gameService.removeFromWatchlist(symbol);
             toastService.show(
                     MessageFormat.format(LanguageManager.get("toast.watchlist.removed"), label),
                     ToastType.SUCCESS);
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             toastService.show(LanguageManager.get("toast.watchlist.removeFailed"), ToastType.ERROR);
+            LOGGER.log(Level.WARNING, "Watchlist remove failed", e);
         }
     }
 
@@ -194,7 +207,15 @@ public class TradeController {
      * @param newNote the new note text
      */
     public void updateWatchlistNote(String symbol, String newNote) {
-        gameService.updateWatchlistNote(symbol, newNote);
+        if (symbol == null || symbol.isBlank()) {
+            LOGGER.log(Level.WARNING, "Watchlist note update rejected — blank symbol");
+            return;
+        }
+        try {
+            gameService.updateWatchlistNote(symbol, newNote);
+        } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.WARNING, "Watchlist note update failed", e);
+        }
     }
 
     // Dialog opening
