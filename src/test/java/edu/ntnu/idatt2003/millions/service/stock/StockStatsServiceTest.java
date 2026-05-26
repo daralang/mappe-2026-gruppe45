@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.service;
+package edu.ntnu.idatt2003.millions.service.stock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
 
-import edu.ntnu.idatt2003.millions.service.stock.StockStatsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

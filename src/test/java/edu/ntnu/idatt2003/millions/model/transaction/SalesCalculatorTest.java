@@ -1,6 +1,5 @@
-package edu.ntnu.idatt2003.millions.model.calculator;
+package edu.ntnu.idatt2003.millions.model.transaction;
 
-import edu.ntnu.idatt2003.millions.model.transaction.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import org.junit.jupiter.api.BeforeEach;

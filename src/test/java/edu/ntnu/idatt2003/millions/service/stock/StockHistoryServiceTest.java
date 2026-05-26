@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.service;
+package edu.ntnu.idatt2003.millions.service.stock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.service.stock.StockHistoryService;
 import edu.ntnu.idatt2003.millions.service.stock.StockHistoryService.WeeklyPriceChange;
 import java.math.BigDecimal;
 import java.util.ArrayList;
