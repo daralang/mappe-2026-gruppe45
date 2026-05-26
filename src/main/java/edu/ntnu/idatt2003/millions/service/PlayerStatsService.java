@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -10,29 +11,48 @@ import java.util.Objects;
 
 /**
  * Stateless read service for player net-worth and status queries.
- * All methods accept {@link Player} and {@link CurrencyConverter} as parameters
- * so this service holds no state and can be shared freely.
  */
 public class PlayerStatsService {
 
-    /** Returns the player's current net worth in NOK. */
+    /**
+     * Returns the player's current net worth in NOK.
+     *
+     * @param player    the active player
+     * @param converter the currency converter used to value portfolio positions
+     * @return net worth in NOK
+     */
     public BigDecimal getNetWorth(Player player, CurrencyConverter converter) {
         return player.getNetWorth(converter);
     }
 
-    /** Returns the absolute change in net worth since the start of the game, in NOK. */
+    /**
+     * Returns the absolute change in net worth since the start of the game, in NOK.
+     *
+     * @param player    the active player
+     * @param converter the currency converter used to value portfolio positions
+     * @return net worth change in NOK; negative if the player has lost money
+     */
     public BigDecimal getNetWorthChangeSinceStart(Player player, CurrencyConverter converter) {
         return player.getNetWorthChangeSinceStart(converter);
     }
 
-    /** Returns the percentage change in net worth since the start of the game. */
+    /**
+     * Returns the percentage change in net worth since the start of the game.
+     *
+     * @param player    the active player
+     * @param converter the currency converter used to value portfolio positions
+     * @return percentage change; negative if the player has lost money
+     */
     public BigDecimal getNetWorthChangePercentSinceStart(Player player, CurrencyConverter converter) {
         return player.getNetWorthChangePercentSinceStart(converter);
     }
 
     /**
      * Returns the absolute change in net worth since the previous week, in NOK.
-     * Returns null if no week has been advanced yet.
+     *
+     * @param player    the active player
+     * @param converter the currency converter used to value portfolio positions
+     * @return net worth change in NOK; null if no week has been advanced yet
      */
     public BigDecimal getWeeklyNetWorthChange(Player player, CurrencyConverter converter) {
         return player.getWeeklyNetWorthChange(converter);
@@ -40,13 +60,22 @@ public class PlayerStatsService {
 
     /**
      * Returns the percentage change in net worth since the previous week.
-     * Returns null if no week has been advanced yet.
+     *
+     * @param player    the active player
+     * @param converter the currency converter used to value portfolio positions
+     * @return percentage change; null if no week has been advanced yet
      */
     public BigDecimal getWeeklyNetWorthChangePercent(Player player, CurrencyConverter converter) {
         return player.getWeeklyNetWorthChangePercent(converter);
     }
 
-    /** Returns the player's current status level. */
+    /**
+     * Returns the player's current status level.
+     *
+     * @param player    the active player
+     * @param converter the currency converter used to compute net worth
+     * @return the current {@link PlayerStatusLevel}
+     */
     public PlayerStatusLevel getStatus(Player player, CurrencyConverter converter) {
         return player.getStatus(converter);
     }
@@ -88,19 +117,23 @@ public class PlayerStatsService {
 
         if (status == PlayerStatusLevel.NOVICE) {
             int weeksPart  = Math.min(10, weeksTraded);
-            int growthPart = Math.min(10, Math.max(0, (int) Math.floor(growthPercent / 2)));
+            int growthPart = Math.clamp((long) Math.floor(growthPercent / 2), 0, 10);
             return (weeksPart + growthPart) / 20.0;
         } else {
-            int weeksPart  = Math.min(10, Math.max(0, weeksTraded - 10));
-            int growthPart = Math.min(40, Math.max(0, (int) Math.floor((growthPercent - 20) / 2)));
+            int weeksPart = Math.clamp((long) weeksTraded - 10, 0, 10);
+            int growthPart = Math.clamp((long) Math.floor((growthPercent - 20) / 2), 0, 40);
             return (weeksPart + growthPart) / 50.0;
         }
     }
 
     /**
      * Returns the player's recorded net-worth history — one entry per game week,
-     * in order from week 1 to the current week. The returned list is a defensive
-     * copy and does not reflect later mutations of the player.
+     * in chronological order from week 1 to the current week. The returned list
+     * is a defensive copy and does not reflect later mutations of the player.
+     *
+     * @param player the active player
+     * @return immutable snapshot of the net-worth history; never null
+     * @throws NullPointerException if player is null
      */
     public List<BigDecimal> getNetWorthHistory(Player player) {
         Objects.requireNonNull(player, "Player cannot be null");

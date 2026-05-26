@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -10,8 +11,6 @@ import java.util.Currency;
 
 /**
  * Stateless read service for portfolio value queries.
- * All methods accept domain objects as parameters so this service holds no state.
- * Provides both per-share and aggregate queries used by portfolio and stocks views.
  */
 public class PortfolioService {
 
@@ -20,6 +19,10 @@ public class PortfolioService {
     /**
      * Returns the total market value of the player's portfolio in NOK
      * ({@code salesPrice × quantity} per share, converted to NOK, no fees deducted).
+     *
+     * @param player    the player whose portfolio to inspect
+     * @param converter the currency converter used to translate values to NOK
+     * @return total portfolio market value in NOK
      */
     public BigDecimal getValue(Player player, CurrencyConverter converter) {
         return player.getPortfolio().getNetWorth(converter);
@@ -27,7 +30,11 @@ public class PortfolioService {
 
     /**
      * Returns the current market value of a share position in NOK
-     * (salesPrice × quantity × exchange rate, no fees deducted).
+     * ({@code salesPrice × quantity × exchange rate}, no fees deducted).
+     *
+     * @param share     the share position to evaluate
+     * @param converter the currency converter used to translate to NOK
+     * @return market value of the position in NOK
      */
     public BigDecimal getShareValueInNok(Share share, CurrencyConverter converter) {
         return converter.convert(share.getCurrentValue(), share.getStock().getCurrency(), NOK);
@@ -35,34 +42,52 @@ public class PortfolioService {
 
     /**
      * Returns the unrealized return on a share position in NOK
-     * (currentValue − cost, converted to NOK at the current rate).
+     * ({@code currentValue − cost}, converted to NOK at the current rate).
+     *
+     * @param share     the share position to evaluate
+     * @param converter the currency converter used to translate to NOK
+     * @return unrealized gain or loss in NOK; negative if the position is at a loss
      */
     public BigDecimal getShareReturnInNok(Share share, CurrencyConverter converter) {
         return converter.convert(share.getReturnNative(), share.getStock().getCurrency(), NOK);
     }
 
     /**
-     * Returns the liquidation value of a share position in NOK: what the player
-     * would actually receive after commission and tax if the entire position were
-     * sold now, converted to NOK at the current exchange rate.
+     * Returns the liquidation value of a share position in NOK: the net proceeds
+     * after commission and tax if the entire position were sold now.
+     *
+     * @param share     the share position to evaluate
+     * @param converter the currency converter used to translate to NOK
+     * @return net sale proceeds in NOK
      */
     public BigDecimal getLiquidationValueInNok(Share share, CurrencyConverter converter) {
         return converter.convert(share.getLiquidationValue(), share.getStock().getCurrency(), NOK);
     }
 
-    /** Returns the total unrealized return across all portfolio positions in NOK. */
+    /**
+     * Returns the total unrealized return across all portfolio positions in NOK.
+     *
+     * @param player    the player whose portfolio to inspect
+     * @param converter the currency converter used to translate values to NOK
+     * @return total unrealized gain or loss in NOK; negative if the portfolio is at a loss
+     */
     public BigDecimal getTotalReturnInNok(Player player, CurrencyConverter converter) {
         return player.getPortfolio().getTotalReturnInNok(converter);
     }
 
-    /** Returns the total portfolio return as a percentage of total cost in NOK. */
+    /**
+     * Returns the total portfolio return as a percentage of total cost in NOK.
+     *
+     * @param player    the player whose portfolio to inspect
+     * @param converter the currency converter used to translate values to NOK
+     * @return return percentage; negative if the portfolio is at a loss
+     */
     public BigDecimal getTotalReturnPercent(Player player, CurrencyConverter converter) {
         return player.getPortfolio().getTotalReturnPercent(converter);
     }
 
     /**
      * Returns the total cost basis of all portfolio positions in NOK.
-     * Computed as current market value minus total unrealized return.
      * Returns zero when the portfolio is empty.
      *
      * @param player    the player whose portfolio to inspect
@@ -76,13 +101,9 @@ public class PortfolioService {
     /**
      * Returns the total portfolio value change for the current week in NOK.
      *
-     * <p>Computed as the sum of {@code latestPriceChange × quantity} for every
-     * {@link Share} in the portfolio, with each stock's price change converted
-     * from its native currency to NOK using the given converter.
-     *
      * @param player    the player whose portfolio to inspect
      * @param converter the currency converter used to translate values to NOK
-     * @return total weekly return in NOK, negative when the portfolio lost value
+     * @return total weekly return in NOK; negative when the portfolio lost value
      */
     public BigDecimal getWeeklyReturnInNok(Player player, CurrencyConverter converter) {
         return player.getPortfolio().getShares().stream()
@@ -96,8 +117,7 @@ public class PortfolioService {
     /**
      * Returns the portfolio's weekly return as a percentage of the total cost basis in NOK.
      *
-     * <p>Returns zero when the portfolio is empty or the invested amount is zero
-     * to avoid division by zero.
+     * <p>Returns zero when the portfolio is empty or the invested amount is zero.
      *
      * @param player    the player whose portfolio to inspect
      * @param converter the currency converter used to translate values to NOK
