@@ -13,7 +13,6 @@ import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
  * {@code -4,87 NOK (-5.4%)}. Colour styling is driven by the total
  * unrealized return. A static subtitle is resolved from an i18n key.
  * Delegates rendering and observer registration to {@link SimpleWidgetCard}.
- * Updates automatically on each game state change via GameObserver.
  */
 public class StocksUnrealizedReturnCard extends SimpleWidgetCard {
 

@@ -136,8 +136,7 @@ public class HoldingsCard extends DetailTableCard<Share, HoldingsSort.SortColumn
     }
 
     /**
-     * Opens the share details modal for the given share position. Whenever the user
-     * activates a row via keyboard or mouse click on a data cell.
+     * Opens the share details modal for the given share position.
      *
      * @param item the share to show details for
      */

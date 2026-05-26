@@ -88,8 +88,7 @@ public class StocksCard extends DetailTableCard<Stock, StocksSort.SortColumn> {
     }
 
     /**
-     * Opens the stock detail modal for the given stock. Whenever the user
-     * activates a row via keyboard or mouse click on a data cell.
+     * Opens the stock detail modal for the given stock.
      *
      * @param item the stock to show details for
      */
