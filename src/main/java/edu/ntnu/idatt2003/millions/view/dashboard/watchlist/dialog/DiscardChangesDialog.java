@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
+package edu.ntnu.idatt2003.millions.view.dashboard.watchlist.dialog;
 
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Modal;
