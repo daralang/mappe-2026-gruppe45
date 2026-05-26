@@ -19,10 +19,6 @@ import java.util.function.Consumer;
  * <p>Displays a {@link StockInfoCard} above the note field, showing the stock's
  * current price in its native currency and in NOK, weekly change percentage,
  * and a sparkline trend chart.</p>
- *
- * <p>Pre-fills the {@link TextArea} with the existing note (may be empty).
- * Calls the supplied {@link Consumer} with the new text when the player saves,
- * or closes without invoking it when the player cancels.</p>
  */
 public class WatchlistNoteDialog extends Modal {
 

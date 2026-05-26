@@ -1,24 +1,30 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 import edu.ntnu.idatt2003.millions.service.TransactionPreviewService;
+import edu.ntnu.idatt2003.millions.service.toast.ToastService;
+import edu.ntnu.idatt2003.millions.service.toast.ToastType;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog.*;
 import edu.ntnu.idatt2003.millions.view.dialog.StockDetailModal;
 import javafx.application.Platform;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Controller for portfolio actions (buy, sell, sell all, view details).
+ * Controller for portfolio actions (buy, sell, sell all, view details, and watchlist).
  * Opens the corresponding dialogs and delegates the actual transactions
- * to the model via {@link GameService}.
+ * to the model via {@link GameService}. Shows {@link ToastService} feedback
+ * for watchlist mutations.
  *
  * <p>Provides read-only operations such as {@link #previewBuy(Stock, BigDecimal)}
  * and {@link #getCurrentBalance()} for views that need to display
@@ -31,14 +37,18 @@ public class TradeController {
 
     private final GameService gameService;
     private final TransactionPreviewService previewService;
+    private final ToastService toastService;
 
     /**
-     * Constructs a new PortfolioController.
+     * Constructs a new TradeController.
      *
-     * @param gameService the game manager containing player and exchange
+     * @param gameService  the game manager containing player and exchange
+     * @param toastService the toast service used to surface feedback after watchlist mutations
+     * @throws NullPointerException if either argument is null
      */
-    public TradeController(GameService gameService) {
-        this.gameService = gameService;
+    public TradeController(GameService gameService, ToastService toastService) {
+        this.gameService = Objects.requireNonNull(gameService, "gameService cannot be null");
+        this.toastService = Objects.requireNonNull(toastService, "toastService cannot be null");
         this.previewService = new TransactionPreviewService();
     }
 
@@ -112,6 +122,79 @@ public class TradeController {
             return Optional.of("dialog.error.belowMinimumValue");
         }
         return Optional.empty();
+    }
+
+    // Watchlist operations
+
+    /**
+     * Toggles the given stock on or off the player's watchlist and shows a
+     * toast confirming the result.
+     *
+     * @param symbol the ticker symbol of the stock to toggle
+     */
+    public void toggleWatchlist(String symbol) {
+        boolean isWatched = gameService.getPlayer().isOnWatchlist(symbol);
+        String label = buildWatchlistLabel(symbol);
+        try {
+            if (isWatched) {
+                gameService.removeFromWatchlist(symbol);
+                toastService.show(
+                        MessageFormat.format(LanguageManager.get("toast.watchlist.removed"), label),
+                        ToastType.SUCCESS);
+            } else {
+                gameService.addToWatchlist(symbol);
+                toastService.show(
+                        MessageFormat.format(LanguageManager.get("toast.watchlist.added"), label),
+                        ToastType.SUCCESS);
+            }
+        } catch (RuntimeException e) {
+            String errorKey = isWatched
+                    ? "toast.watchlist.removeFailed"
+                    : "toast.watchlist.addFailed";
+            toastService.show(LanguageManager.get(errorKey), ToastType.ERROR);
+        }
+    }
+
+    /**
+     * Removes the given stock from the player's watchlist and shows a success
+     * toast.
+     *
+     * @param symbol the ticker symbol of the stock to remove
+     */
+    public void removeFromWatchlist(String symbol) {
+        String label = buildWatchlistLabel(symbol);
+        try {
+            gameService.removeFromWatchlist(symbol);
+            toastService.show(
+                    MessageFormat.format(LanguageManager.get("toast.watchlist.removed"), label),
+                    ToastType.SUCCESS);
+        } catch (RuntimeException e) {
+            toastService.show(LanguageManager.get("toast.watchlist.removeFailed"), ToastType.ERROR);
+        }
+    }
+
+    /**
+     * Builds the display label used in watchlist toast messages.
+     *
+     * @param symbol the ticker symbol to build a label for
+     * @return the display label
+     */
+    private String buildWatchlistLabel(String symbol) {
+        Exchange exchange = gameService.getExchange();
+        if (exchange.hasStock(symbol)) {
+            return symbol + " – " + exchange.getStock(symbol).getCompany();
+        }
+        return symbol;
+    }
+
+    /**
+     * Updates the note for the given stock in the player's watchlist.
+     *
+     * @param symbol  the ticker symbol of the watchlist entry to update
+     * @param newNote the new note text
+     */
+    public void updateWatchlistNote(String symbol, String newNote) {
+        gameService.updateWatchlistNote(symbol, newNote);
     }
 
     // Dialog opening

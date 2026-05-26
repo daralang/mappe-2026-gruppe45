@@ -136,8 +136,7 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
     }
 
     /**
-     * Opens a WatchlistRemoveDialog for the given stock symbol.
-     * The removal is only forwarded to {@link GameService} if the player confirms.
+     * Opens a {@link WatchlistRemoveDialog} for the given stock symbol.
      *
      * @param symbol the symbol of the stock to remove
      */
@@ -145,7 +144,7 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
         Stock stock = gameService.getExchange().getStock(symbol);
         if (stock == null) return;
         WatchlistRemoveDialog dialog = new WatchlistRemoveDialog(
-                stock, () -> gameService.removeFromWatchlist(symbol));
+                stock, () -> controller.removeFromWatchlist(symbol));
         dialog.show();
     }
 
@@ -153,7 +152,7 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
         WatchlistNoteDialog dialog = new WatchlistNoteDialog(
                 item.stock(), gameService.getCurrencyConverter(), item.entry().note());
         dialog.setOnSave(note ->
-                gameService.updateWatchlistNote(item.stock().getSymbol(), note));
+                controller.updateWatchlistNote(item.stock().getSymbol(), note));
         dialog.show();
     }
 }
