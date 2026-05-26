@@ -1,7 +1,7 @@
 // Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.file.game;
 
-import edu.ntnu.idatt2003.millions.file.LocalizedException;
+import edu.ntnu.idatt2003.millions.util.language.LocalizedException;
 import java.util.Arrays;
 
 /**
