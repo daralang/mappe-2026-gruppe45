@@ -147,7 +147,7 @@ public class LeaderboardService {
         List<LeaderboardEntry> entries;
         try {
             entries = readMutable();
-        } catch (LeaderboardCorruptException | IllegalStateException e) {
+        } catch (LeaderboardCorruptException | IllegalStateException | UncheckedIOException e) {
             LOGGER.log(Level.WARNING, "Could not read leaderboard", e);
             return List.of();
         }
