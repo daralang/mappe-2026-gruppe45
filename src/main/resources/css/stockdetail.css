@@ -23,12 +23,12 @@
 }
 
 .stock-detail-weekly {
-    -fx-padding: 4 0 0 0;
+    -fx-padding: 4 12 0 0;
 }
 
 /* Native price-history list rows */
 .price-history-row {
-    -fx-padding: 7 2 7 2;
+    -fx-padding: 7 12 7 2;
     -fx-border-color: transparent transparent -border-light transparent;
     -fx-border-width: 0 0 1 0;
 }
