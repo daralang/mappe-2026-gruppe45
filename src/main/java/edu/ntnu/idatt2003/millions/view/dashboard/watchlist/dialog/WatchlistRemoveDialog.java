@@ -16,7 +16,7 @@ import javafx.scene.layout.VBox;
  * The dialog blocks until dismissed ({@link #showStage()} uses {@code showAndWait})
  * and only calls {@code onConfirm} when the player explicitly confirms the removal.</p>
  */
-class WatchlistRemoveDialog extends Modal {
+public class WatchlistRemoveDialog extends Modal {
 
     private final Stock stock;
     private final Runnable onConfirm;
@@ -27,7 +27,7 @@ class WatchlistRemoveDialog extends Modal {
      * @param stock     the stock the player is about to remove from the watchlist
      * @param onConfirm called when the player confirms the removal
      */
-    WatchlistRemoveDialog(Stock stock, Runnable onConfirm) {
+    public WatchlistRemoveDialog(Stock stock, Runnable onConfirm) {
         this.stock = stock;
         this.onConfirm = onConfirm;
     }

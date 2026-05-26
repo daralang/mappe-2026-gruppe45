@@ -28,7 +28,7 @@ import java.util.function.Consumer;
  *
  * <p>This class is stateless and may be reused across refreshes.</p>
  */
-class WatchlistRowRenderer extends RowRenderer {
+public class WatchlistRowRenderer extends RowRenderer {
 
     private static final int MAX_SPARKLINE_WEEKS = 8;
 
@@ -45,7 +45,7 @@ class WatchlistRowRenderer extends RowRenderer {
      * @param onRemove        callback invoked with the stock symbol when the player clicks ×
      * @param onNote          callback invoked with the item when the player clicks the note button
      */
-    WatchlistRowRenderer(GameService gameService,
+    public WatchlistRowRenderer(GameService gameService,
                          TradeController tradeController,
                          Consumer<String> onRemove,
                          Consumer<WatchlistItem> onNote) {
@@ -61,7 +61,7 @@ class WatchlistRowRenderer extends RowRenderer {
      * @param item the watchlist item to render
      * @return the column-keyed cells for this item, keyed by {@link WatchlistSort.SortColumn}
      */
-    RowCells<WatchlistSort.SortColumn> buildRow(WatchlistItem item) {
+    public RowCells<WatchlistSort.SortColumn> buildRow(WatchlistItem item) {
         Stock stock = item.stock();
         CurrencyConverter converter = gameService.getCurrencyConverter();
 

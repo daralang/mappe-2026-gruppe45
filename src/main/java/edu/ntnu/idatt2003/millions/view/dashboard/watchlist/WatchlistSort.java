@@ -19,12 +19,12 @@ import java.util.Objects;
  * Column labels are resolved via {@link LanguageManager} on every call so language
  * changes are picked up automatically.</p>
  */
-class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn> {
+public class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn> {
 
     /**
      * All columns in the watchlist table.
      */
-    enum SortColumn {
+    public enum SortColumn {
         TICKER, COMPANY, PRICE_NOK, CHANGE_NOK, CHANGE_PCT,
         TREND, TRADE, NOTE, DETAILS, REMOVE
     }
@@ -38,7 +38,7 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
      * @param converter the converter used for NOK price values
      * @throws NullPointerException if converter is null
      */
-    WatchlistSort(CurrencyConverter converter) {
+    public WatchlistSort(CurrencyConverter converter) {
         this.converter = Objects.requireNonNull(converter, "Converter cannot be null");
     }
 
