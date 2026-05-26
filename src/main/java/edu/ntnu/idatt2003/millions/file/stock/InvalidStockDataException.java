@@ -1,6 +1,7 @@
 // Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.file.stock;
 
+import edu.ntnu.idatt2003.millions.file.LocalizedException;
 import java.util.Arrays;
 
 /**
@@ -26,7 +27,7 @@ import java.util.Arrays;
  * <p>{@link EmptyStockFileException} is a subclass for the case where the file
  * contains no valid stock entries at all.
  */
-public class InvalidStockDataException extends Exception {
+public class InvalidStockDataException extends Exception implements LocalizedException {
 
     private final String i18nKey;
     private final transient Object[] args;
