@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.file.leaderboard;
 
 import edu.ntnu.idatt2003.millions.model.leaderboard.LeaderboardEntry;
@@ -7,7 +8,6 @@ import java.util.List;
 
 /**
  * Reads and writes the application leaderboard to and from a file.
- * Implementations may support different formats, such as JSON.
  *
  * <p>Implementations must tolerate a missing file on read — that is the normal
  * state before the first entry is recorded — and return an empty list rather
