@@ -29,7 +29,7 @@ import java.util.List;
  *
  * <p>Intended for use inside {@link WatchlistNoteDialog}.
  */
-class StockInfoCard extends VBox {
+public class StockInfoCard extends VBox {
 
     private static final int SPARKLINE_WEEKS = 8;
     private final StockStatsService statsService = new StockStatsService();
@@ -40,7 +40,7 @@ class StockInfoCard extends VBox {
      * @param stock     the stock whose price data is displayed
      * @param converter the currency converter used to derive the NOK price
      */
-    StockInfoCard(Stock stock, CurrencyConverter converter) {
+    public StockInfoCard(Stock stock, CurrencyConverter converter) {
         setSpacing(12);
 
         String currencyCode = stock.getCurrency().getCurrencyCode();

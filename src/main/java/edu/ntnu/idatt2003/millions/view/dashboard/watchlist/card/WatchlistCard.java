@@ -11,7 +11,7 @@ import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistItem;
 import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.dialog.WatchlistNoteDialog;
-import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistRemoveDialog;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.dialog.WatchlistRemoveDialog;
 import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistRowRenderer;
 import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistSort;
 import javafx.geometry.Pos;
@@ -136,7 +136,7 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
     }
 
     /**
-     * Opens a {@link WatchlistRemoveDialog} for the given stock symbol.
+     * Opens a WatchlistRemoveDialog for the given stock symbol.
      * The removal is only forwarded to {@link GameService} if the player confirms.
      *
      * @param symbol the symbol of the stock to remove
