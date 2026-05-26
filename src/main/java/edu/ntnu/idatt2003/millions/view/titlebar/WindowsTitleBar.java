@@ -1,7 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.titlebar;
 
-import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.view.component.Header;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;

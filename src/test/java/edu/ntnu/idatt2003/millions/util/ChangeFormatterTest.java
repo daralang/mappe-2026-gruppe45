@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.util;
 
+import edu.ntnu.idatt2003.millions.util.format.ChangeFormatter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

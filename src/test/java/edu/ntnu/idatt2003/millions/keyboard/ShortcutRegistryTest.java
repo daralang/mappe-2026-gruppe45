@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.keyboard;
 
+import edu.ntnu.idatt2003.millions.keyboard.registry.ShortcutRegistry;
 import javafx.application.Platform;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;

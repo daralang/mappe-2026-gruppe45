@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.keyboard;
 
+import edu.ntnu.idatt2003.millions.keyboard.registry.ShortcutRegistry;
 import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
 import javafx.scene.Node;

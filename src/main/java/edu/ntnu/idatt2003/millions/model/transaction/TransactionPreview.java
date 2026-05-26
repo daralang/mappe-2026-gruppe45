@@ -1,7 +1,7 @@
 // Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.transaction;
 
-import edu.ntnu.idatt2003.millions.service.TransactionPreviewService;
+import edu.ntnu.idatt2003.millions.service.transaction.TransactionPreviewService;
 
 import java.math.BigDecimal;
 

@@ -1,9 +1,10 @@
 package edu.ntnu.idatt2003.millions.view.start;
 
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.component.CurrencySelector;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.start.component.CurrencySelector;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import java.util.stream.Stream;
+
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
