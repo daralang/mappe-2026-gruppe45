@@ -5,6 +5,7 @@ import edu.ntnu.idatt2003.millions.service.toast.ToastType;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 class ToastNode extends HBox {
@@ -20,6 +21,8 @@ class ToastNode extends HBox {
 
         Label message = new Label(toast.message());
         message.getStyleClass().add("toast-message");
+        message.setWrapText(true);
+        HBox.setHgrow(message, Priority.ALWAYS);
 
         getChildren().addAll(icon, message);
     }
