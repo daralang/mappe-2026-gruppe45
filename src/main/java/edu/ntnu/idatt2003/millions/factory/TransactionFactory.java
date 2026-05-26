@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.factory;
 
 import edu.ntnu.idatt2003.millions.model.stock.Share;
@@ -7,18 +8,9 @@ import edu.ntnu.idatt2003.millions.model.transaction.Sale;
 import java.math.BigDecimal;
 
 /**
- * Factory for creating financial transactions.
- *
- * <p>Use this class to create {@link Purchase} and {@link Sale} transactions.
+ * Factory for creating {@link Purchase} and {@link Sale} transactions.
  * A purchase can either use its calculated share-currency cost or an explicit
- * settlement amount prepared by a coordinating service. To execute a transaction,
- * call <code>commit(player)</code> on the returned object.</p>
- *
- * <p>Example usage:</p>
- * <pre>
- *   Transaction t = TransactionFactory.createPurchase(share, week);
- *   t.commit(player);
- * </pre>
+ * settlement amount prepared by a coordinating service.
  */
 public class TransactionFactory {
 
