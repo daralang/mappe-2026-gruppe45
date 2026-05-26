@@ -54,15 +54,15 @@ public class StockStatGrid extends GridPane {
 
         String currencyCode = stock.getCurrency().getCurrencyCode();
 
-        Label priceNative   = plainValue(ChangeFormatter.formatPlain(stock.getSalesPrice()));
-        Label priceNok      = plainValue(
+        Label priceNative = plainValue(ChangeFormatter.formatPlain(stock.getSalesPrice()));
+        Label priceNok = plainValue(
                 ChangeFormatter.formatPlain(statsService.priceInNok(stock, converter)));
         Label weeklyChange  = ChangeFormatter.styledPercent(
                 stock.getWeeklyChangePercent(), "modal-section-value");
-        Label week          = plainValue(String.valueOf(currentWeek));
-        Label high          = plainValue(ChangeFormatter.formatPlain(stock.getHighestPrice()));
-        Label low           = plainValue(ChangeFormatter.formatPlain(stock.getLowestPrice()));
-        Label trend         = buildTrendValue(stock);
+        Label week = plainValue(String.valueOf(currentWeek));
+        Label high = plainValue(ChangeFormatter.formatPlain(stock.getHighestPrice()) + " " + currencyCode);
+        Label low = plainValue(ChangeFormatter.formatPlain(stock.getLowestPrice())  + " " + currencyCode);
+        Label trend = buildTrendValue(stock);
         Label allTimeChange = ChangeFormatter.styledPercent(
                 statsService.allTimeChangePercent(stock), "modal-section-value");
 
@@ -119,8 +119,8 @@ public class StockStatGrid extends GridPane {
         int sign = stock.getLatestPriceChange().signum();
         String key   = sign > 0 ? "stockDetail.trend.up"
                      : sign < 0 ? "stockDetail.trend.down"
-                     :            "stockDetail.trend.flat";
-        String arrow = sign > 0 ? "▲ " : sign < 0 ? "▼ " : "— ";
+                     : "stockDetail.trend.flat";
+        String arrow = sign > 0 ? "▲ " : sign < 0 ? "▼ " : "- ";
         Label value = new Label(arrow + LanguageManager.get(key));
         value.getStyleClass().add("modal-section-value");
         if (sign > 0) {
