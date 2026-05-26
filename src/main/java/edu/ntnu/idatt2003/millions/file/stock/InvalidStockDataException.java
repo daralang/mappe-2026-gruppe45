@@ -26,6 +26,9 @@ import java.util.Arrays;
  *
  * <p>{@link EmptyStockFileException} is a subclass for the case where the file
  * contains no valid stock entries at all.
+ *
+ * <p>Implements {@link LocalizedException} so callers can catch it alongside other
+ * i18n-aware exceptions in a single multi-catch block.
  */
 public class InvalidStockDataException extends Exception implements LocalizedException {
 

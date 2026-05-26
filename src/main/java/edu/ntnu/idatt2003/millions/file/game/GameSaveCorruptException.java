@@ -17,6 +17,9 @@ import java.util.Arrays;
  *
  * <p>{@link #getMessage()} returns a fallback string intended for logging and
  * debugging only — it is not the user-facing message.
+ *
+ * <p>Implements {@link LocalizedException} so callers can catch it alongside other
+ * i18n-aware exceptions in a single multi-catch block.
  */
 public class GameSaveCorruptException extends Exception implements LocalizedException {
 
