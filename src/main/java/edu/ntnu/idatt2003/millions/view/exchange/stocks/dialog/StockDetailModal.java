@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.dialog.stockdetail;
+package edu.ntnu.idatt2003.millions.view.exchange.stocks.dialog;
 
 import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
