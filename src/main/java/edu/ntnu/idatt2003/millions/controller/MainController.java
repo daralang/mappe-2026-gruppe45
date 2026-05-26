@@ -20,7 +20,10 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.UncheckedIOException;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controller for the main view of the application.
@@ -28,6 +31,8 @@ import java.util.Optional;
  * Delegates game state changes to {@code GameService}.
  */
 public class MainController {
+
+    private static final Logger LOGGER = Logger.getLogger(MainController.class.getName());
 
     private final Stage stage;
     private final MainView view;
@@ -53,8 +58,8 @@ public class MainController {
         this.gameOverController = new GameOverController(gameService, stage,
                 () -> new StartController(stage, gameService).show(),
                 this::handleSaveGame,
-                gameService::sellAllAndExit,
-                gameService::recordLeaderboardEntry);
+                this::sellAllAndExit,
+                this::recordLeaderboardEntry);
         TradeController tradeController = new TradeController(gameService, toastService);
         LoanController loanController = new LoanController(gameService);
         TitleBar titleBar = TitleBarFactory.create(stage, gameService);
@@ -83,12 +88,22 @@ public class MainController {
     private void handleAdvanceWeek() {
         int nextWeek = gameService.getExchange().getWeek() + 1;
         if (gameService.getPlayer().canCoverObligationsThisWeek(nextWeek)) {
-            gameService.advanceWeek();
+            try {
+                gameService.advanceWeek();
+            } catch (IllegalStateException e) {
+                toastService.show(LanguageManager.get("error.gameOver"), ToastType.ERROR);
+                LOGGER.log(Level.INFO, "Advance week blocked — game is over", e);
+            }
         } else if (gameService.getPlayer().canCoverWithFullLiquidation(
                 nextWeek, gameService.getCurrencyConverter())) {
             forcedSaleController.open(nextWeek);
         } else {
-            gameService.declareGameOver();
+            try {
+                gameService.declareGameOver();
+            } catch (IllegalStateException e) {
+                toastService.show(LanguageManager.get("error.gameOver"), ToastType.ERROR);
+                LOGGER.log(Level.INFO, "Declare game over blocked — game is over", e);
+            }
             gameOverController.open(nextWeek);
         }
     }
@@ -128,10 +143,33 @@ public class MainController {
             gameService.saveGame(file);
             toastService.show(LanguageManager.get("toast.gameSaved"), ToastType.SUCCESS);
             return true;
-        } catch (RuntimeException e) {
-            gameService.clearCurrentSaveFile();
-            toastService.show(LanguageManager.get("toast.gameSaveFailed"), ToastType.ERROR);
+        } catch (IllegalStateException e) {
+            toastService.show(LanguageManager.get("error.noActiveGame"), ToastType.ERROR);
+            LOGGER.log(Level.WARNING, "Save blocked — no active game", e);
             return false;
+        } catch (UncheckedIOException e) {
+            gameService.clearCurrentSaveFile();
+            toastService.show(LanguageManager.get("error.saveFailed"), ToastType.ERROR);
+            LOGGER.log(Level.WARNING, "Save failed — IO error", e);
+            return false;
+        }
+    }
+
+    private void sellAllAndExit() {
+        try {
+            gameService.sellAllAndExit();
+        } catch (IllegalStateException e) {
+            toastService.show(LanguageManager.get("error.gameOver"), ToastType.ERROR);
+            LOGGER.log(Level.INFO, "sellAllAndExit blocked — game is over", e);
+        }
+    }
+
+    private void recordLeaderboardEntry() {
+        try {
+            gameService.recordLeaderboardEntry();
+        } catch (IllegalStateException e) {
+            toastService.show(LanguageManager.get("error.gameOver"), ToastType.ERROR);
+            LOGGER.log(Level.INFO, "recordLeaderboardEntry blocked — game is over", e);
         }
     }
 
@@ -148,8 +186,8 @@ public class MainController {
                 "newGame.sellAllAndStartNew",
                 "newGame.startNewWithoutSaving",
                 this::handleSaveGame,
-                gameService::sellAllAndExit,
-                gameService::recordLeaderboardEntry,
+                this::sellAllAndExit,
+                this::recordLeaderboardEntry,
                 this::showStartView
         ).show();
     }
@@ -163,8 +201,8 @@ public class MainController {
                 "exit.sellAllAndExit",
                 "exit.exitWithoutSaving",
                 this::handleSaveGame,
-                gameService::sellAllAndExit,
-                gameService::recordLeaderboardEntry,
+                this::sellAllAndExit,
+                this::recordLeaderboardEntry,
                 stage::close
         ).show();
     }
@@ -219,7 +257,7 @@ public class MainController {
         reg.register(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHORTCUT_DOWN), view::showDashboard);
         reg.register(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHORTCUT_DOWN), view::showExchange);
         reg.register(new KeyCodeCombination(KeyCode.DIGIT3, KeyCombination.SHORTCUT_DOWN), view::showLeaderboard);
-        reg.register(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN), () -> handleSaveGame());
+        reg.register(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN), this::handleSaveGame);
         reg.register(new KeyCodeCombination(KeyCode.ENTER, KeyCombination.SHORTCUT_DOWN), this::handleAdvanceWeek);
         reg.register(new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), searchFocusRegistry::focusActive);
         reg.registerTabShortcuts(
