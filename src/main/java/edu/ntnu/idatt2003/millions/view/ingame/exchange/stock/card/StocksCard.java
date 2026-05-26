@@ -27,6 +27,7 @@ public class StocksCard extends DetailTableCard<Stock, StocksSort.SortColumn> {
     private static final double ROW_HEIGHT = 34.0;
 
     private final GameService gameService;
+    private final TradeController controller;
     private final StocksSort sort;
     private final StocksRowRenderer rowRenderer;
     private final StyledText title;
@@ -38,8 +39,9 @@ public class StocksCard extends DetailTableCard<Stock, StocksSort.SortColumn> {
      * @param controller  the controller used to open buy/sell dialogs
      */
     public StocksCard(GameService gameService, TradeController controller) {
-        super(gameService, controller, PAGE_SIZE, "exchange.stocks.status", "exchange.stocks.empty");
+        super(gameService, PAGE_SIZE, "exchange.stocks.status", "exchange.stocks.empty");
         this.gameService = gameService;
+        this.controller = controller;
         this.sort = new StocksSort(
                 gameService.getCurrencyConverter(),
                 symbol -> gameService.getPlayer().isOnWatchlist(symbol));

@@ -45,6 +45,7 @@ public class HoldingsCard extends DetailTableCard<Share, HoldingsSort.SortColumn
     private static final int PAGE_SIZE = 9;
 
     private final GameService gameService;
+    private final TradeController controller;
     private final PortfolioService portfolioService;
     private final HoldingsSort sort;
     private final TableTotalRow<HoldingsSort.SortColumn> totalRow;
@@ -58,9 +59,10 @@ public class HoldingsCard extends DetailTableCard<Share, HoldingsSort.SortColumn
      */
     public HoldingsCard(GameService gameService, TradeController controller,
                         PortfolioService portfolioService) {
-        super(gameService, controller, PAGE_SIZE,
+        super(gameService, PAGE_SIZE,
                 "dashboard.portfolio.holdings.status", "dashboard.portfolio.empty");
         this.gameService = gameService;
+        this.controller = controller;
         this.portfolioService = portfolioService;
         this.sort = new HoldingsSort(portfolioService, gameService.getCurrencyConverter());
         this.sortProvider = sort;
