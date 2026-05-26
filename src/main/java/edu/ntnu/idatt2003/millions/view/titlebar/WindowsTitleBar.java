@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.titlebar;
 
 import edu.ntnu.idatt2003.millions.service.game.GameService;
@@ -10,6 +11,14 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+/**
+ * Windows implementation of {@link TitleBar} with a custom drag region and window controls
+ * (minimise, maximise/restore, close).
+ *
+ * <p>When a {@link GameService} is provided, a {@link Header} navigation bar is
+ * placed below the controls strip. Without one, only the controls strip is shown,
+ * as on the start screen.</p>
+ */
 public class WindowsTitleBar implements TitleBar {
 
     private static final String ICON_MAXIMIZE = "▢";
@@ -28,14 +37,35 @@ public class WindowsTitleBar implements TitleBar {
     private final Node node;
     private Header header;
 
+    /**
+     * Constructs the full game-screen title bar with navigation header.
+     *
+     * @param stage       the primary stage, used for window control actions
+     * @param gameService the game service passed to the {@link Header} for notification state
+     */
     public WindowsTitleBar(Stage stage, GameService gameService) {
         this(stage, gameService, "title-bar", true);
     }
 
+    /**
+     * Constructs a title bar without a navigation header, using a custom controls style class.
+     *
+     * @param stage              the primary stage
+     * @param controlsStyleClass the CSS class applied to the controls strip
+     * @param includeNavHeader   {@code true} to show an empty controls strip, {@code false} for controls only
+     */
     WindowsTitleBar(Stage stage, String controlsStyleClass, boolean includeNavHeader) {
         this(stage, null, controlsStyleClass, includeNavHeader);
     }
 
+    /**
+     * Full constructor used by the delegating overloads.
+     *
+     * @param stage              the primary stage
+     * @param gameService        the game service, or {@code null} to omit the navigation header
+     * @param controlsStyleClass the CSS class applied to the controls strip
+     * @param includeNavHeader   {@code true} to include a header row below the controls strip
+     */
     WindowsTitleBar(Stage stage, GameService gameService,
                     String controlsStyleClass, boolean includeNavHeader) {
         HBox controls = buildControls(stage, controlsStyleClass);
