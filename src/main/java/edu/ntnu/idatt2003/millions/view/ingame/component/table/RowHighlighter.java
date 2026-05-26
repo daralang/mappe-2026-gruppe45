@@ -2,7 +2,9 @@ package edu.ntnu.idatt2003.millions.view.ingame.component.table;
 
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,23 +36,29 @@ final class RowHighlighter {
     }
 
     /**
-     * Binds an anchor's focus state to the {@code is-focus} highlight of its row.
+     * Binds the focus state of all nodes in a row to the {@code is-focus} highlight.
+     * The highlight is applied when any node in the row is focused and removed only
+     * when none of them are focused.
      *
-     * @param gridRow the grid row the anchor belongs to
-     * @param anchor  the node focused when the row is navigated to
+     * @param gridRow  the grid row the nodes belong to
+     * @param rowNodes all interactive nodes in the row
      */
-    void bindFocus(int gridRow, Node anchor) {
+    void bindFocus(int gridRow, Collection<Node> rowNodes) {
         Region background = rowBackgrounds.get(gridRow);
         if (background == null) {
             return;
         }
-        anchor.focusedProperty().addListener((obs, was, isFocused) -> {
-            if (isFocused) {
-                addClass(background, FOCUS_CLASS);
-            } else {
-                removeClass(background, FOCUS_CLASS);
-            }
-        });
+        List<Node> nodes = List.copyOf(rowNodes);
+        for (Node node : nodes) {
+            node.focusedProperty().addListener((obs, was, isFocused) -> {
+                boolean anyFocused = nodes.stream().anyMatch(Node::isFocused);
+                if (anyFocused) {
+                    addClass(background, FOCUS_CLASS);
+                } else {
+                    removeClass(background, FOCUS_CLASS);
+                }
+            });
+        }
     }
 
     /**

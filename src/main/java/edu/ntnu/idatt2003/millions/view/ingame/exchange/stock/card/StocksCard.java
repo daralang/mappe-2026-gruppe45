@@ -10,6 +10,7 @@ import edu.ntnu.idatt2003.millions.view.ingame.component.card.DetailTableCard;
 import edu.ntnu.idatt2003.millions.view.ingame.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.ingame.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.ingame.exchange.stock.StocksSort;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 
 import java.text.MessageFormat;
@@ -79,6 +80,12 @@ public class StocksCard extends DetailTableCard<Stock, StocksSort.SortColumn> {
     protected RowCells<StocksSort.SortColumn> buildRowCells(Stock item, int rowIndex) {
         return rowRenderer.buildRow(item)
                 .put(StocksSort.SortColumn.DETAILS, buildDetailChevron(item));
+    }
+
+    @Override
+    protected Node focusAnchorFor(Stock item, RowCells<StocksSort.SortColumn> cells) {
+        Node chevron = cells.get(StocksSort.SortColumn.DETAILS);
+        return chevron != null ? chevron : cells.firstNode();
     }
 
     @Override
