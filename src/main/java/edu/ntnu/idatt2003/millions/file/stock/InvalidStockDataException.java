@@ -1,5 +1,7 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.file.stock;
 
+import edu.ntnu.idatt2003.millions.file.LocalizedException;
 import java.util.Arrays;
 
 /**
@@ -17,20 +19,21 @@ import java.util.Arrays;
  *
  * <p>The exception carries an opaque {@link #getI18nKey() i18nKey} and structured
  * {@link #getArgs() args} (typically line number and raw line content) rather than
- * a pre-resolved string. Callers in the controller layer resolve the key at display
- * time via {@code LanguageManager} so the message is shown in the user's current
- * language.
+ * a pre-resolved string.
  *
  * <p>{@link #getMessage()} returns a fallback string intended for logging and
  * debugging only — it is not the user-facing message.
  *
  * <p>{@link EmptyStockFileException} is a subclass for the case where the file
  * contains no valid stock entries at all.
+ *
+ * <p>Implements {@link LocalizedException} so callers can catch it alongside other
+ * i18n-aware exceptions in a single multi-catch block.
  */
-public class InvalidStockDataException extends Exception {
+public class InvalidStockDataException extends Exception implements LocalizedException {
 
     private final String i18nKey;
-    private final Object[] args;
+    private final transient Object[] args;
 
     /**
      * Creates an exception with an i18n key and structured arguments but no chained cause.
@@ -59,7 +62,6 @@ public class InvalidStockDataException extends Exception {
 
     /**
      * Returns the resource-bundle key for the error message template.
-     * Controllers pass this to {@code LanguageManager.get(key)} at display time.
      *
      * @return the i18n key
      */

@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.file.stock;
 
 /**
@@ -8,10 +9,6 @@ package edu.ntnu.idatt2003.millions.file.stock;
  * completely empty or contains only blank lines and comment lines (starting with
  * {@code #}), leaving no stock data to load into the exchange.
  *
- * <p>Callers that only need to know that the stock file is unusable can catch the
- * parent class {@link InvalidStockDataException}. Callers that want to distinguish
- * between a malformed line and a structurally empty file can catch this subclass
- * directly.
  */
 public class EmptyStockFileException extends InvalidStockDataException {
 

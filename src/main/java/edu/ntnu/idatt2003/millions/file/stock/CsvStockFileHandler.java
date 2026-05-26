@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.file.stock;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -18,8 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Implementation of {@link StockFileHandler} for reading and writing
- * stock data to and from CSV files.
+ * Reads and writes stock data to and from CSV files.
  *
  * <p>Each line in the file represents a stock on the form:
  * {@code symbol,name,price}. Lines starting with {@code #} and
@@ -37,40 +37,15 @@ import java.util.Objects;
 public class CsvStockFileHandler implements StockFileHandler {
 
     /**
-     * Default currency assigned to parsed stocks when no currency is supplied
-     * by the caller. Used by the no-currency overloads to preserve previous
-     * behaviour.
+     * Default currency assigned to parsed stocks when no currency is supplied by the caller.
      */
     private static final Currency DEFAULT_CURRENCY = Currency.getInstance("USD");
 
-    /**
-     * Delimiter used to separate fields in the CSV file.
-     */
     private static final String DELIMITER = ",";
-
-    /**
-     * Prefix used to identify comment lines in the CSV file.
-     */
     private static final String COMMENT_PREFIX = "#";
-
-    /**
-     * Expected number of fields per stock entry in the CSV file.
-     */
     private static final int EXPECTED_FIELDS = 3;
-
-    /**
-     * Index of the stock symbol field in a CSV line.
-     */
     private static final int SYMBOL_INDEX = 0;
-
-    /**
-     * Index of the stock name field in a CSV line.
-     */
     private static final int NAME_INDEX = 1;
-
-    /**
-     * Index of the stock price field in a CSV line.
-     */
     private static final int PRICE_INDEX = 2;
 
     /**
@@ -81,6 +56,7 @@ public class CsvStockFileHandler implements StockFileHandler {
      * @return a list of stocks parsed from the file
      * @throws NullPointerException      if path is null
      * @throws UncheckedIOException      if the file cannot be read
+     * @throws EmptyStockFileException   if the file contains no valid stock entries
      * @throws InvalidStockDataException if any data line has the wrong column count
      *                                   or a non-numeric price field
      */
@@ -124,6 +100,7 @@ public class CsvStockFileHandler implements StockFileHandler {
      * @return a list of stocks parsed from the stream
      * @throws NullPointerException      if inputStream is null
      * @throws UncheckedIOException      if the stream cannot be read
+     * @throws EmptyStockFileException   if the stream contains no valid stock entries
      * @throws InvalidStockDataException if any data line has the wrong column count
      *                                   or a non-numeric price field
      */
@@ -208,17 +185,7 @@ public class CsvStockFileHandler implements StockFileHandler {
                             "error.stock.csv.blankName", new Object[]{lineNumber, line.trim()});
                 }
                 String rawPrice = fields[PRICE_INDEX].trim();
-                BigDecimal price;
-                try {
-                    price = new BigDecimal(rawPrice);
-                } catch (NumberFormatException e) {
-                    throw new InvalidStockDataException(
-                            "error.stock.csv.nonNumericPrice", new Object[]{rawPrice, lineNumber, line.trim()});
-                }
-                if (price.compareTo(BigDecimal.ZERO) <= 0) {
-                    throw new InvalidStockDataException(
-                            "error.stock.csv.nonPositivePrice", new Object[]{rawPrice, lineNumber, line.trim()});
-                }
+                BigDecimal price = parsePrice(rawPrice, lineNumber, line.trim());
                 result.add(new Stock(symbol, name, new ArrayList<>(List.of(price)), currency));
             }
         } catch (IOException e) {
@@ -228,6 +195,31 @@ public class CsvStockFileHandler implements StockFileHandler {
             throw new EmptyStockFileException(source);
         }
         return result;
+    }
+
+    /**
+     * Parses and validates the price field from a CSV line.
+     *
+     * @param rawPrice   the trimmed price string from the CSV field
+     * @param lineNumber the 1-based line number, for error messages
+     * @param rawLine    the trimmed full line, for error messages
+     * @return the validated positive price
+     * @throws InvalidStockDataException if the price is non-numeric or non-positive
+     */
+    private BigDecimal parsePrice(String rawPrice, int lineNumber, String rawLine)
+            throws InvalidStockDataException {
+        BigDecimal price;
+        try {
+            price = new BigDecimal(rawPrice);
+        } catch (NumberFormatException _) {
+            throw new InvalidStockDataException(
+                    "error.stock.csv.nonNumericPrice", new Object[]{rawPrice, lineNumber, rawLine});
+        }
+        if (price.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidStockDataException(
+                    "error.stock.csv.nonPositivePrice", new Object[]{rawPrice, lineNumber, rawLine});
+        }
+        return price;
     }
 
     /**

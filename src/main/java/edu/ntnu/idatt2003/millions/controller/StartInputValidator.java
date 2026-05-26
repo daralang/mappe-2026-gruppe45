@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.controller;
 
 import java.io.File;
@@ -11,8 +12,6 @@ import java.util.Optional;
  * <p>This utility keeps simple UI-input validation out of {@link StartController}
  * while staying in the controller layer. It does not contain domain business rules.</p>
  *
- * <p>Provides format validators for player name and starting capital that return
- * i18n error keys, and path validators for stock and save files.</p>
  */
 final class StartInputValidator {
 
@@ -51,10 +50,6 @@ final class StartInputValidator {
 
     /**
      * Parses and validates a starting capital string.
-     *
-     * <p>Throws {@link IllegalArgumentException} if the value is null, blank,
-     * or not greater than zero. Throws {@link NumberFormatException} if the
-     * value cannot be parsed as a {@link BigDecimal}.</p>
      *
      * @param capital the capital text entered by the user
      * @return the parsed capital as a {@link BigDecimal}
@@ -125,7 +120,7 @@ final class StartInputValidator {
             if (parsed.compareTo(BigDecimal.ZERO) <= 0) {
                 return Optional.of("error.capital.zero");
             }
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException _) {
             return Optional.of("error.capital.invalid");
         }
         return Optional.empty();

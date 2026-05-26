@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
@@ -6,9 +7,12 @@ import edu.ntnu.idatt2003.millions.model.loan.InsufficientSaleProceedsException;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.dialog.ForcedSaleDialog;
 
 import java.math.BigDecimal;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,13 +20,20 @@ import java.util.Map;
 
 /**
  * Controller for the forced-sale flow triggered when the player cannot cover
- * weekly interest from cash. Builds and shows the {@link ForcedSaleDialog},
- * and delegates the confirmed sale to {@link GameService}.
+ * weekly obligations from cash.
  */
+@SuppressWarnings("ClassCanBeRecord")
 public class ForcedSaleController {
+
+    private static final Logger LOGGER = Logger.getLogger(ForcedSaleController.class.getName());
 
     private final GameService gameService;
 
+    /**
+     * Constructs a new ForcedSaleController backed by the given game service.
+     *
+     * @param gameService the game service used to execute the forced sale
+     */
     public ForcedSaleController(GameService gameService) {
         this.gameService = gameService;
     }
@@ -63,6 +74,9 @@ public class ForcedSaleController {
             dialog.closeOnConfirm();
         } catch (InsufficientSaleProceedsException e) {
             dialog.showError(e.getMessage());
+        } catch (IllegalStateException e) {
+            dialog.showError(LanguageManager.get("error.gameOver"));
+            LOGGER.log(Level.INFO, "Forced sale blocked — game is over", e);
         }
     }
 }
