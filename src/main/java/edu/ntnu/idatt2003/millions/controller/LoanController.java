@@ -10,16 +10,21 @@ import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanApplicationDi
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanDetailsModal;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanRepaymentReceipt;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.RepayLoanDialog;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.application.Platform;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controller for loan-related actions.
  * Opens the loan application dialog and delegates confirmation to {@link GameService}.
  */
 public class LoanController {
+
+    private static final Logger LOGGER = Logger.getLogger(LoanController.class.getName());
 
     private final GameService gameService;
     private final LoanPreviewService previewService = new LoanPreviewService();
@@ -114,6 +119,9 @@ public class LoanController {
             dialog.close();
         } catch (ExcessiveDebtException e) {
             dialog.showError(e.getMessage());
+        } catch (IllegalStateException e) {
+            dialog.showError(LanguageManager.get("error.gameOver"));
+            LOGGER.log(Level.INFO, "Take loan blocked — game is over", e);
         }
     }
 
@@ -128,6 +136,9 @@ public class LoanController {
                     new LoanRepaymentReceipt(loan, loanIndex, balanceBefore, balanceAfter, week).show());
         } catch (IllegalArgumentException e) {
             dialog.showError(e.getMessage());
+        } catch (IllegalStateException e) {
+            dialog.showError(LanguageManager.get("error.gameOver"));
+            LOGGER.log(Level.INFO, "Repay loan blocked — game is over", e);
         }
     }
 }
