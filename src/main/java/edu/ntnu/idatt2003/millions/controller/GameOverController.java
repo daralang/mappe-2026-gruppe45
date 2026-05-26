@@ -8,7 +8,6 @@ import edu.ntnu.idatt2003.millions.view.dialog.GameOverModal;
 import javafx.stage.Stage;
 
 import java.math.BigDecimal;
-import java.util.function.BooleanSupplier;
 
 /**
  * Controller for the game-over flow.
@@ -17,29 +16,19 @@ public class GameOverController {
 
     private final GameService gameService;
     private final Stage ownerStage;
-    private final Runnable onNewGame;
-    private final BooleanSupplier saveAction;
-    private final Runnable sellAllAction;
-    private final Runnable noSaveAction;
+    private final EndGameActions actions;
 
     /**
      * Constructs a new GameOverController.
      *
-     * @param gameService   the game service used to read end-of-game state
-     * @param ownerStage    the stage that owns the game-over modal
-     * @param onNewGame     action invoked when the player chooses to start a new game
-     * @param saveAction    action invoked to save the game; returns {@code true} on success
-     * @param sellAllAction action invoked to liquidate all positions before exiting
-     * @param noSaveAction  action invoked when the player exits without saving
+     * @param gameService the game service used to read end-of-game state
+     * @param ownerStage  the stage that owns the game-over modal
+     * @param actions     the four end-of-game action callbacks
      */
-    public GameOverController(GameService gameService, Stage ownerStage, Runnable onNewGame,
-                              BooleanSupplier saveAction, Runnable sellAllAction, Runnable noSaveAction) {
+    public GameOverController(GameService gameService, Stage ownerStage, EndGameActions actions) {
         this.gameService = gameService;
         this.ownerStage = ownerStage;
-        this.onNewGame = onNewGame;
-        this.saveAction = saveAction;
-        this.sellAllAction = sellAllAction;
-        this.noSaveAction = noSaveAction;
+        this.actions = actions;
     }
 
     /**
@@ -56,6 +45,6 @@ public class GameOverController {
         BigDecimal totalLiquidationValue = player.getTotalLiquidationValue(converter);
 
         new GameOverModal(failedWeek, totalObligations, totalLiquidationValue, ownerStage,
-                onNewGame, saveAction, sellAllAction, noSaveAction).show();
+                actions.onNewGame(), actions.saveAction(), actions.sellAllAction(), actions.noSaveAction()).show();
     }
 }
