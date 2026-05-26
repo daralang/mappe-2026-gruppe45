@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.ingame.component.table;
 
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.component.InfoTooltip;
 import java.util.function.Supplier;
 import javafx.geometry.HPos;

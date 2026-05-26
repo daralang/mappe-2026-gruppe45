@@ -1,5 +1,6 @@
-package edu.ntnu.idatt2003.millions.util;
+package edu.ntnu.idatt2003.millions.util.format;
 
+import edu.ntnu.idatt2003.millions.util.currency.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.card.NetWorthCard;
 import edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.card.WeeklyChangeCard;
 import javafx.scene.control.Label;

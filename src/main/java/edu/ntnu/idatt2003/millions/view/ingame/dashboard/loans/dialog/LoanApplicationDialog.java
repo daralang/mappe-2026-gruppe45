@@ -2,7 +2,7 @@ package edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog;
 
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.loan.LoanPreview;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.Modal;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.ModalActions;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
@@ -20,7 +20,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
+import edu.ntnu.idatt2003.millions.util.currency.MoneyFormatter;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;

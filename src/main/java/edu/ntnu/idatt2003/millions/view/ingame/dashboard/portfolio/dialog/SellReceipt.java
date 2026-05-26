@@ -2,8 +2,8 @@ package edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.dialog;
 
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.currency.MoneyFormatter;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;

@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.start.component;
 
-import edu.ntnu.idatt2003.millions.util.CurrencyManager;
+import edu.ntnu.idatt2003.millions.util.currency.CurrencyManager;
+import edu.ntnu.idatt2003.millions.util.currency.SupportedCurrency;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
 import javafx.scene.input.KeyCode;
@@ -33,7 +34,7 @@ public class CurrencySelector extends ComboBox<Currency> {
 
     /**
      * Creates a currency selector populated with all currencies
-     * defined in {@link edu.ntnu.idatt2003.millions.util.SupportedCurrency}.
+     * defined in {@link SupportedCurrency}.
      * Defaults to the currency currently active in {@link CurrencyManager}.
      *
      * <p>Registers an {@link KeyEvent#KEY_PRESSED} handler so that pressing

@@ -3,9 +3,9 @@ package edu.ntnu.idatt2003.millions.view.ingame.exchange.stocks.card;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.service.player.PortfolioService;
 import java.math.BigDecimal;
-import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
-import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.format.ChangeFormatter;
+import edu.ntnu.idatt2003.millions.util.currency.CurrencyFormatter;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 
 /**
  * Widget card displaying the player's total unrealized return in NOK combined

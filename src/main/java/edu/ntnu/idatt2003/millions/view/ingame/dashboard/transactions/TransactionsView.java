@@ -3,7 +3,7 @@ package edu.ntnu.idatt2003.millions.view.ingame.dashboard.transactions;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.service.transaction.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.ingame.dashboard.transactions.card.LoanLedgerCard;
 import edu.ntnu.idatt2003.millions.view.ingame.dashboard.transactions.card.TransactionsActivityCard;

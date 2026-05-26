@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.ingame.exchange.stocks.dialog;
 
-import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.format.ChangeFormatter;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;

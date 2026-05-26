@@ -14,7 +14,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.MainView;
 import edu.ntnu.idatt2003.millions.service.toast.ToastType;
 import edu.ntnu.idatt2003.millions.view.ingame.game.EndGameDialog;

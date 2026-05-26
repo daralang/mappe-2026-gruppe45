@@ -7,7 +7,7 @@ import edu.ntnu.idatt2003.millions.model.loan.InsufficientSaleProceedsException;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.game.ForcedSaleDialog;
 
 import java.math.BigDecimal;

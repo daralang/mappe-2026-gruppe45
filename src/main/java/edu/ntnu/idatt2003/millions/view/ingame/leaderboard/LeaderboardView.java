@@ -4,7 +4,7 @@ import edu.ntnu.idatt2003.millions.keyboard.PageFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.ingame.component.shell.WeekBar;
 import edu.ntnu.idatt2003.millions.view.ingame.leaderboard.card.LeaderboardCard;

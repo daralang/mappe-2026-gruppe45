@@ -1,5 +1,7 @@
-package edu.ntnu.idatt2003.millions.util;
+package edu.ntnu.idatt2003.millions.util.currency;
 
+import edu.ntnu.idatt2003.millions.util.language.Language;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

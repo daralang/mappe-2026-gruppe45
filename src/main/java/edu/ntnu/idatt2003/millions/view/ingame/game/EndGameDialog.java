@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.ingame.game;
 
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.Modal;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.Insets;

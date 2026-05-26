@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.component;
 
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import javafx.scene.control.Button;
 
 /**

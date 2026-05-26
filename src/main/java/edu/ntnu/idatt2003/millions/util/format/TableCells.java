@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.util;
+package edu.ntnu.idatt2003.millions.util.format;
 
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.geometry.HPos;

@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.ingame.component.search;
 
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.VerticalArrowHandler;

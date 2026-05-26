@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.ingame.component.table;
 
 import edu.ntnu.idatt2003.millions.util.SortState;
-import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.util.format.TableCells;
 import edu.ntnu.idatt2003.millions.view.ingame.component.InfoTooltip;
 import javafx.geometry.Pos;
 import javafx.scene.Node;

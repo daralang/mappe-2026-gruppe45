@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.ingame.dashboard.watchlist.dialog;
 
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.Modal;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.ModalActions;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;

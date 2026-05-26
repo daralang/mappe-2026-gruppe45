@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.titlebar;
 
 import edu.ntnu.idatt2003.millions.service.game.GameService;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.component.notification.NotificationPanel;
 import edu.ntnu.idatt2003.millions.view.ingame.component.notification.NotificationPopupOverlay;
 import edu.ntnu.idatt2003.millions.view.start.component.LanguagePicker;
