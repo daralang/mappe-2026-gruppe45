@@ -1,6 +1,7 @@
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
+import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -179,8 +180,21 @@ public class TradeController {
      * @return the display label
      */
     private String buildWatchlistLabel(String symbol) {
-        Stock stock = gameService.getExchange().getStock(symbol);
-        return stock != null ? symbol + " – " + stock.getCompany() : symbol;
+        Exchange exchange = gameService.getExchange();
+        if (exchange.hasStock(symbol)) {
+            return symbol + " – " + exchange.getStock(symbol).getCompany();
+        }
+        return symbol;
+    }
+
+    /**
+     * Updates the note for the given stock in the player's watchlist.
+     *
+     * @param symbol  the ticker symbol of the watchlist entry to update
+     * @param newNote the new note text
+     */
+    public void updateWatchlistNote(String symbol, String newNote) {
+        gameService.updateWatchlistNote(symbol, newNote);
     }
 
     // Dialog opening

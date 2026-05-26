@@ -137,9 +137,6 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
 
     /**
      * Opens a {@link WatchlistRemoveDialog} for the given stock symbol.
-     * Delegates the confirmed removal to
-     * {@link edu.ntnu.idatt2003.millions.controller.TradeController#removeFromWatchlist(String)}
-     * so that the controller can show the appropriate toast notification.
      *
      * @param symbol the symbol of the stock to remove
      */
@@ -155,7 +152,7 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
         WatchlistNoteDialog dialog = new WatchlistNoteDialog(
                 item.stock(), gameService.getCurrencyConverter(), item.entry().note());
         dialog.setOnSave(note ->
-                gameService.updateWatchlistNote(item.stock().getSymbol(), note));
+                controller.updateWatchlistNote(item.stock().getSymbol(), note));
         dialog.show();
     }
 }
