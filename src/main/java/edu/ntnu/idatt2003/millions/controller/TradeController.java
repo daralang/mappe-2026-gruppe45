@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -23,14 +24,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller for portfolio actions (buy, sell, sell all, view details, and watchlist).
- * Opens the corresponding dialogs and delegates the actual transactions
- * to the model via {@link GameService}. Shows {@link ToastService} feedback
- * for watchlist mutations.
- *
- * <p>Provides read-only operations such as {@link #previewBuy(Stock, BigDecimal)}
- * and {@link #getCurrentBalance()} for views that need to display
- * derived data without performing a mutation.</p>
+ * Controller for portfolio actions: buy, sell, sell-all, watchlist management,
+ * stock details, and read-only previews.
  */
 public class TradeController {
 
@@ -55,8 +50,6 @@ public class TradeController {
         this.previewService = new TransactionPreviewService();
     }
 
-    // ---- Read-only operations (called by views) ----
-
     /**
      * Returns the player's current cash balance.
      *
@@ -67,8 +60,7 @@ public class TradeController {
     }
 
     /**
-     * Returns the current currency converter, used by views that call
-     * read services directly with a currency converter argument.
+     * Returns the current currency converter.
      *
      * @return the active currency converter
      */
@@ -76,6 +68,11 @@ public class TradeController {
         return gameService.getCurrencyConverter();
     }
 
+    /**
+     * Returns whether the current game has ended.
+     *
+     * @return {@code true} if the game is over
+     */
     public boolean isGameOver() {
         return gameService.isGameOver();
     }
@@ -186,12 +183,6 @@ public class TradeController {
         }
     }
 
-    /**
-     * Builds the display label used in watchlist toast messages.
-     *
-     * @param symbol the ticker symbol to build a label for
-     * @return the display label
-     */
     private String buildWatchlistLabel(String symbol) {
         Exchange exchange = gameService.getExchange();
         if (exchange.hasStock(symbol)) {
@@ -217,8 +208,6 @@ public class TradeController {
             LOGGER.log(Level.WARNING, "Watchlist note update failed", e);
         }
     }
-
-    // Dialog opening
 
     /**
      * Opens the buy dialog for the given stock and executes the purchase
@@ -255,8 +244,6 @@ public class TradeController {
         dialog.setOnConfirm(quantity -> sell(share, quantity, dialog));
         dialog.show();
     }
-
-    // Mutating operations
 
     private void buy(Stock stock, BigDecimal quantity, BuyDialog dialog) {
         BigDecimal balanceBefore = gameService.getPlayer().getCash();
