@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.keyboard;
 
 import edu.ntnu.idatt2003.millions.keyboard.registry.ShortcutRegistry;
@@ -76,16 +77,8 @@ public final class KeyboardNavigationService {
 
     /**
      * Detaches this service from its current scene and clears all state,
-     * including both shortcut registries.
-     * Also removes the {@code sceneProperty} listener added by {@link #bindToNode}.
-     * Safe to call even when not attached.
-     *
-     * <p><strong>Ownership:</strong> the controller that owns this service is
-     * responsible for calling {@code detach()} before navigating away from the
-     * screen it manages.
-     * {@link #bindToNode} calls {@code detach()} automatically whenever the bound node loses its
-     * scene (e.g. when the scene graph is torn down), so manual calls are only
-     * needed when the controller itself drives the navigation.</p>
+     * including both shortcut registries. Also removes the {@code sceneProperty}
+     * listener added by {@link #bindToNode}. Safe to call even when not attached.
      */
     public void detach() {
         if (boundNode != null && sceneListener != null) {
@@ -103,8 +96,7 @@ public final class KeyboardNavigationService {
     }
 
     /**
-     * Returns the universal {@link ShortcutRegistry} for shortcuts that must
-     * fire regardless of context (e.g. Enter to fire the focused button).
+     * Returns the universal {@link ShortcutRegistry}, shortcuts that fire regardless of context.
      *
      * @return the universal shortcut registry
      */
@@ -113,8 +105,7 @@ public final class KeyboardNavigationService {
     }
 
     /**
-     * Returns the global {@link ShortcutRegistry} for registering and
-     * unregistering application-wide keyboard shortcuts.
+     * Returns the global {@link ShortcutRegistry} for application-wide shortcuts.
      *
      * @return the global shortcut registry
      */
@@ -123,12 +114,8 @@ public final class KeyboardNavigationService {
     }
 
     /**
-     * Runs the full dispatch pipeline for the given event as if it had been
-     * received from the scene's {@code EventFilter}.
-     *
-     * <p>Package-private so that unit tests in the same package can exercise
-     * dispatch behaviour without attaching to a live {@link javafx.scene.Scene}
-     * </p>
+     * Dispatches the given event through the full pipeline; used by unit tests
+     * without attaching to a live {@link javafx.scene.Scene}.
      *
      * @param event the key event to dispatch
      */

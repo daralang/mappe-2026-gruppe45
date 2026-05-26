@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog;
 
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
@@ -61,6 +62,8 @@ public class LoanApplicationDialog extends Modal {
     private boolean updatingAmount = false;
 
     /**
+     * Constructs a dialog for applying for the given loan offer.
+     *
      * @param offer            the loan product the player is applying for
      * @param validateCallback game-policy validation: returns empty if allowed,
      *                         or an i18n error key if the amount is not permitted

@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.ingame.component.notification;
 
 import edu.ntnu.idatt2003.millions.model.notification.Notification;
@@ -24,6 +25,12 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+/**
+ * Overlay that displays transient toast notifications for new in-game events.
+ *
+ * <p>At most {@code MAX_VISIBLE} toasts are shown simultaneously; additional
+ * notifications are queued and shown as earlier toasts are dismissed.</p>
+ */
 public class NotificationPopupOverlay {
 
     private static final int MAX_VISIBLE = 3;
@@ -36,6 +43,12 @@ public class NotificationPopupOverlay {
     private final Deque<Notification> queue = new ArrayDeque<>();
     private int lastShownId = 0;
 
+    /**
+     * Constructs the overlay and records the highest existing notification ID,
+     * so only notifications created after construction are shown as toasts.
+     *
+     * @param gameService the game service used to read the player's notifications
+     */
     public NotificationPopupOverlay(GameService gameService) {
         this.gameService = gameService;
         this.stack = new VBox(8);
@@ -54,6 +67,10 @@ public class NotificationPopupOverlay {
         return stack;
     }
 
+    /**
+     * Checks for notifications added since the last update and shows them as toasts.
+     * Notifications that exceed the visible limit are queued for later display.
+     */
     public void onGameUpdated() {
         List<Notification> all = gameService.getPlayer().getNotifications();
         List<Notification> fresh = all.stream()

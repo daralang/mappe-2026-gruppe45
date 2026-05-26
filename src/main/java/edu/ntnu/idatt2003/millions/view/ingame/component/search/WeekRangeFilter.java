@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.ingame.component.search;
 
 import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
@@ -128,9 +129,6 @@ public class WeekRangeFilter extends HBox {
      * Raises the upper bound of both spinners and advances the to-spinner
      * value to {@code newMax} so that newly added weeks are always visible.
      *
-     * <p>Typically called from a parent view's {@code onGameUpdated()}
-     * hook whenever the game advances to a new week.</p>
-     *
      * @param newMax the new upper bound; ignored if smaller than the
      *               configured minimum
      */
@@ -150,30 +148,18 @@ public class WeekRangeFilter extends HBox {
         toFactory.setValue(newMax);
     }
 
-    /**
-     * @return observable property holding the start of the range
-     */
     public ReadOnlyIntegerProperty fromWeekProperty() {
         return fromWeek;
     }
 
-    /**
-     * @return observable property holding the end of the range (inclusive)
-     */
     public ReadOnlyIntegerProperty toWeekProperty() {
         return toWeek;
     }
 
-    /**
-     * @return the currently selected start week
-     */
     public int getFromWeek() {
         return fromWeek.get();
     }
 
-    /**
-     * @return the currently selected end week (inclusive)
-     */
     public int getToWeek() {
         return toWeek.get();
     }

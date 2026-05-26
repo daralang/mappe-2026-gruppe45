@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.ingame.component.modal;
 
 import javafx.application.Platform;
@@ -92,7 +93,7 @@ public abstract class Modal {
 
     /**
      * Scene-level key handler. ESC closes; ENTER/SPACE fires the focused {@link Button}.
-     * *
+     *
      * @param event the key event
      * @return {@code true} if the event was handled
      */

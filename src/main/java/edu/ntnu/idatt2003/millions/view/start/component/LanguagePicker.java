@@ -13,6 +13,10 @@ import javafx.scene.layout.HBox;
  */
 public class LanguagePicker extends HBox {
 
+    /**
+     * Creates the language picker, builds one flag button per supported language,
+     * and registers a {@link LanguageManager} observer to keep button states in sync.
+     */
     public LanguagePicker() {
         getStyleClass().add("language-picker");
 

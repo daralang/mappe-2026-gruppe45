@@ -102,12 +102,6 @@ class TableHeaderRenderer<Column> {
         return clearSortButton;
     }
 
-    /**
-     * Creates and caches the header cells on the first render call.
-     *
-     * @param columns   the column definitions to build cells from
-     * @param onChanged callback passed through to each sortable button
-     */
     private void ensureHeaderCells(List<TableColumnDef<Column>> columns, Runnable onChanged) {
         if (!headerCells.isEmpty()) {
             return;
@@ -179,10 +173,6 @@ class TableHeaderRenderer<Column> {
         }
     }
 
-    /**
-     * Updates the clear-sort button's text and visibility to match the current
-     * sort state. No-op if {@link #createClearSortButton} has not been called.
-     */
     private void updateClearSortButton() {
         if (clearSortButton == null) {
             return;
@@ -193,16 +183,6 @@ class TableHeaderRenderer<Column> {
         clearSortButton.setText(clearSortLabelSupplier.get());
     }
 
-    /**
-     * Builds a sort button for the given column.
-     *
-     * <p>The button delegates to {@link SortState#toggle} on click and fires
-     * {@code onChanged} to trigger a data refresh in the owning card.</p>
-     *
-     * @param col       the sortable column definition
-     * @param onChanged the sort-change callback
-     * @return a styled sort header button via {@link TableCells#sortHeader}
-     */
     private Button buildSortableButton(TableColumnDef<Column> col, Runnable onChanged) {
         Column columnKey = col.columnKey();
         Runnable action = () -> {

@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog;
 
 import edu.ntnu.idatt2003.millions.controller.loan.LoanController;
@@ -36,6 +37,8 @@ public class LoanDetailsModal extends Modal {
     private final int currentWeek;
 
     /**
+     * Constructs a modal showing the details of an active loan.
+     *
      * @param loan       the active loan to display
      * @param loanIndex  per-type 1-based display index (e.g. 2 → "Standard loan #2")
      * @param controller the loan controller; used to open RepayLoanDialog on confirm
