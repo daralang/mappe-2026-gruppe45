@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
@@ -19,15 +20,20 @@ import java.util.Map;
 
 /**
  * Controller for the forced-sale flow triggered when the player cannot cover
- * weekly interest from cash. Builds and shows the {@link ForcedSaleDialog},
- * and delegates the confirmed sale to {@link GameService}.
+ * weekly obligations from cash.
  */
+@SuppressWarnings("ClassCanBeRecord")
 public class ForcedSaleController {
 
     private static final Logger LOGGER = Logger.getLogger(ForcedSaleController.class.getName());
 
     private final GameService gameService;
 
+    /**
+     * Constructs a new ForcedSaleController backed by the given game service.
+     *
+     * @param gameService the game service used to execute the forced sale
+     */
     public ForcedSaleController(GameService gameService) {
         this.gameService = gameService;
     }
