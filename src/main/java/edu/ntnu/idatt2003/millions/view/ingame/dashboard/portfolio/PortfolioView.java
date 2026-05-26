@@ -6,7 +6,7 @@ import edu.ntnu.idatt2003.millions.service.player.PortfolioService;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.ingame.component.card.AvailableFundsCard;
 import edu.ntnu.idatt2003.millions.view.ingame.component.card.PortfolioValueCard;
-import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.*;
+import edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.card.*;
 import edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.card.*;
 import edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.component.ExploreStocksButton;
 import javafx.scene.layout.HBox;
