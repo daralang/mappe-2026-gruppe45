@@ -1,7 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.titlebar;
 
 import edu.ntnu.idatt2003.millions.service.game.GameService;
-import edu.ntnu.idatt2003.millions.view.component.Header;
 import javafx.scene.Node;
 
 public class MacTitleBar implements TitleBar {

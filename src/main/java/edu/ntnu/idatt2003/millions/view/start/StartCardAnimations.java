@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.start;
 
-import edu.ntnu.idatt2003.millions.view.component.AppTabPane;
+import edu.ntnu.idatt2003.millions.view.start.component.AppTabPane;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
