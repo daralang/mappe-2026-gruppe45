@@ -120,7 +120,7 @@ public class PlayerStatsService {
             int growthPart = Math.clamp((long) Math.floor(growthPercent / 2), 0, 10);
             return (weeksPart + growthPart) / 20.0;
         } else {
-            int weeksPart = Math.clamp(weeksTraded, 0, 10);
+            int weeksPart = Math.clamp((long) weeksTraded - 10, 0, 10);
             int growthPart = Math.clamp((long) Math.floor((growthPercent - 20) / 2), 0, 40);
             return (weeksPart + growthPart) / 50.0;
         }
