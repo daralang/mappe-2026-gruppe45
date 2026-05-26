@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -10,9 +11,7 @@ import java.math.BigDecimal;
 import java.util.function.BooleanSupplier;
 
 /**
- * Controller for the game-over flow. Collects the end-of-game context
- * (week, obligations, liquidation value) and delegates rendering to
- * {@link GameOverModal}.
+ * Controller for the game-over flow.
  */
 public class GameOverController {
 
@@ -23,6 +22,16 @@ public class GameOverController {
     private final Runnable sellAllAction;
     private final Runnable noSaveAction;
 
+    /**
+     * Constructs a new GameOverController.
+     *
+     * @param gameService   the game service used to read end-of-game state
+     * @param ownerStage    the stage that owns the game-over modal
+     * @param onNewGame     action invoked when the player chooses to start a new game
+     * @param saveAction    action invoked to save the game; returns {@code true} on success
+     * @param sellAllAction action invoked to liquidate all positions before exiting
+     * @param noSaveAction  action invoked when the player exits without saving
+     */
     public GameOverController(GameService gameService, Stage ownerStage, Runnable onNewGame,
                               BooleanSupplier saveAction, Runnable sellAllAction, Runnable noSaveAction) {
         this.gameService = gameService;
