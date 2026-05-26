@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
@@ -19,8 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Controller for loan-related actions.
- * Opens the loan application dialog and delegates confirmation to {@link GameService}.
+ * Controller for loan-related actions: applying for loans, repaying loans, and viewing loan details.
  */
 public class LoanController {
 
@@ -29,13 +29,17 @@ public class LoanController {
     private final GameService gameService;
     private final LoanPreviewService previewService = new LoanPreviewService();
 
+    /**
+     * Constructs a new LoanController backed by the given game service.
+     *
+     * @param gameService the game service used to apply and repay loans
+     */
     public LoanController(GameService gameService) {
         this.gameService = gameService;
     }
 
     /**
      * Opens the loan application dialog for the given offer.
-     * The dialog is modal and blocks until the player confirms or cancels.
      *
      * @param offer the loan offer the player wants to apply for
      */
@@ -67,7 +71,7 @@ public class LoanController {
     }
 
     /**
-     * Returns the current game week. Used by modals that need temporal context.
+     * Returns the current game week.
      *
      * @return the current exchange week
      */
@@ -75,6 +79,11 @@ public class LoanController {
         return gameService.getExchange().getWeek();
     }
 
+    /**
+     * Returns whether the current game has ended.
+     *
+     * @return {@code true} if the game is over
+     */
     public boolean isGameOver() {
         return gameService.isGameOver();
     }
@@ -91,7 +100,9 @@ public class LoanController {
 
     /**
      * Validates whether the player may borrow {@code amount} right now.
-     * Returns empty if allowed; present with an i18n error key if not.
+     *
+     * @param amount the requested loan amount
+     * @return empty if allowed; present with an i18n error key if the amount exceeds the player's capacity
      */
     private Optional<String> validateLoanAmount(BigDecimal amount) {
         BigDecimal capacity = gameService.getPlayer()
@@ -104,7 +115,9 @@ public class LoanController {
 
     /**
      * Validates whether the player can afford to repay {@code loan} right now.
-     * Returns empty if allowed; present with an i18n error key if not.
+     *
+     * @param loan the loan the player wants to repay
+     * @return empty if the player has sufficient cash; present with an i18n error key if not
      */
     private Optional<String> validateRepay(Loan loan) {
         if (gameService.getPlayer().getCash().compareTo(loan.principal()) < 0) {
