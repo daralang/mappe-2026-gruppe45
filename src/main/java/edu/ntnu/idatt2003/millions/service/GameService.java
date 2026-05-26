@@ -272,6 +272,8 @@ public class GameService {
      * @throws IllegalStateException if the game is over
      */
     public Transaction buy(String symbol, BigDecimal quantity) {
+        Objects.requireNonNull(symbol, "Symbol cannot be null");
+        Objects.requireNonNull(quantity, "Quantity cannot be null");
         if (gameOver) throw new IllegalStateException("Game is over");
         Transaction transaction = exchange.buy(symbol, quantity, player);
         notifyObservers();
@@ -302,6 +304,8 @@ public class GameService {
      * @throws IllegalStateException if the game is over
      */
     public Transaction sell(Share share, BigDecimal quantity) {
+        Objects.requireNonNull(share, "Share cannot be null");
+        Objects.requireNonNull(quantity, "Quantity cannot be null");
         if (gameOver) throw new IllegalStateException("Game is over");
         Transaction transaction = exchange.sell(share, quantity, player);
         notifyObservers();
@@ -391,10 +395,12 @@ public class GameService {
     }
 
     /**
-     * Returns the currency converter from the active exchange.
-     * Convenience shortcut for {@code getExchange().getCurrencyConverter()}.
+     * Returns the currency converter for the active game.
      *
-     * @return the active currency converter
+     * @return the currency converter
+     * @throws NullPointerException if no game is currently
+     *     active. Callers must ensure createNewGame() or
+     *     loadGame() has succeeded before invoking this method.
      */
     public CurrencyConverter getCurrencyConverter() {
         return exchange.getCurrencyConverter();
