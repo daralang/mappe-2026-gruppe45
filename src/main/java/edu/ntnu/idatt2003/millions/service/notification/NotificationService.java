@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.service.notification;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -17,12 +18,29 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Evaluates game events and pushes the resulting {@link Notification} objects to the player.
+ * Called after each week advances and after a loan is taken.
+ */
 public class NotificationService {
 
+    /** Debt-to-capacity ratio at or above which a high-debt warning notification is generated. */
     public static final BigDecimal DEBT_RATIO_WARNING_THRESHOLD = new BigDecimal("0.85");
+
+    /** Minimum absolute price change (as a fraction) that triggers a stock-movement notification. */
     public static final BigDecimal STOCK_MOVEMENT_THRESHOLD = new BigDecimal("0.09");
+
+    /** Number of weeks before loan maturity at which a near-maturity warning is generated. */
     public static final int LOAN_NEAR_MATURITY_WEEKS = 3;
 
+    /**
+     * Runs all notification checks for the current week and pushes any triggered
+     * notifications to {@code player}.
+     *
+     * @param player    the player to check and push notifications to
+     * @param exchange  the exchange providing the current week number and stock data
+     * @param converter currency converter used for debt-ratio and status checks
+     */
     public void onWeekAdvanced(Player player, Exchange exchange, CurrencyConverter converter) {
         int currentWeek = exchange.getWeek();
         checkLoanRepayments(player, currentWeek);
@@ -33,6 +51,14 @@ public class NotificationService {
         checkStatusChange(player, currentWeek, converter);
     }
 
+    /**
+     * Re-evaluates the debt-ratio check immediately after a loan is taken and pushes
+     * a warning to {@code player} if the threshold is exceeded.
+     *
+     * @param player      the player who took the loan
+     * @param currentWeek the week in which the loan was taken
+     * @param converter   currency converter used to compute loan capacity
+     */
     public void onLoanTaken(Player player, int currentWeek, CurrencyConverter converter) {
         checkDebtRatio(player, currentWeek, converter);
     }
