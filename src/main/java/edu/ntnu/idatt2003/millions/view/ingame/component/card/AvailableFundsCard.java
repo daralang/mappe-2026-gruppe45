@@ -3,7 +3,7 @@ package edu.ntnu.idatt2003.millions.view.ingame.component.card;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.util.currency.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.ingame.exchange.stocks.card.SimpleWidgetCard;
+import edu.ntnu.idatt2003.millions.view.ingame.exchange.stock.card.SimpleWidgetCard;
 
 /**
  * Widget card displaying the player's currently available cash balance in NOK.

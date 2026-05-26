@@ -3,12 +3,12 @@ package edu.ntnu.idatt2003.millions.view.ingame.exchange;
 import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.keyboard.PageFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
-import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
+import edu.ntnu.idatt2003.millions.keyboard.registry.TabNavigationRegistry;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.view.ingame.component.shell.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.ingame.component.shell.WeekBar;
 import edu.ntnu.idatt2003.millions.view.ingame.exchange.overview.ExchangeOverview;
-import edu.ntnu.idatt2003.millions.view.ingame.exchange.stocks.StocksView;
+import edu.ntnu.idatt2003.millions.view.ingame.exchange.stock.StocksView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 

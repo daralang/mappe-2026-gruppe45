@@ -1,8 +1,8 @@
 package edu.ntnu.idatt2003.millions.view.ingame.component.table;
 
-import edu.ntnu.idatt2003.millions.keyboard.ArrowKeyNavigator;
-import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
-import edu.ntnu.idatt2003.millions.keyboard.VerticalArrowHandler;
+import edu.ntnu.idatt2003.millions.keyboard.navigation.ArrowKeyNavigator;
+import edu.ntnu.idatt2003.millions.keyboard.navigation.PageArrowDispatcher;
+import edu.ntnu.idatt2003.millions.keyboard.navigation.VerticalArrowHandler;
 import edu.ntnu.idatt2003.millions.util.SortState;
 import edu.ntnu.idatt2003.millions.util.format.TableCells;
 import javafx.scene.Node;
