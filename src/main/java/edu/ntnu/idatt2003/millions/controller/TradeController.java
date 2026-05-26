@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -19,19 +20,16 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Controller for portfolio actions (buy, sell, sell all, view details, and watchlist).
- * Opens the corresponding dialogs and delegates the actual transactions
- * to the model via {@link GameService}. Shows {@link ToastService} feedback
- * for watchlist mutations.
- *
- * <p>Provides read-only operations such as {@link #previewBuy(Stock, BigDecimal)}
- * and {@link #getCurrentBalance()} for views that need to display
- * derived data without performing a mutation.</p>
+ * Controller for portfolio actions: buy, sell, sell-all, watchlist management,
+ * stock details, and read-only previews.
  */
 public class TradeController {
 
+    private static final Logger LOGGER = Logger.getLogger(TradeController.class.getName());
     private static final int MAX_QUANTITY_SCALE = 4;
     private static final BigDecimal MIN_TRANSACTION_VALUE_NOK = BigDecimal.ONE;
 
@@ -52,8 +50,6 @@ public class TradeController {
         this.previewService = new TransactionPreviewService();
     }
 
-    // ---- Read-only operations (called by views) ----
-
     /**
      * Returns the player's current cash balance.
      *
@@ -64,8 +60,7 @@ public class TradeController {
     }
 
     /**
-     * Returns the current currency converter, used by views that call
-     * read services directly with a currency converter argument.
+     * Returns the current currency converter.
      *
      * @return the active currency converter
      */
@@ -73,6 +68,11 @@ public class TradeController {
         return gameService.getCurrencyConverter();
     }
 
+    /**
+     * Returns whether the current game has ended.
+     *
+     * @return {@code true} if the game is over
+     */
     public boolean isGameOver() {
         return gameService.isGameOver();
     }
@@ -133,6 +133,10 @@ public class TradeController {
      * @param symbol the ticker symbol of the stock to toggle
      */
     public void toggleWatchlist(String symbol) {
+        if (symbol == null || symbol.isBlank()) {
+            LOGGER.log(Level.WARNING, "Watchlist toggle rejected — blank symbol");
+            return;
+        }
         boolean isWatched = gameService.getPlayer().isOnWatchlist(symbol);
         String label = buildWatchlistLabel(symbol);
         try {
@@ -147,11 +151,12 @@ public class TradeController {
                         MessageFormat.format(LanguageManager.get("toast.watchlist.added"), label),
                         ToastType.SUCCESS);
             }
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             String errorKey = isWatched
                     ? "toast.watchlist.removeFailed"
                     : "toast.watchlist.addFailed";
             toastService.show(LanguageManager.get(errorKey), ToastType.ERROR);
+            LOGGER.log(Level.WARNING, "Watchlist toggle failed", e);
         }
     }
 
@@ -162,23 +167,22 @@ public class TradeController {
      * @param symbol the ticker symbol of the stock to remove
      */
     public void removeFromWatchlist(String symbol) {
+        if (symbol == null || symbol.isBlank()) {
+            LOGGER.log(Level.WARNING, "Watchlist remove rejected — blank symbol");
+            return;
+        }
         String label = buildWatchlistLabel(symbol);
         try {
             gameService.removeFromWatchlist(symbol);
             toastService.show(
                     MessageFormat.format(LanguageManager.get("toast.watchlist.removed"), label),
                     ToastType.SUCCESS);
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             toastService.show(LanguageManager.get("toast.watchlist.removeFailed"), ToastType.ERROR);
+            LOGGER.log(Level.WARNING, "Watchlist remove failed", e);
         }
     }
 
-    /**
-     * Builds the display label used in watchlist toast messages.
-     *
-     * @param symbol the ticker symbol to build a label for
-     * @return the display label
-     */
     private String buildWatchlistLabel(String symbol) {
         Exchange exchange = gameService.getExchange();
         if (exchange.hasStock(symbol)) {
@@ -194,10 +198,17 @@ public class TradeController {
      * @param newNote the new note text
      */
     public void updateWatchlistNote(String symbol, String newNote) {
-        gameService.updateWatchlistNote(symbol, newNote);
+        if (symbol == null || symbol.isBlank()) {
+            LOGGER.log(Level.WARNING, "Watchlist note update rejected — blank symbol");
+            return;
+        }
+        try {
+            gameService.updateWatchlistNote(symbol, newNote);
+        } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.WARNING, "Watchlist note update failed", e);
+            toastService.show(LanguageManager.get("toast.watchlist.updateNoteFailed"), ToastType.ERROR);
+        }
     }
-
-    // Dialog opening
 
     /**
      * Opens the buy dialog for the given stock and executes the purchase
@@ -235,8 +246,6 @@ public class TradeController {
         dialog.show();
     }
 
-    // Mutating operations
-
     private void buy(Stock stock, BigDecimal quantity, BuyDialog dialog) {
         BigDecimal balanceBefore = gameService.getPlayer().getCash();
         TransactionPreview preview = previewService.previewPurchase(
@@ -254,11 +263,7 @@ public class TradeController {
             Platform.runLater(() ->
                     new BuyReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (IllegalArgumentException | IllegalStateException e) {
-            String message = e.getMessage();
-            if (message == null || message.isBlank()) {
-                message = e.getClass().getSimpleName();
-            }
-            dialog.showError(message);
+            dialog.showError(resolveErrorMessage(e));
         }
     }
 
@@ -279,12 +284,20 @@ public class TradeController {
             Platform.runLater(() ->
                     new SellReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (IllegalArgumentException | IllegalStateException e) {
-            String message = e.getMessage();
-            if (message == null || message.isBlank()) {
-                message = e.getClass().getSimpleName();
-            }
-            dialog.showError(message);
+            dialog.showError(resolveErrorMessage(e));
         }
+    }
+
+    /**
+     * Returns a user-readable error message for the given exception. Falls back to the
+     * exception's simple class name when the message is null or blank.
+     *
+     * @param e the exception to extract a message from
+     * @return the exception's message, or its class name as fallback
+     */
+    private static String resolveErrorMessage(Exception e) {
+        String message = e.getMessage();
+        return (message == null || message.isBlank()) ? e.getClass().getSimpleName() : message;
     }
 
     /**

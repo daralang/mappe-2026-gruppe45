@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.file.game;
 
 import com.google.gson.*;
@@ -17,27 +18,15 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Handles reading and writing of game state to and from JSON files.
- * Uses Gson for serialization and deserialization.
- * Transactions are serialized with a type field to distinguish
- * between purchases and sales when loading the game back.
+ * Persists and restores game state as JSON.
  *
- * <p>This class is pure infrastructure: it does not own domain decisions,
- * such as which {@link edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter}
- * implementation to use. Callers (typically
- * {@link edu.ntnu.idatt2003.millions.service.GameService}) are responsible for
- * reinitializing the loaded {@link Exchange} with a converter via
- * {@link Exchange#reinitialize} before it is used.
+ * <p>The loaded {@link Exchange} has no transient fields populated; callers must
+ * invoke {@link Exchange#reinitialize} before the exchange is used.
  */
 public class JsonGameFileHandler implements GameFileHandler {
 
     private final Gson gson;
 
-    /**
-     * Constructs a new JsonGameFileHandler.
-     * Configures Gson with a custom serializer for transactions
-     * and pretty printing for readable output.
-     */
     public JsonGameFileHandler() {
         this.gson = new GsonBuilder()
                 .registerTypeAdapterFactory(new TransactionAdapterFactory())
@@ -47,11 +36,10 @@ public class JsonGameFileHandler implements GameFileHandler {
 
     /**
      * Saves the current game state to a JSON file.
-     * The file will contain the player state (money, portfolio,
-     * transaction archive) and the exchange state (stocks, prices, week).
      *
      * @param player   the player whose state should be saved
      * @param exchange the exchange whose state should be saved
+     * @param gameOver whether the game has ended
      * @param file     the file to save the game state to
      * @throws NullPointerException if player, exchange or file is null
      * @throws UncheckedIOException if the file cannot be written to
@@ -76,13 +64,9 @@ public class JsonGameFileHandler implements GameFileHandler {
 
     /**
      * Loads a saved game state from a JSON file.
-     * Deserializes the player and exchange from the file, then relinks
-     * each share in the player's portfolio to the correct stock reference
-     * from the exchange.
      *
-     * <p>The returned {@link Exchange} has not yet had its transient fields
-     * (random source, currency converter) populated. Callers must invoke
-     * {@link Exchange#reinitialize} before using the exchange.
+     * <p>The returned {@link Exchange} has no transient fields populated;
+     * callers must invoke {@link Exchange#reinitialize} before using the exchange.
      *
      * @param file the file to load the game state from
      * @return a {@link GameState} containing the deserialized player and exchange
@@ -101,6 +85,14 @@ public class JsonGameFileHandler implements GameFileHandler {
         }
     }
 
+    /**
+     * Parses a game state from the given reader.
+     *
+     * @param reader the source to read JSON from
+     * @param label  a human-readable identifier for the source (used in error messages)
+     * @return the deserialized game state
+     * @throws GameSaveCorruptException if the JSON is invalid or required fields are missing
+     */
     GameState parse(Reader reader, String label) throws GameSaveCorruptException {
         JsonObject gameState;
         try {
@@ -149,7 +141,7 @@ public class JsonGameFileHandler implements GameFileHandler {
             TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);
             TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
 
-            return new TypeAdapter<T>() {
+            return new TypeAdapter<>() {
                 @Override
                 public void write(JsonWriter out, T value) throws IOException {
                     JsonObject obj = delegate.toJsonTree(value).getAsJsonObject();
