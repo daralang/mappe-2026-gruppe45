@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A self-contained weekly price-change section for a single {@link Stock}.
+ * A self-contained weekly price-change card for a single {@link Stock}.
  */
 public class WeeklyChangeCard extends VBox {
 
@@ -33,19 +33,11 @@ public class WeeklyChangeCard extends VBox {
      */
     private static final int MAX_VISIBLE_ROWS = 4;
 
-    /**
-     * Approximate height per row in pixels.
-     */
-    private static final double ROW_HEIGHT = 22;
-
     /** Vertical gap between rows in the weekly-change {@link GridPane}. */
     private static final int TABLE_VGAP = 6;
 
-    /** Top padding applied by the {@code stock-detail-weekly} style class. */
-    private static final int TABLE_TOP_PADDING = 4;
-
     /**
-     * Constructs a {@code WeeklyChangeSection} for the given stock and
+     * Constructs a {@code WeeklyChangeCard} for the given stock and
      * immediately wires the {@link WeekRangeFilter} to the scrollable table.
      *
      * @param stock       the stock whose weekly price changes are displayed;
@@ -64,17 +56,29 @@ public class WeeklyChangeCard extends VBox {
         int week = Math.max(1, currentWeek);
         WeekRangeFilter filter = new WeekRangeFilter(1, week);
 
+        int[] lastRowCount = {0};
         VBox tableContainer = new VBox();
 
         ScrollPane scroll = new ScrollPane(tableContainer);
         scroll.getStyleClass().add("content-scroll");
         scroll.setFitToWidth(true);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scroll.setMaxHeight(scrollMaxHeight());
 
-        Runnable rebuild = () -> tableContainer.getChildren().setAll(
-                buildTable(stock, converter, historyService,
-                        filter.getFromWeek(), filter.getToWeek()));
+        tableContainer.heightProperty().addListener((obs, oldH, newH) -> {
+            int n = lastRowCount[0];
+            if (n > MAX_VISIBLE_ROWS + 1) {
+                scroll.setMaxHeight(newH.doubleValue() * (MAX_VISIBLE_ROWS + 1.0) / n);
+            } else {
+                scroll.setMaxHeight(Double.MAX_VALUE);
+            }
+        });
+
+        Runnable rebuild = () -> {
+            List<WeeklyPriceChange> rows = historyService.getWeeklyChanges(
+                    stock, converter, filter.getFromWeek(), filter.getToWeek());
+            lastRowCount[0] = rows.isEmpty() ? 0 : rows.size() + 1;
+            tableContainer.getChildren().setAll(buildTable(stock, rows));
+        };
 
         filter.fromWeekProperty().addListener((obs, oldVal, newVal) -> rebuild.run());
         filter.toWeekProperty().addListener((obs, oldVal, newVal) -> rebuild.run());
@@ -83,18 +87,6 @@ public class WeeklyChangeCard extends VBox {
         getStyleClass().add("stock-detail-panel");
         setSpacing(8);
         getChildren().addAll(buildHeader(filter), scroll);
-    }
-
-    /**
-     * Computes the maximum height of the scroll pane.
-     *
-     * @return the scroll pane max height in pixels
-     */
-    private double scrollMaxHeight() {
-        int visibleRows = MAX_VISIBLE_ROWS + 1;
-        return visibleRows * ROW_HEIGHT
-                + (visibleRows - 1) * TABLE_VGAP
-                + TABLE_TOP_PADDING;
     }
 
     /**
@@ -114,23 +106,15 @@ public class WeeklyChangeCard extends VBox {
     }
 
     /**
-     * Builds the weekly-change table for the selected week range, or an info
-     * label when no transition exists in that range (e.g. only week 1 selected).
-     * Rows are supplied by {@link StockHistoryService}, newest first.
+     * Builds the weekly-change table from the given rows, or an info label when
+     * the list is empty (e.g. only week 1 selected with no transitions).
+     * Rows are displayed newest first.
      *
-     * @param stock          the stock whose history is read
-     * @param converter      the currency converter for the NOK column
-     * @param historyService the service providing {@link WeeklyPriceChange} rows
-     * @param fromWeek       the first selected week (inclusive)
-     * @param toWeek         the last selected week (inclusive)
-     * @return the populated {@link GridPane}, or an info label when empty
+     * @param stock the stock whose currency code labels the native-change column
+     * @param rows  the pre-fetched {@link WeeklyPriceChange} rows, newest first
+     * @return the populated {@link GridPane}, or an info label when {@code rows} is empty
      */
-    private Region buildTable(Stock stock, CurrencyConverter converter,
-                              StockHistoryService historyService,
-                              int fromWeek, int toWeek) {
-        List<WeeklyPriceChange> rows = historyService.getWeeklyChanges(
-                stock, converter, fromWeek, toWeek);
-
+    private Region buildTable(Stock stock, List<WeeklyPriceChange> rows) {
         if (rows.isEmpty()) {
             return StyledText.detailLabel(LanguageManager.get("stockDetail.weeklyEmpty"));
         }

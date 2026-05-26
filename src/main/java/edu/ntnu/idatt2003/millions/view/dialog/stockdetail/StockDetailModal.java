@@ -24,17 +24,8 @@ import java.text.MessageFormat;
 import java.util.Objects;
 
 /**
- * Read-only detail modal for a single {@link Stock}, opened from the market table chevron
+ * Read-only detail modal for a single {@link Stock}, opened from chevron
  * and reusable from other views.
- *
- * <p>Composes {@link StockStatGrid}, a price-history chart row, {@link WeeklyChangeSection}
- * and buy/sell actions into a single dialog. The header and actions stay in this class because
- * they depend on {@code close()} and {@link TradeController}; the stat grid and weekly-change
- * section are self-contained sub-components in the same package.</p>
- *
- * <p>The body is wrapped in a height-capped {@link ScrollPane} so the modal never exceeds
- * the available screen height — important on smaller or scaled Windows displays. Wider than
- * the standard modal via the {@code modal-card-stock-detail} style class.</p>
  */
 public class StockDetailModal extends Modal {
 
