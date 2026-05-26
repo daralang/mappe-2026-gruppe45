@@ -1,5 +1,5 @@
 // Javadoc generated with AI assistance - reviewed and approved by author.
-package edu.ntnu.idatt2003.millions.controller;
+package edu.ntnu.idatt2003.millions.controller.game;
 
 import java.util.function.BooleanSupplier;
 
