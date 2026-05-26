@@ -454,6 +454,10 @@ public class GameService {
      * {@link Outcome#RETIRED} leaderboard entry, and persists the final state
      * to the current save file if one exists. The caller is responsible for
      * closing the application after this returns.
+     *
+     * <p>Unlike other trading methods, this does not check the {@code gameOver}
+     * flag. Retirement must remain available after bankruptcy or game-over so
+     * the player can always complete and exit the game.</p>
      */
     public void sellAllAndExit() {
         for (Share share : new ArrayList<>(player.getPortfolio().getShares())) {
