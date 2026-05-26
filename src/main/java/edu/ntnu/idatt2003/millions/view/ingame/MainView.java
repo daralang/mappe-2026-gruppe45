@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.ingame;
 
 import edu.ntnu.idatt2003.millions.controller.loan.LoanController;
@@ -38,17 +39,8 @@ import javafx.stage.Stage;
  * position) survives navigation, and keyboard shortcuts (Shift+1–4) can
  * jump directly to a dashboard tab.</p>
  *
- * <p>Each view owns its own {@link WeekBar} instance. Because a JavaFX node
- * can only have one parent at a time, sharing a single instance across views
- * would cause it to disappear from whichever view last lost focus. Giving
- * each view its own instance avoids this node-stealing issue without
- * requiring any cleanup logic, since all three views live for the entire
- * application lifetime.</p>
- *
- * <p>Notifies the injected {@link SearchFocusRegistry} whenever the active
- * view changes, so the {@code Cmd/Ctrl+F} shortcut registered in
- * {@link MainController} always
- * reaches the correct search field without coupling the controller to this view.</p>
+ * <p>Notifies the injected {@link SearchFocusRegistry} on view changes so the
+ * search shortcut always reaches the correct field.</p>
  *
  * <p>Domain-related actions (save, exit, advance week) are delegated to
  * the controller via callbacks supplied at construction.</p>
@@ -87,7 +79,7 @@ public class MainView {
      * @param searchFocusRegistry   registry updated whenever the active view changes,
      *                              allowing the controller to trigger search focus
      *                              without depending on this view directly
-     * @param tabNavigationRegistry registry updated whenever the active view changes when tab changes
+     * @param tabNavigationRegistry registry updated on view changes to route keyboard tab navigation to the correct view
      */
     public MainView(Stage stage,
                     GameService gameService,

@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.ingame.component.notification;
 
 import edu.ntnu.idatt2003.millions.model.notification.Notification;
@@ -21,6 +22,12 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.text.MessageFormat;
 import java.util.List;
 
+/**
+ * Popup panel that displays the player's notification history.
+ *
+ * <p>Toggled open and closed from the notification bell in the header.
+ * Marks all notifications as read and refreshes the badge count when the popup closes.</p>
+ */
 public class NotificationPanel {
 
     private static final double WIDTH = 320;
@@ -33,6 +40,13 @@ public class NotificationPanel {
     private final Label headerLabel;
     private final Button clearButton;
 
+    /**
+     * Constructs the notification panel and wires up auto-hide and clear behaviour.
+     *
+     * @param gameService    the game service used to read and clear notifications
+     * @param onBadgeRefresh callback invoked after notifications are cleared or the panel closes,
+     *                       so the badge count in the header can be refreshed
+     */
     public NotificationPanel(GameService gameService, Runnable onBadgeRefresh) {
         this.gameService = gameService;
         this.onBadgeRefresh = onBadgeRefresh;
@@ -80,6 +94,11 @@ public class NotificationPanel {
         popup.getContent().add(container);
     }
 
+    /**
+     * Toggles the panel open or closed relative to the given anchor node.
+     *
+     * @param anchor the node the popup is positioned below
+     */
     public void toggle(Node anchor) {
         if (popup.isShowing()) {
             popup.hide();
@@ -92,6 +111,9 @@ public class NotificationPanel {
         }
     }
 
+    /**
+     * Hides the panel if it is currently showing.
+     */
     public void hide() {
         popup.hide();
     }
@@ -151,6 +173,12 @@ public class NotificationPanel {
         return row;
     }
 
+    /**
+     * Formats the body text of a notification, resolving i18n argument placeholders.
+     *
+     * @param n the notification to format
+     * @return the resolved and formatted body string
+     */
     static String formatBody(Notification n) {
         if (n.bodyArgs().isEmpty()) {
             return LanguageManager.get(n.bodyKey());
@@ -161,6 +189,12 @@ public class NotificationPanel {
         return MessageFormat.format(LanguageManager.get(n.bodyKey()), resolved);
     }
 
+    /**
+     * Returns the Ikonli icon literal for the given notification severity.
+     *
+     * @param s the severity level
+     * @return the icon string identifier
+     */
     static String iconFor(Notification.Severity s) {
         return switch (s) {
             case SEVERE -> "fth-alert-octagon";
@@ -170,6 +204,12 @@ public class NotificationPanel {
         };
     }
 
+    /**
+     * Returns the CSS class applied to the icon for the given severity.
+     *
+     * @param s the severity level
+     * @return the CSS class name
+     */
     static String severityIconClass(Notification.Severity s) {
         return switch (s) {
             case SEVERE -> "notification-icon-severe";
@@ -188,6 +228,12 @@ public class NotificationPanel {
         };
     }
 
+    /**
+     * Returns the CSS class applied to the row container for the given severity.
+     *
+     * @param s the severity level
+     * @return the CSS class name
+     */
     static String severityRowClass(Notification.Severity s) {
         return switch (s) {
             case SEVERE -> "notification-severe";

@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.ingame.component.search;
 
 import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
@@ -146,15 +147,11 @@ public class SearchBar extends VBox {
     }
 
     /**
-     * Sets the action run when the user presses DOWN in the search field, used to
-     * move focus out of the field and into the results below (e.g. the first table
-     * row). The action returns whether it handled the key: {@code true} when focus
-     * was moved, {@code false} when it could not (e.g. an empty table). Pass
-     * {@code null} to disable. When the action does not handle DOWN, the
-     * {@code PageArrowDispatcher} scrolls the page instead.
+     * Sets the action invoked when the user presses DOWN in the search field.
+     * Returns {@code true} if focus moved into the results, {@code false} if not
+     * (e.g. empty table), in which case {@link PageArrowDispatcher} scrolls the page instead.
      *
-     * @param action the action to run on DOWN, returning whether it handled the key,
-     *               or {@code null} to disable
+     * @param action the handler, or {@code null} to disable
      */
     public void setOnArrowDown(BooleanSupplier action) {
         this.onArrowDown = action;

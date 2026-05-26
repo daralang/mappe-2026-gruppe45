@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.keyboard.navigation;
 
 import javafx.scene.input.KeyCode;
