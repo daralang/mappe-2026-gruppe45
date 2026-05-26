@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
@@ -42,11 +43,7 @@ import java.util.logging.Logger;
  *
  * <p>{@code createNewGame} validates player input before performing any file I/O
  * and only swaps in the new state once the player and exchange are fully
- * constructed, so failures leave the previous game intact. The four-argument
- * overload accepts the {@link Currency} of the stock prices so the
- * {@link Exchange} can convert to NOK through its {@link CurrencyConverter};
- * the three-argument overload defaults to USD.</p>
- *
+ * constructed, so failures leave the previous game intact.</p>
  */
 public class GameService {
 
@@ -98,20 +95,13 @@ public class GameService {
         observers.add(observer);
     }
 
-    /**
-     * Returns whether the game has ended.
-     *
-     * @return true if the game is over; false otherwise
-     */
     public boolean isGameOver() {
         return gameOver;
     }
 
     /**
-     * Marks the game as over and notifies observers.
-     * Call this when the player cannot cover obligations even through full liquidation.
-     * After this call, all trading and week-advance operations will throw
-     * {@link IllegalStateException}.
+     * Marks the game as over and notifies observers. After this call, all trading
+     * and week-advance operations throw {@link IllegalStateException}.
      */
     public void declareGameOver() {
         this.gameOver = true;
@@ -133,7 +123,6 @@ public class GameService {
 
     /**
      * Saves the current game state to a JSON file.
-     * Delegates the file operation to the game file handler.
      *
      * @param file the file to save the game state to
      * @throws NullPointerException  if the file is null
@@ -166,7 +155,6 @@ public class GameService {
 
     /**
      * Clears the stored save path so the next save will prompt for a location.
-     * Called when a write to the stored path fails.
      */
     public void clearCurrentSaveFile() {
         this.currentSaveFile = null;
@@ -202,9 +190,10 @@ public class GameService {
      * @param name      the player name
      * @param capital   the starting capital, in NOK
      * @param stockFile the CSV file with stock data
-     * @throws NullPointerException     if any argument is null
-     * @throws IllegalArgumentException if name is blank, capital is negative,
-     *                                  or the file contains no stocks
+     * @throws NullPointerException      if any argument is null
+     * @throws IllegalArgumentException  if name is blank, capital is negative,
+     *                                   or the file contains no stocks
+     * @throws InvalidStockDataException if the stock file contains malformed or no valid entries
      */
     public void createNewGame(String name, BigDecimal capital, File stockFile)
             throws InvalidStockDataException {
@@ -214,16 +203,16 @@ public class GameService {
     /**
      * Creates a new game from the given stock file, tagging every parsed
      * {@link Stock} with {@code currency} so the {@link Exchange} converts
-     * prices to NOK on every trade. See class-level Javadoc for validation
-     * order and observer semantics.
+     * prices to NOK on every trade.
      *
      * @param name      the player name
      * @param capital   the starting capital, in NOK
      * @param stockFile the CSV file with stock data
      * @param currency  the currency the stock prices are quoted in
-     * @throws NullPointerException     if any argument is null
-     * @throws IllegalArgumentException if name is blank, capital is negative,
-     *                                  or the file contains no stocks
+     * @throws NullPointerException      if any argument is null
+     * @throws IllegalArgumentException  if name is blank, capital is negative,
+     *                                   or the file contains no stocks
+     * @throws InvalidStockDataException if the stock file contains malformed or no valid entries
      */
     public void createNewGame(String name, BigDecimal capital, File stockFile, Currency currency)
             throws InvalidStockDataException {
@@ -235,14 +224,6 @@ public class GameService {
         activate(newPlayer, stocks);
     }
 
-    /**
-     * Activates a new game state once the player and stocks have been
-     * successfully constructed and loaded. Replaces the active player and
-     * exchange atomically and notifies observers.
-     *
-     * @param newPlayer the validated player instance
-     * @param stocks    the stocks to list on the exchange
-     */
     private void activate(Player newPlayer, List<Stock> stocks) {
         this.player = newPlayer;
         this.exchange = new Exchange(DEFAULT_EXCHANGE_NAME, stocks, new FixedRateCurrencyConverter());
@@ -251,15 +232,6 @@ public class GameService {
         notifyObservers();
     }
 
-    /**
-     * Loads default stock data from the application resources.
-     * Streams the resource directly through the {@link StockFileHandler}
-     * so no intermediate file is written to disk.
-     *
-     * @return the default stocks for a new game
-     * @throws IllegalStateException if the default stock data cannot be found
-     * @throws UncheckedIOException  if the default stock data cannot be read
-     */
     private List<Stock> loadDefaultStocks() {
         StockFileHandler stockFileHandler = new CsvStockFileHandler();
         try (InputStream inputStream = GameService.class.getResourceAsStream(DEFAULT_STOCK_RESOURCE)) {
@@ -275,11 +247,7 @@ public class GameService {
     }
 
     /**
-     * Loads a saved game state from a JSON file.
-     * Delegates the file operation to the game file handler and reinitializes
-     * the exchange with a {@link FixedRateCurrencyConverter}, since the
-     * converter is transient and not restored by Gson. Notifies observers
-     * once the loaded state is in place.
+     * Loads a saved game state from a JSON file and notifies observers.
      *
      * @param file the file to load the game state from
      * @throws NullPointerException     if the file is null
@@ -298,12 +266,11 @@ public class GameService {
 
     /**
      * Buys the given quantity of a stock for the current player.
-     * Delegates the actual transaction to {@link Exchange} and notifies
-     * observers on success.
      *
      * @param symbol   the symbol of the stock to buy
      * @param quantity the quantity to buy
      * @return the completed purchase transaction
+     * @throws IllegalStateException if the game is over
      */
     public Transaction buy(String symbol, BigDecimal quantity) {
         if (gameOver) throw new IllegalStateException("Game is over");
@@ -313,12 +280,12 @@ public class GameService {
     }
 
     /**
-     * Sells the full quantity of a share for the current player. Convenience
-     * overload that delegates to {@link #sell(Share, BigDecimal)} with the
-     * share's full quantity.
+     * Sells the full quantity of a share for the current player.
      *
      * @param share the share to sell
      * @return the completed sale transaction
+     * @throws NullPointerException  if share is null
+     * @throws IllegalStateException if the game is over
      */
     public Transaction sell(Share share) {
         Objects.requireNonNull(share, "Share cannot be null");
@@ -329,12 +296,11 @@ public class GameService {
      * Sells the given quantity of a share for the current player. When the
      * quantity is less than the share's full position, the remainder stays
      * in the player's portfolio with the original purchase price preserved.
-     * Delegates the actual transaction to {@link Exchange} and notifies
-     * observers on success.
      *
      * @param share    the share to sell from
      * @param quantity the quantity to sell
      * @return the completed sale transaction
+     * @throws IllegalStateException if the game is over
      */
     public Transaction sell(Share share, BigDecimal quantity) {
         if (gameOver) throw new IllegalStateException("Game is over");
@@ -348,6 +314,8 @@ public class GameService {
      * Assumes the player has enough cash to cover all obligations (interest +
      * any maturing loan principals); use {@link #executeForcedSale} instead
      * when they cannot.
+     *
+     * @throws IllegalStateException if the game is over
      */
     public void advanceWeek() {
         if (gameOver) throw new IllegalStateException("Game is over");
@@ -374,6 +342,7 @@ public class GameService {
      * @param shares      the shares the player has chosen to sell
      * @param currentWeek the game week being processed (the week after the current one)
      * @throws InsufficientSaleProceedsException if the net sale total is less than total obligations
+     * @throws IllegalStateException             if the game is over
      */
     public void executeForcedSale(List<Share> shares, int currentWeek)
             throws InsufficientSaleProceedsException {
@@ -414,20 +383,10 @@ public class GameService {
         notifyObservers();
     }
 
-    /**
-     * Returns the current player.
-     *
-     * @return the player
-     */
     public Player getPlayer() {
         return player;
     }
 
-    /**
-     * Returns the current exchange.
-     *
-     * @return the exchange
-     */
     public Exchange getExchange() {
         return exchange;
     }
@@ -453,15 +412,14 @@ public class GameService {
     }
 
     /**
-     * Creates a loan against the given offer, disburses the principal to the player,
-     * and notifies observers. Delegates all capacity and limit validation to
-     * {@link edu.ntnu.idatt2003.millions.model.player.Player#takeLoan}.
+     * Creates a loan against the given offer and disburses the principal to the player.
      *
      * @param offer  the loan offer the player is accepting
      * @param amount the principal to disburse; must be positive and within offer limits
      * @return the created {@link Loan}
-     * @throws NullPointerException    if either argument is null
+     * @throws NullPointerException     if either argument is null
      * @throws IllegalArgumentException if amount exceeds the offer's maximum principal
+     * @throws IllegalStateException    if the game is over
      * @throws edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException
      *         if the loan would breach the player's debt-to-net-worth limit
      */
@@ -483,6 +441,7 @@ public class GameService {
      * @param loan the loan to repay
      * @throws NullPointerException     if loan is null
      * @throws IllegalArgumentException if the player cannot afford the repayment
+     * @throws IllegalStateException    if the game is over
      */
     public void repayLoan(Loan loan) {
         if (gameOver) throw new IllegalStateException("Game is over");
@@ -527,6 +486,10 @@ public class GameService {
         }
     }
 
+    /**
+     * Clears all notifications from the current player and notifies observers.
+     * No-op if no game is active.
+     */
     public void clearAllNotifications() {
         if (player == null) return;
         player.clearAllNotifications();
@@ -562,8 +525,7 @@ public class GameService {
     }
 
     /**
-     * Updates the note for the given symbol in the player's watchlist via
-     * {@link WatchlistEntry}.
+     * Updates the note for the given symbol in the player's watchlist.
      * No-op if the symbol is not on the watchlist.
      *
      * @param symbol  the ticker symbol of the entry to update
@@ -577,9 +539,6 @@ public class GameService {
         notifyObservers();
     }
 
-    /**
-     * Notifies all registered observers that the game state has changed.
-     */
     private void notifyObservers() {
         observers.forEach(GameObserver::onGameUpdated);
     }
