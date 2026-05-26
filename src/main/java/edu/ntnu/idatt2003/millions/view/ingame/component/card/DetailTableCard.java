@@ -1,6 +1,5 @@
 package edu.ntnu.idatt2003.millions.view.ingame.component.card;
 
-import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.view.ingame.component.ChevronButton;
 import edu.ntnu.idatt2003.millions.view.ingame.component.table.RowCells;
@@ -24,16 +23,9 @@ import edu.ntnu.idatt2003.millions.view.ingame.component.table.RowCells;
 public abstract class DetailTableCard<T, Column> extends SortableTableCard<T, Column> {
 
     /**
-     * The controller used to open detail and trade dialogs.
-     * Accessible to subclasses for wiring chevron buttons and action callbacks.
-     */
-    protected final TradeController controller;
-
-    /**
      * Constructs a detail table card.
      *
      * @param gameService   the game service to observe
-     * @param controller    the controller used to open detail and trade dialogs
      * @param pageSize      the number of items shown per page
      * @param statusKey     i18n key for the metadata-row status pattern;
      *                      must accept two positional arguments (filtered count, total count)
@@ -41,12 +33,10 @@ public abstract class DetailTableCard<T, Column> extends SortableTableCard<T, Co
      */
     protected DetailTableCard(
             GameService gameService,
-            TradeController controller,
             int pageSize,
             String statusKey,
             String emptyStateKey) {
         super(gameService, pageSize, statusKey, emptyStateKey);
-        this.controller = controller;
     }
 
     /**
