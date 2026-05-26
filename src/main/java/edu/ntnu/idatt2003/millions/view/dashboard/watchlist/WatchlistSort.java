@@ -19,15 +19,13 @@ import java.util.Objects;
  * Column labels are resolved via {@link LanguageManager} on every call so language
  * changes are picked up automatically.</p>
  */
-class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn> {
-
-    private static final int HIGH_LOW_WEEKS = 4;
+public class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn> {
 
     /**
      * All columns in the watchlist table.
      */
-    enum SortColumn {
-        TICKER, COMPANY, CURRENCY, PRICE_ALT, PRICE_NOK, CHANGE_NOK, CHANGE_PCT, HIGH_LOW,
+    public enum SortColumn {
+        TICKER, COMPANY, PRICE_NOK, CHANGE_NOK, CHANGE_PCT,
         TREND, TRADE, NOTE, DETAILS, REMOVE
     }
 
@@ -40,7 +38,7 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
      * @param converter the converter used for NOK price values
      * @throws NullPointerException if converter is null
      */
-    WatchlistSort(CurrencyConverter converter) {
+    public WatchlistSort(CurrencyConverter converter) {
         this.converter = Objects.requireNonNull(converter, "Converter cannot be null");
     }
 
@@ -53,22 +51,17 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
     public List<TableColumnDef<SortColumn>> getColumnDefs() {
         return List.of(
                 TableColumnDef.sortable(
-                        "col.ticker", SortColumn.TICKER, 8, HPos.LEFT),
+                        "col.ticker", SortColumn.TICKER, 10, HPos.LEFT),
                 TableColumnDef.sortable(
-                        "col.company", SortColumn.COMPANY, 24, HPos.LEFT),
-                TableColumnDef.sortable("col.currency", SortColumn.CURRENCY, 7, HPos.LEFT),
-                TableColumnDef.sortable("col.priceNative", SortColumn.PRICE_ALT, 8, HPos.RIGHT),
+                        "col.company", SortColumn.COMPANY, 28, HPos.LEFT),
                 TableColumnDef.sortable(
-                        "col.priceNok", SortColumn.PRICE_NOK, 10, HPos.RIGHT),
+                        "col.priceNok", SortColumn.PRICE_NOK, 12, HPos.RIGHT),
                 TableColumnDef.sortable(
                         "col.changeNok", SortColumn.CHANGE_NOK,
-                        "tooltip.shared.changeNok", 11, HPos.RIGHT),
+                        "tooltip.shared.changeNok", 13, HPos.RIGHT),
                 TableColumnDef.sortable(
                         "col.changePct", SortColumn.CHANGE_PCT,
-                        "tooltip.shared.weeklyChange", 10, HPos.RIGHT),
-                TableColumnDef.sortable(
-                        "col.highLow", SortColumn.HIGH_LOW,
-                        "tooltip.shared.highLow", 10, HPos.RIGHT),
+                        "tooltip.shared.weeklyChange", 11, HPos.RIGHT),
                 TableColumnDef.nonSortable(SortColumn.TREND, "col.trend",
                         "tooltip.shared.trend", 12, HPos.CENTER),
                 TableColumnDef.nonSortable(SortColumn.TRADE, "col.trade", 7, HPos.CENTER),
@@ -90,12 +83,9 @@ class WatchlistSort extends SortProvider<WatchlistItem, WatchlistSort.SortColumn
         return switch (column) {
             case TICKER -> Comparator.comparing(i -> i.stock().getSymbol());
             case COMPANY -> Comparator.comparing(i -> i.stock().getCompany());
-            case CURRENCY -> Comparator.comparing(i -> i.stock().getCurrency().getCurrencyCode());
-            case PRICE_ALT -> Comparator.comparing(i -> i.stock().getSalesPrice());
             case PRICE_NOK -> Comparator.comparing(i -> statsService.priceInNok(i.stock(), converter));
             case CHANGE_NOK -> Comparator.comparing(i -> statsService.changeInNok(i.stock(), converter));
             case CHANGE_PCT -> Comparator.comparing(i -> i.stock().getWeeklyChangePercent());
-            case HIGH_LOW -> Comparator.comparing(i -> statsService.highLowRangeInNok(i.stock(), converter, HIGH_LOW_WEEKS));
             case TREND, TRADE, NOTE, DETAILS, REMOVE ->
                     throw new IllegalStateException(column + " is not sortable");
         };

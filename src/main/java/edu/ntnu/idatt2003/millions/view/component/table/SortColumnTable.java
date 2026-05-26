@@ -99,9 +99,31 @@ public class SortColumnTable<Column> {
      * Call this at the start of every refresh before calling {@code refreshHeader}.
      */
     public void clearRows() {
+        if (grid.getScene() != null) {
+            Node focused = grid.getScene().getFocusOwner();
+            if (isDescendantOfGrid(focused)) {
+                grid.getScene().getRoot().requestFocus();
+            }
+        }
         grid.getChildren().clear();
         rowHighlighter.clear();
         rows.clear();
+    }
+
+    /**
+     * Returns {@code true} if the given node is a descendant of this table's
+     * backing {@link GridPane}.
+     *
+     * @param node the node to test; may be {@code null}
+     * @return {@code true} if {@code node} is inside the grid, {@code false} otherwise
+     */
+    private boolean isDescendantOfGrid(Node node) {
+        Node current = node;
+        while (current != null) {
+            if (current == grid) return true;
+            current = current.getParent();
+        }
+        return false;
     }
 
     /**
@@ -130,11 +152,6 @@ public class SortColumnTable<Column> {
     /**
      * Adds a standard data row using a {@link RowCells} column-keyed map.
      * Iterates the current column definitions in order.
-     *
-     * <p>With this overload, moving a column only requires reordering the entry in
-     * {@code getColumnDefs()}, the renderer does not need to change. Keyless columns
-     * (spacers) are skipped; every column that declares a key must have a matching
-     * cell, otherwise this fails fast rather than rendering a silently empty column.</p>
      *
      * @param rowIndex the grid row to write to (row 0 is reserved for the header)
      * @param cells    the column-keyed cell map produced by {@link RowCells#builder()}
@@ -231,8 +248,7 @@ public class SortColumnTable<Column> {
     }
 
     /**
-     * Vertical-arrow strategy for one row, invoked by {@link PageArrowDispatcher} while
-     * the row's anchor holds focus. Moves the selection within the table via the shared
+     * Vertical-arrow strategy for one row, while the row's anchor holds focus. Moves the selection within the table via the shared
      * {@link ArrowKeyNavigator}; declines the key at the first row (UP) and last row
      * (DOWN) so the dispatcher scrolls the page past the table instead.
      *
@@ -325,10 +341,6 @@ public class SortColumnTable<Column> {
      * Creates a clear-sort button managed by the internal {@link TableHeaderRenderer}
      * and returns it for placement in the owning card's layout.
      *
-     * <p>The button is hidde. until a sort becomes active. On every call to {@link #refreshHeader}
-     * the button's text and visibility are updated automatically, so the owning card does not need to
-     * manage this state manually.</p>
-     *
      * @param labelSupplier supplier that returns the current button label, called on
      *                      every header refresh so i18n updates are picked up automatically
      * @param onClear       callback invoked after the sort is cleared, typically
@@ -352,8 +364,7 @@ public class SortColumnTable<Column> {
     /**
      * Returns the grid column index of the column with the given key, by scanning
      * the current column definitions. Lets callers position cells (e.g. a separate
-     * total row) by column key instead of a hard-coded index, so the layout has a
-     * single source of truth in the column definitions.
+     * total row) by column key.
      *
      * @param key the column key to locate
      * @return the zero-based grid column index
@@ -383,10 +394,6 @@ public class SortColumnTable<Column> {
     /**
      * Applies each column definition's percentage width and horizontal alignment
      * as a {@link ColumnConstraints} on the given grid, in order.
-     *
-     * <p>Shared so that a card's separate total-row grid can be given exactly the
-     * same column geometry as the table, derived from the single column-definition
-     * source rather than duplicated per caller.</p>
      *
      * @param grid the grid to configure
      * @param cols the ordered column definitions

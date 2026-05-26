@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
+package edu.ntnu.idatt2003.millions.view.dashboard.watchlist.card;
 
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -9,6 +9,11 @@ import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.DetailTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistItem;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.dialog.WatchlistNoteDialog;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.dialog.WatchlistRemoveDialog;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistRowRenderer;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistSort;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
@@ -49,7 +54,7 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
         this.sortProvider = sort;
         this.rowRenderer = new WatchlistRowRenderer(
                 gameService, controller,
-                gameService::removeFromWatchlist,
+                this::openRemoveDialog,
                 this::openNoteDialog);
         this.table = new SortColumnTable<>(sort::getColumnDefs, COL_GAP);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
@@ -128,6 +133,20 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
         HBox row = new HBox(title);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
+    }
+
+    /**
+     * Opens a WatchlistRemoveDialog for the given stock symbol.
+     * The removal is only forwarded to {@link GameService} if the player confirms.
+     *
+     * @param symbol the symbol of the stock to remove
+     */
+    private void openRemoveDialog(String symbol) {
+        Stock stock = gameService.getExchange().getStock(symbol);
+        if (stock == null) return;
+        WatchlistRemoveDialog dialog = new WatchlistRemoveDialog(
+                stock, () -> gameService.removeFromWatchlist(symbol));
+        dialog.show();
     }
 
     private void openNoteDialog(WatchlistItem item) {

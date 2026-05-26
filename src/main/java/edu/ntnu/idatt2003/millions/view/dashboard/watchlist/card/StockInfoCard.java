@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
+package edu.ntnu.idatt2003.millions.view.dashboard.watchlist.card;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -7,6 +7,7 @@ import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.dialog.WatchlistNoteDialog;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -28,7 +29,7 @@ import java.util.List;
  *
  * <p>Intended for use inside {@link WatchlistNoteDialog}.
  */
-class StockInfoCard extends VBox {
+public class StockInfoCard extends VBox {
 
     private static final int SPARKLINE_WEEKS = 8;
     private final StockStatsService statsService = new StockStatsService();
@@ -39,7 +40,7 @@ class StockInfoCard extends VBox {
      * @param stock     the stock whose price data is displayed
      * @param converter the currency converter used to derive the NOK price
      */
-    StockInfoCard(Stock stock, CurrencyConverter converter) {
+    public StockInfoCard(Stock stock, CurrencyConverter converter) {
         setSpacing(12);
 
         String currencyCode = stock.getCurrency().getCurrencyCode();

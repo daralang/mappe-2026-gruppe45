@@ -1,10 +1,11 @@
-package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
+package edu.ntnu.idatt2003.millions.view.dashboard.watchlist.dialog;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Modal;
 import edu.ntnu.idatt2003.millions.view.component.ModalActions;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.card.StockInfoCard;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.Region;
