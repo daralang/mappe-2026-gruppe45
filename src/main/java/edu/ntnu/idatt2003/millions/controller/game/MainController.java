@@ -1,6 +1,9 @@
 // Javadoc generated with AI assistance - reviewed and approved by author.
-package edu.ntnu.idatt2003.millions.controller;
+package edu.ntnu.idatt2003.millions.controller.game;
 
+import edu.ntnu.idatt2003.millions.controller.loan.LoanController;
+import edu.ntnu.idatt2003.millions.controller.trade.ForcedSaleController;
+import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.keyboard.KeyboardNavigationService;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;
 import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;

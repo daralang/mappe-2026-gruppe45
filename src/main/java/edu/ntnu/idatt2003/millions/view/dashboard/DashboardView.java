@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard;
 
-import edu.ntnu.idatt2003.millions.controller.LoanController;
-import edu.ntnu.idatt2003.millions.controller.TradeController;
+import edu.ntnu.idatt2003.millions.controller.loan.LoanController;
+import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.keyboard.PageFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;

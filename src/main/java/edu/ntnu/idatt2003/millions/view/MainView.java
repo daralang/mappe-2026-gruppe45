@@ -1,8 +1,8 @@
 package edu.ntnu.idatt2003.millions.view;
 
-import edu.ntnu.idatt2003.millions.controller.LoanController;
-import edu.ntnu.idatt2003.millions.controller.MainController;
-import edu.ntnu.idatt2003.millions.controller.TradeController;
+import edu.ntnu.idatt2003.millions.controller.loan.LoanController;
+import edu.ntnu.idatt2003.millions.controller.game.MainController;
+import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
 import edu.ntnu.idatt2003.millions.keyboard.PageFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;

@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
 
-import edu.ntnu.idatt2003.millions.controller.TradeController;
+import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.service.GameService;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.view.component.ExploreStocksButton;

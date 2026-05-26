@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog;
 
-import edu.ntnu.idatt2003.millions.controller.LoanController;
+import edu.ntnu.idatt2003.millions.controller.loan.LoanController;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;

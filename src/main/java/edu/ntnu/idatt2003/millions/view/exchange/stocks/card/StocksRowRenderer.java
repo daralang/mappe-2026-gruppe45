@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.exchange.stocks.card;
 
-import edu.ntnu.idatt2003.millions.controller.TradeController;
+import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -18,7 +18,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static edu.ntnu.idatt2003.millions.view.exchange.stocks.StocksSort.SortColumn.*;
