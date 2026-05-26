@@ -1,13 +1,11 @@
 package edu.ntnu.idatt2003.millions.view.start;
 
-import edu.ntnu.idatt2003.millions.view.StartView;
-import edu.ntnu.idatt2003.millions.view.component.AppTabPane;
+import edu.ntnu.idatt2003.millions.view.start.component.AppTabPane;
 import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 
 /**
  * Coordinates start-screen layout binding and tab-height listeners.

@@ -7,10 +7,10 @@ import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.service.loan.LoanPreviewService;
-import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanApplicationDialog;
-import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanDetailsModal;
-import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.LoanRepaymentReceipt;
-import edu.ntnu.idatt2003.millions.view.dashboard.loans.dialog.RepayLoanDialog;
+import edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog.LoanApplicationDialog;
+import edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog.LoanDetailsModal;
+import edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog.LoanRepaymentReceipt;
+import edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog.RepayLoanDialog;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.application.Platform;
 

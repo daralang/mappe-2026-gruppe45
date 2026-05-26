@@ -4,7 +4,7 @@ package edu.ntnu.idatt2003.millions.controller.game;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
-import edu.ntnu.idatt2003.millions.view.dialog.GameOverModal;
+import edu.ntnu.idatt2003.millions.view.ingame.game.GameOverModal;
 import javafx.stage.Stage;
 
 import java.math.BigDecimal;

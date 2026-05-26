@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.util;
 
+import edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.card.NetWorthCard;
+import edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.card.WeeklyChangeCard;
 import javafx.scene.control.Label;
 
 import java.math.BigDecimal;
@@ -52,8 +54,8 @@ public class ChangeFormatter {
      * <p>Example output: {@code +6,5%} or {@code -3,2%}
      *
      * <p>Useful when the text needs to be embedded inside a larger string,
-     * such as in {@link edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.WeeklyChangeCard}
-     * and {@link edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card.NetWorthCard}.
+     * such as in {@link WeeklyChangeCard}
+     * and {@link NetWorthCard}.
      *
      * @param value the percentage value to format (e.g. {@code 6.5} for 6.5%)
      * @return a formatted signed percentage string

@@ -8,7 +8,7 @@ import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.view.dialog.ForcedSaleDialog;
+import edu.ntnu.idatt2003.millions.view.ingame.game.ForcedSaleDialog;
 
 import java.math.BigDecimal;
 import java.util.logging.Level;
