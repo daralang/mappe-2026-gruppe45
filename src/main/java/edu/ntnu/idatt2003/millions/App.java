@@ -1,16 +1,22 @@
 package edu.ntnu.idatt2003.millions;
 
 import edu.ntnu.idatt2003.millions.controller.StartController;
+import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.OsDetector;
 import edu.ntnu.idatt2003.millions.util.StylesheetLoader;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Entry point for the Millions application.
@@ -23,8 +29,15 @@ import javafx.stage.StageStyle;
  */
 public class App extends Application {
 
+    private static final Logger LOGGER = Logger.getLogger(App.class.getName());
+
     @Override
     public void start(Stage stage) {
+        Thread.currentThread().setUncaughtExceptionHandler(
+                (_, throwable) -> handleUncaught(throwable));
+        Thread.setDefaultUncaughtExceptionHandler(
+                (_, throwable) -> handleUncaught(throwable));
+
         if (OsDetector.isMac()) {
             stage.initStyle(StageStyle.UNIFIED);
         } else {
@@ -45,6 +58,19 @@ public class App extends Application {
 
         new StartController(stage).show();
         stage.show();
+    }
+
+    private void handleUncaught(Throwable throwable) {
+        LOGGER.log(Level.SEVERE, throwable,
+                () -> "Uncaught exception on " + Thread.currentThread().getName());
+        Platform.runLater(this::showErrorDialog);
+    }
+
+    private void showErrorDialog() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText(null);
+        alert.setContentText(LanguageManager.get("error.unexpected"));
+        alert.showAndWait();
     }
 
     /**
