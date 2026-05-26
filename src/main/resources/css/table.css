@@ -130,3 +130,16 @@ Label.table-header:disabled {
     -fx-font-size: 20;
     -fx-text-fill: -danger;
 }
+
+.watchlist-note-icon {
+    -fx-icon-size: 15;
+    -fx-icon-color: -text-secondary;
+}
+
+.watchlist-note-btn:hover .watchlist-note-icon {
+    -fx-icon-color: -primary;
+}
+
+.watchlist-note-btn--active .watchlist-note-icon {
+    -fx-icon-color: -primary;
+}

@@ -10,11 +10,6 @@ import java.util.Objects;
 /**
  * A styled navigation button displaying a chevron ({@code ❯}), used in table rows
  * to open a detail view for that row's item.
- *
- * <p>Applies the shared {@code table-details-chevron} CSS class and installs
- * an i18n-aware {@link Tooltip} on itself. The tooltip text is resolved from
- * {@link LanguageManager} on construction; since table rows are rebuilt on every
- * language change, the text is always up to date without requiring a separate observer.</p>
  */
 public class ChevronButton extends Button {
 

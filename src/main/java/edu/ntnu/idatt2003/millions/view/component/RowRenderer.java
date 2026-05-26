@@ -1,22 +1,33 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
+import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.service.StockStatsService;
+import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
+import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import javafx.scene.control.Label;
 
 /**
  * Abstract base class for row renderers that display {@link Stock} data in a table.
  *
- * <p>Provides shared helper methods for formatting price ranges and building
- * sparkline charts, eliminating duplication across concrete renderers such as
- * StocksRowRenderer and WatchlistRowRenderer.</p>
+ * <p>Provides shared helper methods for building common table cells (NOK price,
+ * weekly change in NOK and percent) and for formatting price ranges and building
+ * sparkline charts.</p>
  *
  * <p>Subclasses implement their own {@code buildRow} method suited to their
  * table's column structure.</p>
  */
 public abstract class RowRenderer {
+
+    /**
+     * Shared stateless service for computing NOK-converted stock figures.
+     * Accessible to all subclasses without repeated instantiation.
+     */
+    protected final StockStatsService statsService = new StockStatsService();
 
     /**
      * Builds and returns a {@link SparklineChart} populated with the latest
@@ -36,15 +47,38 @@ public abstract class RowRenderer {
     }
 
     /**
-     * Formats the lowest and highest prices over the latest {@code weeks} prices as
-     * {@code "low / high"}.
+     * Builds a plain {@link Label} showing the stock's latest price converted to NOK,
+     * formatted without sign.
      *
-     * @param stock the stock to read prices from
-     * @param weeks the number of recent weeks to consider
-     * @return a formatted high/low string
+     * @param stock     the stock to read from
+     * @param converter the converter used for the NOK conversion
+     * @return a table-cell label with the formatted NOK price
      */
-    protected String formatHighLow(Stock stock, int weeks) {
-        return formatWhole(stock.getRecentLow(weeks)) + " / " + formatWhole(stock.getRecentHigh(weeks));
+    protected Label priceNokLabel(Stock stock, CurrencyConverter converter) {
+        return TableCells.data(ChangeFormatter.formatPlain(statsService.priceInNok(stock, converter)));
+    }
+
+    /**
+     * Builds a colour-coded {@link Label} showing the stock's latest week-over-week
+     * price change in NOK.
+     *
+     * @param stock     the stock to read from
+     * @param converter the converter used for the NOK conversion
+     * @return a styled amount label with {@code "table-cell"} style class
+     */
+    protected Label changeNokLabel(Stock stock, CurrencyConverter converter) {
+        return ChangeFormatter.styledAmount(statsService.changeInNok(stock, converter), "table-cell");
+    }
+
+    /**
+     * Builds a colour-coded {@link Label} showing the stock's latest weekly change
+     * as a percentage.
+     *
+     * @param stock the stock to read from
+     * @return a styled percent label with {@code "table-cell"} style class
+     */
+    protected Label changePctLabel(Stock stock) {
+        return ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "table-cell");
     }
 
     /**

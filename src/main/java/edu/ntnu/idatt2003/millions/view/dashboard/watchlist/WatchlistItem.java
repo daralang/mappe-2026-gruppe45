@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.watchlist.WatchlistEntry;
 
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.card.WatchlistCard;
 import java.util.Objects;
 
 /**
@@ -12,9 +13,9 @@ import java.util.Objects;
  * and watchlist metadata (added week, note) are available during sorting and rendering
  * without extra lookups per row.</p>
  */
-record WatchlistItem(Stock stock, WatchlistEntry entry) {
+public record WatchlistItem(Stock stock, WatchlistEntry entry) {
 
-    WatchlistItem {
+    public WatchlistItem {
         Objects.requireNonNull(stock, "Stock cannot be null");
         Objects.requireNonNull(entry, "WatchlistEntry cannot be null");
     }

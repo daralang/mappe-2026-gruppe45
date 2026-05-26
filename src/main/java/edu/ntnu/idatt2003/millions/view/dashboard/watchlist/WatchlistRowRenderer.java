@@ -4,42 +4,35 @@ import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.service.StockStatsService;
-import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
 import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
+import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
  * Responsible for building the column-keyed cells for a single {@link WatchlistItem} row.
  *
  * <p>Each call to {@link #buildRow(WatchlistItem)} produces a {@link RowCells} map with
- * ticker, company, price in NOK, price in the stock's native currency, weekly change
- * (NOK and %), 4-week high/low, a sparkline trend, a buy button, a note button, a
- * chevron button detail link, and a remove button.
+ * ticker, company, price in NOK, weekly change (NOK and %), a sparkline trend, a buy button,
+ * a note button with a {@code fth-edit-3} icon, a chevron detail link, and a remove button.
  * The owning card inserts the cells and registers the row for navigation.</p>
  *
  * <p>This class is stateless and may be reused across refreshes.</p>
  */
-class WatchlistRowRenderer extends RowRenderer {
+public class WatchlistRowRenderer extends RowRenderer {
 
     private static final int MAX_SPARKLINE_WEEKS = 8;
-    private static final int HIGH_LOW_WEEKS = 4;
 
     private final GameService gameService;
-    private final StockStatsService statsService = new StockStatsService();
     private final TradeController tradeController;
     private final Consumer<String> onRemove;
     private final Consumer<WatchlistItem> onNote;
@@ -52,7 +45,7 @@ class WatchlistRowRenderer extends RowRenderer {
      * @param onRemove        callback invoked with the stock symbol when the player clicks ×
      * @param onNote          callback invoked with the item when the player clicks the note button
      */
-    WatchlistRowRenderer(GameService gameService,
+    public WatchlistRowRenderer(GameService gameService,
                          TradeController tradeController,
                          Consumer<String> onRemove,
                          Consumer<WatchlistItem> onNote) {
@@ -68,23 +61,16 @@ class WatchlistRowRenderer extends RowRenderer {
      * @param item the watchlist item to render
      * @return the column-keyed cells for this item, keyed by {@link WatchlistSort.SortColumn}
      */
-    RowCells<WatchlistSort.SortColumn> buildRow(WatchlistItem item) {
+    public RowCells<WatchlistSort.SortColumn> buildRow(WatchlistItem item) {
         Stock stock = item.stock();
         CurrencyConverter converter = gameService.getCurrencyConverter();
 
         Label tickerLabel = TableCells.data(stock.getSymbol());
         Label companyLabel = TableCells.data(stock.getCompany());
 
-        BigDecimal priceNok = statsService.priceInNok(stock, converter);
-        Label priceNokLabel = TableCells.data(ChangeFormatter.formatPlain(priceNok));
-        Label currencyLabel = TableCells.data(stock.getCurrency().getCurrencyCode());
-        Label priceAltLabel = TableCells.data(ChangeFormatter.formatPlain(stock.getSalesPrice()));
-
-        BigDecimal changeNok = statsService.changeInNok(stock, converter);
-        Label changeNokLabel = ChangeFormatter.styledAmount(changeNok, "table-cell");
-        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "table-cell");
-
-        Label highLowLabel = TableCells.data(formatHighLow(stock, HIGH_LOW_WEEKS));
+        Label priceNokLabel = priceNokLabel(stock, converter);
+        Label changeNokLabel = changeNokLabel(stock, converter);
+        Label changePctLabel = changePctLabel(stock);
 
         SparklineChart sparkline = buildSparkline(stock, MAX_SPARKLINE_WEEKS);
 
@@ -96,12 +82,9 @@ class WatchlistRowRenderer extends RowRenderer {
                 .put(WatchlistSort.SortColumn.NOTE, noteButton)
                 .put(WatchlistSort.SortColumn.TICKER, tickerLabel)
                 .put(WatchlistSort.SortColumn.COMPANY, companyLabel)
-                .put(WatchlistSort.SortColumn.CURRENCY, currencyLabel)
-                .put(WatchlistSort.SortColumn.PRICE_ALT, priceAltLabel)
                 .put(WatchlistSort.SortColumn.PRICE_NOK, priceNokLabel)
                 .put(WatchlistSort.SortColumn.CHANGE_NOK, changeNokLabel)
                 .put(WatchlistSort.SortColumn.CHANGE_PCT, changePctLabel)
-                .put(WatchlistSort.SortColumn.HIGH_LOW, highLowLabel)
                 .put(WatchlistSort.SortColumn.TREND, sparkline)
                 .put(WatchlistSort.SortColumn.TRADE, actions)
                 .put(WatchlistSort.SortColumn.REMOVE, removeButton);
@@ -119,39 +102,24 @@ class WatchlistRowRenderer extends RowRenderer {
     }
 
     /**
-     * Builds the note button for the given watchlist item.
+     * Builds the note button for the given watchlist item using a {@link FontIcon}.
      *
      * @param item the watchlist item
-     * @return a styled {@link Button} with an icon graphic
+     * @return a styled {@link Button} with a {@code fth-edit-3} icon graphic
      */
     private Button buildNoteButton(WatchlistItem item) {
-        int size = 20;
         boolean hasNote = !item.entry().note().isBlank();
-        String defaultPath = hasNote ? "/icons/edit-blue.png" : "/icons/edit-default.png";
+        FontIcon icon = new FontIcon("fth-edit-3");
+        icon.getStyleClass().add("watchlist-note-icon");
 
         Button noteButton = new Button();
-        noteButton.setGraphic(loadIcon(defaultPath, size));
+        noteButton.setGraphic(icon);
         noteButton.getStyleClass().addAll("table-action-link", "watchlist-note-btn");
-        noteButton.setOnMouseEntered(e -> noteButton.setGraphic(loadIcon("/icons/edit-blue.png", size)));
-        noteButton.setOnMouseExited(e -> noteButton.setGraphic(loadIcon(defaultPath, size)));
+        if (hasNote) {
+            noteButton.getStyleClass().add("watchlist-note-btn--active");
+        }
         noteButton.setOnAction(e -> onNote.accept(item));
         return noteButton;
-    }
-
-    /**
-     * Loads an icon from the classpath and returns a sized {@link ImageView}.
-     *
-     * @param path the classpath resource path (e.g. {@code /icons/edit-blue.png})
-     * @param size the desired width and height in pixels
-     * @return an {@link ImageView} with preserved aspect ratio
-     */
-    private ImageView loadIcon(String path, int size) {
-        ImageView iv = new ImageView(new Image(
-                Objects.requireNonNull(getClass().getResource(path)).toExternalForm()));
-        iv.setFitWidth(size);
-        iv.setFitHeight(size);
-        iv.setPreserveRatio(true);
-        return iv;
     }
 
     private Button buildRemoveButton(String symbol) {
