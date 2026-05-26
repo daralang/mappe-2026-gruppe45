@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.file.stock;
 
 import java.util.Arrays;
@@ -17,9 +18,7 @@ import java.util.Arrays;
  *
  * <p>The exception carries an opaque {@link #getI18nKey() i18nKey} and structured
  * {@link #getArgs() args} (typically line number and raw line content) rather than
- * a pre-resolved string. Callers in the controller layer resolve the key at display
- * time via {@code LanguageManager} so the message is shown in the user's current
- * language.
+ * a pre-resolved string.
  *
  * <p>{@link #getMessage()} returns a fallback string intended for logging and
  * debugging only — it is not the user-facing message.
@@ -59,7 +58,6 @@ public class InvalidStockDataException extends Exception {
 
     /**
      * Returns the resource-bundle key for the error message template.
-     * Controllers pass this to {@code LanguageManager.get(key)} at display time.
      *
      * @return the i18n key
      */
