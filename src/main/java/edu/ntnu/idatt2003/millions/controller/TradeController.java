@@ -12,7 +12,7 @@ import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastType;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.dashboard.portfolio.dialog.*;
-import edu.ntnu.idatt2003.millions.view.dialog.StockDetailModal;
+import edu.ntnu.idatt2003.millions.view.dialog.stockdetail.StockDetailModal;
 import javafx.application.Platform;
 
 import java.math.BigDecimal;
