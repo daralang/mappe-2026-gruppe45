@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.file.game;
 
 import java.util.Arrays;
@@ -7,14 +8,11 @@ import java.util.Arrays;
  * conform to the expected JSON schema — for example, a required field is missing,
  * has the wrong type, or the file is truncated.
  *
- * <p>This is a recoverable failure. Callers should catch it, inform the player that
- * the save file is corrupt, and offer to start a new game instead.
+ * <p>This is a recoverable failure.
  *
  * <p>The exception carries an opaque {@link #i18nKey} and structured {@link #args}
- * (typically the filename) rather than a pre-resolved string. Callers in the
- * controller layer resolve the key at display time via {@code LanguageManager} so
- * that the message is always shown in the user's current language, including if the
- * locale changes while the error is visible.
+ * (typically the filename) rather than a pre-resolved string, so the message can
+ * be rendered in the user's current language at display time.
  *
  * <p>{@link #getMessage()} returns a fallback string intended for logging and
  * debugging only — it is not the user-facing message.
@@ -22,7 +20,7 @@ import java.util.Arrays;
 public class GameSaveCorruptException extends Exception {
 
     private final String i18nKey;
-    private final Object[] args;
+    private final transient Object[] args;
 
     /**
      * Creates an exception with an i18n key and structured arguments but no chained cause.
@@ -38,8 +36,6 @@ public class GameSaveCorruptException extends Exception {
 
     /**
      * Creates an exception with an i18n key, structured arguments, and a chained cause.
-     * Use this constructor when wrapping a lower-level exception such as a
-     * {@link com.google.gson.JsonParseException}.
      *
      * @param i18nKey the resource-bundle key identifying the error message template
      * @param args    the format arguments (e.g. the filename); may be null or empty
@@ -53,7 +49,6 @@ public class GameSaveCorruptException extends Exception {
 
     /**
      * Returns the resource-bundle key for the error message template.
-     * Controllers pass this to {@code LanguageManager.get(key)} at display time.
      *
      * @return the i18n key
      */
