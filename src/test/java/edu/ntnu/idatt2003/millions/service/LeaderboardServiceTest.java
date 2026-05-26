@@ -6,8 +6,8 @@ import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.leaderboard.LeaderboardEntry;
 import edu.ntnu.idatt2003.millions.model.leaderboard.Outcome;
 import edu.ntnu.idatt2003.millions.model.player.Player;
-import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
+import edu.ntnu.idatt2003.millions.service.leaderboard.LeaderboardService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -3,12 +3,12 @@ package edu.ntnu.idatt2003.millions.controller.trade;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
-import edu.ntnu.idatt2003.millions.service.TransactionPreviewService;
+import edu.ntnu.idatt2003.millions.service.transaction.TransactionPreviewService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastType;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;

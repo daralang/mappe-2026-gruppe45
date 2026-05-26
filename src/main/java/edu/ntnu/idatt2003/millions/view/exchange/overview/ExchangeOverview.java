@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.exchange.overview;
 
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.card.GainersCard;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.card.LosersCard;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.card.StockRankingCard;

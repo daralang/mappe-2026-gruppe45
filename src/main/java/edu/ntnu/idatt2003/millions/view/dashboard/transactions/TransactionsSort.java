@@ -3,7 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.transactions;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.transaction.Purchase;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
-import edu.ntnu.idatt2003.millions.service.TransactionStatsService;
+import edu.ntnu.idatt2003.millions.service.transaction.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;
 import edu.ntnu.idatt2003.millions.view.component.table.TableColumnDef;

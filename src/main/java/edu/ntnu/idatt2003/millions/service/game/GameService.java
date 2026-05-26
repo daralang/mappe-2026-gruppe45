@@ -1,5 +1,5 @@
     // Javadoc generated with AI assistance - reviewed and approved by author.
-    package edu.ntnu.idatt2003.millions.service;
+    package edu.ntnu.idatt2003.millions.service.game;
 
     import edu.ntnu.idatt2003.millions.file.game.GameFileHandler;
     import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
@@ -23,6 +23,7 @@
     import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
     import edu.ntnu.idatt2003.millions.observer.GameObserver;
     import edu.ntnu.idatt2003.millions.model.leaderboard.Outcome;
+    import edu.ntnu.idatt2003.millions.service.leaderboard.LeaderboardService;
     import edu.ntnu.idatt2003.millions.service.notification.NotificationService;
 
     import java.io.File;

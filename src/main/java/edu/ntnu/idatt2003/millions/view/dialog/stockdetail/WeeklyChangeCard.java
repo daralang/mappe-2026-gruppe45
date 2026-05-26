@@ -2,8 +2,8 @@ package edu.ntnu.idatt2003.millions.view.dialog.stockdetail;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.service.StockHistoryService;
-import edu.ntnu.idatt2003.millions.service.StockHistoryService.WeeklyPriceChange;
+import edu.ntnu.idatt2003.millions.service.stock.StockHistoryService;
+import edu.ntnu.idatt2003.millions.service.stock.StockHistoryService.WeeklyPriceChange;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;

@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.loans;
 
 import edu.ntnu.idatt2003.millions.controller.loan.LoanController;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.ActiveLoansCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.AverageInterestRateCard;
 import edu.ntnu.idatt2003.millions.view.dashboard.loans.card.AvailableLoansCard;
