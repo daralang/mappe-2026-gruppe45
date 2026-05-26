@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.titlebar;
 
 import edu.ntnu.idatt2003.millions.service.game.GameService;
@@ -18,6 +19,12 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+/**
+ * Navigation bar rendered at the top of the main view.
+ *
+ * <p>Contains navigation links (Dashboard, Exchange, Leaderboard), action buttons
+ * (New Game, Save, Exit), a notification bell with badge, and a language picker.</p>
+ */
 public class Header extends HBox {
 
     private final Button dashboardButton;
@@ -32,6 +39,15 @@ public class Header extends HBox {
     private final NotificationPopupOverlay popupOverlay;
     private final GameService gameService;
 
+    /**
+     * Constructs the header and wires up navigation and action callbacks.
+     *
+     * @param onDashboard  callback invoked when the dashboard nav link is clicked
+     * @param onExchange   callback invoked when the exchange nav link is clicked
+     * @param onSaveGame   callback invoked when the save button is clicked
+     * @param onExitGame   callback invoked when the exit button is clicked
+     * @param gameService  the game service used to read notification state
+     */
     public Header(Runnable onDashboard,
                   Runnable onExchange,
                   Runnable onSaveGame,
@@ -115,14 +131,27 @@ public class Header extends HBox {
         onGameUpdated();
     }
 
+    /**
+     * Sets the callback invoked when the leaderboard nav link is clicked.
+     *
+     * @param callback the action to run
+     */
     public void setOnLeaderboard(Runnable callback) {
         leaderboardButton.setOnAction(e -> callback.run());
     }
 
+    /**
+     * Sets the callback invoked when the new game button is clicked.
+     *
+     * @param callback the action to run
+     */
     public void setOnNewGame(Runnable callback) {
         newGameButton.setOnAction(e -> callback.run());
     }
 
+    /**
+     * Refreshes the notification badge count and triggers toast overlay updates.
+     */
     public void onGameUpdated() {
         if (gameService.getPlayer() == null) return;
         int unread = gameService.getPlayer().getUnreadNotificationCount();
