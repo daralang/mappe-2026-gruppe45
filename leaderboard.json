@@ -75,5 +75,16 @@
     "status": "NOVICE",
     "outcome": "ACTIVE",
     "lastUpdated": "2026-05-26T15:19:16.940341500Z"
+  },
+  {
+    "sessionId": "f5873e16-5455-4d70-b613-1c9bb580b264",
+    "playerName": "dara",
+    "startingCapital": 1000,
+    "finalNetWorth": 1000,
+    "returnPercent": 0.0,
+    "weeksPlayed": 1,
+    "status": "NOVICE",
+    "outcome": "ACTIVE",
+    "lastUpdated": "2026-05-26T17:04:04.713077Z"
   }
 ]
