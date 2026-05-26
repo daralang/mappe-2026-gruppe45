@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.file.leaderboard;
 
 /**
@@ -5,13 +6,8 @@ package edu.ntnu.idatt2003.millions.file.leaderboard;
  * not conform to the expected JSON schema — for example, the file contains invalid
  * JSON or an unexpected structure.
  *
- * <p>This is a recoverable failure. Callers should catch it, treat the leaderboard
- * as empty or unavailable, and log the problem rather than crashing. The rest of
- * the game must continue normally even if the leaderboard is unreadable.
- *
- * <p>Note: this exception covers content-level corruption only. File-system failures
- * (unreadable file, missing permissions) are reported as {@link IllegalStateException}
- * by the reader. See {@link JsonLeaderboardFileHandler} for the exact split.
+ * <p>This exception covers content-level corruption only. File-system failures
+ * (unreadable file, missing permissions) are reported as {@link java.io.UncheckedIOException}.
  */
 public class LeaderboardCorruptException extends Exception {
 
@@ -26,8 +22,6 @@ public class LeaderboardCorruptException extends Exception {
 
     /**
      * Creates an exception with a descriptive message and a chained cause.
-     * Use this constructor when wrapping a lower-level exception such as a
-     * {@link com.google.gson.JsonParseException}.
      *
      * @param message a human-readable description of the parse failure
      * @param cause   the lower-level exception that triggered this one
