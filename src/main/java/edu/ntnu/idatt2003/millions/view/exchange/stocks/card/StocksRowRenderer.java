@@ -5,8 +5,6 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.service.StockStatsService;
-import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
@@ -40,7 +38,6 @@ class StocksRowRenderer extends RowRenderer {
     private static final int MAX_SPARKLINE_WEEKS = 8;
 
     private final GameService gameService;
-    private final StockStatsService statsService = new StockStatsService();
     private final TradeController controller;
     private final Consumer<String> onWatchlistToggle;
 
@@ -95,11 +92,9 @@ class StocksRowRenderer extends RowRenderer {
         }
 
         Label companyLabel = TableCells.data(stock.getCompany());
-        BigDecimal priceInNok = statsService.priceInNok(stock, converter);
-        Label priceNokLabel = TableCells.data(ChangeFormatter.formatPlain(priceInNok));
-        BigDecimal changeInNok = statsService.changeInNok(stock, converter);
-        Label changeKrLabel = ChangeFormatter.styledAmount(changeInNok, "table-cell");
-        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "table-cell");
+        Label priceNokLabel = priceNokLabel(stock, converter);
+        Label changeKrLabel = changeNokLabel(stock, converter);
+        Label changePctLabel = changePctLabel(stock);
         SparklineChart sparkline = buildSparkline(stock, MAX_SPARKLINE_WEEKS);
         Button tradeButton = buildBuyButton(stock);
 

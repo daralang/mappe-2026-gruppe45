@@ -4,8 +4,6 @@ import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.service.StockStatsService;
-import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;
 import edu.ntnu.idatt2003.millions.view.component.RowRenderer;
@@ -36,10 +34,8 @@ import java.util.function.Consumer;
 class WatchlistRowRenderer extends RowRenderer {
 
     private static final int MAX_SPARKLINE_WEEKS = 8;
-    private static final int HIGH_LOW_WEEKS = 4;
 
     private final GameService gameService;
-    private final StockStatsService statsService = new StockStatsService();
     private final TradeController tradeController;
     private final Consumer<String> onRemove;
     private final Consumer<WatchlistItem> onNote;
@@ -75,16 +71,9 @@ class WatchlistRowRenderer extends RowRenderer {
         Label tickerLabel = TableCells.data(stock.getSymbol());
         Label companyLabel = TableCells.data(stock.getCompany());
 
-        BigDecimal priceNok = statsService.priceInNok(stock, converter);
-        Label priceNokLabel = TableCells.data(ChangeFormatter.formatPlain(priceNok));
-        Label currencyLabel = TableCells.data(stock.getCurrency().getCurrencyCode());
-        Label priceAltLabel = TableCells.data(ChangeFormatter.formatPlain(stock.getSalesPrice()));
-
-        BigDecimal changeNok = statsService.changeInNok(stock, converter);
-        Label changeNokLabel = ChangeFormatter.styledAmount(changeNok, "table-cell");
-        Label changePctLabel = ChangeFormatter.styledPercent(stock.getWeeklyChangePercent(), "table-cell");
-
-        Label highLowLabel = TableCells.data(formatHighLow(stock, HIGH_LOW_WEEKS));
+        Label priceNokLabel = priceNokLabel(stock, converter);
+        Label changeNokLabel = changeNokLabel(stock, converter);
+        Label changePctLabel = changePctLabel(stock);
 
         SparklineChart sparkline = buildSparkline(stock, MAX_SPARKLINE_WEEKS);
 
@@ -96,12 +85,9 @@ class WatchlistRowRenderer extends RowRenderer {
                 .put(WatchlistSort.SortColumn.NOTE, noteButton)
                 .put(WatchlistSort.SortColumn.TICKER, tickerLabel)
                 .put(WatchlistSort.SortColumn.COMPANY, companyLabel)
-                .put(WatchlistSort.SortColumn.CURRENCY, currencyLabel)
-                .put(WatchlistSort.SortColumn.PRICE_ALT, priceAltLabel)
                 .put(WatchlistSort.SortColumn.PRICE_NOK, priceNokLabel)
                 .put(WatchlistSort.SortColumn.CHANGE_NOK, changeNokLabel)
                 .put(WatchlistSort.SortColumn.CHANGE_PCT, changePctLabel)
-                .put(WatchlistSort.SortColumn.HIGH_LOW, highLowLabel)
                 .put(WatchlistSort.SortColumn.TREND, sparkline)
                 .put(WatchlistSort.SortColumn.TRADE, actions)
                 .put(WatchlistSort.SortColumn.REMOVE, removeButton);
