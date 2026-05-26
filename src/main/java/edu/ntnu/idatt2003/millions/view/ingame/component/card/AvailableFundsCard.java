@@ -9,7 +9,7 @@ import edu.ntnu.idatt2003.millions.view.ingame.exchange.stock.card.SimpleWidgetC
  * Widget card displaying the player's currently available cash balance in NOK.
  * Accepts a title key and an optional subtitle key so it can be reused in different
  * views with different labels. Delegates rendering and observer registration to
- * {@link SimpleWidgetCard}. Updates automatically on each game state change via GameObserver.
+ * {@link SimpleWidgetCard}.
  */
 public class AvailableFundsCard extends SimpleWidgetCard {
 

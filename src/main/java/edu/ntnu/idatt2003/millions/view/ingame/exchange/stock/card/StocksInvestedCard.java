@@ -10,7 +10,6 @@ import java.text.MessageFormat;
 /**
  * Widget card displaying the total amount the player has invested in NOK.
  * Delegates rendering and observer registration to {@link SimpleWidgetCard}.
- * Updates automatically on each game state change via GameObserver.
  */
 public class StocksInvestedCard extends SimpleWidgetCard {
 

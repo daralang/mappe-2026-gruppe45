@@ -113,8 +113,7 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
     }
 
     /**
-     * Opens the stock detail modal for the given watchlist item. Whenever the user
-     * activates a row via keyboard or mouse click on a data cell.
+     * Opens the stock detail modal for the given watchlist item.
      *
      * @param item the watchlist item whose stock to show details for
      */

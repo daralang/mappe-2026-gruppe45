@@ -11,10 +11,6 @@ import javafx.scene.layout.HBox;
 
 /**
  * Widget card showing the player's total loan capacity (50% of net worth).
- *
- * <p>The subtitle text ("Maks 50% av nettoverdi") is editorial copy that
- * intentionally mirrors {@code Player.MAX_DEBT_RATIO}. If that constant
- * changes, update {@code dashboard.loans.capacity.subtitle} in both i18n files.
  */
 public class LoanCapacityCard extends WidgetCard {
 
