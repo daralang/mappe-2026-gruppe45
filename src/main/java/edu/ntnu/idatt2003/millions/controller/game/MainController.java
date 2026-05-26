@@ -258,6 +258,9 @@ public class MainController {
         keyboardService.universalShortcuts().register(
             new KeyCodeCombination(KeyCode.ENTER), this::fireCurrentButton
         );
+        keyboardService.universalShortcuts().register(
+            new KeyCodeCombination(KeyCode.SPACE), this::fireCurrentButton
+        );
         var reg = keyboardService.globalShortcuts();
         reg.register(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHORTCUT_DOWN), view::showDashboard);
         reg.register(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHORTCUT_DOWN), view::showExchange);

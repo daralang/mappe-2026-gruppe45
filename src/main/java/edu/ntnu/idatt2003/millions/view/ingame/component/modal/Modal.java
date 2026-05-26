@@ -91,17 +91,8 @@ public abstract class Modal {
     }
 
     /**
-     * Handles key events for this modal. ESC closes the modal.
-     *
-     * <p>This method is registered directly on the modal's own {@link javafx.scene.Scene}
-     * event filter in {@link #show()}, giving each modal isolated keyboard handling
-     * without participating in the application-wide {@code KeyboardNavigationService}
-     * context stack (modals use their own {@link javafx.stage.Stage} and are naturally
-     * isolated).</p>
-     *
-     * <p>Subclasses that need additional shortcuts should override this method
-     * and call {@code super.handleKeyPressed(event)} to preserve ESC behaviour.</p>
-     *
+     * Scene-level key handler. ESC closes; ENTER/SPACE fires the focused {@link Button}.
+     * *
      * @param event the key event
      * @return {@code true} if the event was handled
      */
@@ -110,6 +101,14 @@ public abstract class Modal {
             close();
             event.consume();
             return true;
+        }
+        if (event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.SPACE) {
+            javafx.scene.Node focused = stage.getScene().getFocusOwner();
+            if (focused instanceof Button button) {
+                button.fire();
+                event.consume();
+                return true;
+            }
         }
         return false;
     }
