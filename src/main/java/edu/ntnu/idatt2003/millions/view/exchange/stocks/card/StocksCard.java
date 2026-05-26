@@ -45,13 +45,7 @@ public class StocksCard extends DetailTableCard<Stock, StocksSort.SortColumn> {
                 symbol -> gameService.getPlayer().isOnWatchlist(symbol));
         this.sortProvider = sort;
         this.rowRenderer = new StocksRowRenderer(gameService, controller,
-                symbol -> {
-                    if (gameService.getPlayer().isOnWatchlist(symbol)) {
-                        gameService.removeFromWatchlist(symbol);
-                    } else {
-                        gameService.addToWatchlist(symbol);
-                    }
-                });
+                controller::toggleWatchlist);
         this.table = new SortColumnTable<>(sort::getColumnDefs, 10);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
         this.title = StyledText.sectionTitle(LanguageManager.get("exchange.stocks.market"));

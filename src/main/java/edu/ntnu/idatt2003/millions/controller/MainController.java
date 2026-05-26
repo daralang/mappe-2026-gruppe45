@@ -55,7 +55,7 @@ public class MainController {
                 this::handleSaveGame,
                 gameService::sellAllAndExit,
                 gameService::recordLeaderboardEntry);
-        TradeController tradeController = new TradeController(gameService);
+        TradeController tradeController = new TradeController(gameService, toastService);
         LoanController loanController = new LoanController(gameService);
         TitleBar titleBar = TitleBarFactory.create(stage, gameService);
         titleBar.setOnNewGame(this::handleNewGame);
