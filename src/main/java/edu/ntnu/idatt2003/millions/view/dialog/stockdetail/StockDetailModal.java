@@ -184,7 +184,7 @@ public class StockDetailModal extends Modal {
         list.setMaxHeight(CHART_HEIGHT);
         VBox listSection = new VBox(8,
                 StyledText.sectionTitle(LanguageManager.get("stockDetail.historyTitle")), list);
-        listSection.getStyleClass().add("stock-detail-panel");
+        listSection.getStyleClass().addAll("stock-detail-panel", "stock-detail-panel--scroll");
         listSection.setMinWidth(220);
 
         HBox row = new HBox(16, chartSection, listSection);
@@ -216,8 +216,7 @@ public class StockDetailModal extends Modal {
         buttonRow.setAlignment(Pos.CENTER_LEFT);
 
         if (onExplore != null) {
-            VBox wrapper = new VBox(8, buttonRow, buildExploreButton());
-            return wrapper;
+            return new VBox(8, buttonRow, buildExploreButton());
         }
         return buttonRow;
     }

@@ -84,7 +84,7 @@ public class WeeklyChangeCard extends VBox {
         filter.toWeekProperty().addListener((obs, oldVal, newVal) -> rebuild.run());
         rebuild.run();
 
-        getStyleClass().add("stock-detail-panel");
+        getStyleClass().addAll("stock-detail-panel", "stock-detail-panel--scroll");
         setSpacing(8);
         getChildren().addAll(buildHeader(filter), scroll);
     }
