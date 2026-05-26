@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 /**
  * A reusable drag-and-drop file upload zone.
  *
- * <p> Renders a dashed bordered box with a hint label, an "or" separator,
+ * <p>Renders a dashed bordered box with a hint label, an "or" separator,
  * a browse button, and a filename label that appears once a file is selected.
  * Drag-over highlighting is handled internally as a purely visual concern.
  * Callers attach file-selection logic via {@link #getBrowseButton()} for browse

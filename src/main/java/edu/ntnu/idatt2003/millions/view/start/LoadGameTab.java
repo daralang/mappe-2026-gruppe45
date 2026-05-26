@@ -29,9 +29,6 @@ public class LoadGameTab extends FileDropTab {
         LanguageManager.addObserver(this::updateTexts);
     }
 
-    /**
-     * Refreshes all visible texts from the current {@link LanguageManager} bundle.
-     */
     private void updateTexts() {
         saveFileLabel.setText(LanguageManager.get("start.resume.fileLabel"));
         getFileDropZone().setHintText(LanguageManager.get("start.resume.dropZoneHint"));

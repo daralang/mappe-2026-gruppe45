@@ -27,7 +27,6 @@ import java.util.function.Consumer;
  * each of which owns its own fields, layout, i18n updates, and event wiring.
  * Responsive sizing and the animated {@link NewGameTab}
  * reveal are delegated to {@link StartLayoutAnimator}.</p>
- *
  */
 public class StartView implements StartScreenInputs {
 
@@ -132,11 +131,6 @@ public class StartView implements StartScreenInputs {
         loadGameTab.setText(LanguageManager.get("start.tab.loadGame"));
     }
 
-    /**
-     * Returns the root node of this view for placement in the app-lifetime scene.
-     *
-     * @return the root node
-     */
     public Parent getRoot() {
         return root;
     }
