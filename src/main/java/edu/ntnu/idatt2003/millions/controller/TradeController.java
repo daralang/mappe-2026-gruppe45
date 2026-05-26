@@ -206,6 +206,7 @@ public class TradeController {
             gameService.updateWatchlistNote(symbol, newNote);
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Watchlist note update failed", e);
+            toastService.show(LanguageManager.get("toast.watchlist.updateNoteFailed"), ToastType.ERROR);
         }
     }
 
@@ -262,11 +263,7 @@ public class TradeController {
             Platform.runLater(() ->
                     new BuyReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (IllegalArgumentException | IllegalStateException e) {
-            String message = e.getMessage();
-            if (message == null || message.isBlank()) {
-                message = e.getClass().getSimpleName();
-            }
-            dialog.showError(message);
+            dialog.showError(resolveErrorMessage(e));
         }
     }
 
@@ -287,12 +284,20 @@ public class TradeController {
             Platform.runLater(() ->
                     new SellReceipt(transaction, balanceBefore, balanceAfter, preview).show());
         } catch (IllegalArgumentException | IllegalStateException e) {
-            String message = e.getMessage();
-            if (message == null || message.isBlank()) {
-                message = e.getClass().getSimpleName();
-            }
-            dialog.showError(message);
+            dialog.showError(resolveErrorMessage(e));
         }
+    }
+
+    /**
+     * Returns a user-readable error message for the given exception. Falls back to the
+     * exception's simple class name when the message is null or blank.
+     *
+     * @param e the exception to extract a message from
+     * @return the exception's message, or its class name as fallback
+     */
+    private static String resolveErrorMessage(Exception e) {
+        String message = e.getMessage();
+        return (message == null || message.isBlank()) ? e.getClass().getSimpleName() : message;
     }
 
     /**
