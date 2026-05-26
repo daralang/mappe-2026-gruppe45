@@ -1,9 +1,9 @@
 package edu.ntnu.idatt2003.millions.view.ingame.component.search;
 
 import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
-import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
+import edu.ntnu.idatt2003.millions.keyboard.navigation.PageArrowDispatcher;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
-import edu.ntnu.idatt2003.millions.keyboard.VerticalArrowHandler;
+import edu.ntnu.idatt2003.millions.keyboard.navigation.VerticalArrowHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -25,7 +25,7 @@ import java.util.function.Consumer;
  * {@link SearchFocusProvider} and the application-wide
  * {@code KeyboardNavigationService}, keeping shortcut registration out of the view layer.</p>
  *
- * <p>The field registers a {@link edu.ntnu.idatt2003.millions.keyboard.VerticalArrowHandler}
+ * <p>The field registers a {@link VerticalArrowHandler}
  * so the central {@code PageArrowDispatcher} never lets the field trap vertical
  * navigation: DOWN hands focus to the results when possible (see
  * {@link #setOnArrowDown}); otherwise the dispatcher scrolls the page.</p>

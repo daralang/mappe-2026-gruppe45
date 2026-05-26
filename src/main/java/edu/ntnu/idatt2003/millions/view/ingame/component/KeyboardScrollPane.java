@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.ingame.component;
 
-import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
-import edu.ntnu.idatt2003.millions.keyboard.PageScroller;
+import edu.ntnu.idatt2003.millions.keyboard.navigation.PageArrowDispatcher;
+import edu.ntnu.idatt2003.millions.keyboard.navigation.PageScroller;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
