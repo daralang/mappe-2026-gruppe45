@@ -88,9 +88,7 @@ public class StockDetailModal extends Modal {
     }
 
     /**
-     * Builds the full modal content: a fixed header above a height-capped, scrollable body.
-     * The {@link ScrollPane} prevents the modal from exceeding the available screen height
-     * on smaller or scaled displays (e.g. Windows laptops).
+     * Builds the full modal content.
      *
      * @return the root content node
      */
@@ -102,9 +100,9 @@ public class StockDetailModal extends Modal {
         ScrollPane bodyScroll = new ScrollPane(buildBody());
         bodyScroll.setFitToWidth(true);
         bodyScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        bodyScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        bodyScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
         bodyScroll.setMaxHeight(maxBodyHeight);
-        bodyScroll.getStyleClass().add("modal-body-scroll");
+        bodyScroll.getStyleClass().addAll("modal-body-scroll", "content-scroll");
 
         VBox content = new VBox();
         content.getChildren().addAll(buildHeader(), bodyScroll);
