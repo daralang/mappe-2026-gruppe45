@@ -30,7 +30,7 @@ import java.util.Arrays;
 public class InvalidStockDataException extends Exception {
 
     private final String i18nKey;
-    private final Object[] args;
+    private final transient Object[] args;
 
     /**
      * Creates an exception with an i18n key and structured arguments but no chained cause.
