@@ -23,7 +23,6 @@ import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.model.leaderboard.Outcome;
-import edu.ntnu.idatt2003.millions.service.LeaderboardService;
 import edu.ntnu.idatt2003.millions.service.notification.NotificationService;
 
 import java.io.File;
