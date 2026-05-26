@@ -68,7 +68,7 @@ public class StockDetailModal extends Modal {
     }
 
     /**
-     * Widens the modal card beyond the standard dialog width via a dedicated style class.
+     * Widens the modal card to accommodate the stock detail content.
      *
      * @param card the modal card node
      */
@@ -78,8 +78,7 @@ public class StockDetailModal extends Modal {
     }
 
     /**
-     * Forces a layout and resize pass after the stage is shown so the wider card
-     * dimensions are reflected in the stage size.
+     * Sizes the stage to fit the wider card before it is shown.
      */
     @Override
     protected void onBeforeShow() {
