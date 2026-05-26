@@ -4,6 +4,7 @@ package edu.ntnu.idatt2003.millions.file.leaderboard;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import edu.ntnu.idatt2003.millions.model.leaderboard.LeaderboardEntry;
+import edu.ntnu.idatt2003.millions.service.leaderboard.LeaderboardService;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -26,7 +27,7 @@ import java.util.Objects;
  *
  * <p>This class is pure infrastructure — it does not enforce ranking rules,
  * upsert semantics, or any other business logic. The
- * {@link edu.ntnu.idatt2003.millions.service.LeaderboardService} owns those.</p>
+ * {@link LeaderboardService} owns those.</p>
  */
 public class JsonLeaderboardFileHandler implements LeaderboardFileHandler {
 

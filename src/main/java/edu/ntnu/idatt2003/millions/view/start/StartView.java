@@ -1,0 +1,294 @@
+package edu.ntnu.idatt2003.millions.view.start;
+
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.start.component.AppTabPane;
+import edu.ntnu.idatt2003.millions.view.start.component.LanguagePicker;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.control.Tab;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+
+import java.io.File;
+import java.util.Currency;
+import java.util.function.Consumer;
+
+/**
+ * Start view for the application.
+ *
+ * <p>Composes a tab-based layout from {@link NewGameTab} and {@link LoadGameTab},
+ * each of which owns its own fields, layout, i18n updates, and event wiring.
+ * Responsive sizing and the animated {@link NewGameTab}
+ * reveal are delegated to {@link StartLayoutAnimator}.</p>
+ *
+ */
+public class StartView implements StartScreenInputs {
+
+    private static final double ROOT_SPACING = 24;
+    private static final double START_CARD_WIDTH = 540;
+
+    private final BorderPane root;
+    private final StyledText title;
+    private final AppTabPane tabPane;
+    private final Tab newGameTab;
+    private final Tab loadGameTab;
+    private final NewGameTab newGameTabContent;
+    private final LoadGameTab loadGameContent;
+
+    /**
+     * Creates the start view with two tabs:
+     * one for creating a new game and one for loading a saved game.
+     */
+    public StartView() {
+        this(null);
+    }
+
+    /**
+     * Creates the start view, optionally adding a platform title bar controls node
+     * at the very top (above the language picker row).
+     *
+     * @param titleBarControls the title bar controls node, or {@code null} to omit
+     */
+    public StartView(Node titleBarControls) {
+        LanguagePicker languagePicker = new LanguagePicker();
+        title = StyledText.headingOne(LanguageManager.get("app.title"));
+        title.getStyleClass().add("start-title");
+
+        newGameTabContent = new NewGameTab();
+        loadGameContent = new LoadGameTab();
+
+        newGameTab = AppTabPane.createTab(
+                LanguageManager.get("start.tab.newGame"), newGameTabContent);
+        loadGameTab = AppTabPane.createTab(
+                LanguageManager.get("start.tab.loadGame"), loadGameContent);
+
+        tabPane = new AppTabPane();
+        tabPane.getTabs().addAll(newGameTab, loadGameTab);
+        tabPane.setMaxWidth(START_CARD_WIDTH);
+        tabPane.getStyleClass().add("start-tab-pane");
+        Platform.runLater(() -> {
+            Node headersRegion = tabPane.lookup(".headers-region");
+            if (headersRegion instanceof Region r) {
+                Runnable center = () -> {
+                    double offset = Math.max(0, (tabPane.getWidth() - r.getWidth()) / 2.0);
+                    r.setTranslateX(offset);
+                };
+                r.widthProperty().addListener((o, old, n) -> center.run());
+                tabPane.widthProperty().addListener((o, old, n) -> center.run());
+                center.run();
+            }
+        });
+
+        HBox topBar = new HBox(languagePicker);
+        topBar.setAlignment(Pos.CENTER_RIGHT);
+        topBar.setPadding(new Insets(16, 24, 0, 24));
+
+        VBox startGroup = new VBox(ROOT_SPACING, title, tabPane);
+        startGroup.setAlignment(Pos.TOP_CENTER);
+
+        StackPane reservedStartGroup = new StackPane(startGroup);
+        reservedStartGroup.setAlignment(Pos.CENTER);
+
+        StackPane center = new StackPane(reservedStartGroup);
+        center.setAlignment(Pos.CENTER);
+        center.setPadding(new Insets(0, 24, 24, 24));
+        StartLayoutAnimator.bindStartCardLayout(
+                tabPane,
+                center,
+                reservedStartGroup,
+                newGameTabContent,
+                loadGameContent,
+                START_CARD_WIDTH,
+                ROOT_SPACING);
+
+        root = new BorderPane();
+        root.getStyleClass().add("start-root");
+
+        if (titleBarControls != null) {
+            root.setTop(new VBox(titleBarControls, topBar));
+        } else {
+            root.setTop(topBar);
+        }
+        root.setCenter(center);
+
+        updateTexts();
+        LanguageManager.addObserver(this::updateTexts);
+    }
+
+    /**
+     * Refreshes the title and tab labels from the current {@link LanguageManager} bundle.
+     * Each tab component manages its own internal texts independently.
+     */
+    private void updateTexts() {
+        title.setText(LanguageManager.get("app.title"));
+        newGameTab.setText(LanguageManager.get("start.tab.newGame"));
+        loadGameTab.setText(LanguageManager.get("start.tab.loadGame"));
+    }
+
+    /**
+     * Returns the root node of this view for placement in the app-lifetime scene.
+     *
+     * @return the root node
+     */
+    public Parent getRoot() {
+        return root;
+    }
+
+
+    @Override
+    public String getName() {
+        return newGameTabContent.getName();
+    }
+
+    @Override
+    public String getCapital() {
+        return newGameTabContent.getCapital();
+    }
+
+    @Override
+    public Currency getSelectedCurrency() {
+        return newGameTabContent.getSelectedCurrency();
+    }
+
+    @Override
+    public String getStockFilePath() {
+        return newGameTabContent.getFilePath();
+    }
+
+    @Override
+    public void setStockFilePath(String path) {
+        newGameTabContent.setFilePath(path);
+    }
+
+    @Override
+    public String getSaveFilePath() {
+        return loadGameContent.getFilePath();
+    }
+
+    @Override
+    public void setSaveFilePath(String path) {
+        loadGameContent.setFilePath(path);
+    }
+
+    /**
+     * Shows an inline error in the currently active tab.
+     * The supplier is stored so the message re-translates on language change.
+     *
+     * @param messageSupplier produces the localised error string
+     */
+    public void showError(java.util.function.Supplier<String> messageSupplier) {
+        if (tabPane.getSelectionModel().getSelectedItem() == newGameTab) {
+            newGameTabContent.showError(messageSupplier);
+        } else {
+            loadGameContent.showError(messageSupplier);
+        }
+    }
+
+    /**
+     * Shows an inline success message in the currently active tab, replacing
+     * any error message that was previously visible. The supplier is stored
+     * so the message re-translates on language change.
+     *
+     * @param messageSupplier produces the localised success string
+     */
+    public void showSuccess(java.util.function.Supplier<String> messageSupplier) {
+        if (tabPane.getSelectionModel().getSelectedItem() == newGameTab) {
+            newGameTabContent.showSuccess(messageSupplier);
+        } else {
+            loadGameContent.showSuccess(messageSupplier);
+        }
+    }
+
+    /**
+     * Requests keyboard focus on the first input field of the New Game tab.
+     * Delegates to {@link NewGameTab#focusFirstInput()} so the start screen
+     * is immediately keyboard-operable after the scene is shown.
+     * Must be called via {@code Platform.runLater} after the scene is displayed.
+     */
+    public void focusFirstInput() {
+        newGameTabContent.focusFirstInput();
+    }
+
+    /**
+     * Selects the New Game tab.
+     * Called by {@link edu.ntnu.idatt2003.millions.controller.game.StartController}
+     * in response to the {@code Shift+1} keyboard shortcut.
+     */
+    public void showNewGameTab() {
+        tabPane.getSelectionModel().select(newGameTab);
+    }
+
+    /**
+     * Selects the Load Game tab.
+     * Called by {@link edu.ntnu.idatt2003.millions.controller.game.StartController}
+     * in response to the {@code Shift+2} keyboard shortcut.
+     */
+    public void showLoadGameTab() {
+        tabPane.getSelectionModel().select(loadGameTab);
+    }
+
+    /**
+     * Registers the callback invoked when the user clicks the start button.
+     *
+     * @param callback the action to run on start; {@code null} disables the handler
+     */
+    public void setOnStartGame(Runnable callback) {
+        newGameTabContent.setOnAction(callback);
+    }
+
+    /**
+     * Registers the callback invoked when the user clicks the load button.
+     *
+     * @param callback the action to run on load; {@code null} disables the handler
+     */
+    public void setOnLoadGame(Runnable callback) {
+        loadGameContent.setOnAction(callback);
+    }
+
+    /**
+     * Registers the callback invoked when the user clicks the browse button
+     * on the stock file drop zone.
+     *
+     * @param callback the action to run on browse; {@code null} disables the handler
+     */
+    public void setOnBrowseStockFile(Runnable callback) {
+        newGameTabContent.setOnBrowse(callback);
+    }
+
+    /**
+     * Registers the callback invoked when the user clicks the browse button
+     * on the save file drop zone.
+     *
+     * @param callback the action to run on browse; {@code null} disables the handler
+     */
+    public void setOnBrowseSaveFile(Runnable callback) {
+        loadGameContent.setOnBrowse(callback);
+    }
+
+    /**
+     * Registers the callback invoked when the user drops a file onto the
+     * stock file drop zone.
+     *
+     * @param callback the action to run with the dropped file; {@code null} disables the handler
+     */
+    public void setOnStockFileDrop(Consumer<File> callback) {
+        newGameTabContent.setOnFileDrop(callback);
+    }
+
+    /**
+     * Registers the callback invoked when the user drops a file onto the
+     * save file drop zone.
+     *
+     * @param callback the action to run with the dropped file; {@code null} disables the handler
+     */
+    public void setOnSaveFileDrop(Consumer<File> callback) {
+        loadGameContent.setOnFileDrop(callback);
+    }
+}

@@ -1,7 +1,7 @@
 // Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.player;
 
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.transaction.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
@@ -10,6 +10,7 @@ import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
 import edu.ntnu.idatt2003.millions.model.notification.Notification;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
 import edu.ntnu.idatt2003.millions.model.watchlist.WatchlistEntry;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -161,7 +162,7 @@ public class Player {
 
     /**
      * Appends the player's current net worth to the history list.
-     * Called by {@link edu.ntnu.idatt2003.millions.service.GameService}
+     * Called by {@link GameService}
      * before advancing the week.
      *
      * @param converter the currency converter used to compute the net worth
@@ -197,7 +198,7 @@ public class Player {
 
     /**
      * Sets the player's previous net worth.
-     * Called by {@link edu.ntnu.idatt2003.millions.service.GameService}
+     * Called by {@link GameService}
      * before advancing the week.
      *
      * @param previousNetWorth the net worth to store
@@ -233,7 +234,7 @@ public class Player {
 
     /**
      * Records the player's current total debt in the history.
-     * Called by {@link edu.ntnu.idatt2003.millions.service.GameService}
+     * Called by {@link GameService}
      * before advancing the week.
      */
     public void recordTotalDebt() {
@@ -354,7 +355,7 @@ public class Player {
      * {@link #canCoverObligationsThisWeek(int)} and the dispatch logic in
      * the controller layer. When the player cannot cover obligations from
      * cash alone, the forced-sale flow runs instead via
-     * {@link edu.ntnu.idatt2003.millions.service.GameService#executeForcedSale}.
+     * {@link GameService#executeForcedSale}.
      *
      * @param week the game week in which interest is collected;
      *             used for ledger entries

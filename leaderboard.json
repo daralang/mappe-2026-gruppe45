@@ -64,5 +64,16 @@
     "status": "NOVICE",
     "outcome": "RETIRED",
     "lastUpdated": "2026-05-25T11:54:09.552991700Z"
+  },
+  {
+    "sessionId": "86336964-1cd8-441b-a811-08094a25999d",
+    "playerName": "Yassan",
+    "startingCapital": 40000,
+    "finalNetWorth": 38000.5608,
+    "returnPercent": -5.0,
+    "weeksPlayed": 25,
+    "status": "NOVICE",
+    "outcome": "ACTIVE",
+    "lastUpdated": "2026-05-26T15:19:16.940341500Z"
   }
 ]

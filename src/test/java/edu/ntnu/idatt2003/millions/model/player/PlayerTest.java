@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.model.player;
 
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.transaction.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
@@ -9,8 +9,6 @@ import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
 import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel;
-import edu.ntnu.idatt2003.millions.model.player.Player;
-import edu.ntnu.idatt2003.millions.model.player.PlayerStatusLevel;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.transaction.Purchase;

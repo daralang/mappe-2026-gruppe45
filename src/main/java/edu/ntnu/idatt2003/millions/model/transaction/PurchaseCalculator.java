@@ -1,0 +1,78 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
+package edu.ntnu.idatt2003.millions.model.transaction;
+
+import edu.ntnu.idatt2003.millions.model.stock.Share;
+
+import java.math.BigDecimal;
+import java.util.Objects;
+
+/**
+ * Calculator for the financial components of a stock purchase transaction.
+ *
+ * <p>Calculates gross value, commission, tax, and total cost based on
+ * the purchase price and quantity of a given {@link Share}.</p>
+ */
+public class PurchaseCalculator implements TransactionCalculator {
+    private final BigDecimal purchasePrice;
+    private final BigDecimal quantity;
+
+    /**
+     * Commission rate applied to the gross value of the purchase (0.5%).
+     */
+    private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.005");
+
+    /**
+     * Constructs a PurchaseCalculator for the given share.
+     *
+     * @param share the share being purchased
+     * @throws NullPointerException if the share is null
+     */
+    public PurchaseCalculator(Share share) {
+        Objects.requireNonNull(share, "Share cannot be null");
+        this.purchasePrice = share.getPurchasePrice();
+        this.quantity = share.getQuantity();
+    }
+
+    /**
+     * Calculates the gross value of the purchase.
+     * Gross value is defined as purchase price multiplied by quantity.
+     *
+     * @return the gross purchase value
+     */
+    @Override
+    public BigDecimal calculateGross() {
+        return this.purchasePrice.multiply(this.quantity);
+    }
+
+    /**
+     * Calculates the commission fee for the purchase.
+     * Commission is 0.5% of the gross value.
+     *
+     * @return the commission amount
+     */
+    @Override
+    public BigDecimal calculateCommission() {
+        return this.calculateGross().multiply(COMMISSION_RATE);
+    }
+
+    /**
+     * Returns the tax for a purchase transaction.
+     * No tax is applied on purchases, so this always returns zero.
+     *
+     * @return always zero; purchases are not taxed
+     */
+    @Override
+    public BigDecimal calculateTax() {
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * Calculates the total cost of the purchase.
+     *
+     * @return the total cost to the buyer
+     */
+    @Override
+    public BigDecimal calculateTotal() {
+        return calculateGross().add(calculateCommission()).add(calculateTax());
+    }
+}

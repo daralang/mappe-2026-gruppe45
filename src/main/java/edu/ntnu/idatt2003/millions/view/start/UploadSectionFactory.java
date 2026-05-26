@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.start;
 
-import edu.ntnu.idatt2003.millions.view.component.FileDropZone;
+import edu.ntnu.idatt2003.millions.view.start.component.FileDropZone;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
