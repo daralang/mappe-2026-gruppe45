@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.file.game.GameSaveCorruptException;
@@ -33,12 +34,9 @@ import javafx.stage.Stage;
  * file selection for stock data and saved games, as well as
  * starting or loading a game session.</p>
  *
- * <p>UI-input validation is delegated to {@link StartInputValidator}. File
- * validation on selection is delegated to {@link edu.ntnu.idatt2003.millions.service.GameService},
- * which performs a trial parse without mutating game state.</p>
- *
- * <p>Errors are surfaced via {@code errorSink} and successes via {@code successSink},
- * both injected as {@link java.util.function.Supplier} consumers for i18n support.</p>
+ * <p>UI-input validation is delegated to {@link StartInputValidator}. Files
+ * selected or dropped onto the screen are validated immediately by trial-parsing
+ * them before their paths are accepted.</p>
  */
 public class StartController {
 
@@ -53,10 +51,6 @@ public class StartController {
 
     /**
      * Constructs a new StartController with a default {@link GameService}.
-     *
-     * <p>This constructor is used by the application startup flow. It delegates
-     * to {@link #StartController(Stage, GameService)} so alternate startup paths
-     * can inject their own game manager.</p>
      *
      * @param stage the primary application stage
      * @throws NullPointerException if stage is null
@@ -76,14 +70,6 @@ public class StartController {
         this(stage, gameService, new StartView(TitleBarFactory.createForStartScreen(stage).getNode()));
     }
 
-    /**
-     * Intermediate constructor that resolves the {@link StartView} before delegating
-     * to the full DI constructor.
-     *
-     * @param stage       the primary application stage
-     * @param gameService the game manager used to create or load game state
-     * @param startView   the already-constructed start view
-     */
     private StartController(Stage stage, GameService gameService, StartView startView) {
         this(stage, gameService,
                 startView,
@@ -145,11 +131,6 @@ public class StartController {
         this.successSink = Objects.requireNonNull(successSink, "Success sink cannot be null");
     }
 
-    /**
-     * Injects callbacks into the view for all interactive controls.
-     * The view wires these callbacks to its own controls internally,
-     * so the controller never accesses individual UI components directly.
-     */
     private void bindEvents() {
         view.setOnStartGame(this::handleStartGame);
         view.setOnLoadGame(this::handleLoadGame);
@@ -159,12 +140,6 @@ public class StartController {
         view.setOnSaveFileDrop(this::validateAndSetSaveFile);
     }
 
-    /**
-     * Opens a file chooser for selecting a stock data file (CSV).
-     * If a file is chosen, it is validated immediately via
-     * {@link #validateAndSetStockFile(File)}. The file path is only
-     * stored if the file parses without errors.
-     */
     private void handleBrowseStockFile() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle(LanguageManager.get("start.chooser.stock.title"));
@@ -176,12 +151,6 @@ public class StartController {
         }
     }
 
-    /**
-     * Opens a file chooser for selecting a previously saved game file (JSON).
-     * If a file is chosen, it is validated immediately via
-     * {@link #validateAndSetSaveFile(File)}. The file path is only
-     * stored if the file parses without errors.
-     */
     private void handleBrowseSaveFile() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle(LanguageManager.get("start.chooser.save.title"));
@@ -194,13 +163,18 @@ public class StartController {
     }
 
     /**
-     * Validates the given stock file by attempting to parse it immediately.
-     * If parsing succeeds, the file path is stored in the view. If parsing
-     * fails, the file path is cleared and the error is shown to the user
-     * via the {@link #errorSink} so they cannot proceed with an invalid file.
+     * Validates the given CSV stock file and registers its path if valid;
+     * clears the path and shows an error to the user if not.
      *
      * <p>Package-private visibility allows controller tests in this package
      * to invoke the handler directly without simulating a drag-and-drop event.</p>
+     *
+     * <p>Parses the file as a side-effect-free validation step: the handler is
+     * constructed locally and the parsed result is discarded. The only outcome is
+     * whether the file is well-formed, which determines whether the path is stored
+     * on {@code inputs}. Validation deliberately does NOT route through
+     * {@code gameService} because {@code createNewGame()} would mutate game state,
+     * and we only want to verify the file before the user confirms.</p>
      *
      * @param file the CSV file to validate and register
      */
@@ -221,13 +195,18 @@ public class StartController {
     }
 
     /**
-     * Validates the given save file by attempting to parse it immediately.
-     * If parsing succeeds, the file path is stored in the view. If parsing
-     * fails, the file path is cleared and the error is shown to the user
-     * via the {@link #errorSink} so they cannot proceed with a corrupt save file.
+     * Validates the given JSON save file and registers its path if valid;
+     * clears the path and shows an error to the user if not.
      *
      * <p>Package-private visibility allows controller tests in this package
      * to invoke the handler directly without simulating a drag-and-drop event.</p>
+     *
+     * <p>Parses the file as a side-effect-free validation step: the handler is
+     * constructed locally and the parsed result is discarded. The only outcome is
+     * whether the save file is well-formed, which determines whether the path is
+     * stored on {@code inputs}. Validation deliberately does NOT route through
+     * {@code gameService.loadGame()} because that would mutate game state, and we
+     * only want to verify the file before the user confirms.</p>
      *
      * @param file the JSON save file to validate and register
      */
@@ -285,7 +264,6 @@ public class StartController {
             return;
         }
 
-        // All inputs valid — delegate to service
         runOrShowError(() -> {
             String validatedName     = StartInputValidator.requireName(name);
             BigDecimal parsedCapital = StartInputValidator.parseCapital(capital);
@@ -311,10 +289,10 @@ public class StartController {
         String suffix = " " + LanguageManager.get("error.missing.suffix");
         List<String> lower = fields.stream().map(String::toLowerCase).toList();
         String message = lower.size() == 1
-                ? lower.get(0) + suffix
+                ? lower.getFirst() + suffix
                 : String.join(", ", lower.subList(0, lower.size() - 1))
                   + " " + LanguageManager.get("error.and") + " "
-                  + lower.get(lower.size() - 1) + suffix;
+                  + lower.getLast() + suffix;
         return Character.toUpperCase(message.charAt(0)) + message.substring(1);
     }
 
@@ -357,9 +335,7 @@ public class StartController {
     private void runOrShowError(GameAction action) {
         try {
             action.execute();
-        } catch (GameSaveCorruptException exception) {
-            resolveLocalizedError(exception.getI18nKey(), exception.getArgs());
-        } catch (InvalidStockDataException exception) {
+        } catch (GameSaveCorruptException | InvalidStockDataException exception) {
             resolveLocalizedError(exception.getI18nKey(), exception.getArgs());
         } catch (IllegalArgumentException | IllegalStateException | UncheckedIOException exception) {
             errorSink.accept(exception::getMessage);
@@ -372,9 +348,6 @@ public class StartController {
         errorSink.accept(() -> MessageFormat.format(LanguageManager.get(key), args));
     }
 
-    /**
-     * Shows the main view using the active {@link GameService}.
-     */
     private void showMainView() {
         showMainViewAction.run();
     }
@@ -382,11 +355,6 @@ public class StartController {
     /**
      * Displays the start screen on the primary stage, binds UI events,
      * and registers global keyboard shortcuts on the start scene.
-     *
-     * <p>Swaps the app-lifetime scene root to this view's root node. Window
-     * visibility and maximised state are managed by
-     * {@link edu.ntnu.idatt2003.millions.App} on startup and remain in effect
-     * for the lifetime of the application.</p>
      */
     public void show() {
         bindEvents();
