@@ -1,8 +1,8 @@
 /* ─── Stock detail dialog ─────────────────────────────────────────────── */
 
 .modal-card-stock-detail {
-    -fx-min-width: 760;
-    -fx-max-width: 760;
+    -fx-min-width: 750;
+    -fx-max-width: 750;
 }
 
 .stock-detail-eyebrow {
@@ -23,12 +23,12 @@
 }
 
 .stock-detail-weekly {
-    -fx-padding: 4 0 0 0;
+    -fx-padding: 4 12 0 0;
 }
 
 /* Native price-history list rows */
 .price-history-row {
-    -fx-padding: 7 2 7 2;
+    -fx-padding: 7 12 7 2;
     -fx-border-color: transparent transparent -border-light transparent;
     -fx-border-width: 0 0 1 0;
 }
@@ -66,5 +66,10 @@
     -fx-border-color: -border;
     -fx-border-radius: 8;
     -fx-border-width: 1;
-    -fx-padding: 16;
+    -fx-padding: 10 5 10 10;
+}
+
+/* Panels containing a ScrollPane: remove right padding so the scrollbar sits flush */
+.stock-detail-panel--scroll {
+    -fx-padding: 16 0 16 16;
 }
