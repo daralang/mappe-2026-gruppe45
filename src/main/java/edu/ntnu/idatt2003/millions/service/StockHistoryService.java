@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -12,11 +13,6 @@ import java.util.Objects;
 
 /**
  * Stateless read service computing derived price-history values for a {@link Stock}.
- *
- * <p>Holds no state and reads freely from the domain without mutating it, in line with
- * the application's read-service layer ({@link PlayerStatsService}, {@link PortfolioService}).
- * Views call it directly and render the returned rows: all numeric derivation lives here
- * rather than in the view, keeping presentation free of business logic.</p>
  */
 public final class StockHistoryService {
 
