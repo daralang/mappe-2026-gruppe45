@@ -348,11 +348,13 @@
          *
          * @param shares      the shares the player has chosen to sell
          * @param currentWeek the game week being processed (the week after the current one)
+         * @throws NullPointerException              if shares is null
          * @throws InsufficientSaleProceedsException if the net sale total is less than total obligations
          * @throws IllegalStateException             if the game is over
          */
         public void executeForcedSale(List<Share> shares, int currentWeek)
                 throws InsufficientSaleProceedsException {
+            Objects.requireNonNull(shares, "Shares cannot be null");
             if (gameOver) throw new IllegalStateException("Game is over");
             CurrencyConverter converter = exchange.getCurrencyConverter();
 
