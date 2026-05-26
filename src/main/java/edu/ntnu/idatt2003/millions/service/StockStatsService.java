@@ -4,7 +4,9 @@ import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Currency;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -18,6 +20,7 @@ import java.util.Objects;
 public final class StockStatsService {
 
     private static final Currency NOK = Currency.getInstance("NOK");
+    private static final int PERCENT_SCALE = 2;
 
     /**
      * Returns the stock's latest price converted to NOK.
@@ -47,6 +50,30 @@ public final class StockStatsService {
         Objects.requireNonNull(stock, "stock must not be null");
         Objects.requireNonNull(converter, "converter must not be null");
         return converter.convert(stock.getLatestPriceChange(), stock.getCurrency(), NOK);
+    }
+
+    /**
+     * Returns the all-time percentage change from the stock's first recorded price to its
+     * current sales price.
+     *
+     * @param stock the stock whose price history is read; must not be {@code null}
+     * @return the all-time change as a percentage, e.g. {@code 12.34} for +12.34 %
+     * @throws NullPointerException if {@code stock} is {@code null}
+     */
+    public BigDecimal allTimeChangePercent(Stock stock) {
+        Objects.requireNonNull(stock, "stock must not be null");
+        List<BigDecimal> prices = stock.getHistoricalPrices();
+        if (prices.size() < 2) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal first = prices.get(0);
+        if (first.signum() == 0) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal current = stock.getSalesPrice();
+        return current.subtract(first)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(first, PERCENT_SCALE, RoundingMode.HALF_UP);
     }
 
     /**
