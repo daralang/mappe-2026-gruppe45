@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.controller;
 
 import edu.ntnu.idatt2003.millions.keyboard.KeyboardNavigationService;
@@ -27,8 +28,7 @@ import java.util.logging.Logger;
 
 /**
  * Controller for the main view of the application.
- * Handles save, exit, advance-week actions and global keyboard shortcuts.
- * Delegates game state changes to {@code GameService}.
+ * Handles save, exit, and advance-week actions, and registers global keyboard shortcuts.
  */
 public class MainController {
 
@@ -47,8 +47,9 @@ public class MainController {
     /**
      * Constructs a new MainController and creates the main view.
      *
-     * @param stage       the primary stage
-     * @param gameService the game manager containing player and exchange
+     * @param stage        the primary stage
+     * @param gameService  the game manager containing player and exchange
+     * @param toastService the service used to display in-app toast notifications
      */
     public MainController(Stage stage, GameService gameService, ToastService toastService) {
         this.stage = stage;
@@ -132,11 +133,11 @@ public class MainController {
     }
 
     /**
-     * Writes the game to {@code file} and shows a success toast.
-     * On failure clears the stored path and shows an error toast so the
-     * player can pick a new location on the next attempt.
+     * Saves the game to the given file. On IO failure, clears the stored save path
+     * so the player is prompted to pick a new location on the next attempt.
      *
-     * @return true on success, false on failure
+     * @param file the file to save to
+     * @return {@code true} on success, {@code false} if the game has no active state or writing fails
      */
     private boolean saveToFile(File file) {
         try {
