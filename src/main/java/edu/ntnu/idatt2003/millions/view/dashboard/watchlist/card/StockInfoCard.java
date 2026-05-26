@@ -2,7 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.watchlist.card;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.service.StockStatsService;
+import edu.ntnu.idatt2003.millions.service.stock.StockStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.chart.SparklineChart;

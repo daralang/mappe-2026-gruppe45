@@ -2,7 +2,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.portfolio;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
-import edu.ntnu.idatt2003.millions.service.PortfolioService;
+import edu.ntnu.idatt2003.millions.service.player.PortfolioService;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;

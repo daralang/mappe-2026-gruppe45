@@ -4,7 +4,7 @@ import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.keyboard.PageFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.view.component.ViewHeader;
 import edu.ntnu.idatt2003.millions.view.component.WeekBar;
 import edu.ntnu.idatt2003.millions.view.exchange.overview.ExchangeOverview;
@@ -72,7 +72,7 @@ public class ExchangeView extends VBox implements SearchFocusProvider, PageFocus
         switch (index) {
             case 0 -> { viewHeader.setActive(viewHeader.getTabButton(0)); showOverview(); }
             case 1 -> { viewHeader.setActive(viewHeader.getTabButton(1)); showStocks(); }
-            default -> { }
+            default -> { /* out-of-range indices are intentionally ignored */ }
         }
     }
 

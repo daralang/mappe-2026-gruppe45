@@ -3,7 +3,7 @@ package edu.ntnu.idatt2003.millions.controller.game;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.player.Player;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.view.dialog.GameOverModal;
 import javafx.stage.Stage;
 

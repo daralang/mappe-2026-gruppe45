@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.portfolio.card;
 
-import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.service.PlayerStatsService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
+import edu.ntnu.idatt2003.millions.service.player.PlayerStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.ColourChange;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
@@ -10,7 +10,6 @@ import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.WidgetCard;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
-import edu.ntnu.idatt2003.millions.view.component.card.WidgetCard;
 
 import java.math.BigDecimal;
 

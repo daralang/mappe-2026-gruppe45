@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.component;
 
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.notification.NotificationPanel;
 import edu.ntnu.idatt2003.millions.view.component.notification.NotificationPopupOverlay;

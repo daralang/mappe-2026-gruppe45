@@ -3,7 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.loans.card;
 import edu.ntnu.idatt2003.millions.model.loan.LoanCatalog;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.MoneyFormatter;

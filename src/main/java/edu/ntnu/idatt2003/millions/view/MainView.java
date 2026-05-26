@@ -7,7 +7,7 @@ import edu.ntnu.idatt2003.millions.keyboard.PageArrowDispatcher;
 import edu.ntnu.idatt2003.millions.keyboard.PageFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusRegistry;
 import edu.ntnu.idatt2003.millions.keyboard.TabNavigationRegistry;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.view.component.toast.ToastOverlay;
 import edu.ntnu.idatt2003.millions.view.component.KeyboardScrollPane;

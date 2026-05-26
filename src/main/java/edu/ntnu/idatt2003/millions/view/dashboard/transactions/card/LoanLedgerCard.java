@@ -3,7 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.transactions.card;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
 import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntry;
 import edu.ntnu.idatt2003.millions.model.loan.LoanLedgerEntryType;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;

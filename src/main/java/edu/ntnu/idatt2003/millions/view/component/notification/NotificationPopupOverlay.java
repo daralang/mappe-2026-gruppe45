@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.component.notification;
 
 import edu.ntnu.idatt2003.millions.model.notification.Notification;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;

@@ -1,5 +1,5 @@
 // Javadoc generated with AI assistance - reviewed and approved by author.
-package edu.ntnu.idatt2003.millions.service;
+package edu.ntnu.idatt2003.millions.service.transaction;
 
 import edu.ntnu.idatt2003.millions.model.transaction.PurchaseCalculator;
 import edu.ntnu.idatt2003.millions.model.transaction.SalesCalculator;

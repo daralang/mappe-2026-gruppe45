@@ -1,5 +1,5 @@
 // Javadoc generated with AI assistance - reviewed and approved by author.
-package edu.ntnu.idatt2003.millions.service;
+package edu.ntnu.idatt2003.millions.service.stock;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;

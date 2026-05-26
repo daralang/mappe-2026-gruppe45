@@ -2,7 +2,7 @@ package edu.ntnu.idatt2003.millions.view.exchange.overview.card;
 
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.TableCells;

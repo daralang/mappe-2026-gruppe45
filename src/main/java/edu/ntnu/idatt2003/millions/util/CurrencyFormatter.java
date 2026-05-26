@@ -1,5 +1,7 @@
 package edu.ntnu.idatt2003.millions.util;
 
+import edu.ntnu.idatt2003.millions.service.transaction.TransactionStatsService;
+
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Objects;
@@ -58,7 +60,7 @@ public class CurrencyFormatter {
      *
      * <p>Convenience overload of {@link #symbol(Currency)} for call sites that
      * already hold the ISO code as a {@link String}, such as
-     * {@link edu.ntnu.idatt2003.millions.service.TransactionStatsService.TransactionStats}.</p>
+     * {@link TransactionStatsService.TransactionStats}.</p>
      *
      * @param isoCode the ISO 4217 currency code, e.g. {@code "USD"}
      * @return the display symbol

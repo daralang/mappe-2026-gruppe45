@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.dashboard.loans;
 
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.component.table.SortProvider;

@@ -2,7 +2,7 @@ package edu.ntnu.idatt2003.millions.view.leaderboard;
 
 import edu.ntnu.idatt2003.millions.keyboard.PageFocusProvider;
 import edu.ntnu.idatt2003.millions.keyboard.SearchFocusProvider;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.service.toast.ToastService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;

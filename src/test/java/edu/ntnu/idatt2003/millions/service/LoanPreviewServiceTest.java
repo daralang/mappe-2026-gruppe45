@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.service;
 import edu.ntnu.idatt2003.millions.model.loan.LoanOffer;
 import edu.ntnu.idatt2003.millions.model.loan.LoanPreview;
 import edu.ntnu.idatt2003.millions.model.loan.LoanRiskLevel;
+import edu.ntnu.idatt2003.millions.service.loan.LoanPreviewService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

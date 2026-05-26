@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.titlebar;
 
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.util.OsDetector;
 import javafx.stage.Stage;
 

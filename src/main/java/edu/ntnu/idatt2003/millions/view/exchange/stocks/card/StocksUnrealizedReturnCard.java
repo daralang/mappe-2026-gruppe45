@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.exchange.stocks.card;
 
-import edu.ntnu.idatt2003.millions.service.GameService;
-import edu.ntnu.idatt2003.millions.service.PortfolioService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
+import edu.ntnu.idatt2003.millions.service.player.PortfolioService;
 import java.math.BigDecimal;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;

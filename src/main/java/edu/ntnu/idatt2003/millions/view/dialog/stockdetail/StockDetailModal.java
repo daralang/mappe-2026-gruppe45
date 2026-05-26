@@ -3,7 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dialog.stockdetail;
 import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.service.GameService;
+import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.Modal;
 import edu.ntnu.idatt2003.millions.view.component.PriceHistoryList;
