@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.file.leaderboard;
 
 import com.google.gson.*;
@@ -15,8 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * JSON-backed leaderboard storage. Uses Gson with a small type adapter for
- * {@link Instant} since Gson does not handle it out of the box.
+ * JSON-backed leaderboard storage with atomic writes.
  *
  * <p>Writes are atomic: the new content is first written to a sibling
  * {@code .tmp} file, then moved over the target file. On the same filesystem
@@ -57,15 +57,13 @@ public class JsonLeaderboardFileHandler implements LeaderboardFileHandler {
         try (FileReader reader = new FileReader(file)) {
             return parse(reader);
         } catch (IOException e) {
-            throw new IllegalStateException(
-                    "Could not read leaderboard file: " + file.getName(), e);
+            throw new UncheckedIOException(
+                    "Failed to read leaderboard file: " + file.getName(), e);
         }
     }
 
     /**
      * Parses leaderboard entries from an already-opened reader.
-     * The file-absent short-circuit and file-open I/O concerns remain in
-     * {@link #readAll(File)}; this method handles only JSON deserialisation.
      *
      * @param reader the reader positioned at the start of a JSON leaderboard array
      * @return a mutable list of entries; empty if the JSON is {@code null} or {@code []}
@@ -107,17 +105,21 @@ public class JsonLeaderboardFileHandler implements LeaderboardFileHandler {
             try (FileWriter writer = new FileWriter(tmp.toFile())) {
                 gson.toJson(entries, writer);
             }
-            try {
-                Files.move(tmp, target,
-                        StandardCopyOption.REPLACE_EXISTING,
-                        StandardCopyOption.ATOMIC_MOVE);
-            } catch (UnsupportedOperationException atomicNotSupported) {
-                // Fall back to non-atomic move on file systems that don't support it.
-                Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
-            }
+            moveAtomicallyIfSupported(tmp, target);
         } catch (IOException e) {
             throw new UncheckedIOException(
                     "Failed to write leaderboard file: " + file.getName(), e);
+        }
+    }
+
+    private static void moveAtomicallyIfSupported(Path source, Path target) throws IOException {
+        try {
+            Files.move(source, target,
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.ATOMIC_MOVE);
+        } catch (UnsupportedOperationException _) {
+            // Fall back to non-atomic move on file systems that don't support it.
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
