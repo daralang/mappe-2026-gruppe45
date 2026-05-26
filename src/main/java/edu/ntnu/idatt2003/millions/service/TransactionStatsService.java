@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -13,24 +14,12 @@ import java.util.List;
  * transactions tab — both per-transaction figures for the history
  * table and aggregated totals for the summary card.
  *
- * <p>Sits alongside {@code PlayerStatsService}, {@code PortfolioService}
- * and {@code RealizedReturnsService}: like them, it holds no state, takes
- * the model objects it needs as method arguments, and returns plain values
- * the view can render. This is the pattern SoC.md prescribes for derived
- * values that don't naturally live on a single domain object — the
- * computation crosses {@link Transaction}, {@link Share}, the calculator
- * tied to its subclass, and the active {@link CurrencyConverter}.</p>
- *
  * <p>Native-currency values are converted to NOK so the table stays denominated
  * in one currency. Both native and NOK figures are returned so views can show
- * NOK in the cell and the native amount in a tooltip without recomputing.
- * Subtype-specific financial values (commission, tax, signed total, price per
- * share) are accessed through polymorphic methods on {@link Transaction}, keeping
- * this service free of {@code instanceof} dispatch.</p>
+ * NOK in the cell and the native amount in a tooltip without recomputing.</p>
  */
 public class TransactionStatsService {
 
-    /** Currency every NOK-denominated value is converted to. */
     private static final Currency NOK = Currency.getInstance("NOK");
 
     /**
@@ -65,13 +54,10 @@ public class TransactionStatsService {
      * Aggregates a list of transactions into Kjøp / Salg / Total figures
      * in NOK, ready to be rendered in the summary card.
      *
-     * <p>The aggregation reuses {@link #getStats} per transaction so the
-     * summary stays consistent with the table: a transaction's
-     * {@code amountNok} is already negative for purchases and positive
-     * for sales. The summary therefore exposes {@code purchasesNok} as
-     * a non-positive sum of outflows, {@code salesNok} as a non-negative
-     * sum of inflows, and {@code totalNok} as their sum — i.e. the net
-     * cash flow over the range.</p>
+     * <p>{@code amountNok} is negative for purchases and positive for sales.
+     * The summary therefore exposes {@code purchasesNok} as a non-positive
+     * sum of outflows, {@code salesNok} as a non-negative sum of inflows,
+     * and {@code totalNok} as their sum — the net cash flow over the range.</p>
      *
      * <p>If the input list is empty all three values are zero. Filtering
      * by week range is the caller's responsibility; this service holds

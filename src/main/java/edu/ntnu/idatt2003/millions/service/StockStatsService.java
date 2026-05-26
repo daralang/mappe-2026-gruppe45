@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -9,8 +10,6 @@ import java.util.Objects;
 
 /**
  * Stateless read service computing a stock's current key figures expressed in NOK.
- *
- * <p>Provides point-in-time values.</p>
  *
  * <p>Complements {@link StockHistoryService}, which derives time-series values (weekly change
  * rows) across the price history; this service returns single scalar figures instead.</p>

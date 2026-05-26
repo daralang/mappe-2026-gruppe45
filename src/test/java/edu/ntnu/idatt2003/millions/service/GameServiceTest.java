@@ -372,6 +372,20 @@ class GameServiceTest {
                     .subtract(PURCHASE_COMMISSION)
                     .compareTo(gameService.getPlayer().getCash()));
         }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when symbol is null")
+        void throwsWhenSymbolIsNull() {
+            assertThrows(NullPointerException.class, () ->
+                    gameService.buy(null, BigDecimal.ONE));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when quantity is null")
+        void throwsWhenQuantityIsNull() {
+            assertThrows(NullPointerException.class, () ->
+                    gameService.buy("EQNR", null));
+        }
     }
 
     @Nested
@@ -395,6 +409,29 @@ class GameServiceTest {
             assertEquals(0, STARTING_MONEY.subtract(PURCHASE_COMMISSION)
                     .subtract(SALE_COMMISSION)
                     .compareTo(gameService.getPlayer().getCash()));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when share is null")
+        void throwsWhenShareIsNull() {
+            assertThrows(NullPointerException.class, () ->
+                    gameService.sell((Share) null));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when share is null (two-arg overload)")
+        void throwsWhenShareIsNullTwoArg() {
+            assertThrows(NullPointerException.class, () ->
+                    gameService.sell(null, BigDecimal.ONE));
+        }
+
+        @Test
+        @DisplayName("Should throw NullPointerException when quantity is null")
+        void throwsWhenQuantityIsNull() {
+            gameService.buy("EQNR", QUANTITY);
+            Share share = gameService.getPlayer().getPortfolio().getShares("EQNR").getFirst();
+            assertThrows(NullPointerException.class, () ->
+                    gameService.sell(share, null));
         }
     }
 

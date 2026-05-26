@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.service;
 
 import edu.ntnu.idatt2003.millions.file.leaderboard.JsonLeaderboardFileHandler;
@@ -40,6 +41,7 @@ import java.util.logging.Logger;
  * to see others' results, play, commit and push to share yours. The path is
  * configurable via the DI constructor so tests can use a temp file.
  */
+@SuppressWarnings("ClassCanBeRecord")
 public class LeaderboardService {
 
     private static final Logger LOGGER = Logger.getLogger(LeaderboardService.class.getName());
@@ -145,7 +147,7 @@ public class LeaderboardService {
         List<LeaderboardEntry> entries;
         try {
             entries = readMutable();
-        } catch (LeaderboardCorruptException | IllegalStateException e) {
+        } catch (LeaderboardCorruptException | IllegalStateException | UncheckedIOException e) {
             LOGGER.log(Level.WARNING, "Could not read leaderboard", e);
             return List.of();
         }
@@ -155,18 +157,10 @@ public class LeaderboardService {
         return entries;
     }
 
-    /**
-     * Reads the leaderboard file into a fresh mutable list so callers can
-     * upsert without affecting any internal cache.
-     */
     private List<LeaderboardEntry> readMutable() throws LeaderboardCorruptException {
         return new ArrayList<>(fileHandler.readAll(file));
     }
 
-    /**
-     * Finds the index of an entry with the given session id, or {@code -1}
-     * if none exists.
-     */
     private int indexOfSession(List<LeaderboardEntry> entries, String sessionId) {
         for (int i = 0; i < entries.size(); i++) {
             if (entries.get(i).sessionId().equals(sessionId)) {
@@ -176,11 +170,6 @@ public class LeaderboardService {
         return -1;
     }
 
-    /**
-     * Builds a fresh entry from the player's current state. Uses
-     * {@link Player#getNetWorthChangePercentSinceStart} so returnPercent matches
-     * how the rest of the app computes growth.
-     */
     private LeaderboardEntry snapshot(Player player, Exchange exchange,
                                       CurrencyConverter converter, Outcome outcome) {
         return new LeaderboardEntry(
