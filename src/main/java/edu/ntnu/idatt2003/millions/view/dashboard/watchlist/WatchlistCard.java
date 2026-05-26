@@ -49,7 +49,7 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
         this.sortProvider = sort;
         this.rowRenderer = new WatchlistRowRenderer(
                 gameService, controller,
-                gameService::removeFromWatchlist,
+                this::openRemoveDialog,
                 this::openNoteDialog);
         this.table = new SortColumnTable<>(sort::getColumnDefs, COL_GAP);
         this.pagination = new Pagination(PAGE_SIZE, this::setPage);
@@ -128,6 +128,20 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
         HBox row = new HBox(title);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
+    }
+
+    /**
+     * Opens a {@link WatchlistRemoveDialog} for the given stock symbol.
+     * The removal is only forwarded to {@link GameService} if the player confirms.
+     *
+     * @param symbol the symbol of the stock to remove
+     */
+    private void openRemoveDialog(String symbol) {
+        Stock stock = gameService.getExchange().getStock(symbol);
+        if (stock == null) return;
+        WatchlistRemoveDialog dialog = new WatchlistRemoveDialog(
+                stock, () -> gameService.removeFromWatchlist(symbol));
+        dialog.show();
     }
 
     private void openNoteDialog(WatchlistItem item) {
