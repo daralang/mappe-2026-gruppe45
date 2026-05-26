@@ -81,6 +81,11 @@ public final class StockHistoryService {
      * Returns the weekly price changes for the transition weeks within the inclusive
      * range {@code [fromWeek, toWeek]}, newest first.
      *
+     * <p>Week 1 has no previous price, so it is represented as a zero-change row
+     * ({@code nativeChange}, {@code nokChange} and {@code percentChange} all zero)
+     * whenever {@code fromWeek <= 1} and at least one price exists. This allows
+     * callers to always include week 1 in range-based views without special-casing.</p>
+     *
      * @param stock     the stock whose price history is read; must not be {@code null}
      * @param converter the converter used for the NOK column; must not be {@code null}
      * @param fromWeek  the first week of the range (inclusive)
@@ -103,6 +108,9 @@ public final class StockHistoryService {
         List<WeeklyPriceChange> rows = new ArrayList<>();
         for (int week = upper; week >= lower; week--) {
             rows.add(weeklyChange(prices, week, stock.getCurrency(), converter));
+        }
+        if (fromWeek <= 1 && upper >= 1) {
+            rows.add(new WeeklyPriceChange(1, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
         }
         return rows;
     }

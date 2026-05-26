@@ -1,8 +1,8 @@
 /* ─── Stock detail dialog ─────────────────────────────────────────────── */
 
 .modal-card-stock-detail {
-    -fx-min-width: 760;
-    -fx-max-width: 760;
+    -fx-min-width: 750;
+    -fx-max-width: 750;
 }
 
 .stock-detail-eyebrow {
@@ -66,5 +66,10 @@
     -fx-border-color: -border;
     -fx-border-radius: 8;
     -fx-border-width: 1;
-    -fx-padding: 16;
+    -fx-padding: 10 5 10 10;
+}
+
+/* Panels containing a ScrollPane: remove right padding so the scrollbar sits flush */
+.stock-detail-panel--scroll {
+    -fx-padding: 16 0 16 16;
 }
