@@ -11,6 +11,7 @@ import edu.ntnu.idatt2003.millions.model.transaction.TransactionPreview;
 
 import java.math.BigDecimal;
 import java.util.Currency;
+import java.util.Objects;
 
 /**
  * Produces {@link TransactionPreview} snapshots for a prospective purchase or sale
@@ -30,9 +31,14 @@ public class TransactionPreviewService {
      * @param player    the player who would perform the purchase
      * @param converter used to convert the native-currency total to NOK
      * @return a preview with gross/commission/total in native currency and balanceAfter in NOK
+     * @throws NullPointerException if any argument is null
      */
     public TransactionPreview previewPurchase(
             Stock stock, BigDecimal quantity, Player player, CurrencyConverter converter) {
+        Objects.requireNonNull(stock, "Stock cannot be null");
+        Objects.requireNonNull(quantity, "Quantity cannot be null");
+        Objects.requireNonNull(player, "Player cannot be null");
+        Objects.requireNonNull(converter, "Converter cannot be null");
 
         Share hypothetical = new Share(stock, quantity, stock.getSalesPrice());
         PurchaseCalculator calc = new PurchaseCalculator(hypothetical);
@@ -59,10 +65,15 @@ public class TransactionPreviewService {
      * @param converter used to convert the native-currency payout to NOK
      * @return a preview with gross/commission/tax/total/profit in native currency
      *         and balanceAfter in NOK
+     * @throws NullPointerException     if any argument is null
      * @throws IllegalArgumentException if {@code quantity} exceeds the position held in {@code share}
      */
     public TransactionPreview previewSale(
             Share share, BigDecimal quantity, Player player, CurrencyConverter converter) {
+        Objects.requireNonNull(share, "Share cannot be null");
+        Objects.requireNonNull(quantity, "Quantity cannot be null");
+        Objects.requireNonNull(player, "Player cannot be null");
+        Objects.requireNonNull(converter, "Converter cannot be null");
 
         if (quantity.compareTo(share.getQuantity()) > 0) {
             throw new IllegalArgumentException(
