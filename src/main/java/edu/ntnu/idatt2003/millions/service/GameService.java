@@ -12,7 +12,7 @@
     import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
     import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
     import edu.ntnu.idatt2003.millions.model.watchlist.WatchlistEntry;
-    import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+    import edu.ntnu.idatt2003.millions.model.transaction.SalesCalculator;
     import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;
     import edu.ntnu.idatt2003.millions.model.loan.InsufficientSaleProceedsException;
     import edu.ntnu.idatt2003.millions.model.loan.Loan;
