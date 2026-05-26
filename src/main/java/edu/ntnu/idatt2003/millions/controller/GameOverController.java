@@ -23,7 +23,7 @@ public class GameOverController {
      *
      * @param gameService the game service used to read end-of-game state
      * @param ownerStage  the stage that owns the game-over modal
-     * @param actions     the four end-of-game action callbacks
+     * @param actions     the four end-of-game action callbacks; see {@link EndGameActions}
      */
     public GameOverController(GameService gameService, Stage ownerStage, EndGameActions actions) {
         this.gameService = gameService;
