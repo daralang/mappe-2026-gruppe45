@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.ingame.component.shell;
 
 import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
@@ -33,8 +34,7 @@ public class ViewHeader extends VBox {
      *
      * @param titleKey  the i18n key for the view title
      * @param labelKeys the i18n keys for the tab labels in order
-     * @param weekBar   the week bar owned exclusively by the enclosing view; each top-level view
-     *                  receives its own instance since a JavaFX node can only belong to one parent at a time
+     * @param weekBar   the week bar displayed alongside the view title
      */
     public ViewHeader(String titleKey, List<String> labelKeys, WeekBar weekBar) {
         this.titleKey = titleKey;
@@ -84,11 +84,6 @@ public class ViewHeader extends VBox {
         activeButton.getStyleClass().add("tab-button-active");
     }
 
-    /**
-     * Returns the currently active tab button.
-     *
-     * @return the active button
-     */
     public Button getActiveButton() {
         return activeButton;
     }
@@ -125,8 +120,6 @@ public class ViewHeader extends VBox {
 
     /**
      * Sets an action for the tab at the given index.
-     * The action runs in addition to the built-in active-tab styling,
-     * so callers do not need to invoke {@link #setActive(Button)} themselves.
      *
      * @param index  the zero-based index of the tab button
      * @param action the action to run when the tab is clicked
