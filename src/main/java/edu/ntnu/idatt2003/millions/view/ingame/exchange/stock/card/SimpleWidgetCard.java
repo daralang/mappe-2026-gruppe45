@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 /**
  * A concrete {@link WidgetCard} that renders a title, a value and an optional subtitle.
- *
  */
 public class SimpleWidgetCard extends WidgetCard {
 

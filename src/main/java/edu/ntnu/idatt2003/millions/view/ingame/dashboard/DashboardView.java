@@ -48,8 +48,7 @@ public class DashboardView extends VBox implements SearchFocusProvider, PageFocu
      * @param gameService      the game manager containing player and exchange
      * @param tradeController  the controller used to open buy/sell dialogs
      * @param loanController   the controller used to open loan dialogs
-     * @param weekBar          the week bar owned exclusively by this view; each top-level view
-     *                         receives its own instance since a JavaFX node can only belong to one parent at a time
+     * @param weekBar          the week bar displayed in the view header
      * @param onExploreStocks  callback invoked when the user navigates to the exchange stocks tab
      */
     public DashboardView(GameService gameService,

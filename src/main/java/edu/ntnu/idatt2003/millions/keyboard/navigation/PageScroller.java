@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.keyboard.navigation;
 
 import javafx.scene.input.KeyCode;
@@ -10,8 +11,6 @@ import javafx.scene.input.KeyCode;
  * without depending on the concrete view component. This keeps the dependency
  * direction one-way: the view depends on {@code keyboard}, not the reverse.</p>
  *
- * <p>Marked as {@link FunctionalInterface} because it has a single abstract method,
- * allowing implementations to be expressed as lambdas where convenient.</p>
  */
 @FunctionalInterface
 public interface PageScroller {

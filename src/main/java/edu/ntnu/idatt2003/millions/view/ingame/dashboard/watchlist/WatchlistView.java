@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.ingame.dashboard.watchlist;
 
 import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
@@ -9,9 +10,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 /**
- * View wrapping the player's watchlist view displayed under the dashboard.
- * Shows the watchlist, list of stocks that user might want to keep track of,
- * with table of common stock info and action buttons, buy, note and remove.
+ * Dashboard tab showing the player's watchlist with stock info, buy, note, and remove actions.
  *
  * <p>Implements {@link SearchFocusProvider} to support {@code Cmd/Ctrl+F}
  * by delegating to the {@link WatchlistCard} search field.</p>
