@@ -2,6 +2,17 @@
     -fx-background-color: transparent;
 }
 
+/* Scrollable modal body, used by StockDetailModal to cap height on small screens */
+.modal-body-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.modal-body-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
 .modal-overlay {
     -fx-background-color: rgba(0, 0, 0, 0.45);
 }

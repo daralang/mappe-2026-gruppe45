@@ -1,10 +1,11 @@
-package edu.ntnu.idatt2003.millions.view.component;
+package edu.ntnu.idatt2003.millions.view.dialog.stockdetail;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.service.StockStatsService;
 import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -73,9 +74,9 @@ public class StockStatGrid extends GridPane {
         add(statCard(LanguageManager.get("col.week"),                  week),         3, 0);
 
         // Row 1: historical extremes, trend and all-time return
-        add(statCard(LanguageManager.get("stockDetail.high"),         high),          0, 1);
-        add(statCard(LanguageManager.get("stockDetail.low"),          low),           1, 1);
-        add(statCard(LanguageManager.get("col.trend"),                trend),         2, 1);
+        add(statCard(LanguageManager.get("stockDetail.high"),          high),          0, 1);
+        add(statCard(LanguageManager.get("stockDetail.low"),           low),           1, 1);
+        add(statCard(LanguageManager.get("col.trend"),                 trend),         2, 1);
         add(statCard(LanguageManager.get("stockDetail.allTimeChange"), allTimeChange), 3, 1);
     }
 
