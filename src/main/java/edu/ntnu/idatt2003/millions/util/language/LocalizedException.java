@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.file;
+package edu.ntnu.idatt2003.millions.util.language;
 
 /**
  * Implemented by exceptions that carry an i18n key and format arguments instead
