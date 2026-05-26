@@ -1,3 +1,4 @@
+// Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.view.ingame.dashboard.watchlist.dialog;
 
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
@@ -56,7 +57,6 @@ public class WatchlistNoteDialog extends Modal {
 
     /**
      * Widens the modal card to accommodate the {@link StockInfoCard} meta row.
-     * Uses inline style to override the {@code modal-card} CSS max-width constraint.
      *
      * @param card the modal card node
      */
@@ -66,8 +66,7 @@ public class WatchlistNoteDialog extends Modal {
     }
 
     /**
-     * Forces a layout and resize pass after the stage is shown so the wider
-     * card dimensions are correctly reflected in the stage size.
+     * Sizes the stage to fit the wider card before it is shown.
      */
     @Override
     protected void onBeforeShow() {
