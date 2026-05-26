@@ -298,29 +298,29 @@ class StockHistoryServiceTest {
         }
 
         @Test
-        @DisplayName("Should clamp the lower bound to week two when fromWeek is one")
-        void clampsLowerBoundToWeekTwo() {
+        @DisplayName("Should include a zero-change row for week one when fromWeek is one")
+        void includesWeekOneZeroChangeRowWhenFromWeekIsOne() {
             // Arrange
             Stock stock = usdStock(100, 110, 105, 120, 126);
 
-            // Act: from week 1 -> first change row is week 2, not week 1
+            // Act: from week 1 -> rows 3, 2 plus a zero-change row for week 1
             List<WeeklyPriceChange> rows = service.getWeeklyChanges(stock, converter(), 1, 3);
 
             // Assert
-            assertEquals(List.of(3, 2), weeksOf(rows));
+            assertEquals(List.of(3, 2, 1), weeksOf(rows));
         }
 
         @Test
-        @DisplayName("Should return an empty list when the range ends before week two")
-        void returnsEmptyWhenRangeEndsBeforeWeekTwo() {
+        @DisplayName("Should return a single zero-change row for week one when range is one to one")
+        void returnsWeekOneZeroChangeRowWhenRangeIsOneToOne() {
             // Arrange
             Stock stock = usdStock(100, 110, 105);
 
-            // Act: range [1, 1] contains no transition week
+            // Act: range [1, 1] contains no transition, but week 1 zero-change row is appended
             List<WeeklyPriceChange> rows = service.getWeeklyChanges(stock, converter(), 1, 1);
 
             // Assert
-            assertTrue(rows.isEmpty());
+            assertEquals(List.of(1), weeksOf(rows));
         }
 
         @Test
