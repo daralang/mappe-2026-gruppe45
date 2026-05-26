@@ -36,6 +36,7 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
     private static final double COL_GAP = 8;
 
     private final GameService gameService;
+    private final TradeController controller;
     private final WatchlistRowRenderer rowRenderer;
     private final StyledText title;
 
@@ -47,8 +48,9 @@ public class WatchlistCard extends DetailTableCard<WatchlistItem, WatchlistSort.
      */
     public WatchlistCard(GameService gameService,
                          TradeController tradeController) {
-        super(gameService, tradeController, PAGE_SIZE, "watchlist.status", "watchlist.empty");
+        super(gameService, PAGE_SIZE, "watchlist.status", "watchlist.empty");
         this.gameService = gameService;
+        this.controller = tradeController;
 
         WatchlistSort sort = new WatchlistSort(gameService.getCurrencyConverter());
         this.sortProvider = sort;
