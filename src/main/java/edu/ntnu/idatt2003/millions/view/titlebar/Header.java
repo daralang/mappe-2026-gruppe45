@@ -23,7 +23,6 @@ public class Header extends HBox {
     private final Button dashboardButton;
     private final Button exchangeButton;
     private final Button leaderboardButton;
-    private final Button helpButton;
     private final Button bellButton;
     private final Button newGameButton;
     private final Button saveButton;
@@ -47,17 +46,15 @@ public class Header extends HBox {
         dashboardButton = new Button(LanguageManager.get("nav.mySides"));
         exchangeButton = new Button(LanguageManager.get("nav.exchange"));
         leaderboardButton = new Button(LanguageManager.get("nav.leaderboard"));
-        helpButton = new Button(LanguageManager.get("nav.help"));
 
         dashboardButton.getStyleClass().add("navbar-link");
         exchangeButton.getStyleClass().add("navbar-link");
         leaderboardButton.getStyleClass().add("navbar-link");
-        helpButton.getStyleClass().add("navbar-link");
 
         dashboardButton.setOnAction(e -> onDashboard.run());
         exchangeButton.setOnAction(e -> onExchange.run());
 
-        HBox navLinks = new HBox(60, dashboardButton, exchangeButton, leaderboardButton, helpButton);
+        HBox navLinks = new HBox(60, dashboardButton, exchangeButton, leaderboardButton);
         navLinks.setAlignment(Pos.TOP_CENTER);
 
         newGameButton = new Button(LanguageManager.get("nav.newGame"));
@@ -142,7 +139,6 @@ public class Header extends HBox {
         dashboardButton.setText(LanguageManager.get("nav.mySides"));
         exchangeButton.setText(LanguageManager.get("nav.exchange"));
         leaderboardButton.setText(LanguageManager.get("nav.leaderboard"));
-        helpButton.setText(LanguageManager.get("nav.help"));
         newGameButton.setText(LanguageManager.get("nav.newGame"));
         saveButton.setText(LanguageManager.get("nav.saveGame"));
         exitButton.setText(LanguageManager.get("nav.exitGame"));
