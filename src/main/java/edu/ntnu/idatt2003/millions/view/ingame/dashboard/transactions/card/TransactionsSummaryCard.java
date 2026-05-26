@@ -4,9 +4,9 @@ import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.service.transaction.TransactionStatsService;
 import edu.ntnu.idatt2003.millions.model.transaction.Transaction;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
-import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.currency.MoneyFormatter;
+import edu.ntnu.idatt2003.millions.util.format.TableCells;
 import edu.ntnu.idatt2003.millions.view.ingame.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.ingame.component.search.WeekRangeFilter;
@@ -155,7 +155,7 @@ public class TransactionsSummaryCard extends Card {
     /**
      * Signed NOK amount. Positives are rendered with an explicit
      * {@code +} so sale inflows read as "+1 234,56 NOK"; negatives
-     * keep the minus produced by {@link edu.ntnu.idatt2003.millions.util.MoneyFormatter};
+     * keep the minus produced by {@link MoneyFormatter};
      * zero is unsigned. No color modifiers — the summary keeps a
      * neutral palette and only weight distinguishes the total row.
      */

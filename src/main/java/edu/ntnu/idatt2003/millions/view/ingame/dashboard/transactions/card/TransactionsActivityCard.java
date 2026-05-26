@@ -2,8 +2,8 @@ package edu.ntnu.idatt2003.millions.view.ingame.dashboard.transactions.card;
 
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.model.transaction.TransactionArchive;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.util.TableCells;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.format.TableCells;
 import edu.ntnu.idatt2003.millions.view.ingame.component.card.Card;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.ingame.component.search.WeekRangeFilter;

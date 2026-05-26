@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.util;
+package edu.ntnu.idatt2003.millions.util.currency;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

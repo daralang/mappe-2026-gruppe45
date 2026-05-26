@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.start;
 
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.start.component.AppTabPane;
 import edu.ntnu.idatt2003.millions.view.start.component.LanguagePicker;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;

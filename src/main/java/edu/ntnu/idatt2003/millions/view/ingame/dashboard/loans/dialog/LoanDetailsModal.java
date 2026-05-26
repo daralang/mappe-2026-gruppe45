@@ -2,9 +2,9 @@ package edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog;
 
 import edu.ntnu.idatt2003.millions.controller.loan.LoanController;
 import edu.ntnu.idatt2003.millions.model.loan.Loan;
-import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
-import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
+import edu.ntnu.idatt2003.millions.util.currency.CurrencyFormatter;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.currency.MoneyFormatter;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.Modal;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.ModalActions;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.SummaryBox;

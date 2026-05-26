@@ -2,7 +2,7 @@ package edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.dialog;
 
 import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.Modal;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.ModalActions;
 import edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.component.StockHeader;
@@ -18,7 +18,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-import edu.ntnu.idatt2003.millions.util.MoneyFormatter;
+import edu.ntnu.idatt2003.millions.util.currency.MoneyFormatter;
 
 import java.math.BigDecimal;
 

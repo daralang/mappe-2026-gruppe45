@@ -2,8 +2,8 @@ package edu.ntnu.idatt2003.millions.view.ingame.component.card;
 
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.service.player.PortfolioService;
-import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.currency.CurrencyFormatter;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.exchange.stocks.card.SimpleWidgetCard;
 
 /**

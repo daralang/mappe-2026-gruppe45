@@ -1,10 +1,10 @@
 package edu.ntnu.idatt2003.millions.view.ingame.game;
 
 import edu.ntnu.idatt2003.millions.model.stock.Share;
-import edu.ntnu.idatt2003.millions.util.ChangeFormatter;
-import edu.ntnu.idatt2003.millions.util.ColourChange;
-import edu.ntnu.idatt2003.millions.util.CurrencyFormatter;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.format.ChangeFormatter;
+import edu.ntnu.idatt2003.millions.util.format.ColourChange;
+import edu.ntnu.idatt2003.millions.util.currency.CurrencyFormatter;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.Modal;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.SummaryBox;

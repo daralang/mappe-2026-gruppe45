@@ -11,7 +11,7 @@ import edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog.LoanApplic
 import edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog.LoanDetailsModal;
 import edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog.LoanRepaymentReceipt;
 import edu.ntnu.idatt2003.millions.view.ingame.dashboard.loans.dialog.RepayLoanDialog;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import javafx.application.Platform;
 
 import java.math.BigDecimal;

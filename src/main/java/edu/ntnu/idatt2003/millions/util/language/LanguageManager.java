@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.util;
+package edu.ntnu.idatt2003.millions.util.language;
 
 import java.util.ArrayList;
 import java.util.List;

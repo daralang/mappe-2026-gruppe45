@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.ingame.dashboard.portfolio.component;
 
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;

@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions.view.start.component;
 
-import edu.ntnu.idatt2003.millions.util.Language;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.Language;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;

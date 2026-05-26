@@ -1,6 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.ingame.dashboard.transactions.component;
 
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.component.search.WeekRangeFilter;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;

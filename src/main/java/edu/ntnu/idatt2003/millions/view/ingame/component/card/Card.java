@@ -2,7 +2,7 @@ package edu.ntnu.idatt2003.millions.view.ingame.component.card;
 
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.observer.GameObserver;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import javafx.scene.layout.VBox;
 
 /**

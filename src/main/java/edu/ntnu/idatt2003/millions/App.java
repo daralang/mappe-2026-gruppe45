@@ -1,7 +1,7 @@
 package edu.ntnu.idatt2003.millions;
 
 import edu.ntnu.idatt2003.millions.controller.game.StartController;
-import edu.ntnu.idatt2003.millions.util.LanguageManager;
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.util.OsDetector;
 import edu.ntnu.idatt2003.millions.util.StylesheetLoader;
 import javafx.application.Application;

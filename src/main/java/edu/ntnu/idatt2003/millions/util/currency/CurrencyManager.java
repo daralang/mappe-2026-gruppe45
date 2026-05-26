@@ -1,9 +1,10 @@
-package edu.ntnu.idatt2003.millions.util;
+package edu.ntnu.idatt2003.millions.util.currency;
 
 import java.util.Arrays;
 import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
+
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.WeakChangeListener;

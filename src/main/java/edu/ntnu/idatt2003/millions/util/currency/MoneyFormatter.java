@@ -1,4 +1,6 @@
-package edu.ntnu.idatt2003.millions.util;
+package edu.ntnu.idatt2003.millions.util.currency;
+
+import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
