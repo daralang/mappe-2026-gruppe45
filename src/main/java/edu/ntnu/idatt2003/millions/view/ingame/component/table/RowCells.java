@@ -56,7 +56,7 @@ public final class RowCells<Column> {
      * @param column the column key to look up
      * @return the mapped node, or {@code null} if the column was not added to this builder
      */
-    Node get(Column column) {
+    public Node get(Column column) {
         return cells.get(column);
     }
 
