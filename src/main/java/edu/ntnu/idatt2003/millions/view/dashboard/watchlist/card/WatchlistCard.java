@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
+package edu.ntnu.idatt2003.millions.view.dashboard.watchlist.card;
 
 import edu.ntnu.idatt2003.millions.controller.TradeController;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
@@ -9,6 +9,11 @@ import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.component.card.DetailTableCard;
 import edu.ntnu.idatt2003.millions.view.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.component.table.SortColumnTable;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistItem;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.dialog.WatchlistNoteDialog;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistRemoveDialog;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistRowRenderer;
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.WatchlistSort;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;

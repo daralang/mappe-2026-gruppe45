@@ -3,6 +3,7 @@ package edu.ntnu.idatt2003.millions.view.dashboard.watchlist;
 import edu.ntnu.idatt2003.millions.model.stock.Stock;
 import edu.ntnu.idatt2003.millions.model.watchlist.WatchlistEntry;
 
+import edu.ntnu.idatt2003.millions.view.dashboard.watchlist.card.WatchlistCard;
 import java.util.Objects;
 
 /**
