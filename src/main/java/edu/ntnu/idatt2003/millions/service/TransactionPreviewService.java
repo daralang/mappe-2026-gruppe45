@@ -1,8 +1,8 @@
 // Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.service;
 
-import edu.ntnu.idatt2003.millions.model.calculator.PurchaseCalculator;
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.transaction.PurchaseCalculator;
+import edu.ntnu.idatt2003.millions.model.transaction.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.CurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.player.Player;
 import edu.ntnu.idatt2003.millions.model.stock.Share;

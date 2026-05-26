@@ -1,5 +1,5 @@
 // Javadoc generated with AI assistance - reviewed and approved by author.
-package edu.ntnu.idatt2003.millions.model.calculator;
+package edu.ntnu.idatt2003.millions.model.transaction;
 
 import edu.ntnu.idatt2003.millions.model.stock.Share;
 

@@ -6,7 +6,7 @@ import edu.ntnu.idatt2003.millions.file.leaderboard.JsonLeaderboardFileHandler;
 import edu.ntnu.idatt2003.millions.model.leaderboard.Outcome;
 import edu.ntnu.idatt2003.millions.file.stock.EmptyStockFileException;
 import edu.ntnu.idatt2003.millions.file.stock.InvalidStockDataException;
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.transaction.SalesCalculator;
 import edu.ntnu.idatt2003.millions.model.currency.FixedRateCurrencyConverter;
 import edu.ntnu.idatt2003.millions.model.exchange.Exchange;
 import edu.ntnu.idatt2003.millions.model.loan.ExcessiveDebtException;

@@ -1,7 +1,7 @@
 // Javadoc generated with AI assistance - reviewed and approved by author.
 package edu.ntnu.idatt2003.millions.model.stock;
 
-import edu.ntnu.idatt2003.millions.model.calculator.SalesCalculator;
+import edu.ntnu.idatt2003.millions.model.transaction.SalesCalculator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
