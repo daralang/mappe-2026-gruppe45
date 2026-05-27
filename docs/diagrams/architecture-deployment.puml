@@ -1,0 +1,88 @@
+@startuml architecture-deployment
+!theme plain
+scale 1.4
+
+top to bottom direction
+
+title Technical Architecture and Technologies
+
+node "Development Environment" {
+    component [IntelliJ IDEA 2025.2] as ide
+}
+
+node "Build System" {
+    component [Maven 3.9.11] as maven
+    component [pom.xml\n- JUnit Jupiter 6.0.1\n- JavaFX Maven Plugin 0.0.8\n- Maven Compiler 3.14.1\n- Maven Surefire 3.5.4\n- JaCoCo 0.8.14] as pom
+}
+
+node "Java Platform" {
+    component [Java JDK 25] as jdk
+}
+
+node "Testing" {
+    component [JUnit Jupiter 6.0.1] as junit
+    component [JaCoCo 0.8.14\n(coverage reports)] as jacoco
+    [1046 unit tests]
+}
+
+node "Code Quality" {
+    [SonarQube for IDE]
+    [CheckStyle (Google)]
+}
+
+node "Runtime" {
+    package "Millions Application" #E1F5FE {
+        [View Layer]
+        [Controller Layer]
+        [Service Layer]
+        [Model Layer]
+        [File Layer]
+        [Observer contract]
+        [Utility Layer]
+        [Keyboard Layer]
+    }
+}
+
+node "Java SDK Libraries" {
+    [Collections]
+    [Streams & Lambda]
+    [BigDecimal & DecimalFormat]
+    [ResourceBundle & MessageFormat]
+    [java.io & java.nio]
+    [java.util.logging]
+    [java.time]
+    [Optional, UUID, Currency]
+}
+
+node "Third-party Libraries" {
+    [JavaFX 25.0.1]
+    [Gson 2.11.0]
+    [Ikonli Feather 12.4.0]
+}
+
+node "Runtime Files (read/write by app)" {
+    artifact "JSON save file" as savefile
+    artifact "JSON leaderboard" as leaderboard
+    artifact "CSV stock data" as csv
+}
+
+' Visible arrows
+ide --> maven : " builds with"
+maven --> pom : " reads"
+maven --> jdk : "   compiles with"
+jdk --> "Runtime"
+junit --> "Runtime" : "  tests"
+"Code Quality" --> "Runtime" : "  analyzes"
+"Runtime" --> "Java SDK Libraries" : "  uses"
+
+' Hidden arrows — force single vertical column
+"Development Environment" -[hidden]-> "Build System"
+"Build System" -[hidden]-> "Java Platform"
+"Java Platform" -[hidden]-> "Testing"
+"Testing" -[hidden]-> "Code Quality"
+"Code Quality" -[hidden]-> "Runtime"
+"Runtime" -[hidden]-> "Java SDK Libraries"
+"Java SDK Libraries" -[hidden]-> "Third-party Libraries"
+"Third-party Libraries" -[hidden]-> "Runtime Files (read/write by app)"
+
+@enduml

@@ -1,0 +1,96 @@
+@startuml start-flow
+!theme plain
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam sequenceMessageAlign left
+skinparam sequenceArrowFontSize 10
+skinparam participantFontSize 11
+skinparam sequenceBoxFontSize 10
+skinparam sequenceGroupFontSize 10
+skinparam maxMessageSize 220
+
+title Application Start — StartController Flow
+
+actor Player
+participant App
+participant StartController
+participant StartView
+participant "CsvStockFileHandler\n//file validator//" as CsvHandler
+participant "JsonGameFileHandler\n//file validator//" as JsonHandler
+participant GameService
+participant MainController
+
+== Application launch ==
+
+[-> App : launch()
+App -> App : create Scene\n(stylesheets attached)
+App -> StartController : new StartController(stage)
+App -> StartController : show()
+StartController -> StartView : build start screen
+StartController -> App : scene.setRoot(startView)
+StartController --> Player : start screen visible\n(New Game / Load Game tabs)
+
+== alt New game path ==
+
+Player -> StartController : fill in name and starting capital
+
+opt Browse or drop a custom stock CSV
+    Player -> StartController : select CSV file
+    StartController -> CsvHandler : readStocks(path)
+    note right of CsvHandler
+      Trial parse — file is read
+      and validated but the result
+      is discarded immediately.
+      No application state changes.
+    end note
+
+    alt File is valid
+        CsvHandler --> StartController : List<Stock> (discarded)
+        StartController -> StartView : show file name (accepted)
+        StartController -> StartController : store validated path
+    else File is invalid
+        CsvHandler --> StartController : throws InvalidStockDataException
+        StartController -> StartView : show inline error message
+    end
+end
+
+Player -> StartController : click "Start Game"
+StartController -> StartController : validate name and capital
+StartController -> GameService : createNewGame(name, capital, path)
+GameService --> StartController : game ready
+StartController -> MainController : new MainController(stage, gameService)
+StartController -> MainController : show()
+MainController -> App : scene.setRoot(mainView)
+MainController --> Player : in-game screen visible
+
+== else Load game path ==
+
+Player -> StartController : select save file (.json)
+StartController -> JsonHandler : loadGame(path)
+note right of JsonHandler
+  Trial parse — full game state
+  is deserialised and validated
+  but immediately discarded.
+  No application state changes.
+end note
+
+alt File is valid
+    JsonHandler --> StartController : GameState (discarded)
+    StartController -> StartView : show file name (accepted)
+    StartController -> StartController : store validated path
+else File is corrupt or wrong format
+    JsonHandler --> StartController : throws GameSaveCorruptException
+    StartController -> StartView : show inline error message
+end
+
+Player -> StartController : click "Load Game"
+StartController -> GameService : loadGame(path)
+GameService --> StartController : game ready
+StartController -> MainController : new MainController(stage, gameService)
+StartController -> MainController : show()
+MainController -> App : scene.setRoot(mainView)
+MainController --> Player : in-game screen visible
+
+== end ==
+
+@enduml

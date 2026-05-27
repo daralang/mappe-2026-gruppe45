@@ -1,0 +1,151 @@
+@startuml domain-model
+!theme plain
+skinparam shadowing false
+skinparam classFontSize 11
+skinparam classAttributeFontSize 10
+skinparam packageStyle rectangle
+skinparam backgroundColor white
+
+title Domain Model
+
+package "Player domain" #EEF4FB {
+
+    class Player {
+        - name : String
+        - cash : BigDecimal
+        - startingMoney : BigDecimal
+        + addMoney(BigDecimal)
+        + withdrawMoney(BigDecimal)
+        + getNetWorth(CurrencyConverter) : BigDecimal
+        + getStatus(CurrencyConverter) : PlayerStatusLevel
+    }
+
+    class Portfolio {
+        - shares : List<Share>
+        + addShare(Share) : boolean
+        + removeShare(Share) : boolean
+        + getShares() : List<Share>
+        + getNetWorth(CurrencyConverter) : BigDecimal
+    }
+
+    class TransactionArchive {
+        - transactions : List<Transaction>
+        + add(Transaction) : boolean
+        + getAll() : List<Transaction>
+        + getPurchases(week : int) : List<Purchase>
+        + getSales(week : int) : List<Sale>
+        + countDistinctWeeks() : int
+    }
+
+}
+
+package "Stock domain" #FFFAE6 {
+
+    class Exchange {
+        - name : String
+        - week : int
+        - stockMap : Map<String, Stock>
+        + buy(symbol, quantity, Player) : Transaction
+        + sell(Share, Player) : Transaction
+        + advance()
+    }
+
+    class Stock {
+        - symbol : String
+        - company : String
+        - prices : List<BigDecimal>
+        - currency : Currency
+        + getSalesPrice() : BigDecimal
+        + addNewSalesPrice(BigDecimal)
+        + getHistoricalPrices() : List<BigDecimal>
+        + getWeeklyChangePercent() : BigDecimal
+    }
+
+    class Share {
+        - quantity : BigDecimal
+        - purchasePrice : BigDecimal
+        + getCost() : BigDecimal
+        + getCurrentValue() : BigDecimal
+        + getReturnNative() : BigDecimal
+        + getReturnPercent() : BigDecimal
+    }
+
+}
+
+package "Transaction hierarchy" #FFF0F0 {
+
+    abstract class Transaction <<abstract>> {
+        - share : Share
+        - week : int
+        - committed : boolean
+        + {abstract} commit(Player)
+        + {abstract} getCommissionNative() : BigDecimal
+        + {abstract} getTaxNative() : BigDecimal
+        + {abstract} getSignedTotalNative() : BigDecimal
+    }
+
+    class Purchase {
+        - settlementAmount : BigDecimal
+        + commit(Player)
+    }
+
+    class Sale {
+        - gross : BigDecimal
+        - commission : BigDecimal
+        - tax : BigDecimal
+        - total : BigDecimal
+        - profit : BigDecimal
+        + commit(Player)
+        + getProfit() : BigDecimal
+        + getProfitPercent() : BigDecimal
+    }
+
+    interface TransactionCalculator <<interface>> {
+        + calculateGross() : BigDecimal
+        + calculateCommission() : BigDecimal
+        + calculateTax() : BigDecimal
+        + calculateTotal() : BigDecimal
+    }
+
+    class PurchaseCalculator {
+        - COMMISSION_RATE = 0.5%
+    }
+
+    class SalesCalculator {
+        - COMMISSION_RATE = 1%
+        - TAX_RATE = 30%
+        + calculateProfit() : BigDecimal
+        + calculateProfitPercent() : BigDecimal
+    }
+
+    note right of Transaction
+      calculator is transient:
+      not persisted to JSON.
+      Fresh calculator created
+      for each new transaction.
+    end note
+
+}
+
+' ── Relationships ────────────────────────────────────────────────────────────
+
+Player          "1" o--  "1"   Portfolio           : owns >
+Player          "1" o--  "1"   TransactionArchive  : owns >
+
+Portfolio       "1" o--  "*"   Share               : holds >
+
+Share                -->       Stock               : references >
+
+Exchange        "1" o--  "*"   Stock               : lists >
+
+Purchase             --|>      Transaction
+Sale                 --|>      Transaction
+
+Transaction     "1" o--  "1"   TransactionCalculator : computes via >
+
+PurchaseCalculator   ..|>      TransactionCalculator
+SalesCalculator      ..|>      TransactionCalculator
+
+TransactionArchive "1" o-- "*" Transaction         : archives >
+
+@enduml
