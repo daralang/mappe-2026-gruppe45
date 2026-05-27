@@ -1,4 +1,4 @@
-package edu.ntnu.idatt2003.millions.view.ingame.exchange.stock.dialog;
+package edu.ntnu.idatt2003.millions.view.ingame.exchange.stock.card;
 
 import edu.ntnu.idatt2003.millions.util.format.ChangeFormatter;
 import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
@@ -22,7 +22,7 @@ import java.util.Objects;
  * on the right, oldest week first. Purely presentational: it receives a ready price
  * list and renders it. Reuses the shared {@code content-scroll} scroll styling.</p>
  */
-public class PriceHistoryList extends VBox {
+public class PriceHistoryCard extends VBox {
 
     /**
      * Constructs a {@code PriceHistoryList} for the given prices.
@@ -33,7 +33,7 @@ public class PriceHistoryList extends VBox {
      * @throws NullPointerException     if {@code prices} or {@code currency} is {@code null}
      * @throws IllegalArgumentException if {@code prices} is empty
      */
-    public PriceHistoryList(List<BigDecimal> prices, Currency currency) {
+    public PriceHistoryCard(List<BigDecimal> prices, Currency currency) {
         Objects.requireNonNull(prices, "prices must not be null");
         Objects.requireNonNull(currency, "currency must not be null");
         if (prices.isEmpty()) {
