@@ -80,6 +80,14 @@ public class App extends Application {
      */
     private static void applyWindowSize(Stage stage) {
         Rectangle2D screen = Screen.getPrimary().getVisualBounds();
+        // Set explicit restore bounds before maximizing so StageStyle.TRANSPARENT stages
+        // on Windows have a valid non-maximized rectangle to return to instead of a negative offset.
+        double restoreW = Math.min(1280, screen.getWidth() * 0.8);
+        double restoreH = Math.min(800, screen.getHeight() * 0.8);
+        stage.setWidth(restoreW);
+        stage.setHeight(restoreH);
+        stage.setX(screen.getMinX() + (screen.getWidth() - restoreW) / 2);
+        stage.setY(screen.getMinY() + (screen.getHeight() - restoreH) / 2);
         if (screen.getWidth() <= 1920 && screen.getHeight() <= 1080) {
             stage.setMaximized(true);
         } else {
