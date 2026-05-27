@@ -355,9 +355,15 @@ public class StartController {
     /**
      * Displays the start screen on the primary stage, binds UI events,
      * and registers global keyboard shortcuts on the start scene.
+     *
+     * <p>Clears any window close-request handler installed by
+     * {@link MainController}, so on the start screen the native (macOS) close
+     * button closes the window directly: there is no active game to confirm
+     * exiting from.</p>
      */
     public void show() {
         bindEvents();
+        stage.setOnCloseRequest(null);
         stage.setTitle("Millions");
         stage.getScene().setRoot(view.getRoot());
         registerShortcuts();

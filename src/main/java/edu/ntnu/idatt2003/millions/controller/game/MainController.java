@@ -32,6 +32,10 @@ import java.util.logging.Logger;
 /**
  * Controller for the main view of the application.
  * Handles save, exit, and advance-week actions, and registers global keyboard shortcuts.
+ *
+ * <p>Both the title-bar close button (Windows) and the native window close request
+ * (macOS) are routed through {@link #handleExitGame()} so the player always sees the
+ * end-game confirmation dialog before the window closes.</p>
  */
 public class MainController {
 
@@ -71,6 +75,11 @@ public class MainController {
         titleBar.setOnNewGame(this::handleNewGame);
         titleBar.setOnSave(this::handleSaveGame);
         titleBar.setOnExit(this::handleExitGame);
+        titleBar.setOnCloseRequest(this::handleExitGame);
+        stage.setOnCloseRequest(event -> {
+            event.consume();
+            handleExitGame();
+        });
         gameService.addObserver(titleBar::onGameUpdated);
         this.view = new MainView(
                 stage,
