@@ -27,6 +27,10 @@ class PurchaseTest {
     private Player player;
     private Share share;
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         player = new Player("Alva", new BigDecimal("10000.00"));
@@ -98,6 +102,10 @@ class PurchaseTest {
 
         private Purchase purchase;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUp() {
             // Arrange

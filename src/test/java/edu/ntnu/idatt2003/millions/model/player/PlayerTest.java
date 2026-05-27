@@ -46,6 +46,10 @@ class PlayerTest {
     private static final Currency NOK = Currency.getInstance("NOK");
     private static final Currency USD = Currency.getInstance("USD");
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         player = new Player("Alva", new BigDecimal("1000.00"));
@@ -687,6 +691,10 @@ class PlayerTest {
 
         private LoanOffer offer;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUpOffer() {
             // simple offer with generous maxPrincipal so tests can isolate capacity logic
@@ -1154,6 +1162,10 @@ class PlayerTest {
 
         private WatchlistEntry entry;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUpEntry() {
             entry = new WatchlistEntry("AAPL", 1, "");

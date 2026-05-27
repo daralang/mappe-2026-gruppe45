@@ -31,6 +31,10 @@ class TransactionArchiveTest {
     private TransactionArchive archive;
     private Share share;
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         archive = new TransactionArchive();

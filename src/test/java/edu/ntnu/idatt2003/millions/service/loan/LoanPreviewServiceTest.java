@@ -23,6 +23,10 @@ class LoanPreviewServiceTest {
 
     private LoanPreviewService service;
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         service = new LoanPreviewService();

@@ -248,6 +248,10 @@ class LoanTest {
 
         private Loan loan;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUp() {
             // principal=1000.00, rate=0.01, term=4, takenAtWeek=1; due week = 1+4 = 5
@@ -298,6 +302,10 @@ class LoanTest {
 
         private Loan loan;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUp() {
             // principal=1000.00, rate=0.01 → weekly=10.00; term=4, takenAtWeek=1
@@ -334,6 +342,10 @@ class LoanTest {
 
         private Loan loan;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUp() {
             // principal=1000.00, rate=0.01 → weekly=10.00; term=4, takenAtWeek=1; due week=5
@@ -377,6 +389,10 @@ class LoanTest {
 
         private Loan loan;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUp() {
             // takenAtWeek=1, term=4; due week = 1 + 4 = 5

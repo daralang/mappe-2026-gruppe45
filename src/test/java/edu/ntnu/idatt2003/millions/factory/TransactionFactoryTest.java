@@ -30,6 +30,10 @@ class TransactionFactoryTest {
 
     private Share share;
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         Stock stock = new Stock("DIS", "The Walt Disney Company",

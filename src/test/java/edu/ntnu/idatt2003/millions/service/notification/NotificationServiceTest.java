@@ -34,6 +34,10 @@ class NotificationServiceTest {
             "fast", new BigDecimal("0.0015"), 15,
             new BigDecimal("50000.00"), LoanRiskLevel.MEDIUM);
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         service = new NotificationService();
@@ -212,6 +216,10 @@ class NotificationServiceTest {
 
         private Stock ownedStock;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setupOwnedStock() {
             List<BigDecimal> prices = new ArrayList<>();
