@@ -23,6 +23,16 @@ public interface TitleBar {
     void setOnSave(Runnable callback);
     void setOnExit(Runnable callback);
 
+    /**
+     * Sets the action invoked when the user requests to close the window via the
+     * title-bar close button. Defaults to a no-op; implementations with a custom
+     * close control (see {@link WindowsTitleBar}) override this to route the request
+     * through the controller's exit-confirmation flow.
+     *
+     * @param callback the action to run on a close request
+     */
+    default void setOnCloseRequest(Runnable callback) {}
+
     /** Called after every game-state change (e.g. to refresh a notification badge). */
     void onGameUpdated();
 

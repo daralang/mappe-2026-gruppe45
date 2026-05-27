@@ -18,6 +18,11 @@ import javafx.stage.Stage;
  * <p>When a {@link GameService} is provided, a {@link Header} navigation bar is
  * placed below the controls strip. Without one, only the controls strip is shown,
  * as on the start screen.</p>
+ *
+ * <p>The close button delegates to a {@link #setOnCloseRequest(Runnable)} callback
+ * rather than closing the stage directly, so the controller can route the request
+ * through the exit-confirmation flow. The default callback closes the stage, which
+ * is the desired behaviour on the start screen where no game is in progress.</p>
  */
 public class WindowsTitleBar implements TitleBar {
 
@@ -33,6 +38,7 @@ public class WindowsTitleBar implements TitleBar {
     private Runnable onNewGame     = () -> {};
     private Runnable onSave        = () -> {};
     private Runnable onExit        = () -> {};
+    private Runnable onCloseRequest;
 
     private final Node node;
     private Header header;
@@ -68,6 +74,7 @@ public class WindowsTitleBar implements TitleBar {
      */
     WindowsTitleBar(Stage stage, GameService gameService,
                     String controlsStyleClass, boolean includeNavHeader) {
+        this.onCloseRequest = stage::close;
         HBox controls = buildControls(stage, controlsStyleClass);
         if (includeNavHeader && gameService != null) {
             header = new Header(
@@ -95,6 +102,7 @@ public class WindowsTitleBar implements TitleBar {
     @Override public void setOnNewGame(Runnable r)        { onNewGame = r; if (header != null) header.setOnNewGame(r); }
     @Override public void setOnSave(Runnable r)           { onSave = r; }
     @Override public void setOnExit(Runnable r)           { onExit = r; }
+    @Override public void setOnCloseRequest(Runnable r)   { onCloseRequest = r; }
     @Override public void onGameUpdated()                 { if (header != null) header.onGameUpdated(); }
     @Override public void onLanguageChanged()             {}
 
@@ -139,7 +147,7 @@ public class WindowsTitleBar implements TitleBar {
         Button close = new Button();
         close.setGraphic(closeIcon);
         close.getStyleClass().addAll("title-bar-btn", "title-bar-btn-close");
-        close.setOnAction(e -> stage.close());
+        close.setOnAction(e -> onCloseRequest.run());
 
         HBox controls = new HBox(spacer, minimize, maximize, close);
         controls.getStyleClass().add(styleClass);
