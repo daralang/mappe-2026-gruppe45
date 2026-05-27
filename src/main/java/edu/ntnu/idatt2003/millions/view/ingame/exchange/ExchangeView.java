@@ -107,7 +107,7 @@ public class ExchangeView extends VBox implements SearchFocusProvider, PageFocus
 
     private void showOverview() {
         if (overviewView == null) {
-            overviewView = new ExchangeOverview(gameService);
+            overviewView = new ExchangeOverview(gameService, controller);
         }
         activeTabProvider = null;
         contentArea.getChildren().setAll(overviewView);
