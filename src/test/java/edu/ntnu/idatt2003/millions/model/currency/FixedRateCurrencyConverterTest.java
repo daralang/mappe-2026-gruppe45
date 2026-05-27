@@ -33,6 +33,10 @@ class FixedRateCurrencyConverterTest {
     private static final Currency DKK = Currency.getInstance("DKK");
     private static final Currency JPY = Currency.getInstance("JPY");
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         converter = new FixedRateCurrencyConverter();

@@ -1,5 +1,6 @@
 package edu.ntnu.idatt2003.millions.view.ingame.exchange.overview;
 
+import edu.ntnu.idatt2003.millions.controller.trade.TradeController;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.view.ingame.exchange.overview.card.GainersCard;
 import edu.ntnu.idatt2003.millions.view.ingame.exchange.overview.card.LosersCard;
@@ -15,9 +16,6 @@ import javafx.scene.layout.VBox;
  * View for the exchange overview tab.
  * Assembles market summary cards ({@link TotalStocksCard}, {@link GainersCard},
  * {@link LosersCard}) and ranked winner/loser tables ({@link StockRankingCard}).
- *
- * <p>Every card registers as its own observer and refreshes itself, so this view
- * only assembles the layout and holds no observer logic of its own.</p>
  */
 public class ExchangeOverview extends VBox {
 
@@ -27,9 +25,9 @@ public class ExchangeOverview extends VBox {
      * Constructs a new ExchangeOverview.
      *
      * @param gameService the game manager containing player and exchange
-     * @throws NullPointerException if gameService is null
+     * @param controller  the controller used to open stock detail modals
      */
-    public ExchangeOverview(GameService gameService) {
+    public ExchangeOverview(GameService gameService, TradeController controller) {
         setSpacing(16);
 
         HBox statCards = new HBox(16,
@@ -39,10 +37,10 @@ public class ExchangeOverview extends VBox {
         );
 
         StockRankingCard winnersTable = new StockRankingCard(
-                gameService, "exchange.overview.weeklyWinners",
+                gameService, controller, "exchange.overview.weeklyWinners",
                 exchange -> exchange.getGainers(RANKING_LIMIT));
         StockRankingCard losersTable = new StockRankingCard(
-                gameService, "exchange.overview.weeklyLosers",
+                gameService, controller, "exchange.overview.weeklyLosers",
                 exchange -> exchange.getLosers(RANKING_LIMIT));
 
         winnersTable.setMaxWidth(Double.MAX_VALUE);

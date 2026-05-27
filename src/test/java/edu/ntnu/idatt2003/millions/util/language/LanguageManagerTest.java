@@ -23,6 +23,10 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class LanguageManagerTest {
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void resetToNorwegian() {
         LanguageManager.setLanguage(Language.NORWEGIAN);

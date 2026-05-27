@@ -6,7 +6,6 @@ import edu.ntnu.idatt2003.millions.view.ingame.component.card.WidgetCard;
 
 /**
  * Widget card displaying the number of stocks that rose in price this week.
- * Updates automatically on each week advance via {@link edu.ntnu.idatt2003.millions.observer.GameObserver}.
  */
 public class GainersCard extends WidgetCard {
 

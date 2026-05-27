@@ -10,6 +10,7 @@ import edu.ntnu.idatt2003.millions.view.ingame.component.card.DetailTableCard;
 import edu.ntnu.idatt2003.millions.view.ingame.component.table.RowCells;
 import edu.ntnu.idatt2003.millions.view.ingame.component.table.SortColumnTable;
 import edu.ntnu.idatt2003.millions.view.ingame.exchange.stock.StocksSort;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 
 import java.text.MessageFormat;
@@ -27,6 +28,7 @@ public class StocksCard extends DetailTableCard<Stock, StocksSort.SortColumn> {
     private static final double ROW_HEIGHT = 34.0;
 
     private final GameService gameService;
+    private final TradeController controller;
     private final StocksSort sort;
     private final StocksRowRenderer rowRenderer;
     private final StyledText title;
@@ -38,8 +40,9 @@ public class StocksCard extends DetailTableCard<Stock, StocksSort.SortColumn> {
      * @param controller  the controller used to open buy/sell dialogs
      */
     public StocksCard(GameService gameService, TradeController controller) {
-        super(gameService, controller, PAGE_SIZE, "exchange.stocks.status", "exchange.stocks.empty");
+        super(gameService, PAGE_SIZE, "exchange.stocks.status", "exchange.stocks.empty");
         this.gameService = gameService;
+        this.controller = controller;
         this.sort = new StocksSort(
                 gameService.getCurrencyConverter(),
                 symbol -> gameService.getPlayer().isOnWatchlist(symbol));
@@ -77,6 +80,12 @@ public class StocksCard extends DetailTableCard<Stock, StocksSort.SortColumn> {
     protected RowCells<StocksSort.SortColumn> buildRowCells(Stock item, int rowIndex) {
         return rowRenderer.buildRow(item)
                 .put(StocksSort.SortColumn.DETAILS, buildDetailChevron(item));
+    }
+
+    @Override
+    protected Node focusAnchorFor(Stock item, RowCells<StocksSort.SortColumn> cells) {
+        Node chevron = cells.get(StocksSort.SortColumn.DETAILS);
+        return chevron != null ? chevron : cells.firstNode();
     }
 
     @Override
