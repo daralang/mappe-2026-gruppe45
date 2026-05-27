@@ -19,11 +19,16 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.text.MessageFormat;
+import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
 
 /**
  * A self-contained weekly price-change card for a single {@link Stock}.
+ *
+ * <p>When the stock's currency is NOK the NOK-change column is omitted from the
+ * table, because it would be identical to the native-change column and therefore
+ * redundant. For all other currencies both columns are shown side by side.</p>
  */
 public class WeeklyChangeCard extends VBox {
 
@@ -35,6 +40,8 @@ public class WeeklyChangeCard extends VBox {
 
     /** Vertical gap between rows in the weekly-change {@link GridPane}. */
     private static final int TABLE_VGAP = 6;
+
+    private static final Currency NOK = Currency.getInstance("NOK");
 
     /**
      * Constructs a {@code WeeklyChangeCard} for the given stock and
@@ -110,6 +117,11 @@ public class WeeklyChangeCard extends VBox {
      * the list is empty (e.g. only week 1 selected with no transitions).
      * Rows are displayed newest first.
      *
+     * <p>When the stock's currency is NOK the NOK-change column is omitted because
+     * it would duplicate the native-change column. Foreign-currency stocks show both
+     * columns so the player can compare the change in the stock's own currency and
+     * in NOK side by side.</p>
+     *
      * @param stock the stock whose currency code labels the native-change column
      * @param rows  the pre-fetched {@link WeeklyPriceChange} rows, newest first
      * @return the populated {@link GridPane}, or an info label when {@code rows} is empty
@@ -119,6 +131,7 @@ public class WeeklyChangeCard extends VBox {
             return StyledText.detailLabel(LanguageManager.get("stockDetail.weeklyEmpty"));
         }
 
+        boolean isNok = stock.getCurrency().equals(NOK);
         String code = stock.getCurrency().getCurrencyCode();
 
         GridPane table = new GridPane();
@@ -126,7 +139,9 @@ public class WeeklyChangeCard extends VBox {
         table.setHgap(12);
         table.setVgap(TABLE_VGAP);
 
-        HPos[] alignments = {HPos.LEFT, HPos.RIGHT, HPos.RIGHT, HPos.RIGHT};
+        HPos[] alignments = isNok
+                ? new HPos[]{HPos.LEFT, HPos.RIGHT, HPos.RIGHT}
+                : new HPos[]{HPos.LEFT, HPos.RIGHT, HPos.RIGHT, HPos.RIGHT};
         for (HPos alignment : alignments) {
             ColumnConstraints col = new ColumnConstraints();
             col.setHgrow(Priority.ALWAYS);
@@ -134,20 +149,34 @@ public class WeeklyChangeCard extends VBox {
             table.getColumnConstraints().add(col);
         }
 
-        table.addRow(0,
-                StyledText.detailLabel(LanguageManager.get("col.week")),
-                StyledText.detailLabel(MessageFormat.format(
-                        LanguageManager.get("stockDetail.changeNative"), code)),
-                StyledText.detailLabel(LanguageManager.get("stockDetail.changeNok")),
-                StyledText.detailLabel(LanguageManager.get("stockDetail.changePct")));
+        if (isNok) {
+            table.addRow(0,
+                    StyledText.detailLabel(LanguageManager.get("col.week")),
+                    StyledText.detailLabel(LanguageManager.get("stockDetail.changeNok")),
+                    StyledText.detailLabel(LanguageManager.get("stockDetail.changePct")));
+        } else {
+            table.addRow(0,
+                    StyledText.detailLabel(LanguageManager.get("col.week")),
+                    StyledText.detailLabel(MessageFormat.format(
+                            LanguageManager.get("stockDetail.changeNative"), code)),
+                    StyledText.detailLabel(LanguageManager.get("stockDetail.changeNok")),
+                    StyledText.detailLabel(LanguageManager.get("stockDetail.changePct")));
+        }
 
         int rowIndex = 1;
         for (WeeklyPriceChange row : rows) {
-            table.addRow(rowIndex++,
-                    StyledText.detailValue(String.valueOf(row.week())),
-                    ChangeFormatter.styledAmount(row.nativeChange(), "detail-value"),
-                    ChangeFormatter.styledAmount(row.nokChange(), "detail-value"),
-                    ChangeFormatter.styledPercent(row.percentChange(), "detail-value"));
+            if (isNok) {
+                table.addRow(rowIndex++,
+                        StyledText.detailValue(String.valueOf(row.week())),
+                        ChangeFormatter.styledAmount(row.nokChange(), "detail-value"),
+                        ChangeFormatter.styledPercent(row.percentChange(), "detail-value"));
+            } else {
+                table.addRow(rowIndex++,
+                        StyledText.detailValue(String.valueOf(row.week())),
+                        ChangeFormatter.styledAmount(row.nativeChange(), "detail-value"),
+                        ChangeFormatter.styledAmount(row.nokChange(), "detail-value"),
+                        ChangeFormatter.styledPercent(row.percentChange(), "detail-value"));
+            }
         }
 
         return table;
