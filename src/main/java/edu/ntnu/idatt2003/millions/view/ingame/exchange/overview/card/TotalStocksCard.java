@@ -1,12 +1,12 @@
 package edu.ntnu.idatt2003.millions.view.ingame.exchange.overview.card;
 
+import edu.ntnu.idatt2003.millions.observer.GameObserver;
 import edu.ntnu.idatt2003.millions.service.game.GameService;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.ingame.component.card.WidgetCard;
 
 /**
  * Widget card displaying the total number of stocks listed on the exchange.
- * Updates automatically on each week advance via {@link edu.ntnu.idatt2003.millions.observer.GameObserver}.
  */
 public class TotalStocksCard extends WidgetCard {
 
