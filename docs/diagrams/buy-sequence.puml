@@ -1,0 +1,123 @@
+@startuml buy-sequence
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam shadowing false
+skinparam defaultFontName "Helvetica"
+skinparam sequenceArrowThickness 1
+skinparam sequenceGroupBorderThickness 1
+
+title Buy Operation — Sequence Diagram
+
+box "View" #FFF9C4
+    actor       User          as user
+    participant HoldingsCard  as holdings
+    participant BuyDialog      as dialog
+    participant GameObserver   as observer
+end box
+
+box "Controller" #FFE6CC
+    participant TradeController as ctrl
+end box
+
+box "Service" #E1F5FE
+    participant TransactionPreviewService as preview
+    participant GameService               as gs
+end box
+
+box "Domain" #FFEBEE
+    participant Exchange          as ex
+    participant TransactionFactory as factory
+    participant Player             as player
+end box
+
+' ── 1. User clicks Buy ──────────────────────────────────────────────────────
+user    ->  holdings : clicks Buy
+activate holdings
+holdings -> ctrl     : openBuyDialog(stock)
+deactivate holdings
+
+' ── 2. Controller builds and shows the dialog ───────────────────────────────
+activate ctrl
+ctrl -> dialog : new BuyDialog(stock, controller)
+ctrl -> dialog : setOnConfirm(qty -> buy(stock, qty, dialog))
+ctrl -> dialog : show()
+deactivate ctrl
+
+' ── 3. User types quantity — dialog previews live ───────────────────────────
+activate dialog
+user -> dialog : enters quantity
+
+dialog -> ctrl : previewBuy(stock, qty)
+activate ctrl
+ctrl -> preview : previewPurchase(stock, qty, player, converter)
+activate preview
+preview --> ctrl : TransactionPreview
+deactivate preview
+ctrl --> dialog : TransactionPreview
+deactivate ctrl
+
+dialog -> ctrl : validateTransactionInput(qty, totalInNok)
+activate ctrl
+ctrl --> dialog : Optional.empty()
+deactivate ctrl
+
+dialog -> user : shows gross / commission / total
+
+' ── 4. User confirms ────────────────────────────────────────────────────────
+user   -> dialog : clicks Confirm
+dialog -> ctrl   : onConfirmCallback.accept(qty)
+deactivate dialog
+
+' ── 5. Controller re-validates then delegates to GameService ─────────────────
+activate ctrl
+note right of ctrl
+  Re-checks game policy
+  (min value, decimal precision)
+  before delegating
+end note
+
+ctrl -> gs : buy(symbol, qty)
+activate gs
+
+' ── 6. GameService coordinates domain objects ───────────────────────────────
+gs -> ex : buy(symbol, qty, player)
+activate ex
+
+ex -> factory : createPurchase(share, week, totalCostInNok)
+activate factory
+factory --> ex : Purchase
+deactivate factory
+
+ex -> player : purchase.commit(player)
+activate player
+note right of player
+  Withdraws funds,
+  adds Share to portfolio,
+  archives Transaction
+end note
+player --> ex : (committed)
+deactivate player
+
+ex --> gs : Transaction
+deactivate ex
+
+' ── 7. Observers notified — all views refresh ───────────────────────────────
+gs -> observer : onGameUpdated()
+activate observer
+note right of observer
+  All GameObserver implementors
+  (holdings table, balance card, etc.)
+  re-read model and refresh
+end note
+observer --> gs : (refreshed)
+deactivate observer
+
+gs --> ctrl : Transaction
+deactivate gs
+
+' ── 8. Controller closes dialog and shows receipt ───────────────────────────
+ctrl -> dialog : close()
+ctrl -> user   : show BuyReceipt
+deactivate ctrl
+
+@enduml

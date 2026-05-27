@@ -1,0 +1,107 @@
+@startuml forced-sale-flow
+!theme plain
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam activityFontSize 11
+skinparam arrowFontSize 10
+skinparam activityBackgroundColor #FAFAFA
+skinparam activityBorderColor #AAAAAA
+skinparam activityDiamondBackgroundColor #F5F5F5
+
+title Forced Sale and Bankruptcy Flow
+
+start
+
+:Player clicks "Advance Week";
+
+note right
+  MainController.handleAdvanceWeek()
+  nextWeek = currentWeek + 1
+end note
+
+if (player.canCoverObligationsThisWeek(nextWeek)?) then (yes)
+
+  :GameService.advanceWeek()
+  __ __
+  collect weekly interest
+  repay maturing loans
+  advance all stock prices;
+  :Record net worth + debt history
+  Generate notifications
+  Notify observers;
+  stop
+
+else (no)
+
+  if (player.canCoverWithFullLiquidation(nextWeek)?) then (yes)
+
+    :ForcedSaleController.open(nextWeek)
+    __ __
+    Sort holdings by return % ascending
+    (worst-performing first)
+    Compute net NOK value per share;
+
+    :Show ForcedSaleDialog
+    __ __
+    — interest due this week
+    — maturing loan principals
+    — current cash balance
+    — selectable holdings with net values;
+
+    repeat
+
+      :Player selects shares and confirms;
+
+      :Compute total net NOK from selection
+      (after commission + tax);
+
+      if (net proceeds >= total obligations?) then (no)
+        #FFF0F0:Show error in dialog
+        "Insufficient proceeds — select more";
+      else (yes)
+        :Sell selected shares via Exchange
+        (commission + tax deducted);
+        :Withdraw total obligations from cash
+        (interest + maturing principal);
+        :Exchange.advance()
+        — update all stock prices;
+        :Write interest ledger entries
+        Settle maturing loans;
+        :Record net worth + debt history
+        Generate notifications
+        Notify observers;
+        :Close dialog;
+        stop
+      endif
+
+    repeat while (player adjusts selection)
+
+  else (no — bankruptcy)
+
+    #FFE8E8:GameService.declareGameOver()
+    __ __
+    set gameOver = true
+    record BANKRUPTCY on leaderboard
+    persist save file (if one exists)
+    notify observers;
+
+    :GameOverController.open(nextWeek)
+    __ __
+    Show GameOverModal with:
+    — total obligations
+    — total liquidation value
+    — week number of failure;
+
+    :Player chooses end-game action
+    __ __
+    → Start new game
+    → Sell all and exit (RETIRED)
+    → Review leaderboard;
+
+    stop
+
+  endif
+
+endif
+
+@enduml

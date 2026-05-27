@@ -1,0 +1,65 @@
+@startuml card-hierarchy
+!theme plain
+skinparam shadowing false
+skinparam classFontSize 12
+skinparam classAttributeFontSize 11
+skinparam abstractClassBackgroundColor #EEF4FB
+skinparam interfaceBackgroundColor #E8F5E9
+skinparam backgroundColor white
+
+title Card Hierarchy — Template Method Pattern
+
+interface GameObserver {
+    + onGameUpdated()
+}
+
+abstract class Card {
+    + {abstract} onGameUpdated()
+    # {abstract} onLanguageChanged()
+}
+
+abstract class PaginatedCard {
+    # pageSize : int
+    # currentPage : int
+    + setPage(int)
+    # resetPageAndRefresh()
+    # {abstract} refresh()
+}
+
+abstract class SortableTableCard<T, Column> {
+    # {abstract} fetchAll() : List<T>
+    # {abstract} applySearch(List<T>, String) : List<T>
+    # {abstract} buildRowCells(T, int) : RowCells<Column>
+    # afterFilter(List<T>, List<T>)
+    + onGameUpdated()
+}
+
+note right of SortableTableCard
+  refresh() is a sealed template method:
+  fetchAll → applySearch → afterFilter
+  → sort → renderPage (buildRowCells)
+end note
+
+abstract class DetailTableCard<T, Column> {
+    # {abstract} openDetail(T)
+}
+
+class HoldingsCard<Share>
+class StocksCard<Stock>
+class WatchlistCard<WatchlistItem>
+class TransactionsCard<Transaction>
+class LeaderboardCard<LeaderboardEntry>
+
+Card                ..|> GameObserver
+PaginatedCard       --|> Card
+SortableTableCard   --|> PaginatedCard
+DetailTableCard     --|> SortableTableCard
+
+HoldingsCard        --|> DetailTableCard
+StocksCard          --|> DetailTableCard
+WatchlistCard       --|> DetailTableCard
+
+TransactionsCard    --|> SortableTableCard
+LeaderboardCard     --|> SortableTableCard
+
+@enduml

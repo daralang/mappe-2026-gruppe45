@@ -1,0 +1,56 @@
+@startuml package-structure
+!theme plain
+allowmixing
+scale 1.8
+skinparam packageStyle folder
+skinparam defaultFontSize 14
+skinparam packageFontSize 16
+
+title Package Structure - Millions
+
+package "edu.ntnu.idatt2003.millions" {
+
+    class App <<entry point>> #FFCCCC
+
+    package "controller" #FFE6CC
+    package "model" #FFEBEE
+    package "service" #E1F5FE
+    package "view" #FFF9C4
+    package "file" #F3E5F5
+    package "util" #E8F5E9
+    package "keyboard" #FFE0B2
+    package "factory"
+    package "observer"
+}
+
+' === Entry point ===
+App --> controller
+
+' === Controller layer ===
+controller --> service
+controller --> view
+controller --> keyboard
+controller --> util
+
+' === Service layer ===
+service --> model
+service --> file
+service ..> observer : notifies
+
+' === View layer ===
+view --> util
+view --> keyboard
+view ..|> observer : implements
+
+' === File layer ===
+file --> model
+
+' === Domain ===
+model --> factory : uses
+
+note right of App
+  Entry point
+  (main method)
+end note
+
+@enduml

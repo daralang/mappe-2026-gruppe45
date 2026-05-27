@@ -1,0 +1,123 @@
+@startuml domain-model-v2
+!theme plain
+scale 1.0
+skinparam classFontSize 11
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+package "Player domain" #E3F2FD {
+
+  class Player {
+    - name : String
+    - cash : BigDecimal
+    - startingMoney : BigDecimal
+    + getNetWorth(CurrencyConverter) : BigDecimal
+    + withdrawMoney(BigDecimal)
+    + addMoney(BigDecimal)
+  }
+
+  class Portfolio {
+    - shares : List<Share>
+    + addShare(Share) : boolean
+    + getNetWorth(CurrencyConverter) : BigDecimal
+  }
+
+  class TransactionArchive {
+    - transactions : List<Transaction>
+    + add(Transaction) : boolean
+    + getAllSales() : List<Sale>
+    + countDistinctWeeks() : int
+  }
+
+}
+
+package "Stock domain" #E8F5E9 {
+
+  class Stock {
+    - symbol : String
+    - company : String
+    - prices : List<BigDecimal>
+    - currency : Currency
+    + getSalesPrice() : BigDecimal
+    + getWeeklyChangePercent() : BigDecimal
+  }
+
+  class Share {
+    - quantity : BigDecimal
+    - purchasePrice : BigDecimal
+    + getCurrentValue() : BigDecimal
+    + getCost() : BigDecimal
+  }
+
+  class Exchange {
+    - name : String
+    - week : int
+    + buy(String, BigDecimal, Player) : Transaction
+    + sell(Share, Player) : Transaction
+    + advance()
+  }
+
+}
+
+package "Transaction hierarchy" #FCE4EC {
+
+  abstract class Transaction <<abstract>> {
+    - share : Share
+    - week : int
+    - committed : boolean
+    + {abstract} commit(Player)
+    + {abstract} getCommissionNative() : BigDecimal
+    + {abstract} getTaxNative() : BigDecimal
+  }
+
+  class Purchase {
+    - settlementAmount : BigDecimal
+    + commit(Player)
+  }
+
+  class Sale {
+    - gross : BigDecimal
+    - commission : BigDecimal
+    - tax : BigDecimal
+    - profit : BigDecimal
+    + commit(Player)
+    + getProfit() : BigDecimal
+  }
+
+  interface TransactionCalculator <<interface>> {
+    + calculateGross() : BigDecimal
+    + calculateCommission() : BigDecimal
+    + calculateTax() : BigDecimal
+    + calculateTotal() : BigDecimal
+  }
+
+  class PurchaseCalculator {
+    - {static} COMMISSION_RATE = 0.5%
+    - purchasePrice : BigDecimal
+    - quantity : BigDecimal
+  }
+
+  class SalesCalculator {
+    - {static} COMMISSION_RATE = 1%
+    - {static} TAX_RATE = 30%
+    - salesPrice : BigDecimal
+    - purchaseCosts : BigDecimal
+    + calculateProfit() : BigDecimal
+  }
+
+}
+
+' Relationships
+Player             "1" o-- "1"    Portfolio            : portfolio
+Player             "1" o-- "1"    TransactionArchive   : archive
+Portfolio          "1" o-- "0..*" Share                : shares
+Share                   -->       Stock                : stock
+Exchange           "1" o-- "0..*" Stock                : stockMap
+TransactionArchive "1" o-- "0..*" Transaction          : transactions
+Purchase                --|>      Transaction
+Sale                    --|>      Transaction
+Transaction        "1" o-- "0..1" TransactionCalculator : calculator
+PurchaseCalculator      ..|>      TransactionCalculator
+SalesCalculator         ..|>      TransactionCalculator
+
+@enduml
