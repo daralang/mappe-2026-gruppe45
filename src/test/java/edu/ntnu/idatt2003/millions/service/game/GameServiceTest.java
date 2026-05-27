@@ -64,6 +64,10 @@ class GameServiceTest {
     @TempDir
     Path tempDir;
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() throws GameSaveCorruptException {
         Stock stock = new Stock("EQNR", "Equinor ASA",
@@ -462,6 +466,10 @@ class GameServiceTest {
 
         private LoanOffer offer;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUpLoan() {
             offer = new LoanOffer("standard", new BigDecimal("0.01"), 10,

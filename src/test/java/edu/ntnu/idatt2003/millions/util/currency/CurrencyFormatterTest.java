@@ -23,6 +23,10 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class CurrencyFormatterTest {
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setNorwegian() {
         // Pin to Norwegian so locale-sensitive assertions are deterministic.
