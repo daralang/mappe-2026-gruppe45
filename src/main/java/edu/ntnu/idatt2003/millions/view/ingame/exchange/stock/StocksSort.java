@@ -15,10 +15,6 @@ import javafx.geometry.HPos;
 
 /**
  * Defines sortable columns and comparators for the stocks table.
- *
- * <p>Provides {@link #getColumnDefs()} so {@link SortColumnTable}
- * can build a header row with the correct labels, widths, alignments and sort keys.
- * Resolves i18n labels on every call so language changes are picked up automatically.</p>
  */
 public class StocksSort extends SortProvider<Stock, StocksSort.SortColumn> {
 

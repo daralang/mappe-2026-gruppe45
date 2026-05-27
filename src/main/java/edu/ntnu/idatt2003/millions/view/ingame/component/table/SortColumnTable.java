@@ -18,6 +18,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -203,7 +204,7 @@ public class SortColumnTable<Column> {
      */
     public void addSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter, RowCells<Column> cells) {
         addRow(gridRow, cells);
-        registerSelectableRow(gridRow, focusAnchor, onEnter);
+        registerSelectableRow(gridRow, focusAnchor, onEnter, cells.nodes());
         for (Node node : cells.nodes()) {
             if (!(node instanceof ButtonBase)) {
                 node.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
@@ -227,10 +228,10 @@ public class SortColumnTable<Column> {
      * @param focusAnchor the node focused when this row is reached
      * @param onEnter     action invoked on Enter or Space
      */
-    private void registerSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter) {
+    private void registerSelectableRow(int gridRow, Node focusAnchor, Runnable onEnter, Collection<Node> rowNodes) {
         int index = rows.size();
         rows.add(new NavigableRow(focusAnchor, onEnter));
-        rowHighlighter.bindFocus(gridRow, focusAnchor);
+        rowHighlighter.bindFocus(gridRow, rowNodes);
         focusAnchor.getProperties().put(
                 PageArrowDispatcher.ARROW_HANDLER_KEY,
                 (VerticalArrowHandler) event -> handleRowArrow(event, index));

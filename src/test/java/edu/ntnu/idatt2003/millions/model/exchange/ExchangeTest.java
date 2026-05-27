@@ -38,6 +38,10 @@ class ExchangeTest {
     private Stock stock;
     private CurrencyConverter converter;
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         stock = new Stock("DIS", "The Walt Disney Company",
@@ -365,6 +369,10 @@ class ExchangeTest {
 
         private Share share;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUp() {
             share = new Share(stock, new BigDecimal("5"), new BigDecimal("100.00"));
@@ -515,6 +523,10 @@ class ExchangeTest {
         private Stock gainer;
         private Stock loser;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUp() {
             gainer = new Stock("DCL", "Dara, Inc",
@@ -605,6 +617,10 @@ class ExchangeTest {
         private Stock gainer;
         private Stock loser;
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUp() {
             gainer = new Stock("DCL", "Dara, Inc",

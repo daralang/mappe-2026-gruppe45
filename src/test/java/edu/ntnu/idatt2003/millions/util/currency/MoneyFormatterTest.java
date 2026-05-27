@@ -24,6 +24,10 @@ class MoneyFormatterTest {
     @DisplayName("Norwegian locale")
     class NorwegianLocale {
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setNorwegian() {
             LanguageManager.setLanguage(Language.NORWEGIAN);
@@ -102,6 +106,10 @@ class MoneyFormatterTest {
     @DisplayName("English locale")
     class EnglishLocale {
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setEnglish() {
             LanguageManager.setLanguage(Language.ENGLISH);

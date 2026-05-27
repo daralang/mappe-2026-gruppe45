@@ -41,6 +41,10 @@ class StartControllerTest {
     private boolean showMainCalled;
     private StartController controller;
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         inputs = new StubInputs();
