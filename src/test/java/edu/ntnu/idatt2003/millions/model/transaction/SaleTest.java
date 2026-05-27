@@ -29,6 +29,10 @@ class SaleTest {
     private Player player;
     private Share share;
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         player = new Player("Alva", new BigDecimal("10000.00"));
@@ -155,6 +159,10 @@ class SaleTest {
                 new BigDecimal("10"), new BigDecimal("50.00"));
         private final Sale otherSale = new Sale(otherShare, 1);
 
+        /**
+         * Initializes test fixtures before each test.
+         * Test data values were generated with AI assistance and reviewed manually.
+         */
         @BeforeEach
         void setUp() {
             sale = new Sale(share, 1);

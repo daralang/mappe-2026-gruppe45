@@ -28,6 +28,10 @@ class SalesCalculatorTest {
 
     private SalesCalculator calculator;
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         Share share = new Share(

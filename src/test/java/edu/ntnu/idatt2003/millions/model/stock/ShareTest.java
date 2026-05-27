@@ -27,6 +27,10 @@ class ShareTest {
     private Stock stock;
     private Share share;
 
+    /**
+     * Initializes test fixtures before each test.
+     * Test data values were generated with AI assistance and reviewed manually.
+     */
     @BeforeEach
     void setUp() {
         stock = new Stock("NKE", "Nike, Inc",
