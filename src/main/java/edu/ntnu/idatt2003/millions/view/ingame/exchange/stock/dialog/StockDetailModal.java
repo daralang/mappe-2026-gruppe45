@@ -8,6 +8,7 @@ import edu.ntnu.idatt2003.millions.util.language.LanguageManager;
 import edu.ntnu.idatt2003.millions.view.ingame.component.modal.Modal;
 import edu.ntnu.idatt2003.millions.view.component.StyledText;
 import edu.ntnu.idatt2003.millions.view.ingame.component.chart.TimeSeriesChart;
+import edu.ntnu.idatt2003.millions.view.ingame.exchange.stock.card.PriceHistoryCard;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -177,7 +178,7 @@ public class StockDetailModal extends Modal {
         chartSection.getStyleClass().add("stock-detail-panel");
         HBox.setHgrow(chartSection, Priority.ALWAYS);
 
-        PriceHistoryList list = new PriceHistoryList(stock.getHistoricalPrices(),
+        PriceHistoryCard list = new PriceHistoryCard(stock.getHistoricalPrices(),
                 stock.getCurrency());
         list.setMaxHeight(CHART_HEIGHT);
         VBox listSection = new VBox(8,
