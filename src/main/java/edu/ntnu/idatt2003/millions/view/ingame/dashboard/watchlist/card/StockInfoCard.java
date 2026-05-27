@@ -14,15 +14,16 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.List;
 
 /**
  * A styled info card displaying key price data for a single stock.
  *
- * <p>Renders four rows inside a {@code modal-summary}-styled container:
+ * <p>Renders a horizontal meta row inside a {@code modal-summary}-styled container with:
  * <ul>
  *   <li>Current price in the stock's native currency</li>
- *   <li>Current price converted to NOK</li>
+ *   <li>Current price converted to NOK - omitted when the stock is already priced in NOK</li>
  *   <li>Weekly price change as a signed, colour-coded percentage</li>
  *   <li>A {@link SparklineChart} showing the recent price trend</li>
  * </ul>
@@ -32,10 +33,14 @@ import java.util.List;
 public class StockInfoCard extends VBox {
 
     private static final int SPARKLINE_WEEKS = 8;
+    private static final Currency NOK = Currency.getInstance("NOK");
     private final StockStatsService statsService = new StockStatsService();
 
     /**
      * Constructs a new {@link StockInfoCard} for the given stock.
+     *
+     * <p>When the stock's currency is NOK the NOK price cell is omitted from the
+     * meta row because it would duplicate the native price cell.</p>
      *
      * @param stock     the stock whose price data is displayed
      * @param converter the currency converter used to derive the NOK price
@@ -43,14 +48,15 @@ public class StockInfoCard extends VBox {
     public StockInfoCard(Stock stock, CurrencyConverter converter) {
         setSpacing(12);
 
+        boolean isNok = stock.getCurrency().equals(NOK);
         String currencyCode = stock.getCurrency().getCurrencyCode();
         BigDecimal price = stock.getSalesPrice();
-        BigDecimal priceNok = statsService.priceInNok(stock, converter);
+        BigDecimal priceNok = isNok ? null : statsService.priceInNok(stock, converter);
         BigDecimal changePercent = stock.getWeeklyChangePercent();
 
         getChildren().addAll(
                 buildStockSection(stock),
-                buildMetaRow(stock, currencyCode, price, priceNok, changePercent)
+                buildMetaRow(stock, currencyCode, price, priceNok, changePercent, isNok)
         );
     }
 
@@ -68,32 +74,43 @@ public class StockInfoCard extends VBox {
     }
 
     /**
-     * Builds the horizontal row of four vertical meta cells.
+     * Builds the horizontal row of meta cells.
+     *
+     * <p>For foreign-currency stocks the row contains four cells:
+     * native price, NOK price, weekly change percentage, and sparkline trend.
+     * When the stock is already priced in NOK the NOK price cell is omitted,
+     * leaving three cells: NOK price, weekly change percentage, and sparkline.</p>
      *
      * @param stock         the stock for sparkline data
      * @param currencyCode  the stock's currency code
      * @param price         the current price in native currency
-     * @param priceNok      the current price converted to NOK
+     * @param priceNok      the current price converted to NOK; {@code null} when {@code isNok} is true
      * @param changePercent the weekly change percentage
-     * @return an {@link HBox} containing the four vertical cells
+     * @param isNok         {@code true} when the stock's currency is NOK
+     * @return an {@link HBox} containing three or four vertical cells
      */
     private HBox buildMetaRow(Stock stock, String currencyCode,
                               BigDecimal price, BigDecimal priceNok,
-                              BigDecimal changePercent) {
-        String priceLabelText = LanguageManager.get("col.priceNative");
-
-        VBox priceCell = buildTextCell(
-                priceLabelText,
-                ChangeFormatter.formatPlain(price) + " " + currencyCode);
-
-        VBox priceNokCell = buildTextCell(
-                LanguageManager.get("col.priceNok"),
-                ChangeFormatter.formatPlain(priceNok) + " NOK");
-
+                              BigDecimal changePercent, boolean isNok) {
         VBox changeCell = buildChangeCell(changePercent);
         VBox trendCell = buildTrendCell(stock);
 
-        HBox row = new HBox(24, priceCell, priceNokCell, changeCell, trendCell);
+        HBox row;
+        if (isNok) {
+            VBox priceCell = buildTextCell(
+                    LanguageManager.get("col.priceNok"),
+                    ChangeFormatter.formatPlain(price) + " NOK");
+            row = new HBox(24, priceCell, changeCell, trendCell);
+        } else {
+            VBox priceCell = buildTextCell(
+                    LanguageManager.get("col.priceNative"),
+                    ChangeFormatter.formatPlain(price) + " " + currencyCode);
+            VBox priceNokCell = buildTextCell(
+                    LanguageManager.get("col.priceNok"),
+                    ChangeFormatter.formatPlain(priceNok) + " NOK");
+            row = new HBox(24, priceCell, priceNokCell, changeCell, trendCell);
+        }
+
         row.setAlignment(Pos.BOTTOM_LEFT);
         return row;
     }
